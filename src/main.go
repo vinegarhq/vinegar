@@ -4,14 +4,15 @@ package main
 
 import (
 //	"os"
-	"fmt"
-//	"log"
-	"github.com/adrg/xdg"
+	"log"
+//	"github.com/adrg/xdg"
+	"github.com/nocrusts/vinegar/src/downloader"
 )
 
-//func build_prefix() {
-//}
+func build_prefix() {
+
+}
 
 func main() {
-	fmt.Println(xdg.DataHome)
+
 }

@@ -9,17 +9,19 @@ import ("net/http"
 	"log"
 	"sync"
 	"path/filepath"
+	"archive/zip"
+	"strings"
 )
 
 // Download from SOURCE (https) to TARGET
 // Note: this is potentially DESTRUCTIVE. Be cautious where the target is.
 // Sanity check is to be done by the caller.
-func Download(source string, target string, wg *sync.WaitGroup){
+func Download(source string, target string){
 	target, err := filepath.Abs(target)
 	if err != nil {
 		log.Fatal("Failed to resolve download target. BUG!")
 	}
-	defer wg.Done()
+
 	out, err := os.Create(target)
 	if err != nil {
 		//add zenity warning here
@@ -40,3 +42,16 @@ func Download(source string, target string, wg *sync.WaitGroup){
 	}
 	log.Println("Done downloading " + source)
 }
+
+//adapted from https://www.geeksforgeeks.org/how-to-uncompress-a-file-in-golang/
+func Unzip(srcfile string, targetdir string)(error) {
+	var filenames []string
+	reader, err := zip.OpenReader(srcfile)
+	if err != nil {
+		log.Fatal("Problem opening zip. Something is wrong upstream!")
+	}
+	defer reader.Close()
+	for _, file := range r.File{
+		filepath := filepath.Join(destination, file.Name)
+		if !strings.HasPrefix(filepath, filepath.Clean(destination) + string(os.PathSeparator)) {
+	

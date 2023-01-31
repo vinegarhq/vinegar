@@ -39,21 +39,20 @@ func launch(args ...string) {
 	dirs := util.InitDirs() // pointer to instance of Dirs
 	util.InitEnvironment(dirs)
 	util.CheckExecutables(dirs)
-	robloxexe := filepath.Join(dirs.Cache, "RobloxPlayerLauncher.exe")
+	launcherexe := filepath.Join(dirs.Cache, "RobloxPlayerLauncher.exe")
+	studioexe := filepath.Join(dirs.Cache, "RobloxStudioLauncherBeta.exe")
 	// ROBLOX STUDIO EXE HERE
 	fpsunlockerexe := filepath.Join(dirs.Cache, "rbxfpsunlocker.exe")
 	// Wine is initialized on first launch automatically.
 
 	if len(args) == 1 {
-		Exec(dirs, "wine", robloxexe, "-app", "-fast")
+		Exec(dirs, "wine", launcherexe, "-app", "-fast")
 		Exec(dirs, "wine", fpsunlockerexe)
 	} else if args[0] == "player" {
-		Exec(dirs, "wine", robloxexe, args[1])
+		Exec(dirs, "wine", launcherexe, args[1])
 		Exec(dirs, "wine", fpsunlockerexe)
 	} else if args[0] == "studio" {
-		// TODO
-		log.Println("TODO: IMPLEMENT STUDIO")
-		//Exec(dirs, "wine", robloxexe, args[1])
+		Exec(dirs, "wine", studioexe, args[1])
 		// Studio doesn't work with unlocker!
 	}
 }

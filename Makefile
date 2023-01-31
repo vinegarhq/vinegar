@@ -1,5 +1,5 @@
 build:
-	go build -o bin/vinegar src/main.go
+	go build -ldflags="-s -w" -o bin/vinegar src/main.go
 
 run:
 	go run src/main.go

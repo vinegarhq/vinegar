@@ -13,6 +13,7 @@ import (
 
 // Constants
 const RBXPLAYERLAUNCHERURL = "https://www.roblox.com/download/client"
+const RBXSTUDIOLAUNCHERURL = "https://www.roblox.com/download/studio"
 const RBXFPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 const RBXFPSUNLOCKERHASH = "sha256:050fe7c0127dbd4fdc0cecf3ba46248ba7e14d37edba1a54eac40602c130f2f8" // This is going to be a pain to keep updated...
 
@@ -82,7 +83,18 @@ func CheckExecutables(dirs *Dirs) {
 		}()
 	}
 
-	// TODO: Check for studio here
+	if _, err := os.Stat(filepath.Join(dirs.Exe, "RobloxStudioLauncherBeta.exe")); err == nil {
+		log.Println("Found studio!")
+	} else {
+		log.Println("No Studio found, installing...")
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := getter.GetFile(filepath.Join(dirs.Exe, "/RobloxStudioLauncherBeta.exe"), RBXSTUDIOLAUNCHERURL); err != nil {
+				Errc(err)
+			}
+		}()
+	}
 
 	// Check if Unlocker exists
 	if _, err := os.Stat(filepath.Join(dirs.Exe, "rbxfpsunlocker.exe")); err == nil {

@@ -73,7 +73,7 @@ func main() {
 	case 1:
 		if args[0] == "app" {
 			fmt.Println("Launching app")
-			launch(args[1])
+			launch(args[0])
 		} else if (args[0] == "studio" || args[0] == "player") {
 			fmt.Println("Can't run this mode without launch argument!")
 			os.Exit(2)

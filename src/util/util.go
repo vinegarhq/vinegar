@@ -76,9 +76,6 @@ func CheckExecutables(dirs *Dirs) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Println("Attempting to symlink from flatpak resources.")
-			if err := os.Link("/app/RobloxPlayerLauncher.exe", filepath.Join(dirs.Exe, "/RobloxPlayerLauncher.exe")); err != nil {
-				log.Println("Player Installation: Not in Flatpak!")
 				if err := getter.GetFile(filepath.Join(dirs.Exe, "/RobloxPlayerLauncher.exe"), RBXPLAYERLAUNCHERURL); err != nil {
 					Errc(err)
 				}
@@ -96,9 +93,6 @@ func CheckExecutables(dirs *Dirs) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			log.Println("Attempting to symlink from flatpak resources.")
-			if err := os.Link("/app/RobloxPlayerLauncher.exe", filepath.Join(dirs.Exe, "/rbxfpsunlocker.exe")); err != nil {
-				log.Println("FPS Unlocker Installation: Not in Flatpak!")
 				if err := getter.GetFile(filepath.Join(dirs.Exe, "/rbxfpsunlocker.exe"), (RBXFPSUNLOCKERURL + "?checksum=" + RBXFPSUNLOCKERHASH)); err != nil {
 					Errc(err)
 					//While technically Roblox can play without rbxfpsunlocker, we may have dependencies on it further in the code

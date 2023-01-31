@@ -1,5 +1,1 @@
-Rename downloader to util/util.go
-rename executables to exec
-move installation stuff to functions
-make cubbyhole for variables
-fix utilgo
+get studio working

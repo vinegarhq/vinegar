@@ -1,65 +1,91 @@
-// User should not have to interact with this program at any time.
+// Copyright vinegar-development 2023
 
 package main
 
 import (
-	"path/filepath"
-	"github.com/adrg/xdg"
-	"github.com/nocrusts/vinegar/src/downloader"
+	"fmt"
+	"github.com/nocrusts/vinegar/src/util"
 	"log"
 	"os"
-	"sync"
-	"strings"
+	"os/exec"
+	"path/filepath"
 )
 
-// Constants
-const ROBLOXPLAYERLAUNCHERURL = "https://www.roblox.com/download/client"
-const RBXFPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
+// Gluecode for exec library
+func Exec(dirs *util.Dirs, prog string, args ...string) { // Thanks, wael.
+	cmd := exec.Command(prog, args...)
 
+	stdoutFile, err := os.Create(filepath.Join(dirs.Log, "std.out"))
+	log.Println("Forwarding stdout to ", filepath.Join(dirs.Log, "std.out"))
+	util.Errc(err)
+	defer stdoutFile.Close()
+
+	stderrFile, err := os.Create(filepath.Join(dirs.Log, "std.err"))
+	log.Println("Forwarding stderr to", filepath.Join(dirs.Log, "std.err"))
+	util.Errc(err)
+	defer stderrFile.Close()
+
+	cmd.Stdout = stdoutFile
+	cmd.Stderr = stderrFile
+
+	err = cmd.Run()
+
+	// FIXME: make error comprehensible.
+	util.Errc(err)
+}
+
+// Handle requests for launch
+func launch(args ...string) {
+	dirs := util.InitDirs(); // pointer to instance of Dirs
+	util.InitEnvironment(dirs);
+	util.CheckExecutables(dirs);
+	robloxexe := filepath.Join(dirs.Cache, "RobloxPlayerLauncher.exe")
+	// ROBLOX STUDIO EXE HERE
+	fpsunlockerexe := filepath.Join(dirs.Cache, "rbxfpsunlocker.exe")
+	// Wine is initialized on first launch automatically.
+
+	if len(args) == 1 {
+		Exec(dirs, "wine", robloxexe, "-app", "-fast")
+		Exec(dirs, "wine", fpsunlockerexe)
+	} else if (args[0] == "player") {
+		Exec(dirs, "wine", robloxexe, args[1])
+		Exec(dirs, "wine", fpsunlockerexe)
+	} else if (args[0] == "studio") {
+		// TODO
+		log.Println("TODO: IMPLEMENT STUDIO")
+		//Exec(dirs, "wine", robloxexe, args[1])
+		// Studio doesn't work with unlocker!
+	}
+}
+
+// Command argument processing
 func main() {
-	//Set up synchronization wait group
-	wg := new(sync.WaitGroup)
+	// Handle arguments here
+	// Ex: vinegar MODE [optional launcharg]
 
-	// Discover folders
-	vinegarDataHome := (filepath.Join(xdg.DataHome, "/vinegar"))
-	log.Println("Searching for XDG_DATA_HOME")
-	os.MkdirAll(filepath.Join(xdg.DataHome, "/vinegar/executables"), 0755)
-	log.Println("Searching for executables...")
+	args := os.Args[1:]
+	argsLen := len(args) // First argument is MODE
 
-	// Check if Launcher exists
-	if _, err := os.Stat(filepath.Join(vinegarDataHome, "/executables/RobloxPlayerLauncher.exe")); err == nil {
-		log.Println("Found Roblox Player Launcher!")
-	} else {
-		log.Println("Couldn't find launcher, installing...")
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			log.Println("Attempting to symlink from flatpak resources.")
-			if err := os.Link("/app/RobloxPlayerLauncher.exe", filepath.Join(vinegarDataHome, "/executables/RobloxPlayerLauncher.exe")); err != nil {
-				log.Println("Not in Flatpak!")
-				downloader.Download(ROBLOXPLAYERLAUNCHERURL, filepath.Join(vinegarDataHome, "/executables/RobloxPlayerLauncher.exe"))
-			}
-		} ()
+	switch argsLen {
+	case 0:
+		fmt.Println("usage: vinegar <MODE> [launch string] \n")
+		fmt.Println("Available modes are: app, player, studio")
+	case 1:
+		if args[0] == "app" {
+			fmt.Println("Launching app")
+			launch(args[1])
+		} else if (args[0] == "studio" || args[0] == "player") {
+			fmt.Println("Can't run this mode without launch argument!")
+			os.Exit(2)
+		} else {
+			fmt.Println("Unrecognized mode!")
+		}
+	case 2:
+		if (args[0] == "studio" || args[0] == "player") {
+			fmt.Println("Starting " + args[0] + " with argument " + args[1])
+			launch(args[0], args[1])
+		} else {
+			fmt.Println("Unrecognized mode!")
+		}
 	}
-
-	// Check if Unlocker exists
-	if _, err := os.Stat(filepath.Join(vinegarDataHome, "/executables/rbxfpsunlocker.exe")); err == nil {
-		log.Println("Found FPS unlocker!")
-	} else {
-		log.Println("Couldn't find unlocker, installing from web.")
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			log.println("Attempting to symlink from flatpak resources.")
-			//not a typo, zip extraction can be done by flatpak builder.
-			if err := os.Link("/app/rbxfpsunlocker.exe", filepath.Join(vinegarDataHome, "/executables/rbxfpsunlocker.exe")); err != nil {
-				log.Println("Not in Flatpak!")
-				downloader.Download(RBXFPSUNLOCKERURL, filepath.Join(vinegarDataHome, "/executables/rbxfpsunlocker.zip"))
-
-			}
-		} ()
-	}
-
-
-	wg.Wait()
 }

@@ -6,6 +6,7 @@ run:
 
 install:
 	@echo "Nothing to install yet"
+	bin/vinegar
 clean:
 	rm bin/*
 

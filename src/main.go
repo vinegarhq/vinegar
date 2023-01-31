@@ -36,9 +36,9 @@ func Exec(dirs *util.Dirs, prog string, args ...string) { // Thanks, wael.
 
 // Handle requests for launch
 func launch(args ...string) {
-	dirs := util.InitDirs(); // pointer to instance of Dirs
-	util.InitEnvironment(dirs);
-	util.CheckExecutables(dirs);
+	dirs := util.InitDirs() // pointer to instance of Dirs
+	util.InitEnvironment(dirs)
+	util.CheckExecutables(dirs)
 	robloxexe := filepath.Join(dirs.Cache, "RobloxPlayerLauncher.exe")
 	// ROBLOX STUDIO EXE HERE
 	fpsunlockerexe := filepath.Join(dirs.Cache, "rbxfpsunlocker.exe")
@@ -47,10 +47,10 @@ func launch(args ...string) {
 	if len(args) == 1 {
 		Exec(dirs, "wine", robloxexe, "-app", "-fast")
 		Exec(dirs, "wine", fpsunlockerexe)
-	} else if (args[0] == "player") {
+	} else if args[0] == "player" {
 		Exec(dirs, "wine", robloxexe, args[1])
 		Exec(dirs, "wine", fpsunlockerexe)
-	} else if (args[0] == "studio") {
+	} else if args[0] == "studio" {
 		// TODO
 		log.Println("TODO: IMPLEMENT STUDIO")
 		//Exec(dirs, "wine", robloxexe, args[1])
@@ -74,14 +74,14 @@ func main() {
 		if args[0] == "app" {
 			fmt.Println("Launching app")
 			launch(args[0])
-		} else if (args[0] == "studio" || args[0] == "player") {
+		} else if args[0] == "studio" || args[0] == "player" {
 			fmt.Println("Can't run this mode without launch argument!")
 			os.Exit(2)
 		} else {
 			fmt.Println("Unrecognized mode!")
 		}
 	case 2:
-		if (args[0] == "studio" || args[0] == "player") {
+		if args[0] == "studio" || args[0] == "player" {
 			fmt.Println("Starting " + args[0] + " with argument " + args[1])
 			launch(args[0], args[1])
 		} else {

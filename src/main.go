@@ -16,7 +16,7 @@ func Exec(dirs *util.Dirs, prog string, args ...string) { // Thanks, wael.
 	cmd := exec.Command(prog, args...)
 
 	stdoutFile, err := os.Create(filepath.Join(dirs.Log, "std.out"))
-	log.Println("Forwarding stdout to ", filepath.Join(dirs.Log, "std.out"))
+	log.Println("Forwarding stdout to", filepath.Join(dirs.Log, "std.out"))
 	util.Errc(err)
 	defer stdoutFile.Close()
 

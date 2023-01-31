@@ -76,9 +76,8 @@ func CheckExecutables(dirs *Dirs) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-				if err := getter.GetFile(filepath.Join(dirs.Exe, "/RobloxPlayerLauncher.exe"), RBXPLAYERLAUNCHERURL); err != nil {
-					Errc(err)
-				}
+			if err := getter.GetFile(filepath.Join(dirs.Exe, "/RobloxPlayerLauncher.exe"), RBXPLAYERLAUNCHERURL); err != nil {
+				Errc(err)
 			}
 		} ()
 	}
@@ -93,11 +92,10 @@ func CheckExecutables(dirs *Dirs) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-				if err := getter.GetFile(filepath.Join(dirs.Exe, "/rbxfpsunlocker.exe"), (RBXFPSUNLOCKERURL + "?checksum=" + RBXFPSUNLOCKERHASH)); err != nil {
-					Errc(err)
-					//While technically Roblox can play without rbxfpsunlocker, we may have dependencies on it further in the code
-					//Additionally, performance sucks without it.
-				}
+			if err := getter.GetFile(filepath.Join(dirs.Exe, "/rbxfpsunlocker.exe"), (RBXFPSUNLOCKERURL + "?checksum=" + RBXFPSUNLOCKERHASH)); err != nil {
+				Errc(err)
+				//While technically Roblox can play without rbxfpsunlocker, we may have dependencies on it further in the code
+				//Additionally, performance sucks without it.
 			}
 		} ()
 	}

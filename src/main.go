@@ -42,12 +42,12 @@ func launch(args ...string) {
 	util.CheckExecutables(dirs)
 	launcherexe := filepath.Join(dirs.Exe, "RobloxPlayerLauncher.exe")
 	studioexe := filepath.Join(dirs.Exe, "RobloxStudioLauncherBeta.exe")
-	fpsunlockerexe := filepath.Join(dirs.Cache, "rbxfpsunlocker.exe")
+	fpsunlockerexe := filepath.Join(dirs.Exe, "rbxfpsunlocker.exe")
 	// Wine is initialized on first launch automatically.
 	switch len(args) {
 	case 1:
 		if args[0] == "app" {
-			Exec(dirs, "wine", launcherexe, " -app", " -fast")
+			Exec(dirs, "wine", launcherexe, "-app", "-fast") // unsure if -fast is needed.
 			Exec(dirs, "wine", fpsunlockerexe)
 		} else if args[0] == "reset" {
 			util.ResetPrefix(dirs)
@@ -57,10 +57,10 @@ func launch(args ...string) {
 		}
 	case 2:
 		if args[0] == "player" {
-			Exec(dirs, "wine", launcherexe, " -fast " , args[1])
+			Exec(dirs, "wine", launcherexe, "-fast " , args[1])
 			Exec(dirs, "wine", fpsunlockerexe)
 		} else if args[0] == "studio" {
-			Exec(dirs, "wine", studioexe, " ", args[1])
+			Exec(dirs, "wine", studioexe, args[1])
 		}
 	}
 }

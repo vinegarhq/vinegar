@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version = 0.5
+Type = Application
+Name = Vinegar (App)
+Comment = Run the app portion of vinegar.
+Categories=Game
+Icon = com.github.vinegar
+Exec = vinegar app
+Terminal = false
+

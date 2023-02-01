@@ -57,8 +57,8 @@ func launch(args ...string) {
 		}
 	case 2:
 		if args[0] == "player" {
-			Exec(dirs, "wine", launcherexe, "-fast " , args[1])
-			Exec(dirs, "wine", fpsunlockerexe)
+			Exec(dirs, "wine", launcherexe, "-fast" , args[1])
+			Exec(dirs, "echo", fpsunlockerexe)
 		} else if args[0] == "studio" {
 			Exec(dirs, "wine", studioexe, args[1])
 		}

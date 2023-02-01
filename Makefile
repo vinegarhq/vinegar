@@ -10,9 +10,12 @@ uninstall:
 	rm ~/.local/share/icons/hicolor/128x128/apps/com.github.vinegar.png
 
 install:
-	cp bin/vinegar ~/.local/bin
-	cp com.github.vinegar.app.desktop ~/.local/share/applications
-	cp com.github.vinegar.png ~/.local/share/icons/hicolor/128x128/apps
+	mkdir -p ~/.local/bin
+	install -Dm00755 bin/vinegar ~/.local/bin/
+	mkdir -p ~/.local/share/applications
+	install -Dm00644 com.github.vinegar.app.desktop ~/.local/share/applications/
+	mkdir -p ~/.local/share/icons/hicolor/128x128/apps
+	install -Dm00644 com.github.vinegar.png ~/.local/share/icons/hicolor/128x128/apps/
 
 clean:
 	rm bin/*

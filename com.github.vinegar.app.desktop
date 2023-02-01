@@ -4,7 +4,7 @@ Type = Application
 Name = Vinegar (App)
 Comment = Run the app portion of vinegar.
 Categories=Game
-Icon = com.github.vinegar
+Icon = com.github.vinegar.png
 Exec = vinegar app
 Terminal = false
 

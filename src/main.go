@@ -1,5 +1,6 @@
 // Copyright vinegar-development 2023
 
+//TODO: Add watchdog for unlocker in flatpak? This needs investigation.
 package main
 
 import (
@@ -39,21 +40,28 @@ func launch(args ...string) {
 	dirs := util.InitDirs() // pointer to instance of Dirs
 	util.InitEnvironment(dirs)
 	util.CheckExecutables(dirs)
-	launcherexe := filepath.Join(dirs.Cache, "RobloxPlayerLauncher.exe")
-	studioexe := filepath.Join(dirs.Cache, "RobloxStudioLauncherBeta.exe")
-	// ROBLOX STUDIO EXE HERE
+	launcherexe := filepath.Join(dirs.Exe, "RobloxPlayerLauncher.exe")
+	studioexe := filepath.Join(dirs.Exe, "RobloxStudioLauncherBeta.exe")
 	fpsunlockerexe := filepath.Join(dirs.Cache, "rbxfpsunlocker.exe")
 	// Wine is initialized on first launch automatically.
-
-	if len(args) == 1 {
-		Exec(dirs, "wine", launcherexe, "-app", "-fast")
-		Exec(dirs, "wine", fpsunlockerexe)
-	} else if args[0] == "player" {
-		Exec(dirs, "wine", launcherexe, args[1])
-		Exec(dirs, "wine", fpsunlockerexe)
-	} else if args[0] == "studio" {
-		Exec(dirs, "wine", studioexe, args[1])
-		// Studio doesn't work with unlocker!
+	switch len(args) {
+	case 1:
+		if args[0] == "app" {
+			Exec(dirs, "wine", launcherexe, " -app", " -fast")
+			Exec(dirs, "wine", fpsunlockerexe)
+		} else if args[0] == "reset" {
+			util.ResetPrefix(dirs)
+			log.Println("Prefix erased. A new one will be created the next time you launch any game mode.")
+		} else if args[0] == "studio" {
+			Exec(dirs, "wine", studioexe)
+		}
+	case 2:
+		if args[0] == "player" {
+			Exec(dirs, "wine", launcherexe, " -fast " , args[1])
+			Exec(dirs, "wine", fpsunlockerexe)
+		} else if args[0] == "studio" {
+			Exec(dirs, "wine", studioexe, " ", args[1])
+		}
 	}
 }
 
@@ -68,14 +76,21 @@ func main() {
 	switch argsLen {
 	case 0:
 		fmt.Println("usage: vinegar <MODE> [launch string] \n")
-		fmt.Println("Available modes are: app, player, studio")
+		fmt.Println("Available game modes are: app, player, studio\n")
+		fmt.Println("Available maintenance modes are: reset\n")
 	case 1:
 		if args[0] == "app" {
 			fmt.Println("Launching app")
 			launch(args[0])
-		} else if args[0] == "studio" || args[0] == "player" {
+		} else if args[0] == "player" {
 			fmt.Println("Can't run this mode without launch argument!")
 			os.Exit(2)
+		} else if args[0] == "reset" {
+			fmt.Println("Regenerating prefix")
+			launch(args[0])
+		} else if args[0] == "studio" {
+			fmt.Println("Launching studio without specific game.")
+			launch(args[0])
 		} else {
 			fmt.Println("Unrecognized mode!")
 		}
@@ -83,6 +98,8 @@ func main() {
 		if args[0] == "studio" || args[0] == "player" {
 			fmt.Println("Starting " + args[0] + " with argument " + args[1])
 			launch(args[0], args[1])
+		} else if args[0] == "app" {
+			fmt.Println("app cannot be launched with additional arguments!")
 		} else {
 			fmt.Println("Unrecognized mode!")
 		}

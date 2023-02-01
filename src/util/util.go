@@ -65,6 +65,12 @@ func InitEnvironment(dirs *Dirs) { // Thanks, wael.
 	os.Setenv("DXVK_STATE_CACHE_PATH", filepath.Join(dirs.Cache, "/dxvk"))
 }
 
+//Self-explanatory.
+func ResetPrefix (dirs *Dirs) {
+	Errc(os.RemoveAll(dirs.Pfx))
+	Errc(os.MkdirAll(dirs.Pfx, 0755))
+}
+
 // Look for FPS unlocker and launcher, and update them as necessary.
 // TODO: Figure out a way to check for FPS unlocker updates.
 func CheckExecutables(dirs *Dirs) {

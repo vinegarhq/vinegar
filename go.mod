@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-getter v1.6.2
 )
 
-replace github.com/adrg/xdg v0.4.0 => /usr/share/gocode/src/github.com/adrg/xdg
+# replace github.com/adrg/xdg v0.4.0 => /usr/share/gocode/src/github.com/adrg/xdg
 
 require (
 	cloud.google.com/go v0.45.1 // indirect
@@ -35,4 +35,4 @@ require (
 	google.golang.org/grpc v1.21.1 // indirect
 )
 
-replace golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 => /usr/share/gocode/src/golang.org/x/sys
+# replace golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359 => /usr/share/gocode/src/golang.org/x/sys

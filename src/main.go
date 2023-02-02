@@ -47,7 +47,7 @@ func launch(args ...string) {
 	switch len(args) {
 	case 1:
 		if args[0] == "app" {
-			Exec(dirs, "wine", launcherexe, "-app", "-fast") // unsure if -fast is needed.
+			Exec(dirs, "wine", launcherexe, "-app", "-fast")
 			Exec(dirs, "wine", fpsunlockerexe)
 		} else if args[0] == "reset" {
 			util.ResetPrefix(dirs)
@@ -57,8 +57,8 @@ func launch(args ...string) {
 		}
 	case 2:
 		if args[0] == "player" {
-			Exec(dirs, "wine", launcherexe, "-fast" , args[1])
-			Exec(dirs, "echo", fpsunlockerexe)
+			Exec(dirs, "wine", launcherexe, args[1], "-fast")
+			Exec(dirs, "wine", fpsunlockerexe)
 		} else if args[0] == "studio" {
 			Exec(dirs, "wine", studioexe, args[1])
 		}

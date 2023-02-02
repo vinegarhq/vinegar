@@ -16,13 +16,13 @@ import (
 func Exec(dirs *util.Dirs, prog string, args ...string) { // Thanks, wael.
 	cmd := exec.Command(prog, args...)
 
-	stdoutFile, err := os.Create(filepath.Join(dirs.Log, "std.out"))
-	log.Println("Forwarding stdout to", filepath.Join(dirs.Log, "std.out"))
+	stdoutFile, err := os.CreateTemp(dirs.Log, "*.out")
+	log.Println("Forwarding stdout to", filepath.Join(dirs.Log, stdoutFile.Name()))
 	util.Errc(err)
 	defer stdoutFile.Close()
 
-	stderrFile, err := os.Create(filepath.Join(dirs.Log, "std.err"))
-	log.Println("Forwarding stderr to", filepath.Join(dirs.Log, "std.err"))
+	stderrFile, err := os.CreateTemp(dirs.Log, "*.err")
+	log.Println("Forwarding stderr to", filepath.Join(dirs.Log, stderrFile.Name()))
 	util.Errc(err)
 	defer stderrFile.Close()
 
@@ -47,17 +47,17 @@ func launch(args ...string) {
 	switch len(args) {
 	case 1:
 		if args[0] == "app" {
-			Exec(dirs, "wine", launcherexe, "-app", "-fast")
+			Exec(dirs, "wine", launcherexe, "-app", "-fast") // Note: This is undocumented roblox behavior. Don't mess with its order.
 			Exec(dirs, "wine", fpsunlockerexe)
 		} else if args[0] == "reset" {
 			util.ResetPrefix(dirs)
-			log.Println("Prefix erased. A new one will be created the next time you launch any game mode.")
+			log.Println("Prefix and logs erased. A new one will be created the next time you launch any game mode.")
 		} else if args[0] == "studio" {
 			Exec(dirs, "wine", studioexe)
 		}
 	case 2:
 		if args[0] == "player" {
-			Exec(dirs, "wine", launcherexe, args[1], "-fast")
+			Exec(dirs, "wine", launcherexe, args[1], "-fast") // Note: This is undocumented roblox behavior. Don't mess with its order.
 			Exec(dirs, "wine", fpsunlockerexe)
 		} else if args[0] == "studio" {
 			Exec(dirs, "wine", studioexe, args[1])

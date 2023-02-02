@@ -14,6 +14,8 @@ install:
 	install -Dm00755 bin/vinegar ~/.local/bin/
 	mkdir -p ~/.local/share/applications
 	install -Dm00644 com.github.vinegar.app.desktop ~/.local/share/applications/
+	install -Dm00644 com.github.vinegar.player.desktop ~/.local/share/applications/
+	install -Dm00644 com.github.vinegar.studio.desktop ~/.local/share/applications/
 	mkdir -p ~/.local/share/icons/hicolor/128x128/apps
 	install -Dm00644 com.github.vinegar.png ~/.local/share/icons/hicolor/128x128/apps/
 

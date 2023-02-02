@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version = 0.5
+Type = Application
+Name = Vinegar (Player)
+Comment = Run the player portion of vinegar.
+Categories=Game
+Icon = com.github.vinegar.png
+Exec = vinegar player $@
+Terminal = false

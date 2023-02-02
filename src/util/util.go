@@ -67,8 +67,11 @@ func InitEnvironment(dirs *Dirs) { // Thanks, wael.
 
 //Self-explanatory.
 func ResetPrefix (dirs *Dirs) {
+	// I'd rather remove the directory than make a mistake with using *
 	Errc(os.RemoveAll(dirs.Pfx))
+	Errc(os.RemoveAll(dirs.Log))
 	Errc(os.MkdirAll(dirs.Pfx, 0755))
+	Errc(os.MkdirAll(dirs.Log, 0755))
 }
 
 // Look for FPS unlocker and launcher, and update them as necessary.

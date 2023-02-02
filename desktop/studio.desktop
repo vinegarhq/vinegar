@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=0.5
+Type=Application
+Name=Vinegar (Studio)
+Exec=vinegar studio %u
+Terminal=false
+MimeType=x-scheme-handler/roblox-studio
+Categories=Game

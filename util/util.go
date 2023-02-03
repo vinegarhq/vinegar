@@ -76,9 +76,17 @@ func InitEnv(dirs *Dirs) {
 	// Removal of most unnecessary Wine facilities
 	os.Setenv("WINEDEBUG", "fixme-all,-wininet,-ntlm,-winediag,-kerberos")
 	os.Setenv("WINEDLLOVERRIDES", "dxdiagn=d;winemenubuilder.exe=d")
+	
 	os.Setenv("DXVK_LOG_LEVEL", "warn")
 	os.Setenv("DXVK_LOG_PATH", "none")
 	os.Setenv("DXVK_STATE_CACHE_PATH", filepath.Join(dirs.Cache, "dxvk"))
+	
+	os.Setenv("MESA_GL_VERSION_OVERRIDE", "4.4")
+	// Use the dedicated gpu if available, untested
+	os.Setenv("DRI_PRIME", "1")
+	os.Setenv("__NV_PRIME_RENDER_OFFLOAD", "1")
+	os.Setenv("__VK_LAYER_NV_optimus", "NVIDIA_only")
+	os.Setenv("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 }
 
 func Exec(dirs *Dirs, prog string, args ...string) {

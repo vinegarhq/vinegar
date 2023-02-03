@@ -99,9 +99,23 @@ func Exec(dirs *Dirs, prog string, args ...string) {
 	cmd.Dir = dirs.Cache
 	cmd.Stdout = stdoutFile
 	cmd.Stderr = stderrFile
-	err = cmd.Run()
 
+	err = cmd.Run()
 	Errc(err)
+
+	logFile, err := stderrFile.Stat()
+	Errc(err)
+	if logFile.Size() == 0 {
+		log.Println("Empty stderr log file detected, deleting")
+		Errc(os.RemoveAll(stderrFile.Name()))
+	}
+
+	logFile, err = stdoutFile.Stat()
+	Errc(err)
+	if logFile.Size() == 0 {
+		log.Println("Empty stdout file detected, deleted")
+		Errc(os.RemoveAll(stdoutFile.Name()))
+	}
 }
 
 func InitExec(dirs *Dirs, path string, url string, what string) (string) {

@@ -53,9 +53,9 @@ func main() {
 		studioPath := util.InitExec(dirs, "RobloxStudioLauncherBeta.exe", STUDIOURL, "Roblox Studio")
 		util.Exec(dirs, "wine", studioPath, fargs)
 	case "reset":
-		util.DeleteDir(dirs.Pfx)
-		// Automatic creation of the prefix after it has been deleted
-		util.DirsCheck(dirs.Pfx)
+		util.DeleteDir(dirs.Pfx, dirs.Log)
+		// Automatic creation of the directories after it has been deleted
+		util.DirsCheck(dirs.Pfx, dirs.Log)
 	default:
 		usage()
 	}

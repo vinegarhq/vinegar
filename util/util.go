@@ -35,9 +35,11 @@ func Errc(e error) {
 	}
 }
 
-func DeleteDir(dir string) {
-	log.Println("Deleting directory:", dir)
-	Errc(os.RemoveAll(dir))
+func DeleteDir(dir ...string) {
+	for _, d := range dir {
+		log.Println("Deleting directory:", d)
+		Errc(os.RemoveAll(d))
+	}
 }
 
 func DirsCheck(dir ...string) {
@@ -47,8 +49,7 @@ func DirsCheck(dir ...string) {
 		} else { 
 			continue
 		}
-		err := os.MkdirAll(d, 0755)
-		Errc(err)
+		Errc(os.MkdirAll(d, 0755))
 	}
 }
 
@@ -100,8 +101,7 @@ func Exec(dirs *Dirs, prog string, args ...string) {
 	cmd.Stdout = stdoutFile
 	cmd.Stderr = stderrFile
 
-	err = cmd.Run()
-	Errc(err)
+	Errc(cmd.Run())
 
 	logFile, err := stderrFile.Stat()
 	Errc(err)

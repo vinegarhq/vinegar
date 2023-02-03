@@ -20,4 +20,7 @@ uninstall:
 	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
 
-.PHONY: all vinegar install uninstall
+clean:
+	rm -f vinegar
+
+.PHONY: all vinegar clean install uninstall

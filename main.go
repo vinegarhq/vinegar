@@ -39,7 +39,7 @@ func main() {
 
 	switch args[0] {
 	case "delete":
-		util.DeleteDir(dirs.Pfx)
+		util.DeleteDir(dirs.Data, dirs.Cache)
 	case "exec":
 		util.Exec(dirs, "wine", fargs)
 	case "kill":

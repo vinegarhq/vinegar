@@ -20,7 +20,7 @@ func usage() {
 }
 
 func main() {
-	var fargs string
+	var arg string
 
 	args := os.Args[1:]
 	argsCount := len(args)
@@ -30,7 +30,7 @@ func main() {
 	}
 
 	if argsCount > 1 {
-		fargs = args[1]
+		arg = args[1]
 	}
 
 	dirs := util.InitDirs()
@@ -41,17 +41,14 @@ func main() {
 	case "delete":
 		util.DeleteDir(dirs.Data, dirs.Cache)
 	case "exec":
-		util.Exec(dirs, "wine", fargs)
+		util.Exec(dirs, "wine", arg)
 	case "kill":
 		util.PfxKill(dirs)
 	case "player":
-		playerPath := util.InitExec(dirs, "RobloxPlayerLauncher.exe", PLAYERURL, "Roblox Player")
-		// This is undocumented roblox behavior. Don't mess with its order.
-		util.Exec(dirs, "wine", playerPath, fargs, "-fast")
-		util.RbxFpsUnlocker(dirs)
-	case "studio":
-		studioPath := util.InitExec(dirs, "RobloxStudioLauncherBeta.exe", STUDIOURL, "Roblox Studio")
-		util.Exec(dirs, "wine", studioPath, fargs)
+		util.RobloxLaunch(dirs, "RobloxPlayerLauncher.exe", PLAYERURL, "Roblox Player", arg)
+//	case "studio":
+//		studioPath := util.InitExec(dirs, "RobloxStudioLauncherBeta.exe", STUDIOURL, "Roblox Studio")
+//		util.Exec(dirs, "wine", studioPath, fargs)
 	case "reset":
 		util.DeleteDir(dirs.Pfx, dirs.Log)
 		// Automatic creation of the directories after it has been deleted

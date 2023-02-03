@@ -90,8 +90,7 @@ func InitEnv(dirs *Dirs) {
 }
 
 func Exec(dirs *Dirs, prog string, args ...string) {
-	log.Println("Launching", prog)
-
+	log.Println(args)
 	cmd := exec.Command(prog, args...)
 	timeFmt := time.Now().Format(time.RFC3339)
 
@@ -145,6 +144,51 @@ func InitExec(dirs *Dirs, path string, url string, what string) (string) {
 	return path
 }
 
+func RobloxFind(dirs *Dirs, giveDir bool, exe string) (string) {
+	var final string
+	user := os.Getenv("USER")
+
+	if user == "" {
+		log.Fatal("Failed to get $USER variable")
+	}
+
+	var programDirs = []string {
+		filepath.Join("users", user, "AppData/Local"),
+		"Program Files (x86)",
+	}
+
+	for _, programDir := range programDirs {
+		versionDir, err := os.Open(filepath.Join(dirs.Pfx, "drive_c", programDir, "Roblox/Versions"))
+
+		if os.IsNotExist(err) {
+			continue
+		}
+
+		versionDirs, err := versionDir.Readdir(0)
+		Errc(err)
+
+		for _, v := range versionDirs {
+			checkExe, err := os.Open(filepath.Join(versionDir.Name(), v.Name(), exe))
+
+			if err != nil {
+				continue
+			}
+			defer checkExe.Close()
+
+			if giveDir == false {	
+				final = checkExe.Name()
+			} else {
+				final = filepath.Join(versionDir.Name(), v.Name())
+			}
+
+			break
+		}
+		defer versionDir.Close()
+	}
+	return final
+}
+
+
 func RbxFpsUnlocker(dirs *Dirs) {
 	fpsUnlockerPath := InitExec(dirs, "rbxfpsunlocker.exe", FPSUNLOCKERURL, "FPS Unlocker")
 
@@ -173,6 +217,18 @@ func RbxFpsUnlocker(dirs *Dirs) {
 
 	log.Println("Launching FPS Unlocker")
 	Exec(dirs, "wine", fpsUnlockerPath)
+}
+
+func RobloxLaunch(dirs *Dirs, exe string, url string, what string, arg string) {
+	if RobloxFind(dirs, false, exe) == "" {
+		installerPath := InitExec(dirs, exe, url, what)
+		Exec(dirs, "wine", installerPath, "-fast")
+		Errc(os.RemoveAll(installerPath))
+	}
+
+	log.Println("Launching Roblox Player")
+	Exec(dirs, "wine", RobloxFind(dirs, false, exe), "-app", "-fast")
+	//RbxFpsUnlocker(dirs)
 }
 
 func PfxKill(dirs *Dirs) {

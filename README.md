@@ -1,8 +1,19 @@
 # vinegar
 A transparent wrapper for Roblox Player and Roblox Studio.
 
-# additional thanks:
-Thanks to [wael](https://github.com/apprehensions) for contributions to main.go.
+# Features
++ Logging
++ Clean log output
++ Deletion of empty log files
++ Sets up a Wine prefix automatically
++ Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker
++ Browser launch (testing)
++ Faster startup of rbxfpsunlocker and the Roblox Player
 
-# temporary desktop icon credits:
-Sean McGrath from Saint John, NB, Canada, CC BY 2.0 <https://creativecommons.org/licenses/by/2.0>, via Wikimedia Commons
+# TODO
++ Fetch latest version of rbxfpsunlocker, removes safety checksumming
++ Add watchdog for unlocker in flatpak? This needs investigation.
++ Automatically kill wineprefix when Roblox has exited
++ Better logo
++ Automatic killing of wineprefix
++ Add installation failure detection

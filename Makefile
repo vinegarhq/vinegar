@@ -1,27 +1,26 @@
-build:
-	go build -ldflags="-s -w" -o bin/vinegar src/main.go
+PREFIX    = /usr/local
+APPPREFIX = $(PREFIX)/share/applications
 
-run:
-	go run src/main.go
+DESKTOP   = desktop/app.desktop desktop/player.desktop desktop/studio.desktop
+
+all: vinegar
+
+vinegar: main.go util/util.go
+	go build -ldflags="-s -w" -o vinegar main.go
+
+install: vinegar $(DESKTOP)
+	install -Dm755 vinegar -t $(DESTDIR)$(PREFIX)/bin
+	install -Dm644 desktop/app.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
+	install -Dm644 desktop/player.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
+	install -Dm644 desktop/studio.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
 
 uninstall:
-	rm ~/.local/bin/vinegar
-	rm ~/.local/share/applications/com.github.vinegar.app.desktop
-	rm ~/.local/share/icons/hicolor/128x128/apps/com.github.vinegar.png
-
-install:
-	mkdir -p ~/.local/bin
-	install -Dm00755 bin/vinegar ~/.local/bin/
-	mkdir -p ~/.local/share/applications
-	install -Dm00644 com.github.vinegar.app.desktop ~/.local/share/applications/
-	install -Dm00644 com.github.vinegar.player.desktop ~/.local/share/applications/
-	install -Dm00644 com.github.vinegar.studio.desktop ~/.local/share/applications/
-	mkdir -p ~/.local/share/icons/hicolor/128x128/apps
-	install -Dm00644 com.github.vinegar.png ~/.local/share/icons/hicolor/128x128/apps/
+	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar
+	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
 
 clean:
-	rm bin/*
+	rm -f vinegar
 
-all:	build install
-
-# Someone make a better makefile with install instead of cp, please.
+.PHONY: all vinegar clean install uninstall

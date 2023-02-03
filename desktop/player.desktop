@@ -1,0 +1,8 @@
+[Desktop Entry]
+Version=0.5
+Type=Application
+Name=Vinegar (Player)
+Exec=vinegar player %u
+Terminal=false
+MimeType=x-scheme-handler/roblox-player
+Categories=Game

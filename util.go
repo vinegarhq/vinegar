@@ -13,6 +13,7 @@ import (
 	"archive/zip"
 )
 
+// Primary struct keeping track of vinegar's directories.
 type Dirs struct {
 	Cache string
 	Data  string
@@ -21,12 +22,14 @@ type Dirs struct {
 	Exe   string
 }
 
+// Helper function to handle error failure
 func Errc(e error) {
 	if e != nil {
 		log.Fatal(e)
 	}
 }
 
+// Deletes directories, with logging(!)
 func DeleteDir(dir ...string) {
 	for _, d := range dir {
 		log.Println("Deleting directory:", d)
@@ -34,6 +37,8 @@ func DeleteDir(dir ...string) {
 	}
 }
 
+// Check for directories if they exist, if not, create them with 0755,
+// and let the user know with logging.
 func DirsCheck(dir ...string) {
 	for _, d := range dir {
 		if _, err := os.Stat(d); os.IsNotExist(err) {
@@ -45,6 +50,7 @@ func DirsCheck(dir ...string) {
 	}
 }
 
+// Creates the Dirs struct with its initial values.
 func InitDirs() *Dirs {
 	dirs := new(Dirs)
 	home := os.Getenv("HOME")
@@ -62,13 +68,13 @@ func InitDirs() *Dirs {
 	return dirs
 }
 
+// Main environment initialization for Wine, DXVK, and PRIME.
 func InitEnv(dirs *Dirs) {
 	os.Setenv("WINEPREFIX", dirs.Pfx)
-	os.Setenv("WINEARCH", "win64")
+	os.Setenv("WINEARCH", "win64") // Required for rbxfpsunlocker
 	// Removal of most unnecessary Wine facilities
 	os.Setenv("WINEDEBUG", "fixme-all,-wininet,-ntlm,-winediag,-kerberos")
 	os.Setenv("WINEDLLOVERRIDES", "dxdiagn=d;winemenubuilder.exe=d")
-	
 	os.Setenv("DXVK_LOG_LEVEL", "warn")
 	os.Setenv("DXVK_LOG_PATH", "none")
 	os.Setenv("DXVK_STATE_CACHE_PATH", filepath.Join(dirs.Cache, "dxvk"))
@@ -81,6 +87,8 @@ func InitEnv(dirs *Dirs) {
 	os.Setenv("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 }
 
+// Execute a program with arguments whilst keeping 
+// it's stderr output to a log file, stdout is ignored and is sent to os.Stdout.
 func Exec(dirs *Dirs, prog string, args ...string) {
 	log.Println(args)
 	cmd := exec.Command(prog, args...)
@@ -107,6 +115,7 @@ func Exec(dirs *Dirs, prog string, args ...string) {
 	}
 }
 
+// Download a single file into a target file.
 func Download(source string, target string){
 	// Create blank file
 	out, err := os.Create(target)
@@ -123,6 +132,8 @@ func Download(source string, target string){
 	log.Println("Downloaded", source)
 }
 
+// Unzip a single file without keeping track of zip's structue into 
+// a target file, Will remove the source zip file after successful extraction.
 func Unzip(source string, target string) {
 	archive, err := zip.OpenReader(source)
 	Errc(err)
@@ -133,10 +144,6 @@ func Unzip(source string, target string) {
 	Errc(err)
 	defer out.Close()
 
-	/* 
-	 * We unzip only particularly a file, we dont create
-	 * the zip structure.	
-	 */
 	for _, zipped := range archive.File {
 		zippedFile, err := zipped.Open()
 		Errc(err)

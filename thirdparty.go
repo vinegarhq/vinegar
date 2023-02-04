@@ -17,12 +17,12 @@ const (
 // Launch or automatically install axstin's rbxfpsunlocker.
 // This function will also create it's own settings for rbxfpsunlocker, for
 // faster or cleaner startup.
-func RbxFpsUnlocker(dirs *Dirs) {
-	fpsUnlockerPath := filepath.Join(dirs.Exe, "rbxfpsunlocker.exe")
+func RbxFpsUnlocker() {
+	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")
 	_, err := os.Stat(fpsUnlockerPath)
 
 	if os.IsNotExist(err) {
-		fpsUnlockerZip := filepath.Join(dirs.Cache, "rbxfpsunlocker.zip")
+		fpsUnlockerZip := filepath.Join(Dirs.Cache, "rbxfpsunlocker.zip")
 		log.Println("Installing rbxfpsunlocker")
 		Download(fpsUnlockerZip, FPSUNLOCKERURL)
 		Unzip(fpsUnlockerZip, fpsUnlockerPath)
@@ -40,7 +40,7 @@ func RbxFpsUnlocker(dirs *Dirs) {
 		"QuickStart=true",
 	}
 
-	settingsFile, err := os.Create(filepath.Join(dirs.Cache, "settings"))
+	settingsFile, err := os.Create(filepath.Join(Dirs.Cache, "settings"))
 	Errc(err)
 	defer settingsFile.Close()
 
@@ -52,5 +52,8 @@ func RbxFpsUnlocker(dirs *Dirs) {
 	}
 
 	log.Println("Launching FPS Unlocker")
-	Exec(dirs, "wine", fpsUnlockerPath)
+	Exec("wine", fpsUnlockerPath)
+
+	// Since this file is always overwritten, just remove it anyway.
+	Errc(os.RemoveAll(settingsFile.Name()))
 }

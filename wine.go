@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func PfxKill(dirs *Dirs) {
+func PfxKill() {
 	log.Println("Killing wineprefix")
-	Exec(dirs, "wineserver", "-k")
+	Exec("wineserver", "-k")
 }

@@ -1,7 +1,0 @@
-figure out how to update unlocker
-get sandboxing in flatpak
-//TODO: Add watchdog for unlocker in flatpak? This needs investigation.
-replace icon
-Add installation failure detection (because roblox sucks)
-	note: seems like it returns err 255, we may need to catch this.
-fix logging

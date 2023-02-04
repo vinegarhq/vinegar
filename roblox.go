@@ -69,16 +69,20 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) string {
 	return final
 }
 
+func RobloxInstall(dirs *Dirs, url string) {
+	log.Println("Installing", url)
+	installerPath := filepath.Join(dirs.Cache, "rbxinstall.exe")
+	Download(url, installerPath)
+	Exec(dirs, "wine", installerPath)
+	Errc(os.RemoveAll(installerPath))
+}
+
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
 func RobloxLaunch(dirs *Dirs, exe string, url string, args ...string) {
 	if RobloxFind(dirs, false, exe) == "" {
-		log.Println(exe, "Not found, installing")
-		installerPath := filepath.Join(dirs.Cache, "rbxinstall.exe")
-		Download(url, installerPath)
-		Exec(dirs, "wine", installerPath, "-fast")
-		Errc(os.RemoveAll(installerPath))
+		RobloxInstall(dirs, url)
 	}
 
 	args = append([]string{RobloxFind(dirs, false, exe)}, args...)

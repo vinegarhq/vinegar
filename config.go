@@ -1,11 +1,13 @@
 package vinegar
 
 import (
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+
+	"gopkg.in/yaml.v3"
 )
 
 // Thank you ayn2op. Thank you so much.
@@ -70,6 +72,11 @@ func LoadConfig() {
 		"__NV_PRIME_RENDER_OFFLOAD": "1",
 		"__VK_LAYER_NV_optimus":     "NVIDIA_only",
 		"__GLX_VENDOR_LIBRARY_NAME": "nvidia",
+	}
+
+	if runtime.GOOS == "freebsd" {
+		data.Env["WINEARCH"] = "win32"
+		data.Env["WINE_NO_WOW64"] = "1"
 	}
 
 	configFile, err := ioutil.ReadFile(filepath.Join(Dirs.Config, "config.yaml"))

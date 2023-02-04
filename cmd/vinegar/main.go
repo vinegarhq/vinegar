@@ -41,10 +41,9 @@ func main() {
 	case "kill":
 		vinegar.PfxKill(dirs)
 	case "player":
-		vinegar.RobloxLaunch(dirs, "RobloxPlayerLauncher.exe", PLAYERURL, args[1:]...)
-		vinegar.RbxFpsUnlocker(dirs)
+		vinegar.RobloxLaunch(dirs, "RobloxPlayerLauncher.exe", PLAYERURL, true, args[1:]...)
 	case "studio":
-		vinegar.RobloxLaunch(dirs, "RobloxStudioLauncherBeta.exe", STUDIOURL, args[1:]...)
+		vinegar.RobloxLaunch(dirs, "RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)
 	case "reset":
 		vinegar.DeleteDir(dirs.Pfx, dirs.Log)
 		// Automatic creation of the directories after it has been deleted

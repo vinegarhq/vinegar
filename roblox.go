@@ -10,6 +10,10 @@ import (
 	"regexp"
 )
 
+const (
+	RCOFFLAGSURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
+)
+
 // Search for Roblox's Version directories for a given exe, when
 // giveDir is passed, it will give the exe's base directory instead of the
 // full path of the final Roblox executable.
@@ -80,12 +84,21 @@ func RobloxInstall(dirs *Dirs, url string) {
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
-func RobloxLaunch(dirs *Dirs, exe string, url string, args ...string) {
+func RobloxLaunch(dirs *Dirs, exe string, url string, installFFlagPlayer bool, args ...string) {
 	if RobloxFind(dirs, false, exe) == "" {
 		RobloxInstall(dirs, url)
 	}
 
-	args = append([]string{RobloxFind(dirs, false, exe)}, args...)
+	dir := RobloxFind(dirs, true, exe)
+
+	if installFFlagPlayer == true {
+		log.Println("Applying RCO FFlags")
+		fflagsDir := filepath.Join(dir, "ClientSettings")
+		DirsCheck(fflagsDir)
+		Download(RCOFFLAGSURL, filepath.Join(fflagsDir, "ClientAppSettings.json"))
+	}
+
+	args = append([]string{filepath.Join(dir, exe)}, args...)
 	log.Println("Launching", exe)
 	Exec(dirs, "wine", args...)
 }

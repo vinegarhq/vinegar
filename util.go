@@ -134,8 +134,3 @@ func InitExec(dirs *Dirs, path string, url string, what string) (string) {
 	
 	return path
 }
-
-func PfxKill(dirs *Dirs) {
-	log.Println("Killing wineprefix")
-	Exec(dirs, "wineserver", "-k")
-}

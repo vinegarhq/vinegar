@@ -16,6 +16,8 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Faster startup of rbxfpsunlocker and the Roblox Player
 
 # TODO
++ Configuration file
++ Simple graphical user interface for easy modification of the configuration, or to launch Wine apps, or to launch Wine apps
 + Fetch latest version of Roblox, when RobloxPlayerLauncher is not used.
 + Better log names
 + Fetch latest version of rbxfpsunlocker, removes safety checksumming

@@ -20,7 +20,7 @@ uninstall:
 	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
-	rm -f $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/com.github.vinegar.svg
+	rm -f $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/com.github.vinegar.svg
 
 clean:
 	rm -f vinegar

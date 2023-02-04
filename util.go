@@ -66,7 +66,7 @@ func InitEnv(dirs *Dirs) {
 	os.Setenv("WINEPREFIX", dirs.Pfx)
 	os.Setenv("WINEARCH", "win64")
 	// Removal of most unnecessary Wine facilities
-	os.Setenv("WINEDEBUG", "fixme-all,-wininet,-ntlm,-winediag,-kerberos,+relay")
+	os.Setenv("WINEDEBUG", "fixme-all,-wininet,-ntlm,-winediag,-kerberos")
 	os.Setenv("WINEDLLOVERRIDES", "dxdiagn=d;winemenubuilder.exe=d")
 	
 	os.Setenv("DXVK_LOG_LEVEL", "warn")
@@ -86,18 +86,15 @@ func Exec(dirs *Dirs, prog string, args ...string) {
 	cmd := exec.Command(prog, args...)
 	timeFmt := time.Now().Format(time.RFC3339)
 
-	stdoutFile, err := os.Create(filepath.Join(dirs.Log, timeFmt + "-stdout.log"))
-	Errc(err)
-	log.Println("Forwarding stdout to", stdoutFile.Name())
-	defer stdoutFile.Close()
-
 	stderrFile, err := os.Create(filepath.Join(dirs.Log, timeFmt + "-stderr.log"))
 	Errc(err)
 	log.Println("Forwarding stderr to", stderrFile.Name())
 	defer stderrFile.Close()
 	
 	cmd.Dir = dirs.Cache
-	cmd.Stdout = stdoutFile
+
+	// Stdout is particularly always empty, so we forward its to ours
+	cmd.Stdout = os.Stdout
 	cmd.Stderr = stderrFile
 
 	Errc(cmd.Run())
@@ -108,32 +105,6 @@ func Exec(dirs *Dirs, prog string, args ...string) {
 		log.Println("Empty stderr log file detected, deleting")
 		Errc(os.RemoveAll(stderrFile.Name()))
 	}
-
-	logFile, err = stdoutFile.Stat()
-	Errc(err)
-	if logFile.Size() == 0 {
-		log.Println("Empty stdout file detected, deleted")
-		Errc(os.RemoveAll(stdoutFile.Name()))
-	}
-}
-
-func InitExec(dirs *Dirs, path string, url string, what string) (string) {
-	path = filepath.Join(dirs.Exe, path)
-
-	_, err := os.Stat(path)
-
-	if os.IsNotExist(err) {
-		log.Println("Installing", what)
-		Download(path, url)
-	}
-
-	if os.IsExist(err) {
-		log.Println("Located executable:", path)
-	}
-
-	Errc(err)
-	
-	return path
 }
 
 func Download(source string, target string){
@@ -149,10 +120,10 @@ func Download(source string, target string){
 	_, err = io.Copy(out, resp.Body)
 	Errc(err)
 
-	log.Println("Done downloading " + source)
+	log.Println("Downloaded", source)
 }
 
-func DownloadUnzip(source string, target string) {
+func Unzip(source string, target string) {
 	archive, err := zip.OpenReader(source)
 	Errc(err)
 	defer archive.Close()

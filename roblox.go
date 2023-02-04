@@ -69,7 +69,15 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) (string) {
 }
 
 func RbxFpsUnlocker(dirs *Dirs) {
-	fpsUnlockerPath := InitExec(dirs, "rbxfpsunlocker.exe", FPSUNLOCKERURL, "FPS Unlocker")
+	fpsUnlockerPath := filepath.Join(dirs.Exe, "rbxfpsunlocker.exe")
+	_, err := os.Stat(fpsUnlockerPath)
+	
+	if os.IsNotExist(err) {
+		fpsUnlockerZip := filepath.Join(dirs.Cache, "rbxfpsunlocker.zip")
+		log.Println("Installing rbxfpsunlocker")
+		Download(fpsUnlockerZip, FPSUNLOCKERURL)
+		Unzip(fpsUnlockerZip, fpsUnlockerPath)
+	}
 
 	var settings = []string {
 		"UnlockClient=true",
@@ -98,14 +106,15 @@ func RbxFpsUnlocker(dirs *Dirs) {
 	Exec(dirs, "wine", fpsUnlockerPath)
 }
 
-func RobloxLaunch(dirs *Dirs, exe string, url string, what string, arg string) {
+func RobloxLaunch(dirs *Dirs, exe string, url string, arg string) {
 	if RobloxFind(dirs, false, exe) == "" {
-		installerPath := InitExec(dirs, exe, url, what)
+		installerPath := filepath.Join(dirs.Cache, "rbxinstall.exe")
+		Download(url, installerPath)
 		Exec(dirs, "wine", installerPath, "-fast")
 		Errc(os.RemoveAll(installerPath))
 	}
 
-	log.Println("Launching", what)
+	log.Println("Launching", exe)
 	Exec(dirs, "wine", RobloxFind(dirs, false, exe), arg)
 	// RbxFpsUnlocker(dirs)
 }

@@ -13,7 +13,7 @@ install: vinegar $(DESKTOP)
 	install -Dm644 desktop/app.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
 	install -Dm644 desktop/player.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
 	install -Dm644 desktop/studio.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
-	install -Dm644 desktop/vinegar.svg $(DESTDIR)/usr/share/icons/hicolor/scalable/apps/com.github.vinegar.svg
+	install -Dm644 desktop/vinegar.svg $(DESTDIR)$(PREFIX)/share/icons/hicolor/scalable/apps/com.github.vinegar.svg
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar

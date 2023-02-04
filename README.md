@@ -2,8 +2,10 @@
 A transparent wrapper for Roblox Player and Roblox Studio.
 
 # Features
++ Configuration file for setting environment variables
 + Logging for stderr
 + Handling arguments parsing and forwarding of RobloxPlayerLauncher (to be used)
++ FreeBSD support
 + Custom execution of wine program within wineprefix
 + Fast finding of Roblox Player and Roblox Studio
 + Clean wine log output
@@ -16,14 +18,12 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Faster startup of rbxfpsunlocker and the Roblox Player
 
 # TODO
-+ Configuration file
-  + FSYNC/ESYNC toggles
++ FSYNC/ESYNC toggles
 + Old death sounds (maybe)
 + Simple graphical user interface for easy modification of the configuration, or to launch Wine apps
 + Fetch latest version of Roblox, when RobloxPlayerLauncher is not used.
 + Better log names
-+ Fetch latest version of rbxfpsunlocker, removes safety checksumming
++ Fetch latest version of rbxfpsunlocker
 + Add watchdog for unlocker in flatpak? This needs investigation.
 + Automatically kill wineprefix when Roblox has exited
-+ Automatic killing of wineprefix
 + Add installation failure detection

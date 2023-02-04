@@ -5,8 +5,8 @@ DESKTOP   = desktop/app.desktop desktop/player.desktop desktop/studio.desktop
 
 all: vinegar
 
-vinegar: main.go util/util.go
-	go build -ldflags="-s -w" -o vinegar main.go
+vinegar:
+	go build $(GOFLAGS) ./cmd/vinegar
 
 install: vinegar $(DESKTOP)
 	install -Dm755 vinegar -t $(DESTDIR)$(PREFIX)/bin

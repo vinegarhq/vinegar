@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	FPSUNLOCKERHASH = "sha256:050fe7c0127dbd4fdc0cecf3ba46248ba7e14d37edba1a54eac40602c130f2f8"
-	FPSUNLOCKERURL  = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
+	RCOFFLAGSURL   = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
+	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
 
 // Launch or automatically install axstin's rbxfpsunlocker.
@@ -56,4 +56,14 @@ func RbxFpsUnlocker() {
 
 	// Since this file is always overwritten, just remove it anyway.
 	Errc(os.RemoveAll(settingsFile.Name()))
+}
+
+// Fetch RCO (Roblox-Client-Optimizer)'s FFlags to the appropiate
+// file for the Roblox Client to recognize. this is quite useful
+// as it can increase performance while removing the need for rbxfpsunlocker.
+func ApplyRCOFFlags(robloxRoot string) {
+	log.Println("Applying RCO FFlags")
+	fflagsDir := filepath.Join(robloxRoot, "ClientSettings")
+	CheckDirs(fflagsDir)
+	Download(RCOFFLAGSURL, filepath.Join(fflagsDir, "ClientAppSettings.json"))
 }

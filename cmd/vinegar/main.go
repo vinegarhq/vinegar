@@ -3,8 +3,8 @@
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
 
 	"github.com/vinegar-dev/vinegar"
 )
@@ -51,4 +51,3 @@ func main() {
 		usage()
 	}
 }
-

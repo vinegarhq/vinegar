@@ -69,6 +69,9 @@ func RobloxFind(giveDir bool, exe string) string {
 	return final
 }
 
+// Technically, fetch a url's exe and launch it once. This is used
+// for roblox installation since launching the program once will make
+// automatically install itself.
 func RobloxInstall(url string) {
 	log.Println("Installing", url)
 	installerPath := filepath.Join(Dirs.Cache, "rbxinstall.exe")

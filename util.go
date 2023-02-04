@@ -70,7 +70,7 @@ func Exec(prog string, args ...string) {
 }
 
 // Download a single file into a target file.
-func Download(source string, target string) {
+func Download(source, target string) {
 	// Create blank file
 	out, err := os.Create(target)
 	Errc(err)
@@ -88,7 +88,7 @@ func Download(source string, target string) {
 
 // Unzip a single file without keeping track of zip's structue into
 // a target file, Will remove the source zip file after successful extraction.
-func Unzip(source string, target string) {
+func Unzip(source, target string) {
 	archive, err := zip.OpenReader(source)
 	Errc(err)
 	defer archive.Close()

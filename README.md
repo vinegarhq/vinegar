@@ -7,7 +7,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Custom execution of wine program within wineprefix
 + Fast finding of Roblox Player and Roblox Studio
 + Clean wine log output
-+ Automatic applying of RCO FFlags
++ Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags
 + (Untested) Automatic usage of the Nvidia dedicated gpu.
 + Deletion of empty log files
 + Sets up a Wine prefix automatically

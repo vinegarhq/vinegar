@@ -83,7 +83,7 @@ func RobloxInstall(url string) {
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
-func RobloxLaunch(exe string, url string, installFFlagPlayer bool, args ...string) {
+func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 	if RobloxFind(false, exe) == "" {
 		RobloxInstall(url)
 	}

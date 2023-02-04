@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/user"
 	"path/filepath"
 	"regexp"
 )
@@ -19,14 +20,12 @@ const (
 // full path of the final Roblox executable.
 func RobloxFind(giveDir bool, exe string) string {
 	var final string
-	user := os.Getenv("USER")
 
-	if user == "" {
-		log.Fatal("Failed to get $USER variable")
-	}
+	user, err := user.Current()
+	Errc(err)
 
 	var programDirs = []string{
-		filepath.Join("users", user, "AppData/Local"),
+		filepath.Join("users", user.Username, "AppData/Local"),
 		"Program Files (x86)",
 	}
 

@@ -12,6 +12,7 @@ import (
 
 // Primary struct keeping track of vinegar's directories.
 type Directories struct {
+	Home   string
 	Cache  string
 	Config string
 	Data   string
@@ -30,6 +31,7 @@ func DefDirs() Directories {
 	Errc(err)
 
 	dirs := Directories{
+		Home:   homeDir,
 		Cache:  filepath.Join(homeDir, ".cache", "vinegar"),
 		Config: filepath.Join(homeDir, ".config", "vinegar"),
 		Data:   filepath.Join(homeDir, ".local", "share", "vinegar"),

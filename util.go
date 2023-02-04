@@ -4,12 +4,13 @@ package vinegar
 
 import (
 	"log"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
-
-	"github.com/hashicorp/go-getter"
+	"net/http"
+	"archive/zip"
 )
 
 type Dirs struct {
@@ -123,7 +124,7 @@ func InitExec(dirs *Dirs, path string, url string, what string) (string) {
 
 	if os.IsNotExist(err) {
 		log.Println("Installing", what)
-		err = getter.GetFile(path, url)
+		Download(path, url)
 	}
 
 	if os.IsExist(err) {
@@ -133,4 +134,49 @@ func InitExec(dirs *Dirs, path string, url string, what string) (string) {
 	Errc(err)
 	
 	return path
+}
+
+func Download(source string, target string){
+	// Create blank file
+	out, err := os.Create(target)
+	Errc(err)
+	defer out.Close()
+
+	resp, err := http.Get(source)
+	Errc(err)
+	defer resp.Body.Close()
+	
+	_, err = io.Copy(out, resp.Body)
+	Errc(err)
+
+	log.Println("Done downloading " + source)
+}
+
+func DownloadUnzip(source string, target string) {
+	archive, err := zip.OpenReader(source)
+	Errc(err)
+	defer archive.Close()
+
+	// Create blank file
+	out, err := os.Create(target)
+	Errc(err)
+	defer out.Close()
+
+	/* 
+	 * We unzip only particularly a file, we dont create
+	 * the zip structure.	
+	 */
+	for _, zipped := range archive.File {
+		zippedFile, err := zipped.Open()
+		Errc(err)
+		defer zippedFile.Close()
+
+		_, err = io.Copy(out, zippedFile)
+		Errc(err)
+
+		log.Println("Unzipped", zipped.Name)
+	}
+
+	Errc(os.RemoveAll(source))
+	log.Println("Removed archive", source)
 }

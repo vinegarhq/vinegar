@@ -17,6 +17,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 
 # TODO
 + Fetch latest version of Roblox, when RobloxPlayerLauncher is not used.
++ Better log names
 + Fetch latest version of rbxfpsunlocker, removes safety checksumming
 + Add watchdog for unlocker in flatpak? This needs investigation.
 + Automatically kill wineprefix when Roblox has exited

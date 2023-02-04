@@ -27,6 +27,7 @@ func RobloxFind(giveDir bool, exe string) string {
 	var programDirs = []string{
 		filepath.Join("users", user.Username, "AppData/Local"),
 		"Program Files (x86)",
+		"Program Files",
 	}
 
 	for _, programDir := range programDirs {

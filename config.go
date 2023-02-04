@@ -1,6 +1,6 @@
 // Copyright vinegar-development 2023
 
-package vinegar
+package main
 
 import (
 	"io/ioutil"

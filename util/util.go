@@ -5,6 +5,8 @@ package util
 import (
 	"log"
 	"fmt"
+	"regexp"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -74,7 +76,7 @@ func InitEnv(dirs *Dirs) {
 	os.Setenv("WINEPREFIX", dirs.Pfx)
 	os.Setenv("WINEARCH", "win64")
 	// Removal of most unnecessary Wine facilities
-	os.Setenv("WINEDEBUG", "fixme-all,-wininet,-ntlm,-winediag,-kerberos")
+	os.Setenv("WINEDEBUG", "fixme-all,-wininet,-ntlm,-winediag,-kerberos,+relay")
 	os.Setenv("WINEDLLOVERRIDES", "dxdiagn=d;winemenubuilder.exe=d")
 	
 	os.Setenv("DXVK_LOG_LEVEL", "warn")
@@ -226,12 +228,41 @@ func RobloxLaunch(dirs *Dirs, exe string, url string, what string, arg string) {
 		Errc(os.RemoveAll(installerPath))
 	}
 
-	log.Println("Launching Roblox Player")
-	Exec(dirs, "wine", RobloxFind(dirs, false, exe), "-app", "-fast")
-	//RbxFpsUnlocker(dirs)
+	log.Println("Launching", what)
+	Exec(dirs, "wine", RobloxFind(dirs, false, exe), arg)
+	// RbxFpsUnlocker(dirs)
 }
 
 func PfxKill(dirs *Dirs) {
 	log.Println("Killing wineprefix")
 	Exec(dirs, "wineserver", "-k")
+}
+
+func BrowserArgsParse(arg string) (string) {
+	rbxArgs := regexp.MustCompile("[\\:\\,\\+\\s]+").Split(arg, -1)
+
+	/*
+	 * roblox-player 1 launchmode play gameinfo 
+	 * {authticket} launchtime {launchtime} placelauncherurl 
+	 * {placelauncherurl} browsertrackerid {browsertrackerid}
+	 * robloxLocale {rloc} gameLocale {gloc} channel
+	 */
+
+	log.Println(rbxArgs)
+ 	placeLauncherUrlDecoded, err := url.QueryUnescape(rbxArgs[9])
+	Errc(err)
+	log.Println(placeLauncherUrlDecoded)
+
+	/* 
+	 * RobloxPlayerLauncher will parse these and forward them
+	 * to RobloxPlayerBeta, due to limitations of Go, we do these
+	 * ourselves.
+	 */
+
+	/* 
+	 * forwarded command line from RobloxPlayerLauncher as of 2022-02-03
+	 *   RobloxPlayerBeta -t {authticket} -j {placelauncherurl} -b 0 --launchtime={launchtime} --rloc {rloc} --gloc {gloc}
+	 */
+
+	return "--app " + "-t " + rbxArgs[5] + " -j " + placeLauncherUrlDecoded + " -b 0 --launchtime=" + rbxArgs[7] + " --rloc " + rbxArgs[13] + " --gloc " + rbxArgs[15]
 }

@@ -33,6 +33,7 @@ func main() {
 		arg = args[1]
 	}
 
+
 	dirs := util.InitDirs()
 	util.DirsCheck(dirs.Log, dirs.Pfx, dirs.Exe)
 	util.InitEnv(dirs)

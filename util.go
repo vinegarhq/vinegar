@@ -3,14 +3,14 @@
 package vinegar
 
 import (
-	"log"
+	"archive/zip"
 	"io"
+	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
-	"net/http"
-	"archive/zip"
 )
 
 // Primary struct keeping track of vinegar's directories.
@@ -43,7 +43,7 @@ func DirsCheck(dir ...string) {
 	for _, d := range dir {
 		if _, err := os.Stat(d); os.IsNotExist(err) {
 			log.Println("Creating directory:", d)
-		} else { 
+		} else {
 			continue
 		}
 		Errc(os.MkdirAll(d, 0755))
@@ -60,10 +60,10 @@ func InitDirs() *Dirs {
 	}
 
 	dirs.Cache = (filepath.Join(home, ".cache", "/vinegar"))
-	dirs.Data  = (filepath.Join(home, ".local", "share", "/vinegar"))
-	dirs.Log   = (filepath.Join(dirs.Cache, "/logs"))
-	dirs.Pfx   = (filepath.Join(dirs.Data, "/pfx"))
-	dirs.Exe   = (filepath.Join(dirs.Cache, "/exe"))
+	dirs.Data = (filepath.Join(home, ".local", "share", "/vinegar"))
+	dirs.Log = (filepath.Join(dirs.Cache, "/logs"))
+	dirs.Pfx = (filepath.Join(dirs.Data, "/pfx"))
+	dirs.Exe = (filepath.Join(dirs.Cache, "/exe"))
 
 	return dirs
 }
@@ -78,7 +78,7 @@ func InitEnv(dirs *Dirs) {
 	os.Setenv("DXVK_LOG_LEVEL", "warn")
 	os.Setenv("DXVK_LOG_PATH", "none")
 	os.Setenv("DXVK_STATE_CACHE_PATH", filepath.Join(dirs.Cache, "dxvk"))
-	
+
 	os.Setenv("MESA_GL_VERSION_OVERRIDE", "4.4")
 	// Use the dedicated gpu if available, untested
 	os.Setenv("DRI_PRIME", "1")
@@ -87,18 +87,18 @@ func InitEnv(dirs *Dirs) {
 	os.Setenv("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 }
 
-// Execute a program with arguments whilst keeping 
+// Execute a program with arguments whilst keeping
 // it's stderr output to a log file, stdout is ignored and is sent to os.Stdout.
 func Exec(dirs *Dirs, prog string, args ...string) {
 	log.Println(args)
 	cmd := exec.Command(prog, args...)
 	timeFmt := time.Now().Format(time.RFC3339)
 
-	stderrFile, err := os.Create(filepath.Join(dirs.Log, timeFmt + "-stderr.log"))
+	stderrFile, err := os.Create(filepath.Join(dirs.Log, timeFmt+"-stderr.log"))
 	Errc(err)
 	log.Println("Forwarding stderr to", stderrFile.Name())
 	defer stderrFile.Close()
-	
+
 	cmd.Dir = dirs.Cache
 
 	// Stdout is particularly always empty, so we forward its to ours
@@ -116,7 +116,7 @@ func Exec(dirs *Dirs, prog string, args ...string) {
 }
 
 // Download a single file into a target file.
-func Download(source string, target string){
+func Download(source string, target string) {
 	// Create blank file
 	out, err := os.Create(target)
 	Errc(err)
@@ -125,14 +125,14 @@ func Download(source string, target string){
 	resp, err := http.Get(source)
 	Errc(err)
 	defer resp.Body.Close()
-	
+
 	_, err = io.Copy(out, resp.Body)
 	Errc(err)
 
 	log.Println("Downloaded", source)
 }
 
-// Unzip a single file without keeping track of zip's structue into 
+// Unzip a single file without keeping track of zip's structue into
 // a target file, Will remove the source zip file after successful extraction.
 func Unzip(source string, target string) {
 	archive, err := zip.OpenReader(source)

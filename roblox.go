@@ -4,16 +4,16 @@ package vinegar
 
 import (
 	"log"
-	"regexp"
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 )
 
 // Search for Roblox's Version directories for a given exe, when
-// giveDir is passed, it will give the exe's base directory instead of the 
+// giveDir is passed, it will give the exe's base directory instead of the
 // full path of the final Roblox executable.
-func RobloxFind(dirs *Dirs, giveDir bool, exe string) (string) {
+func RobloxFind(dirs *Dirs, giveDir bool, exe string) string {
 	var final string
 	user := os.Getenv("USER")
 
@@ -21,7 +21,7 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) (string) {
 		log.Fatal("Failed to get $USER variable")
 	}
 
-	var programDirs = []string {
+	var programDirs = []string{
 		filepath.Join("users", user, "AppData/Local"),
 		"Program Files (x86)",
 	}
@@ -56,7 +56,7 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) (string) {
 
 			defer checkExe.Close()
 
-			if giveDir == false {	
+			if giveDir == false {
 				final = checkExe.Name()
 			} else {
 				final = filepath.Join(versionDir.Name(), v.Name())
@@ -89,15 +89,15 @@ func RobloxLaunch(dirs *Dirs, exe string, url string, args ...string) {
 // Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to RobloxPlayerBeta
 // This function is mainly a hack to take place of what the launcher would do, and would fork
 // for RobloxPlayerBeta, but due to unsolved sandboxing issues, we do these ourselves.
-func BrowserArgsParse(arg string) (string) {
-	// roblox-player 1 launchmode play gameinfo 
-	// {authticket} launchtime {launchtime} placelauncherurl 
+func BrowserArgsParse(arg string) string {
+	// roblox-player 1 launchmode play gameinfo
+	// {authticket} launchtime {launchtime} placelauncherurl
 	// {placelauncherurl} browsertrackerid {browsertrackerid}
 	// robloxLocale {rloc} gameLocale {gloc} channel
 	rbxArgs := regexp.MustCompile("[\\:\\,\\+\\s]+").Split(arg, -1)
 
 	log.Println(rbxArgs)
- 	placeLauncherUrlDecoded, err := url.QueryUnescape(rbxArgs[9])
+	placeLauncherUrlDecoded, err := url.QueryUnescape(rbxArgs[9])
 	Errc(err)
 	log.Println(placeLauncherUrlDecoded)
 

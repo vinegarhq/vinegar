@@ -14,6 +14,9 @@ const (
 	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
 
+// Launch or automatically install axstin's rbxfpsunlocker.
+// This function will also create it's own settings for rbxfpsunlocker, for
+// faster or cleaner startup.
 func RbxFpsUnlocker(dirs *Dirs) {
 	fpsUnlockerPath := filepath.Join(dirs.Exe, "rbxfpsunlocker.exe")
 	_, err := os.Stat(fpsUnlockerPath)

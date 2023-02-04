@@ -2,14 +2,14 @@ PREFIX     = /usr/local
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor/scalable/apps
 
-DESKTOP   = desktop/app.desktop desktop/player.desktop desktop/studio.desktop
+GOFLAGS = -ldflags="-s -w" -buildvcs=false
 
 all: vinegar
 
 vinegar:
-	go build $(GOFLAGS) ./cmd/vinegar
+	go build $(GOFLAGS) -o vinegar
 
-install: vinegar $(DESKTOP)
+install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 	install -Dm644 desktop/app.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
 	install -Dm644 desktop/player.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop

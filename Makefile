@@ -9,7 +9,7 @@ vinegar:
 	go build $(GOFLAGS) ./cmd/vinegar
 
 install: vinegar $(DESKTOP)
-	install -Dm755 vinegar -t $(DESTDIR)$(PREFIX)/bin
+	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 	install -Dm644 desktop/app.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
 	install -Dm644 desktop/player.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
 	install -Dm644 desktop/studio.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop

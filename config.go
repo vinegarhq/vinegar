@@ -1,3 +1,5 @@
+// Copyright vinegar-development 2023
+
 package vinegar
 
 import (
@@ -26,8 +28,11 @@ type Config struct {
 	Env map[string]string `yaml:"env"`
 }
 
+// Default directories of Vinegar.
 var Dirs = DefDirs()
 
+// Define the default values for the Directories struct globally
+// for other functions to use it.
 func DefDirs() Directories {
 	homeDir, err := os.UserHomeDir()
 	Errc(err)

@@ -42,6 +42,7 @@ func main() {
 		vinegar.PfxKill(dirs)
 	case "player":
 		vinegar.RobloxLaunch(dirs, "RobloxPlayerLauncher.exe", PLAYERURL, args[1:]...)
+		vinegar.RbxFpsUnlocker(dirs)
 	case "studio":
 		vinegar.RobloxLaunch(dirs, "RobloxStudioLauncherBeta.exe", STUDIOURL, args[1:]...)
 	case "reset":

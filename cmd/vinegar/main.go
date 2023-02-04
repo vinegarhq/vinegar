@@ -29,25 +29,24 @@ func main() {
 		usage()
 	}
 
-	dirs := vinegar.InitDirs()
-	vinegar.DirsCheck(dirs.Log, dirs.Pfx, dirs.Exe)
-	vinegar.InitEnv(dirs)
+	vinegar.CheckDirs(vinegar.Dirs.Log, vinegar.Dirs.Pfx)
+	vinegar.LoadConfig()
 
 	switch args[0] {
 	case "delete":
-		vinegar.DeleteDir(dirs.Data, dirs.Cache)
+		vinegar.DeleteDirs(vinegar.Dirs.Data, vinegar.Dirs.Cache)
 	case "exec":
-		vinegar.Exec(dirs, "wine", arg)
+		vinegar.Exec("wine", arg)
 	case "kill":
-		vinegar.PfxKill(dirs)
+		vinegar.PfxKill()
 	case "player":
-		vinegar.RobloxLaunch(dirs, "RobloxPlayerLauncher.exe", PLAYERURL, true, args[1:]...)
+		vinegar.RobloxLaunch("RobloxPlayerLauncher.exe", PLAYERURL, true, args[1:]...)
 	case "studio":
-		vinegar.RobloxLaunch(dirs, "RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)
+		vinegar.RobloxLaunch("RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)
 	case "reset":
-		vinegar.DeleteDir(dirs.Pfx, dirs.Log)
+		vinegar.DeleteDirs(vinegar.Dirs.Pfx, vinegar.Dirs.Log)
 		// Automatic creation of the directories after it has been deleted
-		vinegar.DirsCheck(dirs.Pfx, dirs.Log)
+		vinegar.CheckDirs(vinegar.Dirs.Pfx, vinegar.Dirs.Log)
 	default:
 		usage()
 	}

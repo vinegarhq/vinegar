@@ -17,7 +17,7 @@ const (
 // Search for Roblox's Version directories for a given exe, when
 // giveDir is passed, it will give the exe's base directory instead of the
 // full path of the final Roblox executable.
-func RobloxFind(dirs *Dirs, giveDir bool, exe string) string {
+func RobloxFind(giveDir bool, exe string) string {
 	var final string
 	user := os.Getenv("USER")
 
@@ -31,7 +31,7 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) string {
 	}
 
 	for _, programDir := range programDirs {
-		versionDir, err := os.Open(filepath.Join(dirs.Pfx, "drive_c", programDir, "Roblox/Versions"))
+		versionDir, err := os.Open(filepath.Join(Dirs.Pfx, "drive_c", programDir, "Roblox/Versions"))
 
 		if os.IsNotExist(err) {
 			continue
@@ -73,34 +73,34 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) string {
 	return final
 }
 
-func RobloxInstall(dirs *Dirs, url string) {
+func RobloxInstall(url string) {
 	log.Println("Installing", url)
-	installerPath := filepath.Join(dirs.Cache, "rbxinstall.exe")
+	installerPath := filepath.Join(Dirs.Cache, "rbxinstall.exe")
 	Download(url, installerPath)
-	Exec(dirs, "wine", installerPath)
+	Exec("wine", installerPath)
 	Errc(os.RemoveAll(installerPath))
 }
 
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
-func RobloxLaunch(dirs *Dirs, exe string, url string, installFFlagPlayer bool, args ...string) {
-	if RobloxFind(dirs, false, exe) == "" {
-		RobloxInstall(dirs, url)
+func RobloxLaunch(exe string, url string, installFFlagPlayer bool, args ...string) {
+	if RobloxFind(false, exe) == "" {
+		RobloxInstall(url)
 	}
 
-	dir := RobloxFind(dirs, true, exe)
+	dir := RobloxFind(true, exe)
 
 	if installFFlagPlayer == true {
 		log.Println("Applying RCO FFlags")
 		fflagsDir := filepath.Join(dir, "ClientSettings")
-		DirsCheck(fflagsDir)
+		CheckDirs(fflagsDir)
 		Download(RCOFFLAGSURL, filepath.Join(fflagsDir, "ClientAppSettings.json"))
 	}
 
 	args = append([]string{filepath.Join(dir, exe)}, args...)
 	log.Println("Launching", exe)
-	Exec(dirs, "wine", args...)
+	Exec("wine", args...)
 }
 
 // Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to RobloxPlayerBeta

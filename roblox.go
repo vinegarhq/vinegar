@@ -33,6 +33,13 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) (string) {
 			continue
 		}
 
+		studioExe, err := os.Open(filepath.Join(versionDir.Name(), exe))
+
+		if err == nil {
+			final = studioExe.Name()
+			break
+		}
+
 		versionDirs, err := versionDir.Readdir(0)
 
 		if err != nil {
@@ -63,18 +70,20 @@ func RobloxFind(dirs *Dirs, giveDir bool, exe string) (string) {
 }
 
 // Launch the given Roblox executable, finding it from RobloxFind().
-// When it is not found, it is fetched and installed.
-func RobloxLaunch(dirs *Dirs, exe string, url string, arg string) {
+// When it is not found, it is fetched and installed. additionally,
+// pass vinegar's command line with the Roblox executable pre-appended.
+func RobloxLaunch(dirs *Dirs, exe string, url string, args ...string) {
 	if RobloxFind(dirs, false, exe) == "" {
+		log.Println(exe, "Not found, installing")
 		installerPath := filepath.Join(dirs.Cache, "rbxinstall.exe")
 		Download(url, installerPath)
 		Exec(dirs, "wine", installerPath, "-fast")
 		Errc(os.RemoveAll(installerPath))
 	}
 
+	args = append([]string{RobloxFind(dirs, false, exe)}, args...)
 	log.Println("Launching", exe)
-	Exec(dirs, "wine", RobloxFind(dirs, false, exe), arg)
-	// RbxFpsUnlocker(dirs)
+	Exec(dirs, "wine", args...)
 }
 
 // Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to RobloxPlayerBeta

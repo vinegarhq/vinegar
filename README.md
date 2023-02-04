@@ -27,3 +27,5 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Add watchdog for unlocker in flatpak? This needs investigation.
 + Automatically kill wineprefix when Roblox has exited
 + Add installation failure detection
+
+The Discord server for Vinegar can be found [here](https://discord.gg/dzdzZ6Pps2).

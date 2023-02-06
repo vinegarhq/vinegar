@@ -28,7 +28,6 @@ func main() {
 	}
 
 	CheckDirs(Dirs.Log, Dirs.Pfx)
-	LoadConfig()
 
 	switch args[0] {
 	case "delete":

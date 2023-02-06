@@ -24,16 +24,17 @@ type Directories struct {
 	Log    string
 }
 
-type Config struct {
-	Env map[string]string `yaml:"env"`
+type Configuration struct {
+	Env    map[string]string      `yaml:"env"`
+	FFlags map[string]interface{} `yaml:"fflags"`
 }
 
-// Default directories of Vinegar.
-var Dirs = DefDirs()
+var Dirs = defDirs()
+var Config = defConfig()
 
 // Define the default values for the Directories struct globally
 // for other functions to use it.
-func DefDirs() Directories {
+func defDirs() Directories {
 	homeDir, err := os.UserHomeDir()
 	Errc(err)
 
@@ -50,16 +51,16 @@ func DefDirs() Directories {
 	return dirs
 }
 
-// Initialize the Dirs struct and Load the configuration file,
-// mainly for environmental variables.
-func LoadConfig() {
-	data := Config{
+// Initialize the configuration, and load the configuration file (if available)
+func defConfig() Configuration {
+	config := Configuration{
 		Env: make(map[string]string),
+		FFlags: make(map[string]interface{}),
 	}
 
 	// Main environment variables initialization
 	// Note: these can be overrided by the user.
-	data.Env = map[string]string{
+	config.Env = map[string]string{
 		"WINEPREFIX":       Dirs.Pfx,
 		"WINEARCH":         "win64", // required for rbxfpsunlocker
 		"WINEDEBUG":        "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
@@ -80,8 +81,8 @@ func LoadConfig() {
 	}
 
 	if runtime.GOOS == "freebsd" {
-		data.Env["WINEARCH"] = "win32"
-		data.Env["WINE_NO_WOW64"] = "1"
+		config.Env["WINEARCH"] = "win32"
+		config.Env["WINE_NO_WOW64"] = "1"
 	}
 
 	configFile, err := ioutil.ReadFile(filepath.Join(Dirs.Config, "config.yaml"))
@@ -90,11 +91,13 @@ func LoadConfig() {
 	// as we are already setting default values.
 	if err == nil {
 		log.Println("Loading config.yaml")
-		err = yaml.Unmarshal(configFile, &data)
+		err = yaml.Unmarshal(configFile, &config)
 		Errc(err)
 	}
 
-	for name, value := range data.Env {
+	for name, value := range config.Env {
 		os.Setenv(name, value)
 	}
+
+	return config
 }

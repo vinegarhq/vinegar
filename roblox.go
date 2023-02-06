@@ -129,7 +129,6 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 		RobloxApplyFFlags(robloxRoot)
 	}
 
-	os.Exit(0)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
 	log.Println("Launching", exe)
 	Exec("wine", args...)

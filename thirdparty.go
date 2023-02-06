@@ -61,9 +61,7 @@ func RbxFpsUnlocker() {
 // Fetch RCO (Roblox-Client-Optimizer)'s FFlags to the appropiate
 // file for the Roblox Client to recognize. this is quite useful
 // as it can increase performance while removing the need for rbxfpsunlocker.
-func ApplyRCOFFlags(robloxRoot string) {
+func ApplyRCOFFlags(file string) {
 	log.Println("Applying RCO FFlags")
-	fflagsDir := filepath.Join(robloxRoot, "ClientSettings")
-	CheckDirs(fflagsDir)
-	Download(RCOFFLAGSURL, filepath.Join(fflagsDir, "ClientAppSettings.json"))
+	Download(RCOFFLAGSURL, file)
 }

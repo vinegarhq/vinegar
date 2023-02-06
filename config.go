@@ -25,8 +25,14 @@ type Directories struct {
 }
 
 type Configuration struct {
-	Env    map[string]string      `yaml:"env"`
+	UseRCOFFlags bool `yaml:"use_rco_fflags"`
+	Env map[string]string `yaml:"env"`
 	FFlags map[string]interface{} `yaml:"fflags"`
+}
+
+type FFlag struct {
+	Flag string
+	value interface{}
 }
 
 var Dirs = defDirs()
@@ -56,6 +62,7 @@ func defConfig() Configuration {
 	config := Configuration{
 		Env: make(map[string]string),
 		FFlags: make(map[string]interface{}),
+		UseRCOFFlags: true,
 	}
 
 	// Main environment variables initialization

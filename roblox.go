@@ -3,6 +3,8 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -80,6 +82,39 @@ func RobloxInstall(url string) {
 	Errc(os.RemoveAll(installerPath))
 }
 
+func RobloxApplyFFlags(dir string) {
+	var flags map[string]interface{}
+
+	log.Println("Applying FFlags")
+
+	fflagsDir := filepath.Join(dir, "ClientSettings")
+	CheckDirs(fflagsDir)
+
+	// Create an empty fflags file
+	fflagsFile, err := os.Create(filepath.Join(fflagsDir, "ClientAppSettings.json"))
+	Errc(err)
+
+	if Config.UseRCOFFlags == true {
+		ApplyRCOFFlags(fflagsFile.Name())
+	}
+
+	// Read the file
+	fflags, err := ioutil.ReadFile(fflagsFile.Name())
+	Errc(err)
+	json.Unmarshal(fflags, &flags)
+
+	// Now let's add our own fflags
+	for flag, value := range Config.FFlags {
+		flags[flag] = value
+	}
+
+	// Finally, write the file
+	finalFFlagsFile, err := json.MarshalIndent(flags, "", "  ")
+
+	Errc(err)
+	Errc(ioutil.WriteFile(fflagsFile.Name(), finalFFlagsFile, 0644))
+}
+
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
@@ -91,9 +126,10 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 	robloxRoot := RobloxFind(true, exe)
 
 	if installFFlagPlayer == true {
-		ApplyRCOFFlags(robloxRoot)
+		RobloxApplyFFlags(robloxRoot)
 	}
 
+	os.Exit(0)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
 	log.Println("Launching", exe)
 	Exec("wine", args...)

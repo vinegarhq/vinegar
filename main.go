@@ -13,13 +13,13 @@ const (
 )
 
 func usage() {
-	fmt.Println("usage: vinegar [delete|exec|kill|player|reset|studio] [arg]")
+	fmt.Println("usage: vinegar [delete|kill|reset]")
+	fmt.Println("       vinegar [player|studio] [args...]")
+	fmt.Println("       vinegar [dxvk] install|uninstall")
 	os.Exit(1)
 }
 
 func main() {
-	var arg string
-
 	args := os.Args[1:]
 	argsCount := len(args)
 
@@ -32,8 +32,19 @@ func main() {
 	switch args[0] {
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
+	case "dxvk":
+		if argsCount < 2 {
+			usage()
+		}
+
+		switch args[1] {
+		case "install":
+			DxvkInstall()
+		case "uninstall":
+			DxvkUninstall()
+		}
 	case "exec":
-		Exec("wine", arg)
+		Exec("wine", args[1:]...)
 	case "kill":
 		PfxKill()
 	case "player":

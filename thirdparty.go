@@ -3,16 +3,78 @@
 package main
 
 import (
+	"io"
+	"archive/tar"
+	"compress/gzip"
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 )
 
 const (
+	DXVKURL        = "https://github.com/doitsujin/dxvk/releases/download/v2.1/dxvk-2.1.tar.gz"
 	RCOFFLAGSURL   = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
 	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
+
+func DxvkInstall() {
+	dxvkTarballPath := filepath.Join(Dirs.Cache, "dxvk-2.0.tar.gz")
+
+	Download(DXVKURL, dxvkTarballPath)
+
+	dxvkTarball, err := os.Open(dxvkTarballPath)
+	Errc(err)
+	defer dxvkTarball.Close()
+
+	dxvkGzip, err := gzip.NewReader(dxvkTarball)
+	Errc(err)
+	defer dxvkGzip.Close()
+
+	dxvkTar := tar.NewReader(dxvkGzip)
+
+	var dirInstall string
+	for {
+		header, err := dxvkTar.Next()
+
+		if err == io.EOF {
+			break
+		}
+
+		Errc(err)
+
+		dllFile := path.Base(header.Name)
+		archDir := path.Base(path.Dir(header.Name))
+
+		switch header.Typeflag {
+		case tar.TypeReg:
+			if archDir == "x32" {
+				dirInstall = "syswow64"
+			} else {
+				dirInstall = "system32"
+			}
+
+			writer, err := os.Create(filepath.Join(Dirs.Pfx, "drive_c", "windows", dirInstall, dllFile))
+			Errc(err)
+			log.Println("Gzipped:", writer.Name())
+			io.Copy(writer, dxvkTar)
+			writer.Close()
+		}
+	}
+
+	Errc(os.RemoveAll(dxvkTarballPath))
+}
+
+func DxvkUninstall() {
+	for _, dir := range []string{"syswow64", "system32"} {
+		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
+			dllFile := filepath.Join(Dirs.Pfx, "drive_c", "windows", dir, dll+".dll")
+			log.Println("Removing DLL:", dllFile)
+			Errc(os.RemoveAll(dllFile))
+		}
+	}
+}
 
 // Launch or automatically install axstin's rbxfpsunlocker.
 // This function will also create it's own settings for rbxfpsunlocker, for

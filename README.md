@@ -7,6 +7,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker, when needed for launch
 + Browser launch via MIME
 + Clean wine log output
++ DXVK Installer and uninstaller
 + Configuration file for setting environment variables and applying custom FFlags
 + Custom execution of wine program within wineprefix
 + Deletion of empty stderr log file
@@ -18,6 +19,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 # TODO
 + Add watchdog for unlocker in flatpak? This needs investigation.
 + Automatically kill wineprefix when Roblox has exited
++ Better logging information
 + Better log names
 + Fetch latest version of rbxfpsunlocker
 + Old death sounds (maybe)

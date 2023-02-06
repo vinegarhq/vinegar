@@ -39,5 +39,7 @@ env:
   foo: bar
 ```
 By default, [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags will be installed automatically.
+# Why RCO?
+Credits to [L8X](https://github.com/L8X), RCO's FFlags optimizes Roblox's performance, caching, and textures whilst removing the FPS Unlock without the need for rbxfpsunlocker.
 
 The Discord server for Vinegar can be found [here](https://discord.gg/dzdzZ6Pps2).

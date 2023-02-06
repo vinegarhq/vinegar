@@ -6,4 +6,5 @@ Exec=vinegar player %u
 Terminal=false
 MimeType=x-scheme-handler/roblox-player
 Categories=Game
+NoDisplay=true
 Icon=vinegar-roblox-player

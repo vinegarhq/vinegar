@@ -2,7 +2,7 @@
 A transparent wrapper for Roblox Player and Roblox Studio.
 
 # Features
-+ Configuration file for setting environment variables
++ Configuration file for setting environment variables and applying custom FFlags
 + Logging for stderr
 + Handling arguments parsing and forwarding of RobloxPlayerLauncher (to be used)
 + FreeBSD support

@@ -15,7 +15,7 @@ const (
 func usage() {
 	fmt.Println("usage: vinegar [delete|kill|reset]")
 	fmt.Println("       vinegar [player|studio] [args...]")
-	if !InFlatpak {
+	if !InFlatpak() {
 		fmt.Println("       vinegar [dxvk] install|uninstall")
 	}
 	os.Exit(1)
@@ -35,7 +35,7 @@ func main() {
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
-		if !inFlatpak {
+		if !InFlatpak() {
 			if argsCount < 2 {
 				usage()
 			}

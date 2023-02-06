@@ -15,7 +15,9 @@ const (
 func usage() {
 	fmt.Println("usage: vinegar [delete|kill|reset]")
 	fmt.Println("       vinegar [player|studio] [args...]")
-	fmt.Println("       vinegar [dxvk] install|uninstall")
+	if !InFlatpak {
+		fmt.Println("       vinegar [dxvk] install|uninstall")
+	}
 	os.Exit(1)
 }
 
@@ -33,15 +35,19 @@ func main() {
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
-		if argsCount < 2 {
-			usage()
-		}
+		if !inFlatpak {
+			if argsCount < 2 {
+				usage()
+			}
 
-		switch args[1] {
-		case "install":
-			DxvkInstall()
-		case "uninstall":
-			DxvkUninstall()
+			switch args[1] {
+			case "install":
+				DxvkInstall()
+			case "uninstall":
+				DxvkUninstall()
+			}
+		} else {
+			fmt.Println("DXVK is already installed in the Flatpak and cannot be altered!")
 		}
 	case "exec":
 		Exec("wine", args[1:]...)

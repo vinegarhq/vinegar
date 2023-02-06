@@ -112,3 +112,12 @@ func Unzip(source, target string) {
 	Errc(os.RemoveAll(source))
 	log.Println("Removed archive", source)
 }
+
+// Check if running in flatpak (in which case it is necessary to disable DXVK)
+func InFlatpak() bool {
+	if file, err := os.Stat("/.flatpak-info"); err != nil {
+		return false
+	} else {
+		return true
+	}
+}

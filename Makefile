@@ -27,10 +27,19 @@ install: vinegar
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar
-	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
-	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
-	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
-	rm -f $(DESTDIR)$(ICONPREFIX)/com.github.vinegar.svg
+	rm -f $(DESTDIR)$(APPPREFIX)/vinegar-roblox-app.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/vinegar-roblox-player.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/vinegar-roblox-studio.desktop
+	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/vinegar-roblox-player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/vinegar-roblox-player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/vinegar-roblox-player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/vinegar-roblox-player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/vinegar-roblox-player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/vinegar-roblox-studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/vinegar-roblox-studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/vinegar-roblox-studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/vinegar-roblox-studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/vinegar-roblox-studio.png
 
 clean:
 	rm -f vinegar

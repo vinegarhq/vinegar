@@ -25,13 +25,13 @@ type Directories struct {
 }
 
 type Configuration struct {
-	UseRCOFFlags bool `yaml:"use_rco_fflags"`
-	Env map[string]string `yaml:"env"`
-	FFlags map[string]interface{} `yaml:"fflags"`
+	UseRCOFFlags bool                   `yaml:"use_rco_fflags"`
+	Env          map[string]string      `yaml:"env"`
+	FFlags       map[string]interface{} `yaml:"fflags"`
 }
 
 type FFlag struct {
-	Flag string
+	Flag  string
 	value interface{}
 }
 
@@ -60,8 +60,8 @@ func defDirs() Directories {
 // Initialize the configuration, and load the configuration file (if available)
 func defConfig() Configuration {
 	config := Configuration{
-		Env: make(map[string]string),
-		FFlags: make(map[string]interface{}),
+		Env:          make(map[string]string),
+		FFlags:       make(map[string]interface{}),
 		UseRCOFFlags: true,
 	}
 

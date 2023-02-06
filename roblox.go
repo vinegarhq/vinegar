@@ -133,6 +133,10 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
 	log.Println("Launching", exe)
 	Exec("wine", args...)
+
+	if Config.AutoLaunchRFPSU == true {
+		RbxFpsUnlocker()
+	}
 }
 
 // Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to RobloxPlayerBeta

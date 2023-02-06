@@ -28,4 +28,16 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Automatically kill wineprefix when Roblox has exited
 + Add installation failure detection
 
+# Configuration
+```yaml
+use_rco_fflags: true
+fflags:
+  FFlagFoo: "null"
+  FFlagBar: true
+  FFlagBaz: 2147483648
+env:
+  foo: bar
+```
+By default, [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags will be installed automatically.
+
 The Discord server for Vinegar can be found [here](https://discord.gg/dzdzZ6Pps2).

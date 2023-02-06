@@ -2,31 +2,25 @@
 A transparent wrapper for Roblox Player and Roblox Studio.
 
 # Features
-+ Configuration file for setting environment variables and applying custom FFlags
-+ Logging for stderr
-+ Handling arguments parsing and forwarding of RobloxPlayerLauncher (to be used)
-+ FreeBSD support
-+ Custom execution of wine program within wineprefix
-+ Fast finding of Roblox Player and Roblox Studio
++ Automatic usage of the Nvidia dedicated gpu. (untested
++ Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration
++ Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker, when needed for launch
++ Browser launch via MIME
 + Clean wine log output
-+ Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags
-+ (Untested) Automatic usage of the Nvidia dedicated gpu.
-+ Deletion of empty log files
-+ Sets up a Wine prefix automatically
-+ Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker
-+ Browser launch (testing)
++ Configuration file for setting environment variables and applying custom FFlags
++ Custom execution of wine program within wineprefix
++ Deletion of empty stderr log file
++ Fast finding of Roblox Player and Roblox Studio
 + Faster startup of rbxfpsunlocker and the Roblox Player
++ FreeBSD support
++ Logging for stderr
 
 # TODO
-+ FSYNC/ESYNC toggles
-+ Old death sounds (maybe)
-+ Simple graphical user interface for easy modification of the configuration, or to launch Wine apps
-+ Fetch latest version of Roblox, when RobloxPlayerLauncher is not used.
-+ Better log names
-+ Fetch latest version of rbxfpsunlocker
 + Add watchdog for unlocker in flatpak? This needs investigation.
 + Automatically kill wineprefix when Roblox has exited
-+ Add installation failure detection
++ Better log names
++ Fetch latest version of rbxfpsunlocker
++ Old death sounds (maybe)
 
 # Configuration
 ```yaml

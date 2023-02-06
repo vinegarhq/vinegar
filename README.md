@@ -19,8 +19,6 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 # TODO
 + Add watchdog for unlocker in flatpak? This needs investigation.
 + Automatically kill wineprefix when Roblox has exited
-+ Better logging information
-+ Better log names
 + Fetch latest version of rbxfpsunlocker
 + Old death sounds (maybe)
 

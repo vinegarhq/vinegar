@@ -21,10 +21,11 @@ func RbxFpsUnlocker() {
 	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")
 	_, err := os.Stat(fpsUnlockerPath)
 
+	log.Println(err)
 	if os.IsNotExist(err) {
 		fpsUnlockerZip := filepath.Join(Dirs.Cache, "rbxfpsunlocker.zip")
 		log.Println("Installing rbxfpsunlocker")
-		Download(fpsUnlockerZip, FPSUNLOCKERURL)
+		Download(FPSUNLOCKERURL, fpsUnlockerZip)
 		Unzip(fpsUnlockerZip, fpsUnlockerPath)
 	}
 

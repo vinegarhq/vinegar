@@ -30,6 +30,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 
 # Configuration
 ```yaml
+autolaunch_rfpsu: false
 use_rco_fflags: true
 fflags:
   FFlagFoo: "null"
@@ -38,7 +39,8 @@ fflags:
 env:
   foo: bar
 ```
-By default, [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags will be installed automatically.
+By default, [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags will be installed automatically, and rbxfpsunlocker will be disabled by default.
+
 # Why RCO?
 Credits to [L8X](https://github.com/L8X), RCO's FFlags optimizes Roblox's performance, caching, and textures whilst removing the FPS Unlock without the need for rbxfpsunlocker.
 

@@ -59,9 +59,7 @@ func RbxFpsUnlocker() {
 	Errc(os.RemoveAll(settingsFile.Name()))
 }
 
-// Fetch RCO (Roblox-Client-Optimizer)'s FFlags to the appropiate
-// file for the Roblox Client to recognize. this is quite useful
-// as it can increase performance while removing the need for rbxfpsunlocker.
+// Download RCO (Roblox-Client-Optimizer)'s FFlags to the FFlags file provided.
 func ApplyRCOFFlags(file string) {
 	log.Println("Applying RCO FFlags")
 	Download(RCOFFLAGSURL, file)

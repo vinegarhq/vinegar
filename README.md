@@ -20,6 +20,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Add watchdog for unlocker in flatpak? This needs investigation.
 + Automatically kill wineprefix when Roblox has exited
 + Fetch latest version of rbxfpsunlocker
++ Handle SIGINT and SIGEXIT
 + Old death sounds (maybe)
 
 # Configuration

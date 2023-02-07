@@ -10,9 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -33,7 +31,7 @@ func DeleteDirs(dir ...string) {
 	}
 }
 
-// Check for directories if they exist, if not, 
+// Check for directories if they exist, if not,
 // create them with 0755, and let the user know with logging.
 func CheckDirs(dir ...string) {
 	for _, d := range dir {
@@ -123,38 +121,37 @@ func InFlatpakCheck() bool {
 	}
 }
 
-// Loop over procfs (/proc) for if pid/comm matches a string, once
-// located PID, loop for its death, when it dies execute provided function
-func LoopProc(comm string, action func()) {
+// Loop over procfs (/proc) for if pid/comm matches a string, when found
+// such process, return true; false otherwise
+func CommFound(comm string) bool {
+	procDir, err := os.Open("/proc")
+	Errc(err)
+
+	procs, err := procDir.Readdir(0)
+	Errc(err)
+
+	for _, p := range procs {
+		procComm, _ := os.ReadFile(filepath.Join(procDir.Name(), p.Name(), "comm"))
+		if strings.HasPrefix(string(procComm), comm) {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Loop untill the provided comm has not been found, and
+// execute function
+func CommLoop(comm string, action func()) {
+
+	log.Println("Waiting for proccess named", comm, "to exit")
 	for {
 		time.Sleep(time.Second)
 
-		procDir, err := os.Open("/proc")
-		Errc(err)
-
-		procs, err := procDir.Readdir(0)
-		Errc(err)
-
-		for _, p := range procs {
-			procComm, _ := os.ReadFile(filepath.Join(procDir.Name(), p.Name(), "comm"))
-
-			if strings.HasPrefix(string(procComm), comm) {
-				log.Println("Found process", comm+",", "waiting for exit")
-				// we found the pid, loop for if it has gone
-				for {
-					time.Sleep(time.Second)
-
-					pid, err := strconv.Atoi(p.Name())
-					Errc(err)
-
-					killErr := syscall.Kill(pid, syscall.Signal(0))
-
-					if killErr != nil {
-						action()
-						return
-					}
-				}
-			}
+		if !CommFound(comm) {
+			break
 		}
 	}
+
+	action()
 }

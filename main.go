@@ -35,21 +35,21 @@ func main() {
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
-			if InFlatpak {
-				fmt.Println("DXVK is managed automatically in the Flatpak and cannot be altered!")
-				//log not used because it wasn't imported yet
-				os.Exit(1)
-			}
-			if argsCount < 2 {
-				usage()
-			}
+		if InFlatpak {
+			fmt.Println("DXVK is managed automatically in the Flatpak and cannot be altered!")
+			//log not used because it wasn't imported yet
+			os.Exit(1)
+		}
+		if argsCount < 2 {
+			usage()
+		}
 
-			switch args[1] {
-			case "install":
-				DxvkInstall()
-			case "uninstall":
-				DxvkUninstall()
-			}
+		switch args[1] {
+		case "install":
+			DxvkInstall()
+		case "uninstall":
+			DxvkUninstall()
+		}
 	case "exec":
 		Exec("wine", false, args[1:]...)
 	case "kill":

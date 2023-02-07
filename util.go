@@ -49,7 +49,7 @@ func CheckDirs(dir ...string) {
 // Execute a program with arguments whilst keeping
 // it's stderr output to a log file, stdout is ignored and is sent to os.Stdout.
 func Exec(prog string, logStderr bool, args ...string) {
-	log.Println(args)
+	log.Println(prog, args)
 	cmd := exec.Command(prog, args...)
 	cmd.Dir = Dirs.Cache
 
@@ -124,7 +124,7 @@ func InFlatpakCheck() bool {
 
 // Loop over procfs (/proc) for if pid/comm matches a string, once
 // located PID, loop for its death, when it dies execute provided function
-func loopProc(comm string, action func()) {
+func LoopProc(comm string, action func()) {
 	log.Println("Waiting for process with command", comm, "to exist")
 
 	for {

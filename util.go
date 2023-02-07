@@ -3,9 +3,6 @@
 package main
 
 import (
-	"syscall"
-	"strconv"
-	"strings"
 	"archive/zip"
 	"io"
 	"log"
@@ -13,6 +10,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
+	"syscall"
 	"time"
 )
 
@@ -128,7 +128,7 @@ func loopProc(comm string, action func()) {
 	log.Println("Waiting for process with command", comm, "to exist")
 
 	for {
-		time.Sleep(time.Second);
+		time.Sleep(time.Second)
 
 		procDir, err := os.Open("/proc")
 		Errc(err)
@@ -143,7 +143,7 @@ func loopProc(comm string, action func()) {
 				log.Println("Found process, waiting for death")
 				// we found the pid, loop for if it has gone
 				for {
-					time.Sleep(time.Second);
+					time.Sleep(time.Second)
 
 					pid, err := strconv.Atoi(p.Name())
 					Errc(err)

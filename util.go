@@ -25,7 +25,7 @@ func Errc(e error) {
 	}
 }
 
-// Deletes directories, with logging(!)
+// Deletes directories, but with logging(!)
 func DeleteDirs(dir ...string) {
 	for _, d := range dir {
 		log.Println("Deleting directory:", d)
@@ -33,8 +33,8 @@ func DeleteDirs(dir ...string) {
 	}
 }
 
-// Check for directories if they exist, if not, create them with 0755,
-// and let the user know with logging.
+// Check for directories if they exist, if not, 
+// create them with 0755, and let the user know with logging.
 func CheckDirs(dir ...string) {
 	for _, d := range dir {
 		if _, err := os.Stat(d); os.IsNotExist(err) {
@@ -49,7 +49,8 @@ func CheckDirs(dir ...string) {
 // Execute a program with arguments whilst keeping
 // it's stderr output to a log file, stdout is ignored and is sent to os.Stdout.
 func Exec(prog string, logStderr bool, args ...string) {
-	log.Println(prog, args)
+	log.Println("Executing:", prog, args) // debug
+
 	cmd := exec.Command(prog, args...)
 	cmd.Dir = Dirs.Cache
 
@@ -125,8 +126,6 @@ func InFlatpakCheck() bool {
 // Loop over procfs (/proc) for if pid/comm matches a string, once
 // located PID, loop for its death, when it dies execute provided function
 func LoopProc(comm string, action func()) {
-	log.Println("Waiting for process with command", comm, "to exist")
-
 	for {
 		time.Sleep(time.Second)
 
@@ -140,7 +139,7 @@ func LoopProc(comm string, action func()) {
 			procComm, _ := os.ReadFile(filepath.Join(procDir.Name(), p.Name(), "comm"))
 
 			if strings.HasPrefix(string(procComm), comm) {
-				log.Println("Found process, waiting for death")
+				log.Println("Found process", comm+",", "waiting for exit")
 				// we found the pid, loop for if it has gone
 				for {
 					time.Sleep(time.Second)
@@ -151,7 +150,6 @@ func LoopProc(comm string, action func()) {
 					killErr := syscall.Kill(pid, syscall.Signal(0))
 
 					if killErr != nil {
-						log.Println("Process is dead, executing", action)
 						action()
 						return
 					}

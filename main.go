@@ -58,7 +58,7 @@ func main() {
 		PfxKill()
 	case "player":
 		RobloxLaunch("RobloxPlayerLauncher.exe", PLAYERURL, true, args[1:]...)
-		LoopProc("RobloxPlayerBet", PfxKill)
+		CommLoop("RobloxPlayerBet", PfxKill)
 	case "studio":
 		RobloxLaunch("RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)
 	case "reset":

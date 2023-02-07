@@ -3,6 +3,9 @@
 package main
 
 import (
+	"syscall"
+	"strconv"
+	"strings"
 	"archive/zip"
 	"io"
 	"log"
@@ -45,30 +48,25 @@ func CheckDirs(dir ...string) {
 
 // Execute a program with arguments whilst keeping
 // it's stderr output to a log file, stdout is ignored and is sent to os.Stdout.
-func Exec(prog string, args ...string) {
+func Exec(prog string, logStderr bool, args ...string) {
 	log.Println(args)
 	cmd := exec.Command(prog, args...)
-	timeFmt := time.Now().Format(time.RFC3339)
-
-	stderrFile, err := os.Create(filepath.Join(Dirs.Log, timeFmt+"-stderr.log"))
-	Errc(err)
-	log.Println("Forwarding stderr to", stderrFile.Name())
-	defer stderrFile.Close()
-
 	cmd.Dir = Dirs.Cache
 
-	// Stdout is particularly always empty, so we forward its to ours
+	// Stdout is particularly always empty.
+	if logStderr {
+		stderrFile, err := os.Create(filepath.Join(Dirs.Log, time.Now().Format(time.RFC3339)+"-stderr.log"))
+		Errc(err)
+		log.Println("Forwarding stderr to", stderrFile.Name())
+		defer stderrFile.Close()
+		cmd.Stderr = stderrFile
+	} else {
+		cmd.Stderr = os.Stderr
+	}
+
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = stderrFile
 
 	Errc(cmd.Run())
-
-	logFile, err := stderrFile.Stat()
-	Errc(err)
-	if logFile.Size() == 0 {
-		log.Println("Empty stderr log file detected, deleting")
-		Errc(os.RemoveAll(stderrFile.Name()))
-	}
 }
 
 // Download a single file into a target file.
@@ -121,5 +119,44 @@ func InFlatpakCheck() bool {
 		return false
 	} else {
 		return true
+	}
+}
+
+// Loop over procfs (/proc) for if pid/comm matches a string, once
+// located PID, loop for its death, when it dies execute provided function
+func loopProc(comm string, action func()) {
+	log.Println("Waiting for process with command", comm, "to exist")
+
+	for {
+		time.Sleep(time.Second);
+
+		procDir, err := os.Open("/proc")
+		Errc(err)
+
+		procs, err := procDir.Readdir(0)
+		Errc(err)
+
+		for _, p := range procs {
+			procComm, _ := os.ReadFile(filepath.Join(procDir.Name(), p.Name(), "comm"))
+
+			if strings.HasPrefix(string(procComm), comm) {
+				log.Println("Found process, waiting for death")
+				// we found the pid, loop for if it has gone
+				for {
+					time.Sleep(time.Second);
+
+					pid, err := strconv.Atoi(p.Name())
+					Errc(err)
+
+					killErr := syscall.Kill(pid, syscall.Signal(0))
+
+					if killErr != nil {
+						log.Println("Process is dead, executing", action)
+						action()
+						return
+					}
+				}
+			}
+		}
 	}
 }

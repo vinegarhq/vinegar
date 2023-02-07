@@ -114,7 +114,7 @@ func Unzip(source, target string) {
 }
 
 // Check if running in flatpak (in which case it is necessary to disable DXVK)
-func InFlatpak() bool {
+func InFlatpakCheck() bool {
 	if _, err := os.Stat("/.flatpak-info"); err != nil {
 		return false
 	} else {

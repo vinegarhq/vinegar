@@ -78,7 +78,7 @@ func RobloxInstall(url string) {
 	log.Println("Installing", url)
 	installerPath := filepath.Join(Dirs.Cache, "rbxinstall.exe")
 	Download(url, installerPath)
-	Exec("wine", installerPath)
+	Exec("wine", true, installerPath)
 	Errc(os.RemoveAll(installerPath))
 }
 
@@ -131,7 +131,7 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
 	log.Println("Launching", exe)
-	Exec("wine", args...)
+	Exec("wine", true, args...)
 
 	if Config.AutoLaunchRFPSU == true {
 		RbxFpsUnlocker()

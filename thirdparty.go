@@ -115,7 +115,7 @@ func RbxFpsUnlocker() {
 	}
 
 	log.Println("Launching FPS Unlocker")
-	Exec("wine", fpsUnlockerPath)
+	Exec("wine", true, fpsUnlockerPath)
 
 	// Since this file is always overwritten, just remove it anyway.
 	Errc(os.RemoveAll(settingsFile.Name()))

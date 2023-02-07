@@ -51,7 +51,7 @@ func main() {
 				DxvkUninstall()
 			}
 	case "exec":
-		Exec("wine", args[1:]...)
+		Exec("wine", false, args[1:]...)
 	case "kill":
 		PfxKill()
 	case "player":

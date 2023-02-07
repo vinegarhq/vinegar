@@ -29,6 +29,8 @@ func main() {
 		usage()
 	}
 
+	// Only these Dirs are queued for creation since
+	// the other directories are root directories for those.
 	CheckDirs(Dirs.Log, Dirs.Pfx)
 
 	switch args[0] {
@@ -36,10 +38,10 @@ func main() {
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
 		if InFlatpak {
-			fmt.Println("DXVK is managed automatically in the Flatpak and cannot be altered!")
-			//log not used because it wasn't imported yet
+			fmt.Println("DXVK must be managed by the flatpak.")
 			os.Exit(1)
 		}
+
 		if argsCount < 2 {
 			usage()
 		}

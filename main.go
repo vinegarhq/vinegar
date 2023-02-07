@@ -12,8 +12,6 @@ const (
 	STUDIOURL = "https://www.roblox.com/download/studio"
 )
 
-var InFlatpak bool = InFlatpakCheck()
-
 func usage() {
 	fmt.Println("usage: vinegar [delete|kill|reset]")
 	fmt.Println("       vinegar [player|studio] [args...]")

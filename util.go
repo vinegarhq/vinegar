@@ -13,6 +13,8 @@ import (
 	"time"
 )
 
+var InFlatpak bool = InFlatpakCheck()
+
 // Helper function to handle error failure
 func Errc(e error) {
 	if e != nil {

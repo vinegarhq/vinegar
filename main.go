@@ -12,10 +12,12 @@ const (
 	STUDIOURL = "https://www.roblox.com/download/studio"
 )
 
+var InFlatpak bool = InFlatpakCheck()
+
 func usage() {
 	fmt.Println("usage: vinegar [delete|kill|reset]")
 	fmt.Println("       vinegar [player|studio] [args...]")
-	if !InFlatpak() {
+	if !InFlatpak {
 		fmt.Println("       vinegar [dxvk] install|uninstall")
 	}
 	os.Exit(1)
@@ -35,7 +37,11 @@ func main() {
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
-		if !InFlatpak() {
+			if InFlatpak {
+				fmt.Println("DXVK is managed automatically in the Flatpak and cannot be altered!")
+				//log not used because it wasn't imported yet
+				os.Exit(1)
+			}
 			if argsCount < 2 {
 				usage()
 			}
@@ -46,9 +52,6 @@ func main() {
 			case "uninstall":
 				DxvkUninstall()
 			}
-		} else {
-			fmt.Println("DXVK is already installed in the Flatpak and cannot be altered!")
-		}
 	case "exec":
 		Exec("wine", args[1:]...)
 	case "kill":

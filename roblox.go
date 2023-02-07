@@ -83,7 +83,7 @@ func RobloxInstall(url string) {
 }
 
 func RobloxApplyFFlags(dir string) {
-	var flags map[string]interface{}
+	flags := make(map[string]interface{})
 
 	log.Println("Applying FFlags")
 

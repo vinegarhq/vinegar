@@ -3,11 +3,12 @@ APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
 GOFLAGS = -ldflags="-s -w" -buildvcs=false
+GO = go
 
 all: vinegar
 
 vinegar:
-	go build $(GOFLAGS) -o vinegar
+	$(GO) build $(GOFLAGS) -o vinegar
 
 install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar

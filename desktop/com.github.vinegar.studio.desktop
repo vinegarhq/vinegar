@@ -6,4 +6,4 @@ Exec=vinegar studio %u
 Terminal=false
 MimeType=x-scheme-handler/roblox-studio
 Categories=Game
-Icon=vinegar-roblox-studio
+Icon=com.github.vinegar.roblox.studio

@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=0.5
 Type=Application
-Name=Vinegar (Studio)
+Name=Roblox Studio (Vinegar)
 Exec=vinegar studio %u
 Terminal=false
 MimeType=x-scheme-handler/roblox-studio

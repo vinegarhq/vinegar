@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=0.5
 Type=Application
-Name=Vinegar (Player)
+Name=Roblox Player (Vinegar)
 Exec=vinegar player %u
 Terminal=false
 MimeType=x-scheme-handler/roblox-player

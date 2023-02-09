@@ -16,7 +16,6 @@ import (
 
 // Primary struct keeping track of vinegar's directories.
 type Directories struct {
-	Home   string
 	Cache  string
 	Config string
 	Data   string
@@ -45,11 +44,27 @@ func defDirs() Directories {
 	homeDir, err := os.UserHomeDir()
 	Errc(err)
 
+	xdgDirs := map[string]string{
+		"XDG_CACHE_HOME":  filepath.Join(homeDir, ".cache"),
+		"XDG_CONFIG_HOME": filepath.Join(homeDir, ".config"),
+		"XDG_DATA_HOME":   filepath.Join(homeDir, ".local", "share"),
+	}
+
+	// If the variable has already been set, we
+	// should use it instead of our own.
+	for varName, _ := range xdgDirs {
+		value := os.Getenv(varName)
+
+		if value != "" {
+			log.Println(varName, value)
+			xdgDirs[varName] = value
+		}
+	}
+
 	dirs := Directories{
-		Home:   homeDir,
-		Cache:  filepath.Join(homeDir, ".cache", "vinegar"),
-		Config: filepath.Join(homeDir, ".config", "vinegar"),
-		Data:   filepath.Join(homeDir, ".local", "share", "vinegar"),
+		Cache:  filepath.Join(xdgDirs["XDG_CACHE_HOME"],  "vinegar"),
+		Config: filepath.Join(xdgDirs["XDG_CONFIG_HOME"], "vinegar"),
+		Data:   filepath.Join(xdgDirs["XDG_DATA_HOME"],   "vinegar"),
 	}
 
 	dirs.Pfx = filepath.Join(dirs.Data, "pfx")

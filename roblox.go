@@ -75,7 +75,6 @@ func RobloxFind(giveDir bool, exe string) string {
 // for roblox installation since launching the program once will make
 // automatically install itself.
 func RobloxInstall(url string) {
-	log.Println("Installing", url)
 	installerPath := filepath.Join(Dirs.Cache, "rbxinstall.exe")
 	Download(url, installerPath)
 	Exec("wine", true, installerPath)

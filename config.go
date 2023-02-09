@@ -56,7 +56,6 @@ func defDirs() Directories {
 		value := os.Getenv(varName)
 
 		if value != "" {
-			log.Println(varName, value)
 			xdgDirs[varName] = value
 		}
 	}

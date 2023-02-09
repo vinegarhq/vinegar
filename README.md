@@ -4,14 +4,13 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 # Features
 + Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration
 + Automatic usage of the Nvidia dedicated gpu. (untested)
-+ Automatic Wineprefix killer when the Roblox Player has exited
-+ Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker, when needed for launch
++ Automatic Wineprefix killer when Roblox Player has exited
++ Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker, when needed at run time
 + Browser launch via MIME
 + Clean wine log output
 + DXVK Installer and uninstaller
 + Configuration file for setting environment variables and applying custom FFlags
 + Custom execution of wine program within wineprefix
-+ Deletion of empty stderr log file
 + Fast finding of Roblox Player and Roblox Studio
 + Faster startup of rbxfpsunlocker and the Roblox Player
 + FreeBSD support
@@ -19,12 +18,12 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 
 # TODO
 + Add watchdog for unlocker in flatpak? This needs investigation.
-+ Automatically kill wineprefix when Roblox has exited
 + Fetch latest version of rbxfpsunlocker
 + Handle SIGINT and SIGEXIT
 + Old death sounds (maybe)
 
 # Configuration
+The configuration file is looked at by default in `~/.config/vinegar/config.yaml`.
 ```yaml
 autolaunch_rfpsu: false
 use_rco_fflags: true

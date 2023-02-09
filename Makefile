@@ -12,35 +12,35 @@ vinegar:
 
 install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
-	install -Dm644 desktop/com.github.vinegar.app.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
-	install -Dm644 desktop/com.github.vinegar.player.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
-	install -Dm644 desktop/com.github.vinegar.studio.desktop $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
-	install -Dm644 icons/16/com.github.vinegar.roblox.player.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/com.github.vinegar.roblox.player.png
-	install -Dm644 icons/32/com.github.vinegar.roblox.player.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/com.github.vinegar.roblox.player.png
-	install -Dm644 icons/48/com.github.vinegar.roblox.player.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/com.github.vinegar.roblox.player.png
-	install -Dm644 icons/64/com.github.vinegar.roblox.player.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/com.github.vinegar.roblox.player.png
-	install -Dm644 icons/128/com.github.vinegar.roblox.player.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/com.github.vinegar.roblox.player.png
-	install -Dm644 icons/16/com.github.vinegar.roblox.studio.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/com.github.vinegar.roblox.studio.png
-	install -Dm644 icons/32/com.github.vinegar.roblox.studio.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/com.github.vinegar.roblox.studio.png
-	install -Dm644 icons/48/com.github.vinegar.roblox.studio.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/com.github.vinegar.roblox.studio.png
-	install -Dm644 icons/64/com.github.vinegar.roblox.studio.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/com.github.vinegar.roblox.studio.png
-	install -Dm644 icons/128/com.github.vinegar.roblox.studio.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/com.github.vinegar.roblox.studio.png
+	install -Dm644 desktop/io.github.vinegarhq.Vinegar.app.desktop $(DESTDIR)$(APPPREFIX)/io.github.vinegarhq.Vinegar.app.desktop
+	install -Dm644 desktop/io.github.vinegarhq.Vinegar.player.desktop $(DESTDIR)$(APPPREFIX)/io.github.vinegarhq.Vinegar.player.desktop
+	install -Dm644 desktop/io.github.vinegarhq.Vinegar.studio.desktop $(DESTDIR)$(APPPREFIX)/io.github.vinegarhq.Vinegar.studio.desktop
+	install -Dm644 icons/16/io.github.vinegarhq.Vinegar.player.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/io.github.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/32/io.github.vinegarhq.Vinegar.player.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/io.github.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/48/io.github.vinegarhq.Vinegar.player.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/io.github.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/64/io.github.vinegarhq.Vinegar.player.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/io.github.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/128/io.github.vinegarhq.Vinegar.player.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/io.github.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/16/io.github.vinegarhq.Vinegar.studio.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/io.github.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/32/io.github.vinegarhq.Vinegar.studio.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/io.github.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/48/io.github.vinegarhq.Vinegar.studio.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/io.github.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/64/io.github.vinegarhq.Vinegar.studio.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/io.github.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/128/io.github.vinegarhq.Vinegar.studio.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/io.github.vinegarhq.Vinegar.studio.png
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar
-	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.app.desktop
-	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.player.desktop
-	rm -f $(DESTDIR)$(APPPREFIX)/com.github.vinegar.studio.desktop
-	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/com.github.vinegar.roblox.player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/com.github.vinegar.roblox.player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/com.github.vinegar.roblox.player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/com.github.vinegar.roblox.player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/com.github.vinegar.roblox.player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/com.github.vinegar.roblox.studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/com.github.vinegar.roblox.studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/com.github.vinegar.roblox.studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/com.github.vinegar.roblox.studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/com.github.vinegar.roblox.studio.png
+	rm -f $(DESTDIR)$(APPPREFIX)/io.github.vinegarhq.Vinegar.app.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/io.github.vinegarhq.Vinegar.player.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/io.github.vinegarhq.Vinegar.studio.desktop
+	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/io.github.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/io.github.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/io.github.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/io.github.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/io.github.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/io.github.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/io.github.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/io.github.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/io.github.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/io.github.vinegarhq.Vinegar.studio.png
 
 clean:
 	rm -f vinegar

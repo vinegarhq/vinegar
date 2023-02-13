@@ -24,16 +24,16 @@ type Directories struct {
 }
 
 type Configuration struct {
-	Renderer        string                 `yaml:"renderer"`
-	UseRCOFFlags    bool                   `yaml:"rco"`
-	AutoLaunchRFPSU bool                   `yaml:"rfpsu"`
-	Env             map[string]string      `yaml:"env"`
-	FFlags          map[string]interface{} `yaml:"fflags"`
+	Renderer  string                 `yaml:"force_roblox_renderer"`
+	ApplyRCO  bool                   `yaml:"roblox_client_optimizer_apply"`
+	AutoRFPSU bool                   `yaml:"rbxfpsunlocker_autolaunch"`
+	Env       map[string]string      `yaml:"environment"`
+	FFlags    map[string]interface{} `yaml:"fflags"`
 }
 
-var Dirs       = defDirs()
+var Dirs = defDirs()
 var ConfigFile = filepath.Join(Dirs.Config, "config.yaml")
-var Config     = loadConfig()
+var Config = loadConfig()
 
 // Define the default values for the Directories struct globally
 // for other functions to use it.
@@ -58,9 +58,9 @@ func defDirs() Directories {
 	}
 
 	dirs := Directories{
-		Cache:  filepath.Join(xdgDirs["XDG_CACHE_HOME"],  "vinegar"),
+		Cache:  filepath.Join(xdgDirs["XDG_CACHE_HOME"], "vinegar"),
 		Config: filepath.Join(xdgDirs["XDG_CONFIG_HOME"], "vinegar"),
-		Data:   filepath.Join(xdgDirs["XDG_DATA_HOME"],   "vinegar"),
+		Data:   filepath.Join(xdgDirs["XDG_DATA_HOME"], "vinegar"),
 	}
 
 	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
@@ -75,8 +75,8 @@ func defConfig() Configuration {
 		Renderer:        "Vulkan",
 		Env:             make(map[string]string),
 		FFlags:          make(map[string]interface{}),
-		UseRCOFFlags:    true,
-		AutoLaunchRFPSU: false,
+		ApplyRCO:    true,
+		AutoRFPSU: false,
 	}
 
 	// Main environment variables initialization
@@ -136,7 +136,7 @@ func loadConfig() Configuration {
 	}
 
 	possibleRenderers := []string{
-		"OpenGL", 
+		"OpenGL",
 		"D3D11FL10",
 		"D3D11",
 		"Vulkan",
@@ -144,11 +144,11 @@ func loadConfig() Configuration {
 
 	for _, rend := range possibleRenderers {
 		if rend == config.Renderer {
-			config.FFlags["FFlagDebugGraphicsPrefer"  + rend] = true
-			config.FFlags["FFlagDebugGraphicsDisable" + rend] = false
+			config.FFlags["FFlagDebugGraphicsPrefer"+rend] = true
+			config.FFlags["FFlagDebugGraphicsDisable"+rend] = false
 		} else {
-			config.FFlags["FFlagDebugGraphicsPrefer" + rend]  = false
-			config.FFlags["FFlagDebugGraphicsDisable" + rend] = true
+			config.FFlags["FFlagDebugGraphicsPrefer"+rend] = false
+			config.FFlags["FFlagDebugGraphicsDisable"+rend] = true
 		}
 	}
 

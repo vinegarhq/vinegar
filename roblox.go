@@ -93,7 +93,7 @@ func RobloxApplyFFlags(dir string) {
 	fflagsFile, err := os.Create(filepath.Join(fflagsDir, "ClientAppSettings.json"))
 	Errc(err)
 
-	if Config.UseRCOFFlags == true {
+	if Config.ApplyRCO == true {
 		ApplyRCOFFlags(fflagsFile.Name())
 	}
 
@@ -132,7 +132,7 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 	log.Println("Launching", exe)
 	Exec("wine", true, args...)
 
-	if Config.AutoLaunchRFPSU == true {
+	if Config.AutoRFPSU == true {
 		RbxFpsUnlocker()
 	}
 }

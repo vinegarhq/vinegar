@@ -155,3 +155,15 @@ func CommLoop(comm string, action func()) {
 
 	action()
 }
+
+func EditConfig() {
+	editorVar := os.Getenv("EDITOR")
+
+	if editorVar != "" {
+		Exec(editorVar, false, ConfigFile)
+	} else if _, e := exec.LookPath("xdg-open"); e == nil {
+		Exec("xdg-open", false, ConfigFile)
+	} else {
+		log.Fatal("Failed to find editor")
+	}
+}

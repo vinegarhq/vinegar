@@ -30,13 +30,9 @@ type Configuration struct {
 	FFlags          map[string]interface{} `yaml:"fflags"`
 }
 
-type FFlag struct {
-	Flag  string
-	value interface{}
-}
-
-var Dirs = defDirs()
-var Config = defConfig()
+var Dirs       = defDirs()
+var ConfigFile = filepath.Join(Dirs.Config, "config.yaml")
+var Config     = defConfig()
 
 // Define the default values for the Directories struct globally
 // for other functions to use it.
@@ -108,12 +104,12 @@ func defConfig() Configuration {
 		config.Env["WINE_NO_WOW64"] = "1"
 	}
 
-	configFile, err := ioutil.ReadFile(filepath.Join(Dirs.Config, "config.yaml"))
+	configFile, err := ioutil.ReadFile(ConfigFile)
 
 	// We don't particularly care about if the configuration exists or not,
 	// as we are already setting default values.
 	if err == nil {
-		log.Println("Loading config.yaml")
+		log.Println("Loading", configFile)
 		err = yaml.Unmarshal(configFile, &config)
 		Errc(err)
 	}

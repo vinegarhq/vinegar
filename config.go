@@ -71,8 +71,13 @@ func defDirs() Directories {
 
 // Initialize the configuration, and load the configuration file (if available)
 func defConfig() Configuration {
-	var config Configuration
-
+	config := Configuration{
+		Renderer:  "Vulkan",
+		Env:       make(map[string]string),
+		FFlags:    make(map[string]any),
+		ApplyRCO:  true,
+		AutoRFPSU: false,
+	}
 	// Main environment variables initialization
 	// Note: these can be overrided by the user.
 	config.Env = map[string]string{

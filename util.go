@@ -143,8 +143,8 @@ func CommFound(comm string) bool {
 // Loop untill the provided comm has not been found, and
 // execute function
 func CommLoop(comm string, action func()) {
-
 	log.Println("Waiting for proccess named", comm, "to exit")
+
 	for {
 		time.Sleep(time.Second)
 

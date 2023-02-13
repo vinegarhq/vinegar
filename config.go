@@ -24,8 +24,8 @@ type Directories struct {
 }
 
 type Configuration struct {
-	UseRCOFFlags    bool                   `yaml:"use_rco_fflags"`
-	AutoLaunchRFPSU bool                   `yaml:"autolaunch_rfpsu"`
+	UseRCOFFlags    bool                   `yaml:"rco"`
+	AutoLaunchRFPSU bool                   `yaml:"rfpsu"`
 	Env             map[string]string      `yaml:"env"`
 	FFlags          map[string]interface{} `yaml:"fflags"`
 }

@@ -4,7 +4,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -118,7 +117,6 @@ func loadConfig() Configuration {
 			Errc(err)
 
 			file, err := os.Create(ConfigFilePath)
-			fmt.Println(err)
 			Errc(err)
 			defer file.Close()
 

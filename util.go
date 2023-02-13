@@ -17,8 +17,11 @@ import (
 var InFlatpak bool = InFlatpakCheck()
 
 // Helper function to handle error failure
-func Errc(e error) {
+func Errc(e error, message ...string) {
 	if e != nil {
+		if message != nil {
+			log.Println(message)
+		}
 		log.Fatal(e)
 	}
 }
@@ -160,10 +163,20 @@ func EditConfig() {
 	editorVar := os.Getenv("EDITOR")
 
 	if editorVar != "" {
-		Exec(editorVar, false, ConfigFile)
+		Exec(editorVar, false, ConfigFilePath)
 	} else if _, e := exec.LookPath("xdg-open"); e == nil {
-		Exec("xdg-open", false, ConfigFile)
+		Exec("xdg-open", false, ConfigFilePath)
 	} else {
 		log.Fatal("Failed to find editor")
 	}
+}
+
+func AddDefaultsToMap[K comparable, V any](userDefinedMap map[K]V, defaultsMap map[K]V) map[K]V {
+	for key, defaultValue := range defaultsMap {
+		if _, exists := userDefinedMap[key]; !exists {
+			userDefinedMap[key] = defaultValue
+		}
+	}
+
+	return userDefinedMap
 }

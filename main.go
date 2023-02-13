@@ -13,7 +13,7 @@ const (
 )
 
 func usage() {
-	fmt.Println("usage: vinegar [delete|kill|reset]")
+	fmt.Println("usage: vinegar [delete|edit|exec|kill|reset]")
 	fmt.Println("       vinegar [player|studio] [args...]")
 	if !InFlatpak {
 		fmt.Println("       vinegar [dxvk] install|uninstall")

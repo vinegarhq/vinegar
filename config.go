@@ -143,13 +143,9 @@ func loadConfig() Configuration {
 	}
 
 	for _, rend := range possibleRenderers {
-		if rend == config.Renderer {
-			config.FFlags["FFlagDebugGraphicsPrefer"+rend] = true
-			config.FFlags["FFlagDebugGraphicsDisable"+rend] = false
-		} else {
-			config.FFlags["FFlagDebugGraphicsPrefer"+rend] = false
-			config.FFlags["FFlagDebugGraphicsDisable"+rend] = true
-		}
+		isRenderer := rend == config.Renderer
+		config.FFlags["FFlagDebugGraphicsPrefer"+rend] = isRenderer
+		config.FFlags["FFlagDebugGraphicsDisable"+rend] = !isRenderer
 	}
 
 	for name, value := range config.Env {

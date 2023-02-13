@@ -25,8 +25,8 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 # Configuration
 The configuration file is looked at by default in `~/.config/vinegar/config.yaml`.
 ```yaml
-autolaunch_rfpsu: false
-use_rco_fflags: true
+rfpsu: false
+rco: true
 fflags:
   FFlagFoo: "null"
   FFlagBar: true

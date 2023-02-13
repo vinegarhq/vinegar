@@ -170,13 +170,3 @@ func EditConfig() {
 		log.Fatal("Failed to find editor")
 	}
 }
-
-func AddDefaultsToMap[K comparable, V any](userDefinedMap map[K]V, defaultsMap map[K]V) map[K]V {
-	for key, defaultValue := range defaultsMap {
-		if _, exists := userDefinedMap[key]; !exists {
-			userDefinedMap[key] = defaultValue
-		}
-	}
-
-	return userDefinedMap
-}

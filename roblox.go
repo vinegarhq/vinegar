@@ -97,6 +97,20 @@ func RobloxApplyFFlags(dir string) {
 		ApplyRCOFFlags(fflagsFile.Name())
 	}
 
+	// Apply our renderers overrides
+	possibleRenderers := []string{
+		"OpenGL",
+		"D3D11FL10",
+		"D3D11",
+		"Vulkan",
+	}
+
+	for _, rend := range possibleRenderers {
+		isRenderer := rend == Config.Renderer
+		Config.FFlags["FFlagDebugGraphicsPrefer"+rend] = isRenderer
+		Config.FFlags["FFlagDebugGraphicsDisable"+rend] = !isRenderer
+	}
+
 	// Read the file
 	fflags, err := ioutil.ReadFile(fflagsFile.Name())
 	Errc(err)

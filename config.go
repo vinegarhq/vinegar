@@ -32,7 +32,7 @@ type Configuration struct {
 
 var Dirs       = defDirs()
 var ConfigFile = filepath.Join(Dirs.Config, "config.yaml")
-var Config     = defConfig()
+var Config     = loadConfig()
 
 // Define the default values for the Directories struct globally
 // for other functions to use it.
@@ -104,14 +104,33 @@ func defConfig() Configuration {
 		config.Env["WINE_NO_WOW64"] = "1"
 	}
 
+	return config
+}
+
+func loadConfig() Configuration {
+	var config Configuration
+
+	if _, err := os.Stat(ConfigFile); os.IsNotExist(err) {
+		log.Println("Configuration not found, appending defaults")
+
+		CheckDirs(Dirs.Config)
+		configFile, err := os.Create(ConfigFile)
+		Errc(err)
+		defer configFile.Close()
+
+		config := defConfig()
+		err = yaml.NewEncoder(configFile).Encode(config)
+		Errc(err)
+	}
+
 	configFile, err := ioutil.ReadFile(ConfigFile)
 
-	// We don't particularly care about if the configuration exists or not,
-	// as we are already setting default values.
 	if err == nil {
-		log.Println("Loading", configFile)
+		log.Println("Loading", ConfigFile)
 		err = yaml.Unmarshal(configFile, &config)
 		Errc(err)
+	} else {
+		log.Fatal("Failed to load configuration")
 	}
 
 	for name, value := range config.Env {

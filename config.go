@@ -3,13 +3,14 @@
 package main
 
 import (
-	"io/ioutil"
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 
-	"gopkg.in/yaml.v3"
+	"github.com/pelletier/go-toml/v2"
 )
 
 // Thank you ayn2op. Thank you so much.
@@ -24,15 +25,15 @@ type Directories struct {
 }
 
 type Configuration struct {
-	Renderer  string                 `yaml:"force_roblox_renderer"`
-	ApplyRCO  bool                   `yaml:"roblox_client_optimizer_apply"`
-	AutoRFPSU bool                   `yaml:"rbxfpsunlocker_autolaunch"`
-	Env       map[string]string      `yaml:"environment"`
-	FFlags    map[string]interface{} `yaml:"fflags"`
+	Renderer  string
+	ApplyRCO  bool
+	AutoRFPSU bool
+	Env       map[string]string
+	FFlags    map[string]any
 }
 
 var Dirs = defDirs()
-var ConfigFile = filepath.Join(Dirs.Config, "config.yaml")
+var ConfigFilePath = filepath.Join(Dirs.Config, "config.toml")
 var Config = loadConfig()
 
 // Define the default values for the Directories struct globally
@@ -71,13 +72,7 @@ func defDirs() Directories {
 
 // Initialize the configuration, and load the configuration file (if available)
 func defConfig() Configuration {
-	config := Configuration{
-		Renderer:        "Vulkan",
-		Env:             make(map[string]string),
-		FFlags:          make(map[string]interface{}),
-		ApplyRCO:    true,
-		AutoRFPSU: false,
-	}
+	var config Configuration
 
 	// Main environment variables initialization
 	// Note: these can be overrided by the user.
@@ -100,6 +95,7 @@ func defConfig() Configuration {
 		"__VK_LAYER_NV_optimus":     "NVIDIA_only",
 		"__GLX_VENDOR_LIBRARY_NAME": "nvidia",
 	}
+	config.FFlags = map[string]any{}
 
 	if runtime.GOOS == "freebsd" {
 		config.Env["WINEARCH"] = "win32"
@@ -110,29 +106,46 @@ func defConfig() Configuration {
 }
 
 func loadConfig() Configuration {
+	defaultConfiguration := defConfig()
 	var config Configuration
 
-	if _, err := os.Stat(ConfigFile); os.IsNotExist(err) {
-		log.Println("Configuration not found, appending defaults")
+	configText, err := os.ReadFile(ConfigFilePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			// Is ok, generate the file
 
-		CheckDirs(Dirs.Config)
-		configFile, err := os.Create(ConfigFile)
-		Errc(err)
-		defer configFile.Close()
+			err = os.MkdirAll(Dirs.Config, os.ModePerm)
+			Errc(err)
 
-		config := defConfig()
-		err = yaml.NewEncoder(configFile).Encode(config)
-		Errc(err)
+			file, err := os.Create(ConfigFilePath)
+			fmt.Println(err)
+			Errc(err)
+			defer file.Close()
+
+			// TODO: Change to point to actual chapter that describes this
+			_, err = file.WriteString("# See how to configure Vinegar on the documentation website:\n# https://vinegarhq.github.io")
+			Errc(err)
+		} else {
+			log.Println("Unable to read the configuration file. Will use default configuration presets. File path:", ConfigFilePath)
+			log.Println(err.Error())
+
+			config = defaultConfiguration
+		}
+	} else {
+		err = toml.Unmarshal([]byte(configText), &config)
+		Errc(err, "Could not parse configuration file.")
 	}
 
-	configFile, err := ioutil.ReadFile(ConfigFile)
-
-	if err == nil {
-		log.Println("Loading", ConfigFile)
-		err = yaml.Unmarshal(configFile, &config)
-		Errc(err)
+	if config.Env == nil {
+		config.Env = defaultConfiguration.Env
 	} else {
-		log.Fatal("Failed to load configuration")
+		AddDefaultsToMap(config.Env, defaultConfiguration.Env)
+	}
+
+	if config.FFlags == nil {
+		config.FFlags = defaultConfiguration.FFlags
+	} else {
+		AddDefaultsToMap(config.FFlags, defaultConfiguration.FFlags)
 	}
 
 	possibleRenderers := []string{

@@ -4,7 +4,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -132,7 +131,6 @@ func loadConfig() Configuration {
 	}
 
 	for name, value := range config.Env {
-		log.Println(name, value)
 		os.Setenv(name, value.(string))
 	}
 

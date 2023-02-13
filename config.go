@@ -24,6 +24,7 @@ type Directories struct {
 }
 
 type Configuration struct {
+	Renderer        string                 `yaml:"renderer"`
 	UseRCOFFlags    bool                   `yaml:"rco"`
 	AutoLaunchRFPSU bool                   `yaml:"rfpsu"`
 	Env             map[string]string      `yaml:"env"`
@@ -71,6 +72,7 @@ func defDirs() Directories {
 // Initialize the configuration, and load the configuration file (if available)
 func defConfig() Configuration {
 	config := Configuration{
+		Renderer:        "Vulkan",
 		Env:             make(map[string]string),
 		FFlags:          make(map[string]interface{}),
 		UseRCOFFlags:    true,
@@ -131,6 +133,23 @@ func loadConfig() Configuration {
 		Errc(err)
 	} else {
 		log.Fatal("Failed to load configuration")
+	}
+
+	possibleRenderers := []string{
+		"OpenGL", 
+		"D3D11FL10",
+		"D3D11",
+		"Vulkan",
+	}
+
+	for _, rend := range possibleRenderers {
+		if rend == config.Renderer {
+			config.FFlags["FFlagDebugGraphicsPrefer"  + rend] = true
+			config.FFlags["FFlagDebugGraphicsDisable" + rend] = false
+		} else {
+			config.FFlags["FFlagDebugGraphicsPrefer" + rend]  = false
+			config.FFlags["FFlagDebugGraphicsDisable" + rend] = true
+		}
 	}
 
 	for name, value := range config.Env {

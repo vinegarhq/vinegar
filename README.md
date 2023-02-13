@@ -22,21 +22,4 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Handle SIGINT and SIGEXIT
 + Old death sounds (maybe)
 
-# Configuration
-The configuration file is looked at by default in `~/.config/vinegar/config.yaml`.
-```yaml
-rfpsu: false
-rco: true
-fflags:
-  FFlagFoo: "null"
-  FFlagBar: true
-  FFlagBaz: 2147483648
-env:
-  foo: bar
-```
-By default, [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags will be installed automatically, and rbxfpsunlocker will be disabled by default.
-
-# Why RCO?
-Credits to [L8X](https://github.com/L8X), RCO's FFlags optimizes Roblox's performance, caching, and textures whilst removing the FPS Unlock without the need for rbxfpsunlocker.
-
 The Discord server for Vinegar can be found [here](https://discord.gg/dzdzZ6Pps2).

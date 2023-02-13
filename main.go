@@ -52,6 +52,8 @@ func main() {
 		case "uninstall":
 			DxvkUninstall()
 		}
+	case "edit":
+		EditConfig()
 	case "exec":
 		Exec("wine", false, args[1:]...)
 	case "kill":

@@ -49,7 +49,7 @@ func defDirs() Directories {
 
 	// If the variable has already been set, we
 	// should use it instead of our own.
-	for varName, _ := range xdgDirs {
+	for varName := range xdgDirs {
 		value := os.Getenv(varName)
 
 		if value != "" {

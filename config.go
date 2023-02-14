@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-
 	"github.com/pelletier/go-toml/v2"
 )
 
@@ -104,6 +103,9 @@ func defConfig() Configuration {
 }
 
 func writeConfigTemplate() {
+	// ~/.config/vinegar may not exist yet!
+	err := os.MkdirAll(filepath.Dir(ConfigFilePath), 0755)
+
 	file, err := os.Create(ConfigFilePath)
 	Errc(err)
 	defer file.Close()
@@ -117,6 +119,7 @@ func loadConfig() Configuration {
 	config := defConfig()
 
 	configFile, err := os.ReadFile(ConfigFilePath)
+
 
 	if errors.Is(err, os.ErrNotExist) {
 		writeConfigTemplate()

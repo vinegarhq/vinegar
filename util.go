@@ -66,6 +66,7 @@ func Exec(prog string, logStderr bool, args ...string) {
 		cmd.Stderr = os.Stderr
 	}
 
+	cmd.Stdin = os.Stdin //Fix for nano bug in "vinegar edit"
 	cmd.Stdout = os.Stdout
 
 	Errc(cmd.Run())

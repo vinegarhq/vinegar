@@ -4,10 +4,10 @@ package main
 
 import (
 	"errors"
+	"github.com/pelletier/go-toml/v2"
 	"os"
 	"path/filepath"
 	"runtime"
-	"github.com/pelletier/go-toml/v2"
 )
 
 // Thank you ayn2op. Thank you so much.
@@ -33,7 +33,7 @@ var Dirs = defDirs()
 var ConfigFilePath = filepath.Join(Dirs.Config, "config.toml")
 var Config = loadConfig()
 
-// Define the default values for the Directories 
+// Define the default values for the Directories
 // struct globally for other functions to use it.
 func defDirs() Directories {
 	homeDir, err := os.UserHomeDir()
@@ -102,7 +102,7 @@ func defConfig() Configuration {
 	return config
 }
 
-// Write the configuration file with comments linking to 
+// Write the configuration file with comments linking to
 // the Vinegar documentation.
 func writeConfigTemplate() {
 	// ~/.config/vinegar may not exist yet!
@@ -138,7 +138,7 @@ func loadConfig() Configuration {
 	}
 
 	for name, value := range config.Env {
-		// must be used for the toml library 
+		// must be used for the toml library
 		// to recognize the correct type.
 		os.Setenv(name, value.(string))
 	}

@@ -5,11 +5,9 @@ package main
 import (
 	"encoding/json"
 	"log"
-	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
-	"regexp"
 )
 
 // Search for Roblox's Version directories for a given exe, when
@@ -57,7 +55,7 @@ func RobloxFind(giveDir bool, exe string) string {
 
 			defer checkExe.Close()
 
-			if giveDir == false {
+			if !giveDir {
 				final = checkExe.Name()
 			} else {
 				final = filepath.Join(versionDir.Name(), v.Name())
@@ -92,7 +90,7 @@ func RobloxApplyFFlags(dir string) {
 	fflagsFile, err := os.Create(filepath.Join(fflagsDir, "ClientAppSettings.json"))
 	Errc(err)
 
-	if Config.ApplyRCO == true {
+	if Config.ApplyRCO {
 		ApplyRCOFFlags(fflagsFile.Name())
 	}
 
@@ -139,7 +137,7 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 
 	robloxRoot := RobloxFind(true, exe)
 
-	if installFFlagPlayer == true {
+	if installFFlagPlayer {
 		RobloxApplyFFlags(robloxRoot)
 	}
 
@@ -147,27 +145,7 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 	log.Println("Launching", exe)
 	Exec("wine", true, args...)
 
-	if Config.AutoRFPSU == true {
+	if Config.AutoRFPSU {
 		RbxFpsUnlocker()
 	}
-}
-
-// Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to RobloxPlayerBeta
-// This function is mainly a hack to take place of what the launcher would do, and would fork
-// for RobloxPlayerBeta, but due to unsolved sandboxing issues, we do these ourselves.
-func BrowserArgsParse(arg string) string {
-	// roblox-player 1 launchmode play gameinfo
-	// {authticket} launchtime {launchtime} placelauncherurl
-	// {placelauncherurl} browsertrackerid {browsertrackerid}
-	// robloxLocale {rloc} gameLocale {gloc} channel
-	rbxArgs := regexp.MustCompile("[\\:\\,\\+\\s]+").Split(arg, -1)
-
-	log.Println(rbxArgs)
-	placeLauncherUrlDecoded, err := url.QueryUnescape(rbxArgs[9])
-	Errc(err)
-	log.Println(placeLauncherUrlDecoded)
-
-	// Forwarded command line as of 2023-02-03:
-	// RobloxPlayerBeta -t {authticket} -j {placelauncherurl} -b 0 --launchtime={launchtime} --rloc {rloc} --gloc {gloc}
-	return "--app " + "-t " + rbxArgs[5] + " -j " + placeLauncherUrlDecoded + " -b 0 --launchtime=" + rbxArgs[7] + " --rloc " + rbxArgs[13] + " --gloc " + rbxArgs[15]
 }

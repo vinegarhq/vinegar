@@ -4,7 +4,6 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/url"
 	"os"
@@ -112,7 +111,7 @@ func RobloxApplyFFlags(dir string) {
 	}
 
 	// Read the file
-	fflags, err := ioutil.ReadFile(fflagsFile.Name())
+	fflags, err := os.ReadFile(fflagsFile.Name())
 	Errc(err)
 	json.Unmarshal(fflags, &flags)
 
@@ -123,9 +122,11 @@ func RobloxApplyFFlags(dir string) {
 
 	// Finally, write the file
 	finalFFlagsFile, err := json.MarshalIndent(flags, "", "  ")
+	log.Println(fflagsFile.Name())
 
 	Errc(err)
-	Errc(ioutil.WriteFile(fflagsFile.Name(), finalFFlagsFile, 0644))
+	Errc(os.WriteFile(fflagsFile.Name(), finalFFlagsFile, 0644))
+	os.Exit(0)
 }
 
 // Launch the given Roblox executable, finding it from RobloxFind().

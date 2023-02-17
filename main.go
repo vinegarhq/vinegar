@@ -37,6 +37,9 @@ func main() {
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
+		// Flatpak provides the graphics runtime, we cannot
+		// install it ourselves as Wine will crash
+		//   org.winehq.Wine.DLLs.dxvk
 		if InFlatpak {
 			fmt.Println("DXVK must be managed by the flatpak.")
 			os.Exit(1)

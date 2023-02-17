@@ -126,7 +126,6 @@ func RobloxApplyFFlags(dir string) {
 
 	Errc(err)
 	Errc(os.WriteFile(fflagsFile.Name(), finalFFlagsFile, 0644))
-	os.Exit(0)
 }
 
 // Launch the given Roblox executable, finding it from RobloxFind().

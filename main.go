@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 	"os"
 )
 
@@ -63,6 +64,9 @@ func main() {
 		PfxKill()
 	case "player":
 		RobloxLaunch("RobloxPlayerLauncher.exe", PLAYERURL, true, args[1:]...)
+		// wait 2 seconds for RobloxPlayerBeta to launch, because it can kill
+		// early on accident
+		time.Sleep(time.Second * 2)
 		CommLoop("RobloxPlayerBet", PfxKill)
 	case "studio":
 		RobloxLaunch("RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)

@@ -144,8 +144,9 @@ func CommFound(comm string) bool {
 	return false
 }
 
-// Loop until comm has not been found, then execute provided function
-func CommLoop(comm string, action func()) {
+// Stop the current execution queue and wait until a pid with the
+// comm has exited or has been killed.
+func CommLoop(comm string) {
 	log.Println("Waiting for process named", comm, "to exit")
 
 	for {
@@ -155,8 +156,6 @@ func CommLoop(comm string, action func()) {
 			break
 		}
 	}
-
-	action()
 }
 
 // Launch the system's editor $EDITOR, if not found, use xdg-open

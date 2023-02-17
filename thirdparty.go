@@ -19,6 +19,8 @@ const (
 	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
 
+// Extract specifically DXVK's DLLs within the tarball's folders
+// to the wineprefix
 func DxvkInstall() {
 	dxvkTarballPath := filepath.Join(Dirs.Cache, "dxvk-2.0.tar.gz")
 
@@ -66,6 +68,7 @@ func DxvkInstall() {
 	Errc(os.RemoveAll(dxvkTarballPath))
 }
 
+// Remove each DLL installed by DXVK to the wineprefix
 func DxvkUninstall() {
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
@@ -122,6 +125,7 @@ func RbxFpsUnlocker() {
 }
 
 // Download RCO (Roblox-Client-Optimizer)'s FFlags to the FFlags file provided.
+// Which, overrides the file entirely.
 func ApplyRCOFFlags(file string) {
 	log.Println("Applying RCO FFlags")
 	Download(RCOFFLAGSURL, file)

@@ -144,10 +144,9 @@ func CommFound(comm string) bool {
 	return false
 }
 
-// Loop untill the provided comm has not been found, and
-// execute function
+// Loop until comm has not been found, then execute provided function
 func CommLoop(comm string, action func()) {
-	log.Println("Waiting for proccess named", comm, "to exit")
+	log.Println("Waiting for process named", comm, "to exit")
 
 	for {
 		time.Sleep(time.Second)
@@ -160,6 +159,7 @@ func CommLoop(comm string, action func()) {
 	action()
 }
 
+// Launch the system's editor $EDITOR, if not found, use xdg-open
 func EditConfig() {
 	editorVar := os.Getenv("EDITOR")
 

@@ -33,8 +33,8 @@ var Dirs = defDirs()
 var ConfigFilePath = filepath.Join(Dirs.Config, "config.toml")
 var Config = loadConfig()
 
-// Define the default values for the Directories struct globally
-// for other functions to use it.
+// Define the default values for the Directories 
+// struct globally for other functions to use it.
 func defDirs() Directories {
 	homeDir, err := os.UserHomeDir()
 	Errc(err)
@@ -102,6 +102,8 @@ func defConfig() Configuration {
 	return config
 }
 
+// Write the configuration file with comments linking to 
+// the Vinegar documentation.
 func writeConfigTemplate() {
 	// ~/.config/vinegar may not exist yet!
 	CheckDirs(Dirs.Config)
@@ -115,11 +117,13 @@ func writeConfigTemplate() {
 	Errc(err)
 }
 
+// Load the default configuration, and then append
+// the configuration file to the loaded configuration, which is
+// global, this can mean that user's variables and fflags can override.
 func loadConfig() Configuration {
 	config := defConfig()
 
 	configFile, err := os.ReadFile(ConfigFilePath)
-
 
 	if errors.Is(err, os.ErrNotExist) {
 		writeConfigTemplate()
@@ -134,6 +138,8 @@ func loadConfig() Configuration {
 	}
 
 	for name, value := range config.Env {
+		// must be used for the toml library 
+		// to recognize the correct type.
 		os.Setenv(name, value.(string))
 	}
 

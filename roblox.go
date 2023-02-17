@@ -78,6 +78,8 @@ func RobloxInstall(url string) {
 	Errc(os.RemoveAll(installerPath))
 }
 
+// Write to the FFlags with the configuration's preferred renderer
+// and FFlags.
 func RobloxApplyFFlags(dir string) {
 	flags := make(map[string]interface{})
 

@@ -5,7 +5,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"time"
 )
 
 const (
@@ -64,10 +63,12 @@ func main() {
 		PfxKill()
 	case "player":
 		RobloxLaunch("RobloxPlayerLauncher.exe", PLAYERURL, true, args[1:]...)
-		// wait 2 seconds for RobloxPlayerBeta to launch, because it can kill
-		// early on accident
-		time.Sleep(time.Second * 2)
-		CommLoop("RobloxPlayerBet", PfxKill)
+		// Wait for the RobloxPlayerLauncher to exit, and that is because Roblox
+		// may update, so we wait for it to exit, and proceed with waiting for the
+		// preceeding fork of the launcher to the player, and then kill the prefix.
+		CommLoop("RobloxPlayerLauncher")
+		CommLoop("RobloxPlayerBet")
+		PfxKill()
 	case "studio":
 		RobloxLaunch("RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)
 	case "reset":

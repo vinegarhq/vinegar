@@ -83,7 +83,7 @@ func defConfig() Configuration {
 		"WINEPREFIX":       Dirs.Pfx,
 		"WINEARCH":         "win64", // required for rbxfpsunlocker
 		"WINEDEBUG":        "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
-		"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d",
+		"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;d3d10core=n;d3d11=n;d3d9=n;dxgi=n",
 
 		"DXVK_LOG_LEVEL":        "warn",
 		"DXVK_LOG_PATH":         "none",

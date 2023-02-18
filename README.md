@@ -7,7 +7,6 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Automatic Wineprefix killer when Roblox Player has exited
 + Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker, when needed at run time
 + Browser launch via MIME
-+ Clean wine log output
 + DXVK Installer and uninstaller
 + Configuration file for setting environment variables and applying custom FFlags
 + Custom execution of wine program within wineprefix

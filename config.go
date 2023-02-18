@@ -84,21 +84,21 @@ func defConfig() Configuration {
 	config.Env = map[string]any{
 		"WINEPREFIX":       Dirs.Pfx,
 		"WINEARCH":         "win64", // required for rbxfpsunlocker
-		"WINEDEBUG":        "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
+		// "WINEDEBUG":     "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
+		"WINEDEBUG":        "-all",
 		"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;d3d10core=n;d3d11=n;d3d9=n;dxgi=n",
 
 		"DXVK_LOG_LEVEL":        "warn",
 		"DXVK_LOG_PATH":         "none",
 		"DXVK_STATE_CACHE_PATH": filepath.Join(Dirs.Cache, "dxvk"),
 
-		// should be set by the user.
-		"MESA_GL_VERSION_OVERRIDE": "4.4",
-
-		// PRIME, should be automatic.
-		"DRI_PRIME":                 "1",
-		"__NV_PRIME_RENDER_OFFLOAD": "1",
-		"__VK_LAYER_NV_optimus":     "NVIDIA_only",
-		"__GLX_VENDOR_LIBRARY_NAME": "nvidia",
+		// these should be overrided by the user.
+		"MESA_GL_VERSION_OVERRIDE":    "4.4",
+		"__GL_THREADED_OPTIMIZATIONS": "1",
+		"DRI_PRIME":                   "1",
+		"__NV_PRIME_RENDER_OFFLOAD":   "1",
+		"__VK_LAYER_NV_optimus":       "NVIDIA_only",
+		"__GLX_VENDOR_LIBRARY_NAME":   "nvidia",
 	}
 
 	return config

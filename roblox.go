@@ -150,7 +150,6 @@ func EdgeDirSet(perm uint32, create bool) {
 	}
 }
 
-
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.

@@ -32,13 +32,6 @@ func RobloxFind(giveDir bool, exe string) string {
 			continue
 		}
 
-		studioExe, err := os.Open(filepath.Join(versionDir.Name(), exe))
-
-		if err == nil {
-			final = studioExe.Name()
-			break
-		}
-
 		versionDirs, err := versionDir.Readdir(0)
 
 		if err != nil {
@@ -135,6 +128,10 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 	if RobloxFind(false, exe) == "" {
 		RobloxInstall(url)
 	}
+
+	// Wait for Roblox{Studio,Player}Launcher
+	// to finish installing, as sometimes that could happen
+	CommLoop(exe[:15])
 
 	robloxRoot := RobloxFind(true, exe)
 

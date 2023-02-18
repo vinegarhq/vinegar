@@ -66,7 +66,6 @@ func main() {
 		// Wait for the RobloxPlayerLauncher to exit, and that is because Roblox
 		// may update, so we wait for it to exit, and proceed with waiting for the
 		// preceeding fork of the launcher to the player, and then kill the prefix.
-		CommLoop("RobloxPlayerLau") // the character limit is this btw lol
 		CommLoop("RobloxPlayerBet")
 		PfxKill()
 	case "studio":

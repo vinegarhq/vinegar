@@ -4,6 +4,8 @@ package main
 
 import (
 	"archive/zip"
+	"fmt"
+	"github.com/pelletier/go-toml/v2"
 	"io"
 	"log"
 	"net/http"
@@ -160,13 +162,47 @@ func CommLoop(comm string) {
 
 // Launch the system's editor $EDITOR, if not found, use xdg-open
 func EditConfig() {
+	var editor string
+	var testConfig Configuration
 	editorVar := os.Getenv("EDITOR")
 
+	tempfile, err := os.CreateTemp(Dirs.Config, "testconfig")
+	Errc(err)
+
+	testConfigFilePath, err := filepath.Abs(tempfile.Name())
+	Errc(err)
+
+	realConfigContents, err := os.ReadFile(ConfigFilePath)
+	Errc(err)
+
+	_, err = tempfile.Write(realConfigContents)
+	Errc(err)
+
 	if editorVar != "" {
-		Exec(editorVar, false, ConfigFilePath)
+		editor = editorVar
 	} else if _, e := exec.LookPath("xdg-open"); e == nil {
-		Exec("xdg-open", false, ConfigFilePath)
+		editor = "xdg-open"
 	} else {
 		log.Fatal("Failed to find editor")
+	}
+
+	for {
+		Exec(editor, false, testConfigFilePath)
+
+		testConfigFile, _ := os.ReadFile(testConfigFilePath)
+		if err := toml.Unmarshal([]byte(testConfigFile), &testConfig); err == nil {
+			err := os.WriteFile(ConfigFilePath, testConfigFile, 0644)
+			Errc(err)
+			tempfile.Close()
+			if _, err := os.Stat(testConfigFilePath); err == nil {
+				// User might not save...
+				err = os.Remove(testConfigFilePath)
+			}
+			Errc(err)
+			break
+		} else {
+			log.Println("Error in document:", err.Error(), "\nPress enter to re-edit")
+			fmt.Scanln()
+		}
 	}
 }

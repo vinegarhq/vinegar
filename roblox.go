@@ -79,7 +79,7 @@ func RobloxApplyFFlags(dir string) {
 	log.Println("Applying FFlags")
 
 	fflagsDir := filepath.Join(dir, "ClientSettings")
-	CheckDirs(fflagsDir)
+	CheckDirs(0755, fflagsDir)
 
 	// Create an empty fflags file
 	fflagsFile, err := os.Create(filepath.Join(fflagsDir, "ClientAppSettings.json"))
@@ -121,10 +121,42 @@ func RobloxApplyFFlags(dir string) {
 	Errc(os.WriteFile(fflagsFile.Name(), finalFFlagsFile, 0644))
 }
 
+func EdgeDirSet(perm uint32, create bool) {
+	user, err := user.Current()
+	Errc(err)
+
+	var programDirs = []string{
+		filepath.Join("users", user.Username, "AppData/Local"),
+		"Program Files (x86)",
+		"Program Files",
+	}
+
+	for _, programDir := range programDirs {
+		EdgeDir := filepath.Join(Dirs.Pfx, "drive_c", programDir, "Microsoft", "EdgeUpdate")
+
+		if _, err := os.Stat(EdgeDir); os.IsNotExist(err) && create {
+			CheckDirs(0755, filepath.Dir(EdgeDir))
+			CheckDirs(perm, EdgeDir)
+		} else if os.IsExist(err) {
+			err := os.Chmod(EdgeDir, os.FileMode(perm))
+			if err != nil && create {
+				Errc(err)
+			}
+
+			log.Println("Setting", EdgeDir, "to", os.FileMode(perm))
+		} else {
+			Errc(err)
+		}
+	}
+}
+
+
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
 func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
+	EdgeDirSet(0644, true)
+
 	if RobloxFind(false, exe) == "" {
 		RobloxInstall(url)
 	}

@@ -170,9 +170,15 @@ func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
 		RobloxApplyFFlags(robloxRoot)
 	}
 
-	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
 	log.Println("Launching", exe)
-	Exec("wine", true, args...)
+	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
+
+	if Config.GameMode {
+		args = append([]string{"wine"}, args...)
+		Exec("gamemoderun", true, args...)
+	} else {
+		Exec("wine", true, args...)
+	}
 
 	if Config.AutoRFPSU {
 		RbxFpsUnlocker()

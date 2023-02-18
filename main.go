@@ -31,10 +31,11 @@ func main() {
 
 	// Only these Dirs are queued for creation since
 	// the other directories are root directories for those.
-	CheckDirs(Dirs.Log, Dirs.Pfx)
+	CheckDirs(0755, Dirs.Log, Dirs.Pfx)
 
 	switch args[0] {
 	case "delete":
+		EdgeDirSet(0755, false)
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
 		// Flatpak provides the graphics runtime, we cannot
@@ -71,9 +72,10 @@ func main() {
 	case "studio":
 		RobloxLaunch("RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)
 	case "reset":
+		EdgeDirSet(0755, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)
 		// Automatic creation of the directories after it has been deleted
-		CheckDirs(Dirs.Pfx, Dirs.Log)
+		CheckDirs(0755, Dirs.Pfx, Dirs.Log)
 	default:
 		usage()
 	}

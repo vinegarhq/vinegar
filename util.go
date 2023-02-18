@@ -36,14 +36,14 @@ func DeleteDirs(dir ...string) {
 
 // Check for directories if they exist, if not,
 // create them with 0755, and let the user know with logging.
-func CheckDirs(dir ...string) {
+func CheckDirs(perm uint32, dir ...string) {
 	for _, d := range dir {
 		if _, err := os.Stat(d); os.IsNotExist(err) {
-			log.Println("Creating directory:", d)
+			log.Println("Creating directory", d, "with permissions", os.FileMode(perm))
 		} else {
 			continue
 		}
-		Errc(os.MkdirAll(d, 0755))
+		Errc(os.MkdirAll(d, os.FileMode(perm)))
 	}
 }
 

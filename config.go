@@ -106,7 +106,7 @@ func defConfig() Configuration {
 // the Vinegar documentation.
 func writeConfigTemplate() {
 	// ~/.config/vinegar may not exist yet!
-	CheckDirs(Dirs.Config)
+	CheckDirs(0755, Dirs.Config)
 
 	file, err := os.Create(ConfigFilePath)
 	Errc(err)

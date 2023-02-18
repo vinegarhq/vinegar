@@ -14,6 +14,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Fast finding of Roblox Player and Roblox Studio
 + Faster startup of rbxfpsunlocker and the Roblox Player
 + FreeBSD support
++ [GameMode](https://github.com/FeralInteractive/gamemode) support, when enabled in configuration
 + Logging for stderr
 
 # TODO

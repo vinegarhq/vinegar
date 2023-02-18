@@ -25,6 +25,7 @@ type Configuration struct {
 	Renderer  string
 	ApplyRCO  bool
 	AutoRFPSU bool
+	GameMode  bool
 	Env       map[string]any
 	FFlags    map[string]any
 }
@@ -75,6 +76,7 @@ func defConfig() Configuration {
 		FFlags:    make(map[string]any),
 		ApplyRCO:  true,
 		AutoRFPSU: false,
+		GameMode:  false,
 	}
 
 	// Main environment variables initialization

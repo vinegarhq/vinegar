@@ -160,23 +160,14 @@ func CommLoop(comm string) {
 	}
 }
 
-// Launch the system's editor $EDITOR, if not found, use xdg-open
+// Launch the system's editor $EDITOR, if not found, use xdg-open.
+// Aditionally, apply the changes to a temporary configuration file
+// and write it when the temporary is successful and can be parsed.
 func EditConfig() {
 	var editor string
 	var testConfig Configuration
+
 	editorVar := os.Getenv("EDITOR")
-
-	tempfile, err := os.CreateTemp(Dirs.Config, "testconfig")
-	Errc(err)
-
-	testConfigFilePath, err := filepath.Abs(tempfile.Name())
-	Errc(err)
-
-	realConfigContents, err := os.ReadFile(ConfigFilePath)
-	Errc(err)
-
-	_, err = tempfile.Write(realConfigContents)
-	Errc(err)
 
 	if editorVar != "" {
 		editor = editorVar
@@ -186,23 +177,39 @@ func EditConfig() {
 		log.Fatal("Failed to find editor")
 	}
 
-	for {
-		Exec(editor, false, testConfigFilePath)
+	// Create a temporary configuration file for testing
+	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
+	Errc(err)
+	// Absolute path is required for removal and editing
+	tempConfigFilePath, err := filepath.Abs(tempConfigFile.Name())
+	Errc(err)
 
-		testConfigFile, _ := os.ReadFile(testConfigFilePath)
-		if err := toml.Unmarshal([]byte(testConfigFile), &testConfig); err == nil {
-			err := os.WriteFile(ConfigFilePath, testConfigFile, 0644)
-			Errc(err)
-			tempfile.Close()
-			if _, err := os.Stat(testConfigFilePath); err == nil {
-				// User might not save...
-				err = os.Remove(testConfigFilePath)
-			}
-			Errc(err)
-			break
-		} else {
-			log.Println("Error in document:", err.Error(), "\nPress enter to re-edit")
+	configFile, err := os.ReadFile(ConfigFilePath)
+	Errc(err)
+
+	// Write the original configuration file to the temporary one
+	_, err = tempConfigFile.Write(configFile)
+	Errc(err)
+
+	// Loop until toml.Unmarshal is successful
+	for {
+		Exec(editor, false, tempConfigFilePath)
+
+		tempConfig, err := os.ReadFile(tempConfigFilePath)
+		Errc(err)
+
+		// Check if parsing has _failed_, if failed; re-open the file, which instructs
+		// contiuation of the loop.
+		if err := toml.Unmarshal([]byte(tempConfig), &testConfig); err != nil {
+			log.Println(err.Error())
+			log.Println("Press enter to re-edit configuration file")
 			fmt.Scanln()
+			continue
 		}
+
+		// If parsing has been successful ^, move the
+		// temporary configuration file to the primary one.
+		Errc(os.Rename(tempConfigFilePath, ConfigFilePath))
+		break
 	}
 }

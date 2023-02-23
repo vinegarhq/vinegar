@@ -136,9 +136,9 @@ func CommFound(query string) bool {
 	Errc(err)
 
 	for _, comm := range comms {
-		// FIXME: Error of ReadFile is not handled here
 		// comm file will include newline by default, we just remove it
-		if c, _ := os.ReadFile(comm); string(c)[:len(c)-1] == query {
+		c, err := os.ReadFile(comm)
+		if err == nil && string(c)[:len(c)-1] == query {
 			return true
 		}
 	}
@@ -150,6 +150,9 @@ func CommFound(query string) bool {
 // comm has exited or has been killed.
 func CommLoop(comm string) {
 	log.Println("Waiting for process named", comm, "to exit")
+
+	// wait a bit for the process to start
+	time.Sleep(time.Second)
 
 	for {
 		time.Sleep(time.Second)
@@ -180,6 +183,7 @@ func EditConfig() {
 	// Create a temporary configuration file for testing
 	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
 	Errc(err)
+
 	// Absolute path is required for removal and editing
 	tempConfigFilePath, err := filepath.Abs(tempConfigFile.Name())
 	Errc(err)

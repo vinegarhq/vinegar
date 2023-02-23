@@ -77,6 +77,7 @@ func defConfig() Configuration {
 		FFlags:    make(map[string]any),
 		ApplyRCO:  true,
 		AutoRFPSU: false,
+		Dxvk:      true,
 		GameMode:  false,
 	}
 

@@ -14,11 +14,11 @@ import (
 // giveDir is passed, it will give the exe's base directory instead of the
 // full path of the final Roblox executable.
 func RobloxFind(giveDir bool, exe string) string {
-	var final string
-
 	user, err := user.Current()
 	Errc(err)
 
+	// Since we are just searching for directories, it doesn't
+	// hurt to have both win64 and win32.
 	var programDirs = []string{
 		filepath.Join("users", user.Username, "AppData/Local"),
 		"Program Files (x86)",
@@ -26,39 +26,28 @@ func RobloxFind(giveDir bool, exe string) string {
 	}
 
 	for _, programDir := range programDirs {
-		versionDir, err := os.Open(filepath.Join(Dirs.Pfx, "drive_c", programDir, "Roblox/Versions"))
+		versionDir := filepath.Join(Dirs.Pfx, "drive_c", programDir, "Roblox/Versions")
+		
+		// Studio is placed here
+		rootExe := filepath.Join(versionDir, exe)
+		if _, e := os.Stat(rootExe); e == nil {
+			return rootExe
+		}
 
-		if os.IsNotExist(err) {
+		versionExe, _ := filepath.Glob(filepath.Join(versionDir, "*", exe))
+
+		if versionExe == nil {
 			continue
 		}
 
-		versionDirs, err := versionDir.Readdir(0)
-
-		if err != nil {
-			continue
+		if !giveDir {
+			return versionExe[0]
+		} else {
+			return filepath.Dir(versionExe[0])
 		}
-
-		for _, v := range versionDirs {
-			checkExe, err := os.Open(filepath.Join(versionDir.Name(), v.Name(), exe))
-
-			// os.IsNotExist does not work here
-			if err != nil {
-				continue
-			}
-
-			defer checkExe.Close()
-
-			if !giveDir {
-				final = checkExe.Name()
-			} else {
-				final = filepath.Join(versionDir.Name(), v.Name())
-			}
-
-			break
-		}
-		defer versionDir.Close()
 	}
-	return final
+
+	return ""
 }
 
 // Technically, fetch a url's exe and launch it once. This is used
@@ -144,8 +133,6 @@ func EdgeDirSet(perm uint32, create bool) {
 			}
 
 			log.Println("Setting", EdgeDir, "to", os.FileMode(perm))
-		} else {
-			Errc(err)
 		}
 	}
 }

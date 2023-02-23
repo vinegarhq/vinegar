@@ -42,6 +42,9 @@ func DxvkMarkerExist() bool {
 func DxvkToggle() {
 	if Config.Dxvk == true {
 		DxvkInstall()
+
+		Config.Renderer = "D3D11"
+		Config.Env["WINEDLLOVERRIDES"] = Config.Env["WINEDLLOVERRIDES"].(string) + "d3d10core,d3d11,d3d9,dxgi=n"
 	} else {
 		DxvkUninstall()
 	}
@@ -122,7 +125,7 @@ func DxvkUninstall() {
 		return
 	}
 
-	// We don't care about where the dlls go this time, 
+	// We don't care about where the dlls go this time,
 	// since we are just deleting DLLs.
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {

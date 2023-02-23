@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
 )
 
@@ -14,17 +13,6 @@ import (
 // giveDir is passed, it will give the exe's base directory instead of the
 // full path of the final Roblox executable.
 func RobloxFind(giveDir bool, exe string) string {
-	user, err := user.Current()
-	Errc(err)
-
-	// Since we are just searching for directories, it doesn't
-	// hurt to have both win64 and win32.
-	var programDirs = []string{
-		filepath.Join("users", user.Username, "AppData/Local"),
-		"Program Files (x86)",
-		"Program Files",
-	}
-
 	for _, programDir := range programDirs {
 		versionDir := filepath.Join(Dirs.Pfx, "drive_c", programDir, "Roblox/Versions")
 		
@@ -62,16 +50,16 @@ func RobloxInstall(url string) {
 
 // Write to the FFlags with the configuration's preferred renderer
 // and FFlags.
-func RobloxApplyFFlags(dir string) {
+func RobloxApplyFFlags(app string, dir string) {
 	flags := make(map[string]interface{})
 
 	log.Println("Applying FFlags")
 
-	fflagsDir := filepath.Join(dir, "ClientSettings")
+	fflagsDir := filepath.Join(dir, app + "Settings")
 	CheckDirs(0755, fflagsDir)
 
 	// Create an empty fflags file
-	fflagsFile, err := os.Create(filepath.Join(fflagsDir, "ClientAppSettings.json"))
+	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app + "AppSettings.json"))
 	Errc(err)
 
 	if Config.ApplyRCO {
@@ -111,15 +99,6 @@ func RobloxApplyFFlags(dir string) {
 }
 
 func EdgeDirSet(perm uint32, create bool) {
-	user, err := user.Current()
-	Errc(err)
-
-	var programDirs = []string{
-		filepath.Join("users", user.Username, "AppData/Local"),
-		"Program Files (x86)",
-		"Program Files",
-	}
-
 	for _, programDir := range programDirs {
 		EdgeDir := filepath.Join(Dirs.Pfx, "drive_c", programDir, "Microsoft", "EdgeUpdate")
 
@@ -140,22 +119,20 @@ func EdgeDirSet(perm uint32, create bool) {
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
-func RobloxLaunch(exe, url string, installFFlagPlayer bool, args ...string) {
+func RobloxLaunch(exe string, app string, url string, args ...string) {
 	EdgeDirSet(0644, true)
 
 	if RobloxFind(false, exe) == "" {
 		RobloxInstall(url)
 	}
 
-	// Wait for Roblox{Studio,Player}Launcher
+	// Wait for Roblox{Studio,Player}Lau(ncher)
 	// to finish installing, as sometimes that could happen
 	CommLoop(exe[:15])
 
 	robloxRoot := RobloxFind(true, exe)
 
-	if installFFlagPlayer {
-		RobloxApplyFFlags(robloxRoot)
-	}
+	RobloxApplyFFlags(app, robloxRoot)
 
 	log.Println("Launching", exe)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)

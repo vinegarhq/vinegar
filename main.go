@@ -39,7 +39,7 @@ func main() {
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
 		// Flatpak provides the graphics runtime, we cannot
-		// install it ourselves as Wine will crash
+		// install it ourselves as Wine will crash.
 		//   org.winehq.Wine.DLLs.dxvk
 		if InFlatpak {
 			fmt.Println("DXVK must be managed by the flatpak.")
@@ -63,14 +63,14 @@ func main() {
 	case "kill":
 		PfxKill()
 	case "player":
-		RobloxLaunch("RobloxPlayerLauncher.exe", PLAYERURL, true, args[1:]...)
+		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", PLAYERURL, args[1:]...)
 		// Wait for the RobloxPlayerLauncher to exit, and that is because Roblox
 		// may update, so we wait for it to exit, and proceed with waiting for the
 		// preceeding fork of the launcher to the player, and then kill the prefix.
 		CommLoop("RobloxPlayerBet")
 		PfxKill()
 	case "studio":
-		RobloxLaunch("RobloxStudioLauncherBeta.exe", STUDIOURL, false, args[1:]...)
+		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", STUDIOURL, args[1:]...)
 	case "reset":
 		EdgeDirSet(0755, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)

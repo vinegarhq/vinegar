@@ -4,7 +4,27 @@ package main
 
 import (
 	"log"
+	"path/filepath"
+	"os/user"
 )
+
+var programDirs = defProgramDirs()
+
+func defProgramDirs() []string {
+	user, err := user.Current()
+	Errc(err)
+
+	var programDirPaths = []string{
+		filepath.Join("users", user.Username, "AppData/Local"),
+		"Program Files",
+	}
+
+	if Config.Env["WINEARCH"] == "win64" {
+		programDirPaths = append(programDirPaths, "Program Files (x86)")
+	}
+
+	return programDirPaths
+}
 
 // Kill the wineprefix, required for autokill, and
 // sometimes fixes Flatpak wine crashes.

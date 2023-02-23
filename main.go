@@ -65,6 +65,9 @@ func main() {
 		PfxKill()
 	case "studio":
 		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", STUDIOURL, args[1:]...)
+		// Same thing as player, behavior is subject to change.
+		CommLoop("RobloxStudioLau")
+		PfxKill()
 	case "reset":
 		EdgeDirSet(0755, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)

@@ -136,9 +136,9 @@ func RobloxLaunch(exe string, app string, url string, args ...string) {
 		panic("This wasn't supposed to happen! Roblox isn't installed!")
 	}
 
-	RobloxApplyFFlags(app, robloxRoot)
-
 	DxvkToggle()
+
+	RobloxApplyFFlags(app, robloxRoot)
 
 	log.Println("Launching", exe)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)

@@ -27,7 +27,7 @@ type Configuration struct {
 	AutoRFPSU bool
 	Dxvk      bool
 	GameMode  bool
-	Env       map[string]any
+	Env       map[string]any // FIXME: use map[string]string
 	FFlags    map[string]any
 }
 

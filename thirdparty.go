@@ -56,24 +56,31 @@ func DxvkInstall() {
 				if Config.Env["WINEARCH"] == "win32" {
 					continue
 				}
-				dirInstall = "syswow64"
+				dirInstall = filepath.Join(Dirs.Pfx, "drive_c", "windows", "syswow64")
 			} else {
-				dirInstall = "system32"
+				dirInstall = filepath.Join(Dirs.Pfx, "drive_c", "windows", "system32")
 			}
 
-			writer, err := os.Create(filepath.Join(Dirs.Pfx, "drive_c", "windows", dirInstall, dllFile))
+			// Wineprefix may not have been initialized yet
+			CheckDirs(0755, dirInstall)
+
+			writer, err := os.Create(filepath.Join(dirInstall, dllFile))
 			Errc(err)
+
 			log.Println("Gzipped:", writer.Name())
 			io.Copy(writer, dxvkTar)
 			writer.Close()
 		}
 	}
 
+	// Remove the dxvk tarball, as we no longer need it
 	Errc(os.RemoveAll(dxvkTarballPath))
 }
 
 // Remove each DLL installed by DXVK to the wineprefix
 func DxvkUninstall() {
+	// We don't care about where the dlls go this time,
+	// since we are just deleting DLLs.
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
 			dllFile := filepath.Join(Dirs.Pfx, "drive_c", "windows", dir, dll+".dll")

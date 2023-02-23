@@ -132,6 +132,10 @@ func RobloxLaunch(exe string, app string, url string, args ...string) {
 
 	robloxRoot := RobloxFind(true, exe)
 
+	if robloxRoot == "" {
+		panic("This wasn't supposed to happen! Roblox isn't installed!")
+	}
+
 	RobloxApplyFFlags(app, robloxRoot)
 
 	log.Println("Launching", exe)

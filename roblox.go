@@ -15,7 +15,7 @@ import (
 func RobloxFind(giveDir bool, exe string) string {
 	for _, programDir := range programDirs {
 		versionDir := filepath.Join(Dirs.Pfx, "drive_c", programDir, "Roblox/Versions")
-		
+
 		// Studio is placed here
 		rootExe := filepath.Join(versionDir, exe)
 		if _, e := os.Stat(rootExe); e == nil {
@@ -55,11 +55,11 @@ func RobloxApplyFFlags(app string, dir string) {
 
 	log.Println("Applying FFlags")
 
-	fflagsDir := filepath.Join(dir, app + "Settings")
+	fflagsDir := filepath.Join(dir, app+"Settings")
 	CheckDirs(0755, fflagsDir)
 
 	// Create an empty fflags file
-	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app + "AppSettings.json"))
+	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
 	Errc(err)
 
 	if Config.ApplyRCO {

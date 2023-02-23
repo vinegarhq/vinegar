@@ -82,8 +82,8 @@ func defConfig() Configuration {
 	// Main environment variables initialization
 	// Note: these can be overrided by the user.
 	config.Env = map[string]any{
-		"WINEPREFIX":       Dirs.Pfx,
-		"WINEARCH":         "win64", // required for rbxfpsunlocker
+		"WINEPREFIX": Dirs.Pfx,
+		"WINEARCH":   "win64", // required for rbxfpsunlocker
 		// "WINEDEBUG":     "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
 		"WINEDEBUG":        "-all",
 		"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;d3d10core=n;d3d11=n;d3d9=n;dxgi=n",

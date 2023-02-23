@@ -4,8 +4,8 @@ package main
 
 import (
 	"log"
-	"path/filepath"
 	"os/user"
+	"path/filepath"
 )
 
 var programDirs = defProgramDirs()

@@ -67,7 +67,7 @@ func Exec(prog string, logStderr bool, args ...string) {
 		cmd.Stderr = os.Stderr
 	}
 
-	cmd.Stdin  = os.Stdin
+	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 
 	Errc(cmd.Run())
@@ -91,7 +91,7 @@ func Download(source, target string) {
 }
 
 // Unzip a single file without keeping track of zip's structure into
-// a target file, Will remove the source zip file after successful 
+// a target file, Will remove the source zip file after successful
 // extraction, this function only works for zips with a single file,
 // otherwise it will overwrie the target with other files in the zip.
 func Unzip(source, target string) {

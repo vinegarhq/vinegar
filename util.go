@@ -50,7 +50,7 @@ func CheckDirs(perm uint32, dir ...string) {
 
 // Execute a program with arguments whilst keeping
 // it's stderr output to a log file, stdout is ignored and is sent to os.Stdout.
-func Exec(prog string, logStderr bool, args ...string) {
+func Exec(prog string, logStderr bool, args ...string) error {
 	log.Println("Executing:", prog, args) // debug
 
 	cmd := exec.Command(prog, args...)
@@ -70,7 +70,7 @@ func Exec(prog string, logStderr bool, args ...string) {
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 
-	Errc(cmd.Run())
+	return cmd.Run()
 }
 
 // Download a single file into a target file.
@@ -197,7 +197,7 @@ func EditConfig() {
 
 	// Loop until toml.Unmarshal is successful
 	for {
-		Exec(editor, false, tempConfigFilePath)
+		Errc(Exec(editor, false, tempConfigFilePath))
 
 		tempConfig, err := os.ReadFile(tempConfigFilePath)
 		Errc(err)

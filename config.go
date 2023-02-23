@@ -27,7 +27,7 @@ type Configuration struct {
 	AutoRFPSU bool
 	Dxvk      bool
 	GameMode  bool
-	Env       map[string]any // FIXME: use map[string]string
+	Env       map[string]string
 	FFlags    map[string]any
 }
 
@@ -72,8 +72,8 @@ func defDirs() Directories {
 // Initial default configuration values
 func defConfig() Configuration {
 	config := Configuration{
-		Renderer:  "Vulkan",
-		Env:       make(map[string]any),
+		Renderer:  "D3D11",
+		Env:       make(map[string]string),
 		FFlags:    make(map[string]any),
 		ApplyRCO:  true,
 		AutoRFPSU: false,
@@ -83,7 +83,7 @@ func defConfig() Configuration {
 
 	// Main environment variables initialization
 	// Note: these can be overrided by the user.
-	config.Env = map[string]any{
+	config.Env = map[string]string{
 		"WINEPREFIX": Dirs.Pfx,
 		"WINEARCH":   "win64", // required for rbxfpsunlocker
 		// "WINEDEBUG":     "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
@@ -144,7 +144,7 @@ func loadConfig() Configuration {
 	for name, value := range config.Env {
 		// must be used for the toml library
 		// to recognize the correct type.
-		os.Setenv(name, value.(string))
+		os.Setenv(name, value)
 	}
 
 	return config

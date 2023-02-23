@@ -12,7 +12,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -24,7 +23,7 @@ func Errc(e error, message ...string) {
 		if message != nil {
 			log.Println(message)
 		}
-		log.Fatal(e)
+		panic(e)
 	}
 }
 
@@ -68,7 +67,7 @@ func Exec(prog string, logStderr bool, args ...string) {
 		cmd.Stderr = os.Stderr
 	}
 
-	cmd.Stdin = os.Stdin //Fix for nano bug in "vinegar edit"
+	cmd.Stdin  = os.Stdin
 	cmd.Stdout = os.Stdout
 
 	Errc(cmd.Run())
@@ -91,8 +90,10 @@ func Download(source, target string) {
 	log.Println("Downloaded", source)
 }
 
-// Unzip a single file without keeping track of zip's structue into
-// a target file, Will remove the source zip file after successful extraction.
+// Unzip a single file without keeping track of zip's structure into
+// a target file, Will remove the source zip file after successful 
+// extraction, this function only works for zips with a single file,
+// otherwise it will overwrie the target with other files in the zip.
 func Unzip(source, target string) {
 	archive, err := zip.OpenReader(source)
 	Errc(err)
@@ -129,16 +130,15 @@ func InFlatpakCheck() bool {
 
 // Loop over procfs (/proc) for if pid/comm matches a string, when found
 // such process, return true; false otherwise
-func CommFound(comm string) bool {
-	procDir, err := os.Open("/proc")
+// NOTE: this WILL not work on FreeBSD.
+func CommFound(query string) bool {
+	comms, err := filepath.Glob("/proc/*/comm")
 	Errc(err)
 
-	procs, err := procDir.Readdir(0)
-	Errc(err)
-
-	for _, p := range procs {
-		procComm, _ := os.ReadFile(filepath.Join(procDir.Name(), p.Name(), "comm"))
-		if strings.HasPrefix(string(procComm), comm) {
+	for _, comm := range comms {
+		// FIXME: Error of ReadFile is not handled here
+		// comm file will include newline by default, we just remove it
+		if c, _ := os.ReadFile(comm); string(c)[:len(c)-1] == query {
 			return true
 		}
 	}

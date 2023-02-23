@@ -66,7 +66,7 @@ func main() {
 	case "studio":
 		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", STUDIOURL, args[1:]...)
 		// Same thing as player, behavior is subject to change.
-		CommLoop("RobloxStudioLau")
+		CommLoop("RobloxStudioBet")
 		PfxKill()
 	case "reset":
 		EdgeDirSet(0755, false)

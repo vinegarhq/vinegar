@@ -44,7 +44,7 @@ func RobloxFind(giveDir bool, exe string) string {
 func RobloxInstall(url string) {
 	installerPath := filepath.Join(Dirs.Cache, "rbxinstall.exe")
 	Download(url, installerPath)
-	Exec("wine", true, installerPath)
+	Errc(Exec("wine", true, installerPath))
 	Errc(os.RemoveAll(installerPath))
 }
 
@@ -130,6 +130,13 @@ func RobloxLaunch(exe string, app string, url string, args ...string) {
 	// to finish installing, as sometimes that could happen
 	CommLoop(exe[:15])
 
+	if app == "Studio" {
+		// Because roblox studio launches itself and doesn't fork,
+		// even during installation, we have to kill it.
+		CommFound("RobloxStudioBet")
+		PfxKill()
+	}
+
 	robloxRoot := RobloxFind(true, exe)
 
 	if robloxRoot == "" {
@@ -137,7 +144,6 @@ func RobloxLaunch(exe string, app string, url string, args ...string) {
 	}
 
 	DxvkToggle()
-
 	RobloxApplyFFlags(app, robloxRoot)
 
 	log.Println("Launching", exe)
@@ -145,12 +151,12 @@ func RobloxLaunch(exe string, app string, url string, args ...string) {
 
 	if Config.GameMode {
 		args = append([]string{"wine"}, args...)
-		Exec("gamemoderun", true, args...)
+		Errc(Exec("gamemoderun", true, args...))
 	} else {
-		Exec("wine", true, args...)
+		Errc(Exec("wine", true, args...))
 	}
 
 	if Config.AutoRFPSU {
-		RbxFpsUnlocker()
+		go RbxFpsUnlocker()
 	}
 }

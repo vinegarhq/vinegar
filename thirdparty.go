@@ -19,9 +19,43 @@ const (
 	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
 
+var DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
+
+// my brother in christ the sister is 'Can We Install Dxvk?'
+func CanWeInstallDxvk() {
+	// Flatpak provides the graphics runtime, we cannot
+	// install it ourselves as Wine will crash.
+	//   org.winehq.Wine.DLLs.dxvk
+	if InFlatpak {
+		// Can we install dxvk? No.
+		panic("DXVK must be managed by the flatpak.")
+	}
+}
+
+// Simple function that just tells us if the
+// 'dxvk installed' marker file exists.
+func DxvkMarkerExist() bool {
+	_, err := os.Open(DxvkInstallMarker)
+	return err == nil
+}
+
+func DxvkToggle() {
+	if Config.Dxvk == true {
+		DxvkInstall()
+	} else {
+		DxvkUninstall()
+	}
+}
+
 // Extract specifically DXVK's DLLs within the tarball's folders
 // to the wineprefix
 func DxvkInstall() {
+	CanWeInstallDxvk()
+
+	if DxvkMarkerExist() {
+		return
+	}
+
 	dxvkTarballPath := filepath.Join(Dirs.Cache, "dxvk-2.0.tar.gz")
 
 	Download(DXVKURL, dxvkTarballPath)
@@ -75,11 +109,20 @@ func DxvkInstall() {
 
 	// Remove the dxvk tarball, as we no longer need it
 	Errc(os.RemoveAll(dxvkTarballPath))
+
+	// Put a marker in the wineprefix root indicating we installed dxvk
+	_, err = os.Create(DxvkInstallMarker)
+	Errc(err)
 }
 
 // Remove each DLL installed by DXVK to the wineprefix
 func DxvkUninstall() {
-	// We don't care about where the dlls go this time,
+	// Unnecessary safety
+	if !DxvkMarkerExist() {
+		return
+	}
+
+	// We don't care about where the dlls go this time, 
 	// since we are just deleting DLLs.
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
@@ -88,6 +131,8 @@ func DxvkUninstall() {
 			Errc(os.RemoveAll(dllFile))
 		}
 	}
+
+	Errc(os.RemoveAll(DxvkInstallMarker))
 }
 
 // Launch or automatically install axstin's rbxfpsunlocker.

@@ -25,6 +25,7 @@ type Configuration struct {
 	Renderer  string
 	ApplyRCO  bool
 	AutoRFPSU bool
+	Dxvk      bool
 	GameMode  bool
 	Env       map[string]any
 	FFlags    map[string]any

@@ -52,6 +52,10 @@ func DxvkInstall() {
 		switch header.Typeflag {
 		case tar.TypeReg:
 			if archDir == "x32" {
+				// syswow64 does not exist on win32 wineprefixes
+				if Config.Env["WINEARCH"] == "win32" {
+					continue
+				}
 				dirInstall = "syswow64"
 			} else {
 				dirInstall = "system32"

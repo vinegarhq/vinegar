@@ -138,6 +138,8 @@ func RobloxLaunch(exe string, app string, url string, args ...string) {
 
 	RobloxApplyFFlags(app, robloxRoot)
 
+	DxvkToggle()
+
 	log.Println("Launching", exe)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
 

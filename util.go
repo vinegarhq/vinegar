@@ -54,7 +54,6 @@ func Exec(prog string, logStderr bool, args ...string) error {
 	log.Println("Executing:", prog, args) // debug
 
 	cmd := exec.Command(prog, args...)
-	cmd.Dir = Dirs.Cache
 
 	// Stdout is particularly always empty.
 	if logStderr {
@@ -67,6 +66,7 @@ func Exec(prog string, logStderr bool, args ...string) error {
 		cmd.Stderr = os.Stderr
 	}
 
+	cmd.Dir = Dirs.Cache
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 

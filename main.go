@@ -8,7 +8,7 @@ import (
 )
 
 func usage() {
-	fmt.Println("usage: vinegar [delete|edit|exec|kill|reset]")
+	fmt.Println("usage: vinegar [delete|edit|exec|kill|reset|printconfig]")
 	fmt.Println("       vinegar [player|studio] [args...]")
 	if !InFlatpak {
 		fmt.Println("       vinegar [dxvk] install|uninstall")
@@ -79,6 +79,8 @@ func main() {
 		DeleteDirs(Dirs.Pfx, Dirs.Log)
 		// Automatic creation of the directories after it has been deleted
 		CheckDirs(0755, Dirs.Pfx, Dirs.Log)
+	case "printconfig":
+		fmt.Printf("%+v\n", Config)
 	default:
 		usage()
 	}

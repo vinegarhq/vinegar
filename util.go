@@ -151,9 +151,6 @@ func CommFound(query string) bool {
 func CommLoop(comm string) {
 	log.Println("Waiting for process named", comm, "to exit")
 
-	// wait a bit for the process to start
-	time.Sleep(time.Second)
-
 	for {
 		time.Sleep(time.Second)
 

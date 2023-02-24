@@ -5,7 +5,7 @@ package main
 import (
 	"archive/zip"
 	"fmt"
-	"github.com/pelletier/go-toml/v2"
+	"github.com/BurntSushi/toml"
 	"io"
 	"log"
 	"net/http"

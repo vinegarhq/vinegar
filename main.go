@@ -31,7 +31,8 @@ func main() {
 	if InFlatpak {
 		// DxvkUninstall will automatically remove the DLLs,
 		// but since it checks for the marker we are fine.
-		// This Is A Hack.
+		// DxvkToggle() will set the renderer anyway, not
+		// sure about DLL overrides for flatpak.
 		Config.Dxvk = false
 	}
 

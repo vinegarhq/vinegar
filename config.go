@@ -116,8 +116,13 @@ func writeConfigTemplate() {
 	Errc(err)
 	defer file.Close()
 
+	template := `
+# See how to configure Vinegar on the documentation website:
+# https://vinegarhq.github.io/Configuration
+`
+
 	// TODO: Change to point to actual chapter that describes this
-	_, err = file.WriteString("# See how to configure Vinegar on the documentation website:\n# https://vinegarhq.github.io\n")
+	_, err = file.WriteString(template[1:]) // ignores first newline
 	Errc(err)
 }
 

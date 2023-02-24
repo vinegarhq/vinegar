@@ -7,11 +7,6 @@ import (
 	"os"
 )
 
-const (
-	PLAYERURL = "https://www.roblox.com/download/client"
-	STUDIOURL = "https://www.roblox.com/download/studio"
-)
-
 func usage() {
 	fmt.Println("usage: vinegar [delete|edit|exec|kill|reset]")
 	fmt.Println("       vinegar [player|studio] [args...]")
@@ -57,14 +52,14 @@ func main() {
 	case "kill":
 		PfxKill()
 	case "player":
-		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", PLAYERURL, args[1:]...)
+		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", args[1:]...)
 		// Wait for the RobloxPlayerLauncher to exit, and that is because Roblox
 		// may update, so we wait for it to exit, and proceed with waiting for the
 		// preceeding fork of the launcher to the player, and then kill the prefix.
 		CommLoop("RobloxPlayerBet")
 		PfxKill()
 	case "studio":
-		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", STUDIOURL, args[1:]...)
+		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", args[1:]...)
 		// Same thing as player, behavior is subject to change.
 		CommLoop("RobloxStudioBet")
 		PfxKill()

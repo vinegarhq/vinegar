@@ -19,7 +19,11 @@ func RobloxFind(giveDir bool, exe string) string {
 		// Studio is placed here
 		rootExe := filepath.Join(versionDir, exe)
 		if _, e := os.Stat(rootExe); e == nil {
-			return rootExe
+			if !giveDir {
+				return rootExe
+			} else {
+				return versionDir
+			}
 		}
 
 		versionExe, _ := filepath.Glob(filepath.Join(versionDir, "*", exe))
@@ -52,6 +56,12 @@ func RobloxInstall(url string) {
 // and FFlags.
 func RobloxApplyFFlags(app string, dir string) {
 	flags := make(map[string]interface{})
+
+	// FFlag application for studio has been disabled,
+	// due to how studio is launched.
+	if app == "Studio" {
+		return
+	}
 
 	log.Println("Applying FFlags")
 
@@ -119,28 +129,25 @@ func EdgeDirSet(perm uint32, create bool) {
 // Launch the given Roblox executable, finding it from RobloxFind().
 // When it is not found, it is fetched and installed. additionally,
 // pass vinegar's command line with the Roblox executable pre-appended.
-func RobloxLaunch(exe string, app string, url string, args ...string) {
+func RobloxLaunch(exe string, app string, args ...string) {
 	EdgeDirSet(0644, true)
 
+	// Instead of resorting to using studio's own url, we will use the client's
+	// download url, since it installs Roblox Studio into the root of the versions
+	// directory, and since the installer does not fork, we will have to use that
+	// instead. On my (apprehensions) machine, studio will always install itself anyway.
 	if RobloxFind(false, exe) == "" {
-		RobloxInstall(url)
+		RobloxInstall("https://www.roblox.com/download/client")
 	}
 
 	// Wait for Roblox{Studio,Player}Lau(ncher)
 	// to finish installing, as sometimes that could happen
 	CommLoop(exe[:15])
 
-	if app == "Studio" {
-		// Because roblox studio launches itself and doesn't fork,
-		// even during installation, we have to kill it.
-		CommFound("RobloxStudioBet")
-		PfxKill()
-	}
-
 	robloxRoot := RobloxFind(true, exe)
 
 	if robloxRoot == "" {
-		panic("This wasn't supposed to happen! Roblox isn't installed!")
+		panic("This wasn't supposed to happen! Roblox isn't installed... I thought i did it already...")
 	}
 
 	DxvkToggle()

@@ -21,17 +21,6 @@ const (
 
 var DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
 
-// my brother in christ the sister is 'Can We Install Dxvk?'
-func CanWeInstallDxvk() {
-	// Flatpak provides the graphics runtime, we cannot
-	// install it ourselves as Wine will crash.
-	//   org.winehq.Wine.DLLs.dxvk
-	if InFlatpak {
-		// Can we install dxvk? No.
-		panic("DXVK must be managed by the flatpak.")
-	}
-}
-
 // Simple function that just tells us if the
 // 'dxvk installed' marker file exists.
 func DxvkMarkerExist() bool {
@@ -41,22 +30,30 @@ func DxvkMarkerExist() bool {
 
 func DxvkToggle() {
 	if Config.Dxvk == true {
-		DxvkInstall()
+		DxvkInstall(false)
 
 		Config.Renderer = "D3D11"
 		Config.Env["WINEDLLOVERRIDES"] += "d3d10core,d3d11,d3d9,dxgi=n"
 	} else {
-		DxvkUninstall()
+		DxvkUninstall(false)
 	}
 }
 
 // Extract specifically DXVK's DLLs within the tarball's folders
 // to the wineprefix
-func DxvkInstall() {
-	CanWeInstallDxvk()
+func DxvkInstall(force bool) {
+	// Flatpak provides the graphics runtime, we cannot
+	// install it ourselves as Wine will crash.
+	//   org.winehq.Wine.DLLs.dxvk
+	if InFlatpak {
+		// Can we install dxvk? No, we cannot.
+		panic("DXVK must be managed by the flatpak.")
+	}
 
-	if DxvkMarkerExist() {
-		return
+	if !force {
+		if DxvkMarkerExist() {
+			return
+		}
 	}
 
 	dxvkTarballPath := filepath.Join(Dirs.Cache, "dxvk-2.0.tar.gz")
@@ -119,10 +116,11 @@ func DxvkInstall() {
 }
 
 // Remove each DLL installed by DXVK to the wineprefix
-func DxvkUninstall() {
-	// Unnecessary safety
-	if !DxvkMarkerExist() {
-		return
+func DxvkUninstall(force bool) {
+	if !force {
+		if !DxvkMarkerExist() {
+			return
+		}
 	}
 
 	// We don't care about where the dlls go this time,

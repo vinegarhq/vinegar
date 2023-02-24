@@ -28,6 +28,13 @@ func main() {
 	// the other directories are root directories for those.
 	CheckDirs(0755, Dirs.Log, Dirs.Pfx)
 
+	if InFlatpak {
+		// DxvkUninstall will automatically remove the DLLs,
+		// but since it checks for the marker we are fine.
+		// This Is A Hack.
+		Config.Dxvk = false
+	}
+
 	switch args[0] {
 	case "delete":
 		EdgeDirSet(0755, false)
@@ -37,11 +44,14 @@ func main() {
 			usage()
 		}
 
+		// Since the user has prompted to install dxvk
+		// from the cli directly, we remove the checks for
+		// checking if it is installed or not.
 		switch args[1] {
 		case "install":
-			DxvkInstall()
+			DxvkInstall(true)
 		case "uninstall":
-			DxvkUninstall()
+			DxvkUninstall(true)
 		default:
 			usage()
 		}

@@ -45,6 +45,9 @@ func DxvkInstall(force bool) {
 	// Flatpak provides the graphics runtime, we cannot
 	// install it ourselves as Wine will crash.
 	//   org.winehq.Wine.DLLs.dxvk
+	// We are currently using org.winehq.Wine, which provides
+	// the aformentioned runtime included. We may use our own
+	// wine later.
 	if InFlatpak {
 		// Can we install dxvk? No, we cannot.
 		panic("DXVK must be managed by the flatpak.")

@@ -4,7 +4,7 @@ package main
 
 import (
 	"errors"
-	"github.com/pelletier/go-toml/v2"
+	"github.com/BurntSushi/toml"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -133,8 +133,7 @@ func loadConfig() Configuration {
 		writeConfigTemplate()
 	}
 
-	err = toml.Unmarshal([]byte(configFile), &config)
-	Errc(err, "Could not parse configuration file.")
+	Errc(toml.Unmarshal([]byte(configFile), &config), "Could not parse configuration file.")
 
 	if runtime.GOOS == "freebsd" {
 		config.Env["WINEARCH"] = "win32"

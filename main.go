@@ -24,10 +24,6 @@ func main() {
 		usage()
 	}
 
-	// Only these Dirs are queued for creation since
-	// the other directories are root directories for those.
-	CheckDirs(0755, Dirs.Log, Dirs.Pfx)
-
 	if InFlatpak {
 		// DxvkUninstall will automatically remove the DLLs,
 		// but since it checks for the marker we are fine.

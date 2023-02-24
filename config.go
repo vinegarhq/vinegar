@@ -66,6 +66,10 @@ func defDirs() Directories {
 	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
 	dirs.Log = filepath.Join(dirs.Cache, "logs")
 
+	// Only these Dirs are queued for creation since
+	// the other directories are root directories for those.
+	CheckDirs(0755, dirs.Log, dirs.Pfx)
+
 	return dirs
 }
 
@@ -120,8 +124,6 @@ func writeConfigTemplate() {
 # See how to configure Vinegar on the documentation website:
 # https://vinegarhq.github.io/Configuration
 `
-
-	// TODO: Change to point to actual chapter that describes this
 	_, err = file.WriteString(template[1:]) // ignores first newline
 	Errc(err)
 }
@@ -132,13 +134,14 @@ func writeConfigTemplate() {
 func loadConfig() Configuration {
 	config := defConfig()
 
-	configFile, err := os.ReadFile(ConfigFilePath)
-
-	if errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(ConfigFilePath); errors.Is(err, os.ErrNotExist) {
 		writeConfigTemplate()
+	} else if err != nil {
+		panic(err)
+	} else {
+		_, err := toml.DecodeFile(ConfigFilePath, &config)
+		Errc(err, "Could not parse configuration file.")
 	}
-
-	Errc(toml.Unmarshal([]byte(configFile), &config), "Could not parse configuration file.")
 
 	if runtime.GOOS == "freebsd" {
 		config.Env["WINEARCH"] = "win32"

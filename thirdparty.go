@@ -29,7 +29,7 @@ func DxvkMarkerExist() bool {
 }
 
 func DxvkToggle() {
-	if Config.Dxvk == true {
+	if Config.Dxvk {
 		DxvkInstall(false)
 
 		Config.Renderer = "D3D11"

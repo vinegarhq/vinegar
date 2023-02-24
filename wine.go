@@ -30,5 +30,5 @@ func defProgramDirs() []string {
 // sometimes fixes Flatpak wine crashes.
 func PfxKill() {
 	log.Println("Killing wineprefix")
-	Exec("wineserver", false, "-k")
+	_ = Exec("wineserver", false, "-k")
 }

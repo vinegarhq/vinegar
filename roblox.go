@@ -93,7 +93,9 @@ func RobloxApplyFFlags(app string, dir string) {
 	// Read the file
 	fflags, err := os.ReadFile(fflagsFile.Name())
 	Errc(err)
-	json.Unmarshal(fflags, &flags)
+
+	// Parse the fflags file
+	Errc(json.Unmarshal(fflags, &flags))
 
 	// Now let's add our own fflags
 	for flag, value := range Config.FFlags {

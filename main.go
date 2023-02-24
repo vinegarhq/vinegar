@@ -55,7 +55,8 @@ func main() {
 	case "edit":
 		EditConfig()
 	case "exec":
-		Exec("wine", false, args[1:]...)
+		err := Exec("wine", false, args[1:]...)
+		fmt.Println(err)
 	case "kill":
 		PfxKill()
 	case "player":

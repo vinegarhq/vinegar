@@ -105,7 +105,10 @@ func DxvkInstall(force bool) {
 			Errc(err)
 
 			log.Println("Gzipped:", writer.Name())
-			io.Copy(writer, dxvkTar)
+
+			_, err = io.Copy(writer, dxvkTar)
+			Errc(err)
+
 			writer.Close()
 		}
 	}
@@ -136,7 +139,8 @@ func DxvkUninstall(force bool) {
 		}
 	}
 
-	Exec("wineboot", false, "-u")
+	// Update wineprefix, since we deleted DLLs.
+	Errc(Exec("wineboot", false, "-u"))
 
 	Errc(os.RemoveAll(DxvkInstallMarker))
 }
@@ -180,7 +184,7 @@ func RbxFpsUnlocker() {
 	}
 
 	log.Println("Launching FPS Unlocker")
-	Exec("wine", true, fpsUnlockerPath)
+	Errc(Exec("wine", true, fpsUnlockerPath))
 
 	// Since this file is always overwritten, just remove it anyway.
 	Errc(os.RemoveAll(settingsFile.Name()))

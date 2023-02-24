@@ -133,6 +133,8 @@ func DxvkUninstall(force bool) {
 		}
 	}
 
+	Exec("wineboot", false, "-u")
+
 	Errc(os.RemoveAll(DxvkInstallMarker))
 }
 

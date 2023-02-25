@@ -149,8 +149,6 @@ func loadConfig() Configuration {
 	}
 
 	for name, value := range config.Env {
-		// must be used for the toml library
-		// to recognize the correct type.
 		os.Setenv(name, value)
 	}
 

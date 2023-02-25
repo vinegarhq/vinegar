@@ -33,7 +33,11 @@ func DxvkToggle() {
 		DxvkInstall(false)
 
 		Config.Renderer = "D3D11"
-		Config.Env["WINEDLLOVERRIDES"] += "d3d10core,d3d11,d3d9,dxgi=n"
+		Config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
+
+		// loadConfig sets this at run-time, but since we changed the value,
+		// we have to re-set it.
+		os.Setenv("WINEDLLOVERRIDES", Config.Env["WINEDLLOVERRIDES"])
 	} else {
 		DxvkUninstall(false)
 	}

@@ -1,10 +1,9 @@
-// Copyright vinegar-development 2023
-
 package main
 
 import (
 	"archive/tar"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -14,118 +13,129 @@ import (
 )
 
 const (
-	DXVKURL        = "https://github.com/doitsujin/dxvk/releases/download/v2.1/dxvk-2.1.tar.gz"
-	RCOFFLAGSURL   = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
+	DXVKVER        = "2.1"
+	DXVKTAR        = "dxvk-" + DXVKVER + ".tar.gz"
+	DXVKURL        = "https://github.com/doitsujin/dxvk/releases/download/v" + DXVKVER + "/" + DXVKTAR
 	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
 
-var DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
+var (
+	DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
+	InFlatpak         = InFlatpakCheck()
+)
 
-// Simple function that just tells us if the
-// 'dxvk installed' marker file exists.
+func InFlatpakCheck() bool {
+	if _, err := os.Stat("/.flatpak-info"); err == nil {
+		return true
+	}
+
+	return false
+}
+
 func DxvkMarkerExist() bool {
 	_, err := os.Open(DxvkInstallMarker)
+
 	return err == nil
 }
 
-func DxvkToggle() {
+func DxvkStrap() {
 	if Config.Dxvk {
 		DxvkInstall(false)
 
 		Config.Renderer = "D3D11"
 		Config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
-
-		// loadConfig sets this at run-time, but since we changed the value,
-		// we have to re-set it.
 		os.Setenv("WINEDLLOVERRIDES", Config.Env["WINEDLLOVERRIDES"])
-	} else {
-		DxvkUninstall(false)
+
+		return
 	}
+
+	DxvkUninstall(false)
 }
 
-// Extract specifically DXVK's DLLs within the tarball's folders
-// to the wineprefix
-func DxvkInstall(force bool) {
-	// Flatpak provides the graphics runtime, we cannot
-	// install it ourselves as Wine will crash.
-	//   org.winehq.Wine.DLLs.dxvk
-	// We are currently using org.winehq.Wine, which provides
-	// the aformentioned runtime included. We may use our own
-	// wine later.
-	if InFlatpak {
-		// Can we install dxvk? No, we cannot.
-		panic("DXVK must be managed by the flatpak.")
+func DxvkExtract(tarball string) error {
+	var winDir string
+
+	log.Println("Extracting DXVK")
+
+	dxvkTarball, err := os.Open(tarball)
+	if err != nil {
+		return err
 	}
 
+	dxvkGzip, err := gzip.NewReader(dxvkTarball)
+	if err != nil {
+		return err
+	}
+
+	dxvkTar := tar.NewReader(dxvkGzip)
+
+	for header, err := dxvkTar.Next(); err == nil; header, err = dxvkTar.Next() {
+		if header.Typeflag != tar.TypeReg {
+			continue
+		}
+
+		switch path.Base(path.Dir(header.Name)) {
+		case "x64":
+			winDir = "system32"
+		case "x32":
+			winDir = "syswow64"
+		default:
+			continue
+		}
+
+		winDir := filepath.Join(Dirs.Pfx, "drive_c", "windows", winDir)
+
+		CheckDirs(DirMode, winDir)
+
+		writer, err := os.Create(filepath.Join(winDir, path.Base(header.Name)))
+		if err != nil {
+			return err
+		}
+
+		log.Println("Extracting DLL:", writer.Name())
+
+		if _, err = io.Copy(writer, dxvkTar); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func DxvkInstall(force bool) {
 	if !force {
 		if DxvkMarkerExist() {
 			return
 		}
 	}
 
-	dxvkTarballPath := filepath.Join(Dirs.Cache, "dxvk-2.0.tar.gz")
+	log.Println("Installing DXVK")
 
-	Download(DXVKURL, dxvkTarballPath)
+	if InFlatpak {
+		log.Println("dxvk must be managed by flatpak, returning")
 
-	dxvkTarball, err := os.Open(dxvkTarballPath)
-	Errc(err)
-	defer dxvkTarball.Close()
-
-	dxvkGzip, err := gzip.NewReader(dxvkTarball)
-	Errc(err)
-	defer dxvkGzip.Close()
-
-	dxvkTar := tar.NewReader(dxvkGzip)
-
-	var dirInstall string
-	for {
-		header, err := dxvkTar.Next()
-
-		if err == io.EOF {
-			break
-		}
-
-		Errc(err)
-
-		dllFile := path.Base(header.Name)
-		archDir := path.Base(path.Dir(header.Name))
-
-		switch header.Typeflag {
-		case tar.TypeReg:
-			if archDir == "x32" {
-				// syswow64 does not exist on win32 wineprefixes
-				if Config.Env["WINEARCH"] == "win32" {
-					continue
-				}
-				dirInstall = filepath.Join(Dirs.Pfx, "drive_c", "windows", "syswow64")
-			} else {
-				dirInstall = filepath.Join(Dirs.Pfx, "drive_c", "windows", "system32")
-			}
-
-			// Wineprefix may not have been initialized yet
-			CheckDirs(0755, dirInstall)
-
-			writer, err := os.Create(filepath.Join(dirInstall, dllFile))
-			Errc(err)
-
-			log.Println("Gzipped:", writer.Name())
-
-			_, err = io.Copy(writer, dxvkTar)
-			Errc(err)
-
-			writer.Close()
-		}
+		return
 	}
 
-	// Remove the dxvk tarball, as we no longer need it
-	Errc(os.RemoveAll(dxvkTarballPath))
+	dxvkTarballPath := filepath.Join(Dirs.Cache, DXVKTAR)
 
-	// Put a marker in the wineprefix root indicating we installed dxvk
-	_, err = os.Create(DxvkInstallMarker)
-	Errc(err)
+	if err := Download(DXVKURL, dxvkTarballPath); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := DxvkExtract(dxvkTarballPath); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := os.RemoveAll(dxvkTarballPath); err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := os.Create(DxvkInstallMarker); err != nil {
+		log.Fatal(err)
+	}
 }
 
-// Remove each DLL installed by DXVK to the wineprefix
 func DxvkUninstall(force bool) {
 	if !force {
 		if !DxvkMarkerExist() {
@@ -133,38 +143,34 @@ func DxvkUninstall(force bool) {
 		}
 	}
 
-	// We don't care about where the dlls go this time,
-	// since we are just deleting DLLs.
+	log.Println("Uninstalling DXVK")
+
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
 			dllFile := filepath.Join(Dirs.Pfx, "drive_c", "windows", dir, dll+".dll")
 			log.Println("Removing DLL:", dllFile)
-			Errc(os.RemoveAll(dllFile))
+
+			if err := os.RemoveAll(dllFile); err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
-	// Update wineprefix, since we deleted DLLs.
-	Errc(Exec("wineboot", false, "-u"))
+	log.Println("Updating wineprefix")
 
-	Errc(os.RemoveAll(DxvkInstallMarker))
-}
-
-// Launch or automatically install axstin's rbxfpsunlocker.
-// This function will also create it's own settings for rbxfpsunlocker, for
-// faster or cleaner startup.
-func RbxFpsUnlocker() {
-	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")
-	_, err := os.Stat(fpsUnlockerPath)
-
-	log.Println(err)
-	if os.IsNotExist(err) {
-		fpsUnlockerZip := filepath.Join(Dirs.Cache, "rbxfpsunlocker.zip")
-		log.Println("Installing rbxfpsunlocker")
-		Download(FPSUNLOCKERURL, fpsUnlockerZip)
-		Unzip(fpsUnlockerZip, fpsUnlockerPath)
+	if err := Exec("wineboot", false, "-u"); err != nil {
+		log.Fatal(err)
 	}
 
-	var settings = []string{
+	if err := os.RemoveAll(DxvkInstallMarker); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func RbxFpsUnlockerSettings(file string) {
+	log.Println("Writing custom rbxfpsunlocker settings")
+
+	settings := []string{
 		"UnlockClient=true",
 		"UnlockStudio=true",
 		"FPSCapValues=[30.000000, 60.000000, 75.000000, 120.000000, 144.000000, 165.000000, 240.000000, 360.000000]",
@@ -176,27 +182,44 @@ func RbxFpsUnlocker() {
 		"QuickStart=true",
 	}
 
-	settingsFile, err := os.Create(filepath.Join(Dirs.Cache, "settings"))
-	Errc(err)
-	defer settingsFile.Close()
+	settingsFile, err := os.Create(file)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	// FIXME: compare settings file, to check if user has modified the settings file
-	log.Println("Writing custom rbxfpsunlocker settings to", settingsFile.Name())
 	for _, setting := range settings {
-		_, err := fmt.Fprintln(settingsFile, setting+"\r")
-		Errc(err)
+		if _, err := fmt.Fprintln(settingsFile, setting+"\r"); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func RbxFpsUnlocker() {
+	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")
+
+	if _, err := os.Stat(fpsUnlockerPath); errors.Is(err, os.ErrNotExist) {
+		fpsUnlockerZip := filepath.Join(Dirs.Cache, "rbxfpsunlocker.zip")
+
+		log.Println("Installing rbxfpsunlocker")
+
+		if err := Download(FPSUNLOCKERURL, fpsUnlockerZip); err != nil {
+			log.Fatal(err)
+		}
+
+		if err := UnzipFile(fpsUnlockerZip, "rbxfpsunlocker.exe", fpsUnlockerPath); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	settingsFile := filepath.Join(Dirs.Cache, "settings")
+
+	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
+		RbxFpsUnlockerSettings(settingsFile)
 	}
 
 	log.Println("Launching FPS Unlocker")
-	Errc(Exec("wine", true, fpsUnlockerPath))
 
-	// Since this file is always overwritten, just remove it anyway.
-	Errc(os.RemoveAll(settingsFile.Name()))
-}
-
-// Download RCO (Roblox-Client-Optimizer)'s FFlags to the FFlags file provided.
-// Which, overrides the file entirely.
-func ApplyRCOFFlags(file string) {
-	log.Println("Applying RCO FFlags")
-	Download(RCOFFLAGSURL, file)
+	if err := Exec("wine", true, fpsUnlockerPath); err != nil {
+		log.Fatal("rbxfpsunlocker err:", err)
+	}
 }

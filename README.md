@@ -5,19 +5,17 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration
 + Automatic DXVK Installer and uninstaller
 + Automatic usage of the Nvidia dedicated gpu. (untested)
-+ Automatic Wineprefix killer when Roblox Player or Studio has exited
-+ Automatically fetch and install Roblox Player, Studio and rbxfpsunlocker, when needed at run-time
++ Automatic Wineprefix killer when Player or Studio has exited
++ Automatic Wineprefix version setter upon Wineprefix initialization
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix
-+ FreeBSD support
 + [GameMode](https://github.com/FeralInteractive/gamemode) support, when enabled in configuration
 + TOML Configuration file for setting environment variables and applying custom FFlags
 + Transparent launch of rbxfpsunlocker
-+ Logging for stderr
++ Logging for both Vinegar and executions
 
 # TODO
 + Add watchdog for unlocker in flatpak? This needs investigation.
-+ Fetch latest version of rbxfpsunlocker
 + Old death sounds (maybe)
 
 The Discord server for Vinegar can be found [here](https://discord.gg/dzdzZ6Pps2).

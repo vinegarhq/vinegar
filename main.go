@@ -1,50 +1,60 @@
-// Copyright vinegar-development 2023
-
 package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
+	"os/signal"
 )
 
+var Version string
+
 func usage() {
-	fmt.Println("usage: vinegar [delete|edit|exec|kill|reset|printconfig]")
-	fmt.Println("       vinegar [player|studio] [args...]")
-	if !InFlatpak {
-		fmt.Println("       vinegar [dxvk] install|uninstall")
-	}
+	fmt.Fprintln(os.Stderr, "usage: vinegar [delete|edit|exec|init|kill|printconfig|reset|rfpsu|version]")
+	fmt.Fprintln(os.Stderr, "       vinegar [player|studio] [args...]")
+	fmt.Fprintln(os.Stderr, "       vinegar [dxvk] install|uninstall")
+
 	os.Exit(1)
 }
 
-func main() {
-	args := os.Args[1:]
-	argsCount := len(args)
+func SigIntInit() {
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, os.Interrupt)
 
-	if argsCount < 1 {
+		<-sigChan
+		log.Println("Received interrupt signal")
+		PfxKill()
+		os.Exit(130)
+	}()
+}
+
+func LogInit() {
+	if Config.Log {
+		logOutput := io.MultiWriter(os.Stderr, LogFile("vinegar"))
+		log.SetOutput(logOutput)
+	}
+}
+
+func main() {
+	if len(os.Args) < 2 {
 		usage()
 	}
 
-	if InFlatpak {
-		// DxvkUninstall will automatically remove the DLLs,
-		// but since it checks for the marker we are fine.
-		// DxvkToggle() will set the renderer anyway, not
-		// sure about DLL overrides for flatpak.
-		Config.Dxvk = false
-	}
+	LogInit()
+	SigIntInit()
 
-	switch args[0] {
+	switch os.Args[1] {
 	case "delete":
-		EdgeDirSet(0755, false)
+		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "dxvk":
-		if argsCount < 2 {
+		if len(os.Args) < 3 {
 			usage()
 		}
 
-		// Since the user has prompted to install dxvk
-		// from the cli directly, we remove the checks for
-		// checking if it is installed or not.
-		switch args[1] {
+		switch os.Args[2] {
 		case "install":
 			DxvkInstall(true)
 		case "uninstall":
@@ -53,31 +63,35 @@ func main() {
 			usage()
 		}
 	case "edit":
-		EditConfig()
+		if err := EditConfig(); err != nil {
+			log.Fatal("failed to edit config:", err)
+		}
 	case "exec":
-		err := Exec("wine", false, args[1:]...)
-		fmt.Println(err)
+		if err := Exec("wine", false, os.Args[2:]...); err != nil {
+			log.Fatal("exec err:", err)
+		}
+	case "init":
+		PfxInit()
 	case "kill":
 		PfxKill()
 	case "player":
-		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", args[1:]...)
-		// Wait for the RobloxPlayerLauncher to exit, and that is because Roblox
-		// may update, so we wait for it to exit, and proceed with waiting for the
-		// preceeding fork of the launcher to the player, and then kill the prefix.
+		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", os.Args[2:]...)
 		CommLoop("RobloxPlayerBet")
 		PfxKill()
 	case "studio":
-		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", args[1:]...)
-		// Same thing as player, behavior is subject to change.
+		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", os.Args[2:]...)
 		CommLoop("RobloxStudioBet")
 		PfxKill()
 	case "reset":
-		EdgeDirSet(0755, false)
+		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)
-		// Automatic creation of the directories after it has been deleted
-		CheckDirs(0755, Dirs.Pfx, Dirs.Log)
+		CheckDirs(DirMode, Dirs.Pfx, Dirs.Log)
 	case "printconfig":
 		fmt.Printf("%+v\n", Config)
+	case "rfpsu":
+		RbxFpsUnlocker()
+	case "version":
+		fmt.Println("vinegar version:", Version)
 	default:
 		usage()
 	}

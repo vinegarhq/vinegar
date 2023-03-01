@@ -1,0 +1,54 @@
+output:
+  format: line-number
+  print-issued-lines: false
+  sort-results: true
+linters:
+  enable-all: true
+  disable:
+    - ifshort
+    - structcheck
+    - maligned
+    - exhaustivestruct
+    - golint
+    - interfacer
+    - varcheck
+    - nosnakecase
+    - scopelint
+    - deadcode
+    - forbidigo
+    - rowserrcheck
+    - wastedassign
+    - goerr113
+
+    - gochecknoglobals
+    - wrapcheck
+    - gomnd
+    - gofumpt
+issues:
+  exclude-rules:
+
+    - path: dirs.go
+      linters:
+        - exhaustruct
+
+    - path: config.go
+      linters:
+        - musttag
+
+    - path: util.go
+      linters:
+        - noctx
+
+    - path: main.go
+      linters:
+        - funlen
+
+    - linters:
+        - errorlint
+      source: "err == io.EOF"
+
+    - linters: gosec
+      text: "G107:"
+
+    - linters: gosec
+      text: "G110:"

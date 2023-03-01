@@ -1,4 +1,4 @@
-name: 'Dependency Review'
+name: Linter
 on:
   push:
     branches: [ "master" ]
@@ -7,10 +7,14 @@ on:
 permissions:
   contents: read
 jobs:
-  dependency-review:
+  golangci-lint:
     runs-on: ubuntu-latest
     steps:
+      - name: 'Setup Go'
+        uses: actions/setup-go@v3
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
-      - name: 'Dependency Review'
-        uses: actions/dependency-review-action@v2
+      - name: 'Run Linter'
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: latest

@@ -42,6 +42,7 @@ issues:
     - path: main.go
       linters:
         - funlen
+        - cyclop
 
     - linters:
         - errorlint

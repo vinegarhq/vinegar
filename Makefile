@@ -1,14 +1,16 @@
+VERSION = `git describe --tags`
+
 PREFIX     = /usr/local
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
-GOFLAGS = -ldflags="-s -w" -buildvcs=false
+GOFLAGS = -ldflags="-s -w -X main.Version=$(VERSION)" -buildvcs=false
 GO = go
 
 all: vinegar
 
 vinegar:
-	$(GO) build $(GOFLAGS) -o vinegar
+	$(GO) build $(GOFLAGS)
 
 install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar

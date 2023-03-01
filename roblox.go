@@ -1,5 +1,3 @@
-// Copyright vinegar-development 2023
-
 package main
 
 import (
@@ -9,21 +7,21 @@ import (
 	"path/filepath"
 )
 
-// Search for Roblox's Version directories for a given exe, when
-// giveDir is passed, it will give the exe's base directory instead of the
-// full path of the final Roblox executable.
+const (
+	RCOURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
+)
+
 func RobloxFind(giveDir bool, exe string) string {
 	for _, programDir := range programDirs {
-		versionDir := filepath.Join(Dirs.Pfx, "drive_c", programDir, "Roblox/Versions")
+		versionDir := filepath.Join(programDir, "Roblox/Versions")
 
-		// Studio is placed here
 		rootExe := filepath.Join(versionDir, exe)
 		if _, e := os.Stat(rootExe); e == nil {
 			if !giveDir {
 				return rootExe
-			} else {
-				return versionDir
 			}
+
+			return versionDir
 		}
 
 		versionExe, _ := filepath.Glob(filepath.Join(versionDir, "*", exe))
@@ -34,49 +32,35 @@ func RobloxFind(giveDir bool, exe string) string {
 
 		if !giveDir {
 			return versionExe[0]
-		} else {
-			return filepath.Dir(versionExe[0])
 		}
+
+		return filepath.Dir(versionExe[0])
 	}
 
 	return ""
 }
 
-// Technically, fetch a url's exe and launch it once. This is used
-// for roblox installation since launching the program once will make
-// automatically install itself.
-func RobloxInstall(url string) {
+func RobloxInstall(url string) error {
+	log.Println("Installing Roblox")
+
 	installerPath := filepath.Join(Dirs.Cache, "rbxinstall.exe")
-	Download(url, installerPath)
-	Errc(Exec("wine", true, installerPath))
-	Errc(os.RemoveAll(installerPath))
+
+	if err := Download(url, installerPath); err != nil {
+		return err
+	}
+
+	if err := Exec("wine", true, installerPath); err != nil {
+		return err
+	}
+
+	if err := os.RemoveAll(installerPath); err != nil {
+		return err
+	}
+
+	return nil
 }
 
-// Write to the FFlags with the configuration's preferred renderer
-// and FFlags.
-func RobloxApplyFFlags(app string, dir string) {
-	flags := make(map[string]interface{})
-
-	// FFlag application for studio has been disabled,
-	// due to how studio is launched.
-	if app == "Studio" {
-		return
-	}
-
-	log.Println("Applying FFlags")
-
-	fflagsDir := filepath.Join(dir, app+"Settings")
-	CheckDirs(0755, fflagsDir)
-
-	// Create an empty fflags file
-	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
-	Errc(err)
-
-	if Config.ApplyRCO {
-		ApplyRCOFFlags(fflagsFile.Name())
-	}
-
-	// Apply our renderers overrides
+func RobloxSetRenderer(renderer string) {
 	possibleRenderers := []string{
 		"OpenGL",
 		"D3D11FL10",
@@ -84,88 +68,111 @@ func RobloxApplyFFlags(app string, dir string) {
 		"Vulkan",
 	}
 
-	for _, rend := range possibleRenderers {
-		isRenderer := rend == Config.Renderer
-		Config.FFlags["FFlagDebugGraphicsPrefer"+rend] = isRenderer
-		Config.FFlags["FFlagDebugGraphicsDisable"+rend] = !isRenderer
-	}
+	validRenderer := false
 
-	// Read the file
-	fflags, err := os.ReadFile(fflagsFile.Name())
-	Errc(err)
-
-	// Parse the fflags file
-	Errc(json.Unmarshal(fflags, &flags))
-
-	// Now let's add our own fflags
-	for flag, value := range Config.FFlags {
-		flags[flag] = value
-	}
-
-	// Finally, write the file
-	finalFFlagsFile, err := json.MarshalIndent(flags, "", "  ")
-	log.Println(fflagsFile.Name())
-
-	Errc(err)
-	Errc(os.WriteFile(fflagsFile.Name(), finalFFlagsFile, 0644))
-}
-
-func EdgeDirSet(perm uint32, create bool) {
-	for _, programDir := range programDirs {
-		EdgeDir := filepath.Join(Dirs.Pfx, "drive_c", programDir, "Microsoft", "EdgeUpdate")
-
-		if _, err := os.Stat(EdgeDir); os.IsNotExist(err) && create {
-			CheckDirs(0755, filepath.Dir(EdgeDir))
-			CheckDirs(perm, EdgeDir)
-		} else if os.IsExist(err) {
-			err := os.Chmod(EdgeDir, os.FileMode(perm))
-			if err != nil && create {
-				Errc(err)
-			}
-
-			log.Println("Setting", EdgeDir, "to", os.FileMode(perm))
+	for _, r := range possibleRenderers {
+		if renderer == r {
+			validRenderer = true
 		}
 	}
-}
 
-// Launch the given Roblox executable, finding it from RobloxFind().
-// When it is not found, it is fetched and installed. additionally,
-// pass vinegar's command line with the Roblox executable pre-appended.
-func RobloxLaunch(exe string, app string, args ...string) {
-	EdgeDirSet(0644, true)
-
-	// Instead of resorting to using studio's own url, we will use the client's
-	// download url, since it installs Roblox Studio into the root of the versions
-	// directory, and since the installer does not fork, we will have to use that
-	// instead. On my (apprehensions) machine, studio will always install itself anyway.
-	if RobloxFind(false, exe) == "" {
-		RobloxInstall("https://www.roblox.com/download/client")
+	if !validRenderer {
+		log.Fatal("invalid renderer, must be one of:", possibleRenderers)
 	}
 
-	// Wait for Roblox{Studio,Player}Lau(ncher)
-	// to finish installing, as sometimes that could happen
+	for _, r := range possibleRenderers {
+		isRenderer := r == renderer
+		Config.FFlags["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		Config.FFlags["FFlagDebugGraphicsDisable"+r] = !isRenderer
+	}
+}
+
+func RobloxApplyFFlags(app string, dir string) error {
+	fflags := make(map[string]interface{})
+
+	if app == "Studio" {
+		return nil
+	}
+
+	fflagsDir := filepath.Join(dir, app+"Settings")
+	CheckDirs(DirMode, fflagsDir)
+
+	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
+	if err != nil {
+		return err
+	}
+
+	if Config.ApplyRCO {
+		log.Println("Applying RCO FFlags")
+
+		if err := Download(RCOURL, fflagsFile.Name()); err != nil {
+			return err
+		}
+	}
+
+	RobloxSetRenderer(Config.Renderer)
+
+	fflagsFileContents, err := os.ReadFile(fflagsFile.Name())
+	if err != nil {
+		return err
+	}
+
+	if err := json.Unmarshal(fflagsFileContents, &fflags); err != nil {
+		return err
+	}
+
+	log.Println("Applying custom FFlags")
+
+	for fflag, value := range Config.FFlags {
+		fflags[fflag] = value
+	}
+
+	fflagsJSON, err := json.MarshalIndent(fflags, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	if _, err := fflagsFile.Write(fflagsJSON); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func RobloxLaunch(exe string, app string, args ...string) {
+	EdgeDirSet(DirROMode, true)
+
+	if RobloxFind(false, exe) == "" {
+		if err := RobloxInstall("https://www.roblox.com/download/client"); err != nil {
+			log.Fatal("failed to install roblox:", err)
+		}
+	}
+
 	CommLoop(exe[:15])
 
 	robloxRoot := RobloxFind(true, exe)
 
 	if robloxRoot == "" {
-		panic("This wasn't supposed to happen! Roblox isn't installed... I thought i did it already...")
+		log.Fatal("failed to find roblox")
 	}
 
-	DxvkToggle()
-	RobloxApplyFFlags(app, robloxRoot)
+	if err := RobloxApplyFFlags(app, robloxRoot); err != nil {
+		log.Fatal("failed to apply fflags:", err)
+	}
+
+	DxvkStrap()
 
 	log.Println("Launching", exe)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
 
+	prog := "wine"
+
 	if Config.GameMode {
 		args = append([]string{"wine"}, args...)
-		Errc(Exec("gamemoderun", true, args...))
-	} else {
-		Errc(Exec("wine", true, args...))
+		prog = "gamemoderun"
 	}
 
-	if Config.AutoRFPSU {
-		go RbxFpsUnlocker()
+	if err := Exec(prog, true, args...); err != nil {
+		log.Fatal("roblox exec err: ", err)
 	}
 }

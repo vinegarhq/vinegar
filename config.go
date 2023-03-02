@@ -36,7 +36,7 @@ func defConfig() Configuration {
 		GameMode:  false,
 		Log:       true,
 		Version:   "win10",
-		Renderer:  "Vulkan",
+		Renderer:  "D3D11",
 		FFlags:    make(map[string]interface{}),
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,

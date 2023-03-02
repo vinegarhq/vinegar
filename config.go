@@ -112,39 +112,39 @@ func GetEditor() string {
 	return ""
 }
 
-func EditConfig() error {
+func EditConfig() {
 	var testConfig Configuration
 
 	editor := GetEditor()
 
 	if editor == "" {
-		return fmt.Errorf("unable to find editor")
+		log.Fatal("unable to find editor")
 	}
 
 	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	tempConfigFilePath, err := filepath.Abs(tempConfigFile.Name())
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	configFile, err := os.ReadFile(ConfigFilePath)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	if _, err = tempConfigFile.Write(configFile); err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	tempConfigFile.Close()
 
 	for {
 		if err := Exec(editor, false, tempConfigFilePath); err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		if _, err := toml.DecodeFile(tempConfigFilePath, &testConfig); err != nil {
@@ -156,11 +156,9 @@ func EditConfig() error {
 		}
 
 		if err := os.Rename(tempConfigFilePath, ConfigFilePath); err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		break
 	}
-
-	return nil
 }

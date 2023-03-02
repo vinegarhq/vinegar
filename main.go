@@ -40,6 +40,7 @@ func main() {
 		PfxKill()
 	case "player":
 		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", os.Args[2:]...)
+		CommLoop("RobloxPlayerLau")
 		CommLoop("RobloxPlayerBet")
 		PfxKill()
 	case "studio":

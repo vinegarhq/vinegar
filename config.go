@@ -98,27 +98,26 @@ func loadConfig() Configuration {
 	return config
 }
 
-func GetEditor() string {
-	if ed, ok := os.LookupEnv("EDITOR"); ok {
-		if _, err := exec.LookPath(ed); err == nil {
-			return ed
+func GetEditor() (string, error) {
+	editor, ok := os.LookupEnv("EDITOR")
+
+	if ok {
+		if _, err := exec.LookPath(editor); err != nil {
+			return "", fmt.Errorf("invalid $EDITOR: %w", err)
 		}
+	} else {
+		return "", errors.New("no $EDITOR variable set")
 	}
 
-	if ed, err := exec.LookPath("xdg-open"); err == nil {
-		return ed
-	}
-
-	return ""
+	return editor, nil
 }
 
 func EditConfig() {
 	var testConfig Configuration
 
-	editor := GetEditor()
-
-	if editor == "" {
-		log.Fatal("unable to find editor")
+	editor, err := GetEditor()
+	if err != nil {
+		log.Fatal("unable to find editor:", err)
 	}
 
 	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")

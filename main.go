@@ -40,12 +40,8 @@ func main() {
 		PfxKill()
 	case "player":
 		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", os.Args[2:]...)
-		CommLoop("RobloxPlayerBet")
-		PfxKill()
 	case "studio":
 		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", os.Args[2:]...)
-		CommLoop("RobloxStudioBet")
-		PfxKill()
 	case "reset":
 		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)

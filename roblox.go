@@ -174,5 +174,9 @@ func RobloxLaunch(exe string, app string, args ...string) {
 		log.Fatal("roblox exec err: ", err)
 	}
 
-	CommLoop(exe[:15])
+	if Config.AutoKillPfx {
+		CommLoop(exe[:15])
+		CommLoop(exe[:12] + "Bet")
+		PfxKill()
+	}
 }

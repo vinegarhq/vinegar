@@ -12,15 +12,16 @@ import (
 )
 
 type Configuration struct {
-	ApplyRCO  bool
-	AutoRFPSU bool
-	Dxvk      bool
-	GameMode  bool
-	Log       bool
-	Version   string
-	Renderer  string
-	FFlags    map[string]interface{}
-	Env       map[string]string
+	ApplyRCO    bool
+	AutoRFPSU   bool
+	AutoKillPfx bool
+	Dxvk        bool
+	GameMode    bool
+	Log         bool
+	Version     string
+	Renderer    string
+	FFlags      map[string]interface{}
+	Env         map[string]string
 }
 
 var (
@@ -30,14 +31,15 @@ var (
 
 func defConfig() Configuration {
 	return Configuration{
-		ApplyRCO:  true,
-		AutoRFPSU: false,
-		Dxvk:      false,
-		GameMode:  false,
-		Log:       true,
-		Version:   "win10",
-		Renderer:  "D3D11",
-		FFlags:    make(map[string]interface{}),
+		ApplyRCO:    true,
+		AutoRFPSU:   false,
+		AutoKillPfx: true,
+		Dxvk:        false,
+		GameMode:    false,
+		Log:         true,
+		Version:     "win10",
+		Renderer:    "D3D11",
+		FFlags:      make(map[string]interface{}),
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,
 			"WINEARCH":   "win64",

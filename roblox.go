@@ -148,8 +148,6 @@ func RobloxLaunch(exe string, app string, args ...string) {
 		}
 	}
 
-	CommLoop(exe[:15])
-
 	robloxRoot := RobloxFind(true, exe)
 
 	if robloxRoot == "" {
@@ -175,4 +173,6 @@ func RobloxLaunch(exe string, app string, args ...string) {
 	if err := Exec(prog, true, args...); err != nil {
 		log.Fatal("roblox exec err: ", err)
 	}
+
+	CommLoop(exe[:15])
 }

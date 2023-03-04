@@ -60,7 +60,7 @@ func RobloxInstall(url string) error {
 	return nil
 }
 
-func RobloxSetRenderer(renderer string) {
+func RobloxSetRenderer(renderer string, fflags map[string]interface{}) {
 	possibleRenderers := []string{
 		"OpenGL",
 		"D3D11FL10",
@@ -82,8 +82,8 @@ func RobloxSetRenderer(renderer string) {
 
 	for _, r := range possibleRenderers {
 		isRenderer := r == renderer
-		Config.FFlags["FFlagDebugGraphicsPrefer"+r] = isRenderer
-		Config.FFlags["FFlagDebugGraphicsDisable"+r] = !isRenderer
+		fflags["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		fflags["FFlagDebugGraphicsDisable"+r] = !isRenderer
 	}
 }
 
@@ -110,19 +110,20 @@ func RobloxApplyFFlags(app string, dir string) error {
 		}
 	}
 
-	RobloxSetRenderer(Config.Renderer)
-
 	fflagsFileContents, err := os.ReadFile(fflagsFile.Name())
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(fflagsFileContents, &fflags); err != nil {
-		return err
+	if string(fflagsFileContents) != "" {
+		if err := json.Unmarshal(fflagsFileContents, &fflags); err != nil {
+			return err
+		}
 	}
 
 	log.Println("Applying custom FFlags")
 
+	RobloxSetRenderer(Config.Renderer, fflags)
 	for fflag, value := range Config.FFlags {
 		fflags[fflag] = value
 	}
@@ -155,7 +156,7 @@ func RobloxLaunch(exe string, app string, args ...string) {
 	}
 
 	if err := RobloxApplyFFlags(app, robloxRoot); err != nil {
-		log.Fatal("failed to apply fflags:", err)
+		log.Fatal("failed to apply fflags: ", err)
 	}
 
 	DxvkStrap()

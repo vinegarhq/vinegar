@@ -13,7 +13,9 @@ const (
 
 // Loops over the global program directories, searching for Roblox's
 // version directory with a match of the given executable:
-//   programdir/Roblox/Versions/version-XXXXXXXX/exe
+//
+//	programdir/Roblox/Versions/version-XXXXXXXX/exe
+//
 // For Roblox Studio, this is simply at the root of the versions directory.
 // giveDir is used mainly to get the location of the executable's directory,
 // which can be used to place the FFlags file into.
@@ -145,6 +147,7 @@ func RobloxApplyFFlags(app string, dir string) error {
 	log.Println("Applying custom FFlags")
 
 	RobloxSetRenderer(Config.Renderer, fflags)
+
 	for fflag, value := range Config.FFlags {
 		fflags[fflag] = value
 	}
@@ -170,8 +173,10 @@ func RobloxApplyFFlags(app string, dir string) error {
 // The arguments seen below is a result of Go's slice arrays and wanting to add
 // custom arguments, so i simply chose to append what we need to the array instead.
 // When enabled in configuration, we also wait for Roblox to exit (queried with the given string)
-//   RobloxPlayerLauncher.exe -> RobloxPlayerLau
-//   RobloxPlayerLauncher.exe -> RobloxPlayer + Bet
+//
+//	RobloxPlayerLauncher.exe -> RobloxPlayerLau
+//	RobloxPlayerLauncher.exe -> RobloxPlayer + Bet
+//
 // Linux's procfs 'comm' file has a maximum string length of 16 characters, which is
 // why using sliced [:15] is preffered to provided directly.
 func RobloxLaunch(exe string, app string, args ...string) {

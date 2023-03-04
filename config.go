@@ -12,16 +12,16 @@ import (
 )
 
 type Configuration struct {
-	ApplyRCO    bool
-	AutoRFPSU   bool
-	AutoKillPfx bool
-	Dxvk        bool
-	GameMode    bool
-	Log         bool
-	Version     string
-	Renderer    string
-	FFlags      map[string]interface{}
-	Env         map[string]string
+	ApplyRCO  bool
+	AutoRFPSU bool
+	Dxvk      bool
+	GameMode  bool
+	Prime     bool
+	Log       bool
+	Version   string
+	Renderer  string
+	FFlags    map[string]interface{}
+	Env       map[string]string
 }
 
 var (
@@ -31,15 +31,15 @@ var (
 
 func defConfig() Configuration {
 	return Configuration{
-		ApplyRCO:    true,
-		AutoRFPSU:   false,
-		AutoKillPfx: true,
-		Dxvk:        false,
-		GameMode:    false,
-		Log:         true,
-		Version:     "win10",
-		Renderer:    "D3D11",
-		FFlags:      make(map[string]interface{}),
+		ApplyRCO:  true,
+		AutoRFPSU: false,
+		Dxvk:      false,
+		GameMode:  false,
+		Prime:     false,
+		Log:       true,
+		Version:   "win10",
+		Renderer:  "Vulkan",
+		FFlags:    make(map[string]interface{}),
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,
 			"WINEARCH":   "win64",
@@ -51,12 +51,7 @@ func defConfig() Configuration {
 			"DXVK_LOG_PATH":         "none",
 			"DXVK_STATE_CACHE_PATH": filepath.Join(Dirs.Cache, "dxvk"),
 
-			"MESA_GL_VERSION_OVERRIDE":    "4.4",
-			"__GL_THREADED_OPTIMIZATIONS": "1",
-			"DRI_PRIME":                   "1",
-			"__NV_PRIME_RENDER_OFFLOAD":   "1",
-			"__VK_LAYER_NV_optimus":       "NVIDIA_only",
-			"__GLX_VENDOR_LIBRARY_NAME":   "nvidia",
+			"MESA_GL_VERSION_OVERRIDE": "4.4",
 		},
 	}
 }
@@ -95,6 +90,14 @@ func loadConfig() Configuration {
 
 	for name, value := range config.Env {
 		os.Setenv(name, value)
+	}
+
+	if config.Prime {
+		config.Env["__GL_THREADED_OPTIMIZATIONS"] = "1"
+		config.Env["DRI_PRIME"] = "1"
+		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
+		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
 	}
 
 	return config

@@ -96,7 +96,6 @@ func loadConfig() Configuration {
 	}
 
 	if config.Prime {
-
 		config.Env["DRI_PRIME"] = "1"
 		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
 		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"

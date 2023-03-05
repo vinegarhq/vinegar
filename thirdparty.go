@@ -19,21 +19,10 @@ const (
 	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
 
-// The DxvkInstallMarker file, created on DXVK installation and removed at DXVK
+// DxvkInstallMarker file, created on DXVK installation and removed at DXVK
 // uninstallation, is an easy way to tell if DXVK is installed, necessary for
 // automatic installation and uninstallation of DXVK seen in DxvkStrap().
-var (
-	DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
-	InFlatpak         = InFlatpakCheck()
-)
-
-func InFlatpakCheck() bool {
-	if _, err := os.Stat("/.flatpak-info"); err == nil {
-		return true
-	}
-
-	return false
-}
+var DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
 
 func DxvkMarkerExist() bool {
 	_, err := os.Open(DxvkInstallMarker)
@@ -113,12 +102,6 @@ func DxvkInstall(force bool) {
 	}
 
 	log.Println("Installing DXVK")
-
-	if InFlatpak {
-		log.Println("dxvk must be managed by flatpak, returning")
-
-		return
-	}
 
 	dxvkTarballPath := filepath.Join(Dirs.Cache, DXVKTAR)
 

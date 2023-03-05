@@ -194,11 +194,11 @@ func RobloxLaunch(exe string, app string, args ...string) {
 		log.Fatal("failed to find roblox")
 	}
 
+	DxvkStrap()
+
 	if err := RobloxApplyFFlags(app, robloxRoot); err != nil {
 		log.Fatal("failed to apply fflags: ", err)
 	}
-
-	DxvkStrap()
 
 	log.Println("Launching", exe)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)

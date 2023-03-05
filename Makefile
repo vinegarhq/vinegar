@@ -46,7 +46,11 @@ uninstall:
 
 mime:
 	xdg-mime default io.github.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox-player
+	xdg-mime default io.github.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox
 	xdg-mime default io.github.vinegarhq.Vinegar.studio.desktop x-scheme-handler/roblox-studio
+	xdg-mime default io.github.vinegarhq.Vinegar.studio.desktop x-scheme-handler/roblox-studio-auth
+	xdg-mime default io.github.vinegarhq.Vinegar.studio.desktop application/x-roblox-rbxl
+	xdg-mime default io.github.vinegarhq.Vinegar.studio.desktop application/x-roblox-rbxlx
 
 clean:
 	rm -f vinegar

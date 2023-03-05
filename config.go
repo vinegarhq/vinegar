@@ -40,7 +40,7 @@ func defConfig() Configuration {
 		Prime:       false,
 		Log:         true,
 		Version:     "win10",
-		Renderer:    "OpenGL",
+		Renderer:    "D3D11",
 		FFlags:      make(map[string]interface{}),
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,

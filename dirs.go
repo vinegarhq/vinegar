@@ -24,6 +24,10 @@ var (
 	FileMode  fs.FileMode = 0644
 )
 
+// Function to declare the Directories struct with the default
+// values. We prefer the XDG Variables over the default values, since in
+// sandboxed environments such as Flatpak, it will set those variables with
+// the appropriate sandboxed values.
 func defDirs() Directories {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
@@ -61,6 +65,8 @@ func CheckDirs(perm fs.FileMode, dirs ...string) {
 	for _, dir := range dirs {
 		info, err := os.Stat(dir)
 
+		// Create the directory only when it does not exist.
+		// Since logging is preferred this is also preferred.
 		if errors.Is(err, os.ErrNotExist) {
 			log.Println("Creating", perm, "dir:", dir)
 
@@ -71,6 +77,10 @@ func CheckDirs(perm fs.FileMode, dirs ...string) {
 			continue
 		}
 
+		// The given permissions will always return if it is a file
+		// ---------- or a directory d---------, we simply get the string
+		// and remove the first character, which says if it is a file
+		// or a directory, since all we care about is the read & write permissions.
 		if err == nil && info.Mode().String()[1:] != perm.String()[1:] {
 			log.Println("Setting dir", dir, "permissions to", perm)
 

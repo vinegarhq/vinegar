@@ -19,6 +19,9 @@ const (
 	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
 )
 
+// The DxvkInstallMarker file, created on DXVK installation and removed at DXVK
+// uninstallation, is an easy way to tell if DXVK is installed, necessary for
+// automatic installation and uninstallation of DXVK seen in DxvkStrap().
 var (
 	DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
 	InFlatpak         = InFlatpakCheck()
@@ -158,6 +161,9 @@ func DxvkUninstall(force bool) {
 
 	log.Println("Updating wineprefix")
 
+	// Updating the wineprefix is neccessary, since the DLLs
+	// that were overrided by DXVK, were subsequently deleted,
+	// and has to be restored (updated)
 	if err := Exec("wineboot", false, "-u"); err != nil {
 		log.Fatal(err)
 	}
@@ -170,6 +176,7 @@ func DxvkUninstall(force bool) {
 func RbxFpsUnlockerSettings(file string) {
 	log.Println("Writing custom rbxfpsunlocker settings")
 
+	// These settings provide a completely transparent launch of rbxfpsunlocker.
 	settings := []string{
 		"UnlockClient=true",
 		"UnlockStudio=true",
@@ -213,6 +220,8 @@ func RbxFpsUnlocker() {
 
 	settingsFile := filepath.Join(Dirs.Cache, "settings")
 
+	// Only supply the settings file when the settings file does not exist,
+	// Who knows! maybe the user wants to edit the settings themselves.
 	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
 		RbxFpsUnlockerSettings(settingsFile)
 	}

@@ -40,7 +40,7 @@ func defConfig() Configuration {
 		Prime:       false,
 		Log:         true,
 		Version:     "win10",
-		Renderer:    "Vulkan",
+		Renderer:    "OpenGL",
 		FFlags:      make(map[string]interface{}),
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,
@@ -53,7 +53,8 @@ func defConfig() Configuration {
 			"DXVK_LOG_PATH":         "none",
 			"DXVK_STATE_CACHE_PATH": filepath.Join(Dirs.Cache, "dxvk"),
 
-			"MESA_GL_VERSION_OVERRIDE": "4.4",
+			"MESA_GL_VERSION_OVERRIDE":    "4.4",
+			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
 	}
 }
@@ -95,7 +96,7 @@ func loadConfig() Configuration {
 	}
 
 	if config.Prime {
-		config.Env["__GL_THREADED_OPTIMIZATIONS"] = "1"
+
 		config.Env["DRI_PRIME"] = "1"
 		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
 		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"

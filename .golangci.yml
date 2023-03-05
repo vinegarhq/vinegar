@@ -24,6 +24,7 @@ linters:
     - wrapcheck
     - gomnd
     - gofumpt
+    - cyclop
 issues:
   exclude-rules:
 
@@ -42,7 +43,7 @@ issues:
     - path: main.go
       linters:
         - funlen
-        - cyclop
+
 
     - linters:
         - errorlint

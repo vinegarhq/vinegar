@@ -1,6 +1,8 @@
 # <img src="https://github.com/vinegar-dev/vinegar/blob/master/icons/vinegar.svg" width="48"> Vinegar
 A transparent wrapper for Roblox Player and Roblox Studio.
 
+[Documentation](https://vinegarhq.github.io)
+
 # Features
 + Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration
 + Automatic DXVK Installer and uninstaller

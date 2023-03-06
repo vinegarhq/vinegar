@@ -224,13 +224,11 @@ func RobloxLaunch(exe string, app string, args ...string) {
 func RobloxStudio(args ...string) {
 	exe := "RobloxStudioLauncherBeta.exe"
 
+	// Protocol URI, Launcher cannot be used
 	if len(args) < 1 {
 		args = []string{"-ide"}
-	} else {
-		// Protocol URI, Launcher cannot be used
-		if len(args[0]) > 12 && args[0][:13] == "roblox-studio" {
-			exe = "RobloxStudioBeta.exe"
-		}
+	} else if len(args[0]) > 12 && args[0][:13] == "roblox-studio" {
+		exe = "RobloxStudioBeta.exe"
 	}
 
 	RobloxLaunch(exe, "Studio", args...)

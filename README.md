@@ -13,8 +13,6 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Transparent launch of rbxfpsunlocker
 + Logging for both Vinegar and executions
 
-# TODO
-+ Add watchdog for unlocker in flatpak? This needs investigation.
-+ Old death sounds (maybe)
-
-The Discord server for Vinegar can be found [here](https://discord.gg/dzdzZ6Pps2).
+# See Also
++ [Discord Server](https://discord.gg/dzdzZ6Pps2)
++ [Documentation](https://vinegarhq.github.io)

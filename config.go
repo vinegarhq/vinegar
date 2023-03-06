@@ -17,6 +17,7 @@ type Configuration struct {
 	AutoKillPfx bool
 	Dxvk        bool
 	GameMode    bool
+	Prime       bool
 	Log         bool
 	Version     string
 	Renderer    string
@@ -36,6 +37,7 @@ func defConfig() Configuration {
 		AutoKillPfx: true,
 		Dxvk:        false,
 		GameMode:    false,
+		Prime:       false,
 		Log:         true,
 		Version:     "win10",
 		Renderer:    "D3D11",
@@ -53,10 +55,6 @@ func defConfig() Configuration {
 
 			"MESA_GL_VERSION_OVERRIDE":    "4.4",
 			"__GL_THREADED_OPTIMIZATIONS": "1",
-			"DRI_PRIME":                   "1",
-			"__NV_PRIME_RENDER_OFFLOAD":   "1",
-			"__VK_LAYER_NV_optimus":       "NVIDIA_only",
-			"__GLX_VENDOR_LIBRARY_NAME":   "nvidia",
 		},
 	}
 }
@@ -95,6 +93,13 @@ func loadConfig() Configuration {
 
 	for name, value := range config.Env {
 		os.Setenv(name, value)
+	}
+
+	if config.Prime {
+		config.Env["DRI_PRIME"] = "1"
+		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
+		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
 	}
 
 	return config

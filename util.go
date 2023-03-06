@@ -13,6 +13,7 @@ import (
 )
 
 func LogFile(prefix string) *os.File {
+	// prefix-2006-01-02T15:04:05Z07:00.log
 	file, err := os.Create(filepath.Join(Dirs.Log, prefix+"-"+time.Now().Format(time.RFC3339)+".log"))
 	if err != nil {
 		log.Fatal(err)
@@ -75,6 +76,10 @@ func Download(source, file string) error {
 	return nil
 }
 
+// Unzip a single target file in the source zip file to a file,
+// and keep it's permissions, afterwards; remove the source zip file.
+// this is ONLY used for extracting rbxfpsunlocker,
+// as it will ignore all other files.
 func UnzipFile(source, target, file string) error {
 	log.Println("Unzipping:", source)
 
@@ -118,6 +123,10 @@ func UnzipFile(source, target, file string) error {
 	return nil
 }
 
+// Loop over all proc(5)fs PID directories and check if the given query (string)
+// matches the file contents of with a file called 'comm', within the PID
+// directory. For simplification purposes this will use a /proc/*/comm glob instead.
+// Once found a 'comm' file, simply return true; return false when not found.
 func CommFound(query string) bool {
 	comms, err := filepath.Glob("/proc/*/comm")
 	if err != nil {
@@ -126,6 +135,8 @@ func CommFound(query string) bool {
 
 	for _, comm := range comms {
 		c, err := os.ReadFile(comm)
+		// The 'comm' file contains a new line, we remove it, as it will mess up
+		// the query. hence 'minus'ing the length by 1 removes the newline.
 		if err == nil && string(c)[:len(c)-1] == query {
 			return true
 		}
@@ -134,6 +145,10 @@ func CommFound(query string) bool {
 	return false
 }
 
+// Simply loop for every second to see if a process query 'comm' has not been
+// found, or in other words has exited. this function will simply stop the current
+// execution queue and simply just waits, and the functions following this one will
+// execute.
 func CommLoop(comm string) {
 	log.Println("Waiting for process command:", comm)
 

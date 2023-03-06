@@ -4,7 +4,6 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 # Features
 + Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration
 + Automatic DXVK Installer and uninstaller
-+ Automatic usage of the Nvidia dedicated gpu. (untested)
 + Automatic Wineprefix killer when Player or Studio has exited
 + Automatic Wineprefix version setter upon Wineprefix initialization
 + Browser launch via MIME

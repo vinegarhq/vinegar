@@ -41,7 +41,7 @@ func main() {
 	case "player":
 		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", os.Args[2:]...)
 	case "studio":
-		RobloxLaunch("RobloxStudioLauncherBeta.exe", "Studio", os.Args[2:]...)
+		RobloxStudio(os.Args[2:]...)
 	case "reset":
 		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)

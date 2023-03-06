@@ -11,10 +11,19 @@ const (
 	RCOURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
 )
 
+// Loops over the global program directories, searching for Roblox's
+// version directory with a match of the given executable:
+//
+//	programdir/Roblox/Versions/version-XXXXXXXX/exe
+//
+// For Roblox Studio, this is simply at the root of the versions directory.
+// giveDir is used mainly to get the location of the executable's directory,
+// which can be used to place the FFlags file into.
 func RobloxFind(giveDir bool, exe string) string {
 	for _, programDir := range programDirs {
 		versionDir := filepath.Join(programDir, "Roblox/Versions")
 
+		// Studio
 		rootExe := filepath.Join(versionDir, exe)
 		if _, e := os.Stat(rootExe); e == nil {
 			if !giveDir {
@@ -24,6 +33,7 @@ func RobloxFind(giveDir bool, exe string) string {
 			return versionDir
 		}
 
+		// Glob for programdir/Roblox/Versions/version-*/exe
 		versionExe, _ := filepath.Glob(filepath.Join(versionDir, "*", exe))
 
 		if versionExe == nil {
@@ -40,6 +50,10 @@ func RobloxFind(giveDir bool, exe string) string {
 	return ""
 }
 
+// Simply download the given URL and execute it, which is used
+// only for installing Roblox, as the default behavior of launching
+// Roblox's launchers is to always install it. Afterwards, we remove
+// the installer as we no longer need it.
 func RobloxInstall(url string) error {
 	log.Println("Installing Roblox")
 
@@ -60,7 +74,9 @@ func RobloxInstall(url string) error {
 	return nil
 }
 
-func RobloxSetRenderer(renderer string) {
+// Validate the given renderer, and apply it to the given map (fflags);
+// It will also disable every other renderer.
+func RobloxSetRenderer(renderer string, fflags map[string]interface{}) {
 	possibleRenderers := []string{
 		"OpenGL",
 		"D3D11FL10",
@@ -82,11 +98,18 @@ func RobloxSetRenderer(renderer string) {
 
 	for _, r := range possibleRenderers {
 		isRenderer := r == renderer
-		Config.FFlags["FFlagDebugGraphicsPrefer"+r] = isRenderer
-		Config.FFlags["FFlagDebugGraphicsDisable"+r] = !isRenderer
+		fflags["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		fflags["FFlagDebugGraphicsDisable"+r] = !isRenderer
 	}
 }
 
+// Create the fflags directory;which sebsequently contains the FFlags
+// file, which is also created immediately afterwards, and if the configuration
+// specifies to use RCO, the RCO FFlags file overrwrites the FFlags file
+// entirely. Checking if the file is empty is necessary to prevent JSON
+// Unmarshalling errors, for when RCO hasn't been applied.
+// Afterwards we set the user-set FFlags, which is then idented to look pretty
+// and then written to the fflags file.
 func RobloxApplyFFlags(app string, dir string) error {
 	fflags := make(map[string]interface{})
 
@@ -110,18 +133,20 @@ func RobloxApplyFFlags(app string, dir string) error {
 		}
 	}
 
-	RobloxSetRenderer(Config.Renderer)
-
 	fflagsFileContents, err := os.ReadFile(fflagsFile.Name())
 	if err != nil {
 		return err
 	}
 
-	if err := json.Unmarshal(fflagsFileContents, &fflags); err != nil {
-		return err
+	if string(fflagsFileContents) != "" {
+		if err := json.Unmarshal(fflagsFileContents, &fflags); err != nil {
+			return err
+		}
 	}
 
 	log.Println("Applying custom FFlags")
+
+	RobloxSetRenderer(Config.Renderer, fflags)
 
 	for fflag, value := range Config.FFlags {
 		fflags[fflag] = value
@@ -139,6 +164,21 @@ func RobloxApplyFFlags(app string, dir string) error {
 	return nil
 }
 
+// Create or set Microsoft's Edge installation directories to be read only,
+// since Studio for whatever reason will install it, though it is not needed.
+// Check if the versions (with the exe) exists, if not install the Roblox Client,
+// which brings with it the Studio installer in the root of the versions directory.
+// However, if roblox has still not been found, exit immediately. Apply fflags,
+// Install DXVK when specified in configuration.
+// The arguments seen below is a result of Go's slice arrays and wanting to add
+// custom arguments, so i simply chose to append what we need to the array instead.
+// When enabled in configuration, we also wait for Roblox to exit (queried with the given string)
+//
+//	RobloxPlayerLauncher.exe -> RobloxPlayerLau
+//	RobloxPlayerLauncher.exe -> RobloxPlayer + Bet
+//
+// Linux's procfs 'comm' file has a maximum string length of 16 characters, which is
+// why using sliced [:15] is preffered to provided directly.
 func RobloxLaunch(exe string, app string, args ...string) {
 	EdgeDirSet(DirROMode, true)
 
@@ -154,11 +194,11 @@ func RobloxLaunch(exe string, app string, args ...string) {
 		log.Fatal("failed to find roblox")
 	}
 
-	if err := RobloxApplyFFlags(app, robloxRoot); err != nil {
-		log.Fatal("failed to apply fflags:", err)
-	}
-
 	DxvkStrap()
+
+	if err := RobloxApplyFFlags(app, robloxRoot); err != nil {
+		log.Fatal("failed to apply fflags: ", err)
+	}
 
 	log.Println("Launching", exe)
 	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
@@ -179,4 +219,17 @@ func RobloxLaunch(exe string, app string, args ...string) {
 		CommLoop(exe[:12] + "Bet")
 		PfxKill()
 	}
+}
+
+func RobloxStudio(args ...string) {
+	exe := "RobloxStudioLauncherBeta.exe"
+
+	// Protocol URI, Launcher cannot be used
+	if len(args) < 1 {
+		args = []string{"-ide"}
+	} else if len(args[0]) > 12 && args[0][:13] == "roblox-studio" {
+		exe = "RobloxStudioBeta.exe"
+	}
+
+	RobloxLaunch(exe, "Studio", args...)
 }

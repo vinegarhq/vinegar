@@ -112,12 +112,12 @@ func loadConfig() Configuration {
 func GetEditor() (string, error) {
 	editor, ok := os.LookupEnv("EDITOR")
 
-	if ok {
-		if _, err := exec.LookPath(editor); err != nil {
-			return "", fmt.Errorf("invalid $EDITOR: %w", err)
-		}
-	} else {
+	if !ok {
 		return "", errors.New("no $EDITOR variable set")
+	}
+
+	if _, err := exec.LookPath(editor); err != nil {
+		return "", fmt.Errorf("invalid $EDITOR: %w", err)
 	}
 
 	return editor, nil

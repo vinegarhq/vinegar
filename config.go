@@ -55,6 +55,7 @@ func defConfig() Configuration {
 			"MESA_GL_VERSION_OVERRIDE":    "4.4",
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
+		// i'm not sure if make() is required here.
 		FFlags: make(map[string]interface{}),
 	}
 }
@@ -73,6 +74,9 @@ func writeConfigTemplate() {
 # See how to configure Vinegar on the documentation website:
 # https://vinegarhq.github.io/Configuration
 `
+
+	// [1:] is to slice the first entry, as it is a newline.
+	// Mainly to read the template easily
 	if _, err = file.WriteString(template[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -124,7 +128,7 @@ func EditConfig() {
 
 	editor, err := GetEditor()
 	if err != nil {
-		log.Fatal("unable to find editor:", err)
+		log.Fatal("unable to find editor: ", err)
 	}
 
 	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")

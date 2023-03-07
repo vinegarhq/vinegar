@@ -13,16 +13,16 @@ import (
 
 type Configuration struct {
 	ApplyRCO    bool
-	AutoRFPSU   bool
 	AutoKillPfx bool
+	AutoRFPSU   bool
 	Dxvk        bool
-	GameMode    bool
-	Prime       bool
 	Log         bool
-	Version     string
+	Prime       bool
+	Launcher    string
 	Renderer    string
-	FFlags      map[string]interface{}
+	Version     string
 	Env         map[string]string
+	FFlags      map[string]interface{}
 }
 
 var (
@@ -33,15 +33,14 @@ var (
 func defConfig() Configuration {
 	return Configuration{
 		ApplyRCO:    true,
-		AutoRFPSU:   false,
 		AutoKillPfx: true,
-		Dxvk:        false,
-		GameMode:    false,
-		Prime:       false,
+		AutoRFPSU:   false,
+		Dxvk:        true,
 		Log:         true,
-		Version:     "win10",
+		Prime:       false,
+		Launcher:    "",
 		Renderer:    "D3D11",
-		FFlags:      make(map[string]interface{}),
+		Version:     "win10",
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,
 			"WINEARCH":   "win64",
@@ -56,6 +55,8 @@ func defConfig() Configuration {
 			"MESA_GL_VERSION_OVERRIDE":    "4.4",
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
+		// i'm not sure if make() is required here.
+		FFlags: make(map[string]interface{}),
 	}
 }
 
@@ -73,6 +74,9 @@ func writeConfigTemplate() {
 # See how to configure Vinegar on the documentation website:
 # https://vinegarhq.github.io/Configuration
 `
+
+	// [1:] is to slice the first entry, as it is a newline.
+	// Mainly to read the template easily
 	if _, err = file.WriteString(template[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -91,15 +95,15 @@ func loadConfig() Configuration {
 		log.Fatal("could not parse configuration file:", err)
 	}
 
-	for name, value := range config.Env {
-		os.Setenv(name, value)
-	}
-
 	if config.Prime {
 		config.Env["DRI_PRIME"] = "1"
 		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
 		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
 		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+	}
+
+	for name, value := range config.Env {
+		os.Setenv(name, value)
 	}
 
 	return config
@@ -108,12 +112,12 @@ func loadConfig() Configuration {
 func GetEditor() (string, error) {
 	editor, ok := os.LookupEnv("EDITOR")
 
-	if ok {
-		if _, err := exec.LookPath(editor); err != nil {
-			return "", fmt.Errorf("invalid $EDITOR: %w", err)
-		}
-	} else {
+	if !ok {
 		return "", errors.New("no $EDITOR variable set")
+	}
+
+	if _, err := exec.LookPath(editor); err != nil {
+		return "", fmt.Errorf("invalid $EDITOR: %w", err)
 	}
 
 	return editor, nil
@@ -124,7 +128,7 @@ func EditConfig() {
 
 	editor, err := GetEditor()
 	if err != nil {
-		log.Fatal("unable to find editor:", err)
+		log.Fatal("unable to find editor: ", err)
 	}
 
 	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")

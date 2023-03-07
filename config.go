@@ -35,7 +35,7 @@ func defConfig() Configuration {
 		ApplyRCO:    true,
 		AutoKillPfx: true,
 		AutoRFPSU:   false,
-		Dxvk:        false,
+		Dxvk:        true,
 		Log:         true,
 		Prime:       false,
 		Launcher:    "",

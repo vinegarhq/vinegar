@@ -91,15 +91,15 @@ func loadConfig() Configuration {
 		log.Fatal("could not parse configuration file:", err)
 	}
 
-	for name, value := range config.Env {
-		os.Setenv(name, value)
-	}
-
 	if config.Prime {
 		config.Env["DRI_PRIME"] = "1"
 		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
 		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
 		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+	}
+
+	for name, value := range config.Env {
+		os.Setenv(name, value)
 	}
 
 	return config

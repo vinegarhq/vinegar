@@ -13,16 +13,16 @@ import (
 
 type Configuration struct {
 	ApplyRCO    bool
-	AutoRFPSU   bool
 	AutoKillPfx bool
+	AutoRFPSU   bool
 	Dxvk        bool
-	GameMode    bool
-	Prime       bool
 	Log         bool
-	Version     string
+	Prime       bool
+	Launcher    string
 	Renderer    string
-	FFlags      map[string]interface{}
+	Version     string
 	Env         map[string]string
+	FFlags      map[string]interface{}
 }
 
 var (
@@ -33,15 +33,14 @@ var (
 func defConfig() Configuration {
 	return Configuration{
 		ApplyRCO:    true,
-		AutoRFPSU:   false,
 		AutoKillPfx: true,
+		AutoRFPSU:   false,
 		Dxvk:        false,
-		GameMode:    false,
-		Prime:       false,
 		Log:         true,
-		Version:     "win10",
+		Prime:       false,
+		Launcher:    "",
 		Renderer:    "D3D11",
-		FFlags:      make(map[string]interface{}),
+		Version:     "win10",
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,
 			"WINEARCH":   "win64",
@@ -56,6 +55,7 @@ func defConfig() Configuration {
 			"MESA_GL_VERSION_OVERRIDE":    "4.4",
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
+		FFlags: make(map[string]interface{}),
 	}
 }
 

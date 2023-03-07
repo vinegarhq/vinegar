@@ -7,9 +7,7 @@ import (
 	"path/filepath"
 )
 
-const (
-	RCOURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
-)
+const RCOURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
 
 // Loops over the global program directories, searching for Roblox's
 // version directory with a match of the given executable:
@@ -170,6 +168,8 @@ func RobloxApplyFFlags(app string, dir string) error {
 // which brings with it the Studio installer in the root of the versions directory.
 // However, if roblox has still not been found, exit immediately. Apply fflags,
 // Install DXVK when specified in configuration.
+// Additionally, launch wine with the specified 'launcher' in the configuration
+// when set, for example: <launcher> wine ../RobloxPlayerLauncher.exe
 // The arguments seen below is a result of Go's slice arrays and wanting to add
 // custom arguments, so i simply chose to append what we need to the array instead.
 // When enabled in configuration, we also wait for Roblox to exit (queried with the given string)
@@ -184,7 +184,7 @@ func RobloxLaunch(exe string, app string, args ...string) {
 
 	if RobloxFind(false, exe) == "" {
 		if err := RobloxInstall("https://www.roblox.com/download/client"); err != nil {
-			log.Fatal("failed to install roblox:", err)
+			log.Fatal("failed to install roblox: ", err)
 		}
 	}
 
@@ -205,9 +205,9 @@ func RobloxLaunch(exe string, app string, args ...string) {
 
 	prog := "wine"
 
-	if Config.GameMode {
+	if Config.Launcher != "" {
 		args = append([]string{"wine"}, args...)
-		prog = "gamemoderun"
+		prog = Config.Launcher
 	}
 
 	if err := Exec(prog, true, args...); err != nil {

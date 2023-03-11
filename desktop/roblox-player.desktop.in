@@ -6,5 +6,5 @@ Terminal=false
 MimeType=x-scheme-handler/roblox-player
 Categories=Game
 NoDisplay=true
-Icon=io.github.vinegarhq.Vinegar.player
+Icon=$FLATPAK.player
 MimeType=x-scheme-handler/roblox-player;x-scheme-handler/roblox

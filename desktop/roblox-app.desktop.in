@@ -4,4 +4,4 @@ Name=Roblox App (Vinegar)
 Exec=vinegar player -app
 Terminal=false
 Categories=Game
-Icon=io.github.vinegarhq.Vinegar.player
+Icon=$FLATPAK.player

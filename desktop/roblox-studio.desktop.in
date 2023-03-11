@@ -5,5 +5,5 @@ Exec=vinegar studio %u
 Terminal=false
 MimeType=x-scheme-handler/roblox-studio
 Categories=Game
-Icon=io.github.vinegarhq.Vinegar.studio
+Icon=$FLATPAK.studio
 MimeType=x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth;roblox-studio.desktop;application/x-roblox-rbxlx

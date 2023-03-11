@@ -1,4 +1,4 @@
-# <img src="icons/vinegar.svg" width="48"> Vinegar
+# <img src="icons/48/vinegar.png"> Vinegar
 A transparent wrapper for Roblox Player and Roblox Studio.
 
 # Features
@@ -16,3 +16,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 # See Also
 + [Discord Server](https://discord.gg/dzdzZ6Pps2)
 + [Documentation](https://vinegarhq.github.io)
+
+# Acknowledgements
++ Logo modified with Katie, made by the [Twemoji team](https://twemoji.twitter.com/), Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
++ Katie usage authorized by [kitteh](https://ksiv.neocities.org)

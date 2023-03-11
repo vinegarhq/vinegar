@@ -1,4 +1,4 @@
-# <img src="https://github.com/vinegar-dev/vinegar/blob/master/icons/vinegar.svg" width="48"> Vinegar
+# <img src="icons/vinegar.svg" width="48"> Vinegar
 A transparent wrapper for Roblox Player and Roblox Studio.
 
 # Features

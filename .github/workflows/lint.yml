@@ -1,19 +1,17 @@
 name: Linter
 on:
   push:
-    branches: [ "master" ]
   pull_request:
-    branches: [ "master" ]
 permissions:
   contents: read
 jobs:
   golangci-lint:
     runs-on: ubuntu-latest
     steps:
-      - name: 'Setup Go'
-        uses: actions/setup-go@v3
       - name: 'Checkout Repository'
         uses: actions/checkout@v3
+      - name: 'Setup Go'
+        uses: actions/setup-go@v3
       - name: 'Run Linter'
         uses: golangci/golangci-lint-action@v3
         with:

@@ -1,6 +1,6 @@
 # <img src="icons/48/vinegar.png"> Vinegar
 
-[![Workflow Status][workflow_img    ]]
+![Workflow Status][workflow_img    ]
 [![Version        ][version_img     ]][version     ]
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]

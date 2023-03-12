@@ -13,7 +13,7 @@ var programDirs = defProgramDirs()
 func defProgramDirs() []string {
 	user, err := user.Current()
 	if err != nil {
-		log.Fatal("failed to get current user")
+		log.Fatal(err)
 	}
 
 	dirs := []string{

@@ -44,19 +44,20 @@ func DxvkStrap() {
 	DxvkUninstall(false)
 }
 
-func DxvkExtract(tarball string) error {
+func DxvkExtract(tarball string) {
 	var winDir string
 
 	log.Println("Extracting DXVK")
 
 	dxvkTarball, err := os.Open(tarball)
+
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	dxvkGzip, err := gzip.NewReader(dxvkTarball)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	dxvkTar := tar.NewReader(dxvkGzip)
@@ -81,17 +82,15 @@ func DxvkExtract(tarball string) error {
 
 		writer, err := os.Create(filepath.Join(winDir, path.Base(header.Name)))
 		if err != nil {
-			return err
+			log.Fatal(err)
 		}
 
 		log.Println("Extracting DLL:", writer.Name())
 
 		if _, err = io.Copy(writer, dxvkTar); err != nil {
-			return err
+			log.Fatal(err)
 		}
 	}
-
-	return nil
 }
 
 func DxvkInstall(force bool) {
@@ -109,9 +108,7 @@ func DxvkInstall(force bool) {
 		log.Fatal(err)
 	}
 
-	if err := DxvkExtract(dxvkTarballPath); err != nil {
-		log.Fatal(err)
-	}
+	DxvkExtract(dxvkTarballPath)
 
 	if err := os.RemoveAll(dxvkTarballPath); err != nil {
 		log.Fatal(err)

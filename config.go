@@ -21,6 +21,7 @@ type Configuration struct {
 	Launcher    string
 	Renderer    string
 	Version     string
+	WineRoot    string
 	Env         map[string]string
 	FFlags      map[string]interface{}
 }
@@ -41,6 +42,7 @@ func defConfig() Configuration {
 		Launcher:    "",
 		Renderer:    "D3D11",
 		Version:     "win10",
+		WineRoot:    "",
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,
 			"WINEARCH":   "win64",
@@ -100,6 +102,11 @@ func loadConfig() Configuration {
 		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
 		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
 		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+	}
+
+	if config.WineRoot != "" {
+		log.Println("Using Wine Root")
+		os.Setenv("PATH", filepath.Join(config.WineRoot, "bin")+":"+os.Getenv("PATH"))
 	}
 
 	for name, value := range config.Env {

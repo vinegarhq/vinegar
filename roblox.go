@@ -231,5 +231,8 @@ func RobloxStudio(args ...string) {
 		exe = "RobloxStudioBeta.exe"
 	}
 
+	// DXVK does not work under studio.
+	Config.Dxvk = false
+
 	RobloxLaunch(exe, "Studio", args...)
 }

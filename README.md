@@ -25,7 +25,8 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Automatic Wineprefix version setter upon Wineprefix initialization
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix
-+ Custom launcher specified to be used when launching Roblox, [GameMode](https://github.com/FeralInteractive/gamemode) can be used
++ Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
++ Custom Wine 'root' (experimental)
 + TOML Configuration file for setting environment variables and applying custom FFlags
 + Transparent launch of rbxfpsunlocker
 + Logging for both Vinegar and executions

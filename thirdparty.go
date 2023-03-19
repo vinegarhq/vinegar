@@ -100,19 +100,15 @@ func DxvkInstall(force bool) {
 		}
 	}
 
-	log.Println("Installing DXVK")
-
 	dxvkTarballPath := filepath.Join(Dirs.Cache, DXVKTAR)
 
-	if err := Download(DXVKURL, dxvkTarballPath); err != nil {
-		log.Fatal(err)
+	if _, err := os.Stat(dxvkTarballPath); errors.Is(err, os.ErrNotExist) {
+		if err := Download(DXVKURL, dxvkTarballPath); err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	DxvkExtract(dxvkTarballPath)
-
-	if err := os.RemoveAll(dxvkTarballPath); err != nil {
-		log.Fatal(err)
-	}
 
 	if _, err := os.Create(DxvkInstallMarker); err != nil {
 		log.Fatal(err)

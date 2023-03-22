@@ -65,11 +65,7 @@ func RobloxInstall(url string) error {
 		return err
 	}
 
-	if err := os.RemoveAll(installerPath); err != nil {
-		return err
-	}
-
-	return nil
+	return os.RemoveAll(installerPath)
 }
 
 // Validate the given renderer, and apply it to the given map (fflags);

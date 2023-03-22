@@ -43,11 +43,7 @@ func Exec(prog string, elog bool, args ...string) error {
 		cmd.Stdout = logFile
 	}
 
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	return nil
+	return cmd.Run()
 }
 
 func Download(source, file string) error {
@@ -116,11 +112,7 @@ func UnzipFile(source, target, file string) error {
 
 	log.Println("Removing source zip file")
 
-	if err := os.RemoveAll(source); err != nil {
-		return err
-	}
-
-	return nil
+	return os.RemoveAll(source)
 }
 
 // Loop over all proc(5)fs PID directories and check if the given query (string)

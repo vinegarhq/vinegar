@@ -6,14 +6,14 @@ ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
 FLATPAK = io.github.vinegarhq.Vinegar
 
-GOFLAGS = -ldflags="-s -w -X main.Version=$(VERSION)" -buildvcs=false
+GO_LDFLAGS = -s -w -X main.Version=$(VERSION)
 GO = go
 
 all: vinegar
 install: install-bin install-desktop install-icons
 
 vinegar:
-	$(GO) build $(GOFLAGS)
+	$(GO) build $(GOFLAGS) -ldflags "$(GO_LDFLAGS)"
 
 install-bin: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar

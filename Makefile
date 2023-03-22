@@ -72,4 +72,4 @@ mime:
 clean:
 	rm -f vinegar
 
-.PHONY: all install install-bin install-desktop install-icons uninstall icons mime clean
+.PHONY: all vinegar install install-bin install-desktop install-icons uninstall icons mime clean

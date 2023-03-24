@@ -1,4 +1,4 @@
-module github.com/vinegarhq/vinegar
+module github.com/vinegarhq/vinegar/v2
 
 go 1.20
 

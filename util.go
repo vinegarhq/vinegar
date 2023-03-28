@@ -4,6 +4,7 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
+	"sort"
 	"log"
 	"net/http"
 	"os"
@@ -151,4 +152,26 @@ func CommLoop(comm string) {
 			break
 		}
 	}
+}
+
+func LatestLogFiles(before int) {
+	logDir, err := os.Open(Dirs.Log)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+    logFiles, err := logDir.Readdir(-1)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    sort.Slice(logFiles, func(i, j int) bool {
+        return logFiles[i].ModTime().After(logFiles[j].ModTime())
+    })
+
+    latestFiles := logFiles[:before]
+
+    for _, file := range latestFiles {
+        fmt.Println(filepath.Join(logDir.Name(), file.Name()))
+    }
 }

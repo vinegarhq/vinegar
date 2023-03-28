@@ -4,12 +4,12 @@ import (
 	"archive/zip"
 	"fmt"
 	"io"
-	"sort"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"time"
 )
 
@@ -160,18 +160,18 @@ func LatestLogFiles(before int) {
 		log.Fatal(err)
 	}
 
-    logFiles, err := logDir.Readdir(-1)
-    if err != nil {
-        log.Fatal(err)
-    }
+	logFiles, err := logDir.Readdir(-1)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    sort.Slice(logFiles, func(i, j int) bool {
-        return logFiles[i].ModTime().After(logFiles[j].ModTime())
-    })
+	sort.Slice(logFiles, func(i, j int) bool {
+		return logFiles[i].ModTime().After(logFiles[j].ModTime())
+	})
 
-    latestFiles := logFiles[:before]
+	latestFiles := logFiles[:before]
 
-    for _, file := range latestFiles {
-        fmt.Println(filepath.Join(logDir.Name(), file.Name()))
-    }
+	for _, file := range latestFiles {
+		fmt.Println(filepath.Join(logDir.Name(), file.Name()))
+	}
 }

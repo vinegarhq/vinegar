@@ -148,33 +148,33 @@ func DxvkUninstall(force bool) {
 	}
 }
 
-func RbxFpsUnlockerSettings(file string) {
-	log.Println("Writing custom rbxfpsunlocker settings")
-
-	// These settings provide a completely transparent launch of rbxfpsunlocker.
-	settings := []string{
-		"UnlockClient=true",
-		"UnlockStudio=true",
-		"FPSCapValues=[30.000000, 60.000000, 75.000000, 120.000000, 144.000000, 165.000000, 240.000000, 360.000000]",
-		"FPSCapSelection=0",
-		"FPSCap=0.000000",
-		"CheckForUpdates=false",
-		"NonBlockingErrors=true",
-		"SilentErrors=true",
-		"QuickStart=true",
-	}
-
-	settingsFile, err := os.Create(file)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, setting := range settings {
-		if _, err := fmt.Fprintln(settingsFile, setting+"\r"); err != nil {
-			log.Fatal(err)
-		}
-	}
-}
+//func RbxFpsUnlockerSettings(file string) {
+//	log.Println("Writing custom rbxfpsunlocker settings")
+//
+//	// These settings provide a completely transparent launch of rbxfpsunlocker.
+//	settings := []string{
+//		"UnlockClient=true",
+//		"UnlockStudio=true",
+//		"FPSCapValues=[30.000000, 60.000000, 75.000000, 120.000000, 144.000000, 165.000000, 240.000000, 360.000000]",
+//		"FPSCapSelection=0",
+//		"FPSCap=0.000000",
+//		"CheckForUpdates=false",
+//		"NonBlockingErrors=true",
+//		"SilentErrors=true",
+//		"QuickStart=true",
+//	}
+//
+//	settingsFile, err := os.Create(file)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
+//
+//	for _, setting := range settings {
+//		if _, err := fmt.Fprintln(settingsFile, setting+"\r"); err != nil {
+//			log.Fatal(err)
+//		}
+//	}
+//}
 
 // func RbxFpsUnlocker() {
 // 	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")

@@ -5,43 +5,15 @@ import (
 	"io"
 	"log"
 	"os"
-	"runtime/debug"
-
-	"github.com/BurntSushi/toml"
 )
 
 var Version string
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [delete|edit|exec|kill|printconfig|reset|version]")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [config|delete|edit|exec|kill|reset|version]")
 	fmt.Fprintln(os.Stderr, "       vinegar [player|studio] [args...]")
 
 	os.Exit(1)
-}
-
-func printDebug() {
-	info, ok := debug.ReadBuildInfo()
-
-	if !ok {
-		panic("ReadBuildInfo() is not okay :(")
-	}
-
-	fmt.Printf("%s %s\n\n", "Vinegar", Version)
-
-	// pretty print, ignores empty keys
-	for _, s := range info.Settings {
-		if s.Value != "" {
-			fmt.Printf("%s = %s\n", s.Key, s.Value)
-		}
-	}
-
-	fmt.Println()
-	LatestLogFiles(2)
-	fmt.Println()
-
-	if err := toml.NewEncoder(os.Stdout).Encode(Config); err != nil {
-		panic(err)
-	}
 }
 
 func logToFile() {
@@ -53,12 +25,23 @@ func logToFile() {
 	log.SetOutput(logOutput)
 }
 
+func printConfig() {
+	file, err := os.ReadFile(ConfigFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(file))
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		usage()
 	}
 
 	switch os.Args[1] {
+	case "config":
+		printConfig()
 	case "delete":
 		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Data, Dirs.Cache)
@@ -80,8 +63,8 @@ func main() {
 		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)
 		CheckDirs(DirMode, Dirs.Pfx, Dirs.Log)
-	case "debug":
-		printDebug()
+	case "version":
+		fmt.Println("Vinegar", Version)
 	default:
 		usage()
 	}

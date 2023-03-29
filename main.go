@@ -10,7 +10,7 @@ import (
 var Version string
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [config|delete|edit|exec|kill|reset|version]")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [config|delete|edit|exec|kill|logs|reset|version]")
 	fmt.Fprintln(os.Stderr, "       vinegar [player|studio] [args...]")
 
 	os.Exit(1)
@@ -53,16 +53,20 @@ func main() {
 		}
 	case "kill":
 		PfxKill()
+	case "logs":
+		fmt.Println(Dirs.Log)
+		LatestLogFile("exec-*")
+		LatestLogFile("vinegar-*")
 	case "player":
 		logToFile()
 		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", os.Args[2:]...)
-	case "studio":
-		logToFile()
-		RobloxStudio(os.Args[2:]...)
 	case "reset":
 		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)
 		CheckDirs(DirMode, Dirs.Pfx, Dirs.Log)
+	case "studio":
+		logToFile()
+		RobloxStudio(os.Args[2:]...)
 	case "version":
 		fmt.Println("Vinegar", Version)
 	default:

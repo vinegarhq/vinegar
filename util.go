@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"time"
 )
 
@@ -154,24 +153,12 @@ func CommLoop(comm string) {
 	}
 }
 
-func LatestLogFiles(before int) {
-	logDir, err := os.Open(Dirs.Log)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	logFiles, err := logDir.Readdir(-1)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sort.Slice(logFiles, func(i, j int) bool {
-		return logFiles[i].ModTime().After(logFiles[j].ModTime())
-	})
-
-	latestFiles := logFiles[:before]
-
-	for _, file := range latestFiles {
-		fmt.Println(filepath.Join(logDir.Name(), file.Name()))
-	}
+func LatestLogFile(glob string) {
+	// Since filepath.Glob sorts numerically, the 'newest' log files
+	// will always be last (hence why retrieveing the last array element
+	// is used), as they contain the date they were created at.
+	// On-top of this, it also sorts alphabetically, so we only check for
+	// log files that match the pattern.
+	LogFiles, _ := filepath.Glob(filepath.Join(Dirs.Log, glob))
+	fmt.Println(LogFiles[len(LogFiles)-1])
 }

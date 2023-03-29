@@ -14,7 +14,6 @@ import (
 type Configuration struct {
 	ApplyRCO    bool
 	AutoKillPfx bool
-	AutoRFPSU   bool
 	Dxvk        bool
 	Log         bool
 	Prime       bool
@@ -35,7 +34,6 @@ func defConfig() Configuration {
 	return Configuration{
 		ApplyRCO:    true,
 		AutoKillPfx: true,
-		AutoRFPSU:   false,
 		Dxvk:        true,
 		Log:         true,
 		Prime:       false,

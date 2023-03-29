@@ -13,10 +13,9 @@ import (
 )
 
 const (
-	DXVKVER        = "2.1"
-	DXVKTAR        = "dxvk-" + DXVKVER + ".tar.gz"
-	DXVKURL        = "https://github.com/doitsujin/dxvk/releases/download/v" + DXVKVER + "/" + DXVKTAR
-	FPSUNLOCKERURL = "https://github.com/axstin/rbxfpsunlocker/releases/download/v4.4.4/rbxfpsunlocker-x64.zip"
+	DXVKVER = "2.1"
+	DXVKTAR = "dxvk-" + DXVKVER + ".tar.gz"
+	DXVKURL = "https://github.com/doitsujin/dxvk/releases/download/v" + DXVKVER + "/" + DXVKTAR
 )
 
 // DxvkInstallMarker file, created on DXVK installation and removed at DXVK
@@ -177,34 +176,34 @@ func RbxFpsUnlockerSettings(file string) {
 	}
 }
 
-func RbxFpsUnlocker() {
-	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")
-
-	if _, err := os.Stat(fpsUnlockerPath); errors.Is(err, os.ErrNotExist) {
-		fpsUnlockerZip := filepath.Join(Dirs.Cache, "rbxfpsunlocker.zip")
-
-		log.Println("Installing rbxfpsunlocker")
-
-		if err := Download(FPSUNLOCKERURL, fpsUnlockerZip); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := UnzipFile(fpsUnlockerZip, "rbxfpsunlocker.exe", fpsUnlockerPath); err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	settingsFile := filepath.Join(Dirs.Cache, "settings")
-
-	// Only supply the settings file when the settings file does not exist,
-	// Who knows! maybe the user wants to edit the settings themselves.
-	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
-		RbxFpsUnlockerSettings(settingsFile)
-	}
-
-	log.Println("Launching FPS Unlocker")
-
-	if err := Exec("wine", true, fpsUnlockerPath); err != nil {
-		log.Fatal("rbxfpsunlocker err:", err)
-	}
-}
+// func RbxFpsUnlocker() {
+// 	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")
+//
+// 	if _, err := os.Stat(fpsUnlockerPath); errors.Is(err, os.ErrNotExist) {
+// 		fpsUnlockerZip := filepath.Join(Dirs.Cache, "rbxfpsunlocker.zip")
+//
+// 		log.Println("Installing rbxfpsunlocker")
+//
+// 		if err := Download(FPSUNLOCKERURL, fpsUnlockerZip); err != nil {
+// 			log.Fatal(err)
+// 		}
+//
+// 		if err := UnzipFile(fpsUnlockerZip, "rbxfpsunlocker.exe", fpsUnlockerPath); err != nil {
+// 			log.Fatal(err)
+// 		}
+// 	}
+//
+// 	settingsFile := filepath.Join(Dirs.Cache, "settings")
+//
+// 	// Only supply the settings file when the settings file does not exist,
+// 	// Who knows! maybe the user wants to edit the settings themselves.
+// 	if _, err := os.Stat(settingsFile); errors.Is(err, os.ErrNotExist) {
+// 		RbxFpsUnlockerSettings(settingsFile)
+// 	}
+//
+// 	log.Println("Launching FPS Unlocker")
+//
+// 	if err := Exec("wine", true, fpsUnlockerPath); err != nil {
+// 		log.Fatal("rbxfpsunlocker err:", err)
+// 	}
+// }

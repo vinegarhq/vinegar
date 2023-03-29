@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"

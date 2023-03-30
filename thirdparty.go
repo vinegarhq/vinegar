@@ -147,7 +147,7 @@ func DxvkUninstall(force bool) {
 	}
 }
 
-//func RbxFpsUnlockerSettings(file string) {
+//  func RbxFpsUnlockerSettings(file string) {
 //	log.Println("Writing custom rbxfpsunlocker settings")
 //
 //	// These settings provide a completely transparent launch of rbxfpsunlocker.
@@ -173,7 +173,7 @@ func DxvkUninstall(force bool) {
 //			log.Fatal(err)
 //		}
 //	}
-//}
+//  }
 
 // func RbxFpsUnlocker() {
 // 	fpsUnlockerPath := filepath.Join(Dirs.Data, "rbxfpsunlocker.exe")

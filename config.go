@@ -42,8 +42,8 @@ func defConfig() Configuration {
 		Version:     "win10",
 		WineRoot:    "",
 		Env: map[string]string{
-			"WINEPREFIX":       Dirs.Pfx,
-			"WINEARCH":         "win64",
+			"WINEPREFIX": Dirs.Pfx,
+			"WINEARCH":   "win64",
 			// "WINEDEBUG":        "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
 			"WINEDEBUG":        "-all",
 			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;",

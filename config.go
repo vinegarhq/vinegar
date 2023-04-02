@@ -46,6 +46,7 @@ func defConfig() Configuration {
 			"WINEARCH":   "win64",
 			// "WINEDEBUG":        "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
 			"WINEDEBUG":        "-all",
+			"WINEESYNC":        "1",
 			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;",
 
 			"DXVK_LOG_LEVEL":        "warn",

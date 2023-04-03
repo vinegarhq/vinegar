@@ -12,6 +12,7 @@ import (
 )
 
 type Configuration struct {
+	CompatMode  bool
 	ApplyRCO    bool
 	AutoKillPfx bool
 	Dxvk        bool
@@ -32,6 +33,7 @@ var (
 
 func defConfig() Configuration {
 	return Configuration{
+		CompatMode:  false,
 		ApplyRCO:    true,
 		AutoKillPfx: true,
 		Dxvk:        true,
@@ -106,6 +108,13 @@ func loadConfig() Configuration {
 	if config.WineRoot != "" {
 		log.Println("Using Wine Root")
 		os.Setenv("PATH", filepath.Join(config.WineRoot, "bin")+":"+os.Getenv("PATH"))
+	}
+
+	if config.CompatMode {
+		log.Println("Using Compatibility Mode!")
+		config.Dxvk = false
+		config.Renderer = "OpenGL"
+		config.ApplyRCO = false
 	}
 
 	for name, value := range config.Env {

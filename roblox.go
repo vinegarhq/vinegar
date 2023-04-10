@@ -241,8 +241,8 @@ func RobloxLaunch(exe string, args ...string) {
 	if Config.AutoKillPfx {
 		// Probably wouldn't want to use the full path of the EXE.
 		exeName := filepath.Base(exe)
-		CommLoop(exeName)
-		CommLoop(exeName + "Bet")
+		CommLoop(exeName[:15])
+		CommLoop(exeName[:12] + "Bet")
 		PfxKill()
 	}
 }

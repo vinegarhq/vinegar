@@ -39,6 +39,8 @@ func RobloxAPIRequest(api, endpoint, method string, json []byte) []byte {
 func RobloxPlayerLatestVersion() string {
 	var versionInfo ClientVersion
 
+	log.Println("Getting latest Roblox client version")
+
 	resp := RobloxAPIRequest("clientsettings", "v2/client-version/WindowsPlayer/channel/LIVE", "GET", nil)
 
 	if err := json.Unmarshal(resp, &versionInfo); err != nil {

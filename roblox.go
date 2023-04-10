@@ -2,11 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"io"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -157,26 +158,75 @@ func RobloxApplyFFlags(app string, dir string) error {
 	return nil
 }
 
-// Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to
-// RobloxPlayerBeta This function is mainly a hack to take place of what the
-// launcher would do, and would fork for RobloxPlayerBeta.
-func BrowserArgsParse(args *string) {
-	// roblox-player 1 launchmode play gameinfo
-	// {authticket} launchtime {launchtime} placelauncherurl
-	// {placelauncherurl} browsertrackerid {browsertrackerid}
-	// robloxLocale {rloc} gameLocale {gloc} channel
-	rbxArgs := regexp.MustCompile(`[\:\,\+\s]+`).Split(*args, -1)
+func RobloxPlayerLatestVersion(channel string) string {
+	log.Println("Getting latest Roblox client version")
 
-	placeLauncherURLDecoded, err := url.QueryUnescape(rbxArgs[9])
+	log.Println("https://setup.rbxcdn.com" + channel + "/version")
+	// thanks pizzaboxer
+	resp, err := http.Get("https://setup.rbxcdn.com" + channel + "/version")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// Forwarded command line as of 2023-02-03:
-	// RobloxPlayerBeta -t {authticket} -j {placelauncherurl} -b 0
-	//   --launchtime={launchtime} --rloc {rloc} --gloc {gloc}
-	*args = "--app" + " -t " + rbxArgs[5] + " -j " + placeLauncherURLDecoded + " -b 0 " +
-		"--launchtime=" + rbxArgs[7] + " --rloc " + rbxArgs[13] + " --gloc " + rbxArgs[15]
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	resp.Body.Close()
+
+	return string(body)
+}
+
+// THANKS PIZZABOXER
+//
+// Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to
+// RobloxPlayerBeta This function is mainly a hack to take place of what the
+// launcher would do, and would fork for RobloxPlayerBeta.
+func BrowserArgsParse(launchUri string) (string, []string) {
+	var args []string
+	var channel string
+
+	UriKeyArgMap := map[string]string{
+		"launchmode":       "--",
+		"gameinfo":         "-t ",
+		"placelauncherurl": "-j ",
+		"launchtime":       "--launchtime=",
+		"browsertrackerid": "-b ",
+		"robloxLocale":     "--rloc ",
+		"gameLocale":       "--gloc ",
+		"channel":          "-channel ",
+	}
+
+	for _, uri := range strings.Split(launchUri, "+") {
+		parts := strings.Split(uri, ":")
+
+		if UriKeyArgMap[parts[0]] == "" {
+			continue
+		}
+
+		if parts[1] == "" {
+			continue
+		}
+
+		if parts[0] == "channel" {
+			channel = "/channel/" + strings.ToLower(parts[1])
+		}
+
+		if parts[0] == "placelauncherurl" {
+			urlDecoded, err := url.QueryUnescape(parts[1])
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			parts[0] = urlDecoded
+		}
+
+		args = append(args, UriKeyArgMap[parts[0]]+parts[1])
+	}
+
+	return channel, args
 }
 
 // Create or set Microsoft's Edge installation directories to be read only,
@@ -282,11 +332,13 @@ func RobloxPlayer(args ...string) {
 		log.Fatal("failed to apply fflags: ", err)
 	}
 
-	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:play") {
-		if filepath.Base(root) == RobloxPlayerLatestVersion() {
+	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
+		channel, _args := BrowserArgsParse(args[0])
+
+		if filepath.Base(root) == RobloxPlayerLatestVersion(channel) {
 			exe = filepath.Join(root, "RobloxPlayerBeta.exe")
 
-			BrowserArgsParse(&args[0])
+			args = _args
 		}
 	}
 

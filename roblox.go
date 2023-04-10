@@ -234,7 +234,10 @@ func RobloxLaunch(exe string, args ...string) {
 		prog = Config.Launcher
 	}
 
-	if err := Exec(prog, true, args...); err != nil {
+	err := Exec(prog, true, args...)
+
+	// exit code 41 is a false alarm.
+	if err != nil && err.Error() != "exit status 41" {
 		log.Fatal("roblox exec err: ", err)
 	}
 

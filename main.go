@@ -59,7 +59,7 @@ func main() {
 		LatestLogFile("vinegar-*")
 	case "player":
 		logToFile()
-		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", os.Args[2:]...)
+		RobloxPlayer(os.Args[2:]...)
 	case "reset":
 		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)

@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 const RCOURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
@@ -107,10 +110,6 @@ func RobloxSetRenderer(renderer string, fflags map[string]interface{}) {
 func RobloxApplyFFlags(app string, dir string) error {
 	fflags := make(map[string]interface{})
 
-	if app == "Studio" {
-		return nil
-	}
-
 	fflagsDir := filepath.Join(dir, app+"Settings")
 	CheckDirs(DirMode, fflagsDir)
 
@@ -158,24 +157,43 @@ func RobloxApplyFFlags(app string, dir string) error {
 	return nil
 }
 
+// Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to
+// RobloxPlayerBeta This function is mainly a hack to take place of what the
+// launcher would do, and would fork for RobloxPlayerBeta.
+func BrowserArgsParse(args *string) {
+	// roblox-player 1 launchmode play gameinfo
+	// {authticket} launchtime {launchtime} placelauncherurl
+	// {placelauncherurl} browsertrackerid {browsertrackerid}
+	// robloxLocale {rloc} gameLocale {gloc} channel
+	rbxArgs := regexp.MustCompile(`[\:\,\+\s]+`).Split(*args, -1)
+
+	placeLauncherURLDecoded, err := url.QueryUnescape(rbxArgs[9])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Forwarded command line as of 2023-02-03:
+	// RobloxPlayerBeta -t {authticket} -j {placelauncherurl} -b 0
+	//   --launchtime={launchtime} --rloc {rloc} --gloc {gloc}
+	*args = "--app" + " -t " + rbxArgs[5] + " -j " + placeLauncherURLDecoded + " -b 0 " +
+		"--launchtime=" + rbxArgs[7] + " --rloc " + rbxArgs[13] + " --gloc " + rbxArgs[15]
+}
+
 // Create or set Microsoft's Edge installation directories to be read only,
-// since Studio for whatever reason will install it, though it is not needed.
+// since Studio will install it, which is needed for the Login page, Studio's
+// Edge installation is broken on Wine. Vinegar may install Edge on it's own
+// in the future if agreed upon.
+//
 // Check if the versions (with the exe) exists, if not install the Roblox Client,
 // which brings with it the Studio installer in the root of the versions directory.
-// However, if roblox has still not been found, exit immediately. Apply fflags,
-// Install DXVK when specified in configuration.
-// Additionally, launch wine with the specified 'launcher' in the configuration
-// when set, for example: <launcher> wine ../RobloxPlayerLauncher.exe
-// The arguments seen below is a result of Go's slice arrays and wanting to add
-// custom arguments, so i simply chose to append what we need to the array instead.
-// When enabled in configuration, we also wait for Roblox to exit (queried with the given string)
+// However, if roblox has still not been found, exit immediately.
+// Install DXVK - if needed, then apply the FFlags.
 //
-//	RobloxPlayerLauncher.exe -> RobloxPlayerLau
-//	RobloxPlayerLauncher.exe -> RobloxPlayer + Bet
-//
-// Linux's procfs 'comm' file has a maximum string length of 16 characters, which is
-// why using sliced [:15] is preffered to provided directly.
-func RobloxLaunch(exe string, app string, args ...string) {
+// If we are going to launch the Roblox Client, we compare the version ourselves,
+// and use the Roblox Launcher if it's mismatched. This is to shave off some time
+// when launching Roblox, since the Launcher will always check if the installation
+// is outdated, then install it if necessary, and pass to RobloxPlayerBeta.
+func RobloxSetup(exe string) string {
 	EdgeDirSet(DirROMode, true)
 
 	if RobloxFind(false, exe) == "" {
@@ -192,12 +210,22 @@ func RobloxLaunch(exe string, app string, args ...string) {
 
 	DxvkStrap()
 
-	if err := RobloxApplyFFlags(app, robloxRoot); err != nil {
-		log.Fatal("failed to apply fflags: ", err)
-	}
+	return filepath.Join(robloxRoot, exe)
+}
 
+// launch wine with the specified 'launcher' in the configuration
+// when set, for example: <launcher> wine ../RobloxPlayerLauncher.exe
+//
+// Linux's procfs 'comm' file has a maximum string length of 16 characters,
+// which is why using sliced [:15] is preffered to provided directly:
+//
+//	RobloxPlayerLauncher.exe -> RobloxPlayerLau
+//	RobloxPlayerLauncher.exe -> RobloxPlayer + Bet -> RobloxPlayerBeta
+//
+// When enabled in configuration, we also wait for Roblox to exit.
+func RobloxLaunch(exe string, args ...string) {
 	log.Println("Launching", exe)
-	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
+	args = append([]string{exe}, args...)
 
 	prog := "wine"
 
@@ -211,24 +239,53 @@ func RobloxLaunch(exe string, app string, args ...string) {
 	}
 
 	if Config.AutoKillPfx {
-		CommLoop(exe[:15])
-		CommLoop(exe[:12] + "Bet")
+		// Probably wouldn't want to use the full path of the EXE.
+		exeName := filepath.Base(exe)
+		CommLoop(exeName)
+		CommLoop(exeName + "Bet")
 		PfxKill()
 	}
 }
 
+// Handler for launching Roblox Studio, this is required since roblox-studio-auth
+// passes special arguments meant for RobloxStudioBeta.
+// Aditionally pass -ide if needed, and disable DXVK.
 func RobloxStudio(args ...string) {
-	exe := "RobloxStudioLauncherBeta.exe"
+	exe := RobloxSetup("RobloxStudioLauncherBeta.exe")
 
 	// Protocol URI, Launcher cannot be used
 	if len(args) < 1 {
 		args = []string{"-ide"}
-	} else if len(args[0]) > 12 && args[0][:13] == "roblox-studio" {
+	} else if strings.HasPrefix(strings.Join(args, " "), "roblox-studio") {
 		exe = "RobloxStudioBeta.exe"
 	}
 
 	// DXVK does not work under studio.
 	Config.Dxvk = false
 
-	RobloxLaunch(exe, "Studio", args...)
+	RobloxLaunch(exe, args...)
+}
+
+// Handler for launching Roblox Player, which checks if we are being launched
+// from the browser, and check if we have the latest Roblox version, if we do,
+// use RobloxPlayerBeta directly, which then we would need to format the Roblox
+// arguments ourselves, which is RobloxPlayerLauncher's job.
+// Using RobloxPlayerBeta can shave some time off when launching Roblox.
+func RobloxPlayer(args ...string) {
+	exe := RobloxSetup("RobloxPlayerLauncher.exe")
+	root := filepath.Dir(exe)
+
+	if err := RobloxApplyFFlags("Client", root); err != nil {
+		log.Fatal("failed to apply fflags: ", err)
+	}
+
+	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:play") {
+		if filepath.Base(root) == RobloxPlayerLatestVersion() {
+			exe = filepath.Join(root, "RobloxPlayerBeta.exe")
+
+			BrowserArgsParse(&args[0])
+		}
+	}
+
+	RobloxLaunch(exe, args...)
 }

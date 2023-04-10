@@ -35,6 +35,8 @@ linters:
     # functions that have just some lines above the limit
     # main()(14>10) & RobloxApplyFFlags(11>10)
     - cyclop
+    # Useless
+    - noctx
 issues:
   exclude-rules:
 
@@ -49,11 +51,6 @@ issues:
     - path: config.go
       linters:
         - musttag
-
-    # I think this is pretty unnecessary.
-    - path: util.go
-      linters:
-        - noctx
 
     # False alarm.
     - linters:

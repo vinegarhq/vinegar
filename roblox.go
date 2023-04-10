@@ -183,11 +183,11 @@ func RobloxPlayerLatestVersion(channel string) string {
 // Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to
 // RobloxPlayerBeta This function is mainly a hack to take place of what the
 // launcher would do, and would fork for RobloxPlayerBeta.
-func BrowserArgsParse(launchUri string) (string, []string) {
-	var args []string
+func BrowserArgsParse(launchURI string) (string, []string) {
 	var channel string
 
-	UriKeyArgMap := map[string]string{
+	args := make([]string, 0)
+	URIKeyArg := map[string]string{
 		"launchmode":       "--",
 		"gameinfo":         "-t ",
 		"placelauncherurl": "-j ",
@@ -198,10 +198,10 @@ func BrowserArgsParse(launchUri string) (string, []string) {
 		"channel":          "-channel ",
 	}
 
-	for _, uri := range strings.Split(launchUri, "+") {
+	for _, uri := range strings.Split(launchURI, "+") {
 		parts := strings.Split(uri, ":")
 
-		if UriKeyArgMap[parts[0]] == "" {
+		if URIKeyArg[parts[0]] == "" {
 			continue
 		}
 
@@ -223,7 +223,7 @@ func BrowserArgsParse(launchUri string) (string, []string) {
 			parts[0] = urlDecoded
 		}
 
-		args = append(args, UriKeyArgMap[parts[0]]+parts[1])
+		args = append(args, URIKeyArg[parts[0]]+parts[1])
 	}
 
 	return channel, args

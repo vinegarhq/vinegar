@@ -1,6 +1,70 @@
 package main
 
-// RCO's Default FFlags.
+import (
+	"encoding/json"
+	"log"
+	"os"
+	"path/filepath"
+)
+
+// Validate the given renderer, and apply it to the given map (fflags);
+// It will also disable every other renderer.
+func RobloxSetRenderer(renderer string, fflags *map[string]interface{}) {
+	possibleRenderers := []string{
+		"OpenGL",
+		"D3D11FL10",
+		"D3D11",
+		"Vulkan",
+	}
+
+	validRenderer := false
+
+	for _, r := range possibleRenderers {
+		if renderer == r {
+			validRenderer = true
+		}
+	}
+
+	if !validRenderer {
+		log.Fatal("invalid renderer, must be one of:", possibleRenderers)
+	}
+
+	for _, r := range possibleRenderers {
+		isRenderer := r == renderer
+		(*fflags)["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		(*fflags)["FFlagDebugGraphicsDisable"+r] = !isRenderer
+	}
+}
+
+// Apply the configuration's FFlags to Roblox's FFlags file, named after app:
+// ClientAppSettings.json, we also set (and check) the renderer specified in
+// the configuration, then indent it to look pretty and write.
+func RobloxApplyFFlags(app string, dir string) error {
+	fflagsDir := filepath.Join(dir, app+"Settings")
+	CheckDirs(DirMode, fflagsDir)
+
+	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
+	if err != nil {
+		return err
+	}
+
+	log.Println("Applying custom FFlags")
+
+	RobloxSetRenderer(Config.Renderer, &Config.FFlags)
+
+	fflagsJSON, err := json.MarshalIndent(Config.FFlags, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	if _, err := fflagsFile.Write(fflagsJSON); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// 'Append' RCO's FFlags to the given map pointer.
 func ApplyRCOFFlags(fflags *map[string]interface{}) {
 	// FIntFlagUpdateVersion: 68
 	rco := map[string]interface{}{

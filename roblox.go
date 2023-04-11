@@ -74,7 +74,7 @@ func RobloxInstall(url string) error {
 
 // Validate the given renderer, and apply it to the given map (fflags);
 // It will also disable every other renderer.
-func RobloxSetRenderer(renderer string, fflags map[string]interface{}) {
+func RobloxSetRenderer(renderer string, fflags *map[string]interface{}) {
 	possibleRenderers := []string{
 		"OpenGL",
 		"D3D11FL10",
@@ -96,21 +96,15 @@ func RobloxSetRenderer(renderer string, fflags map[string]interface{}) {
 
 	for _, r := range possibleRenderers {
 		isRenderer := r == renderer
-		fflags["FFlagDebugGraphicsPrefer"+r] = isRenderer
-		fflags["FFlagDebugGraphicsDisable"+r] = !isRenderer
+		(*fflags)["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		(*fflags)["FFlagDebugGraphicsDisable"+r] = !isRenderer
 	}
 }
 
-// Create the fflags directory;which sebsequently contains the FFlags
-// file, which is also created immediately afterwards, and if the configuration
-// specifies to use RCO, the RCO FFlags file overrwrites the FFlags file
-// entirely. Checking if the file is empty is necessary to prevent JSON
-// Unmarshalling errors, for when RCO hasn't been applied.
-// Afterwards we set the user-set FFlags, which is then idented to look pretty
-// and then written to the fflags file.
+// Apply the configuration's FFlags to Roblox's FFlags file, named after app:
+// ClientAppSettings.json, we also set (and check) the renderer specified in
+// the configuration, then indent it to look pretty and write.
 func RobloxApplyFFlags(app string, dir string) error {
-	fflags := make(map[string]interface{})
-
 	fflagsDir := filepath.Join(dir, app+"Settings")
 	CheckDirs(DirMode, fflagsDir)
 
@@ -119,34 +113,11 @@ func RobloxApplyFFlags(app string, dir string) error {
 		return err
 	}
 
-	if Config.ApplyRCO {
-		log.Println("Applying RCO FFlags")
-
-		if err := Download(RCOURL, fflagsFile.Name()); err != nil {
-			return err
-		}
-	}
-
-	fflagsFileContents, err := os.ReadFile(fflagsFile.Name())
-	if err != nil {
-		return err
-	}
-
-	if string(fflagsFileContents) != "" {
-		if err := json.Unmarshal(fflagsFileContents, &fflags); err != nil {
-			return err
-		}
-	}
-
 	log.Println("Applying custom FFlags")
 
-	RobloxSetRenderer(Config.Renderer, fflags)
+	RobloxSetRenderer(Config.Renderer, &Config.FFlags)
 
-	for fflag, value := range Config.FFlags {
-		fflags[fflag] = value
-	}
-
-	fflagsJSON, err := json.MarshalIndent(fflags, "", "  ")
+	fflagsJSON, err := json.MarshalIndent(Config.FFlags, "", "  ")
 	if err != nil {
 		return err
 	}

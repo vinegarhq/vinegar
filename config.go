@@ -12,7 +12,6 @@ import (
 )
 
 type Configuration struct {
-	ApplyRCO    bool
 	AutoKillPfx bool
 	Dxvk        bool
 	Log         bool
@@ -32,7 +31,6 @@ var (
 
 func defConfig() Configuration {
 	return Configuration{
-		ApplyRCO:    true,
 		AutoKillPfx: true,
 		Dxvk:        true,
 		Log:         true,

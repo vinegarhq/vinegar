@@ -11,8 +11,6 @@ import (
 	"strings"
 )
 
-const RCOURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
-
 // Loops over the global program directories, searching for Roblox's
 // version directory with a match of the given executable:
 //

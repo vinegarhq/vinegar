@@ -19,7 +19,6 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 [discord_img]: https://img.shields.io/discord/1069506340973707304
 
 # Features
-+ Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration (Includes a built in FPS unlocker)
 + Automatic DXVK Installer and uninstaller
 + Automatic Wineprefix killer when Player or Studio has exited
 + Automatic Wineprefix version setter upon Wineprefix initialization
@@ -27,6 +26,7 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 + Custom execution of wine program within wineprefix
 + Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
 + Custom Wine 'root' (experimental)
++ Faster Roblox Player launcher
 + TOML Configuration file for setting environment variables and applying custom FFlags
 + Logging for both Vinegar and executions
 

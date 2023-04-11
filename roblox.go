@@ -202,11 +202,16 @@ func BrowserArgsParse(launchURI string) (string, []string) {
 		parts := strings.Split(uri, ":")
 
 		if URIKeyArg[parts[0]] == "" {
+			log.Println("Unhandled URI Key:", parts[0])
 			continue
 		}
 
 		if parts[1] == "" {
 			continue
+		}
+
+		if parts[0] == "launchmode" && parts[1] == "play" {
+			parts[1] = "app"
 		}
 
 		if parts[0] == "channel" {

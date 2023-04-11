@@ -220,7 +220,7 @@ func BrowserArgsParse(launchURI string) (string, []string) {
 				log.Fatal(err)
 			}
 
-			parts[0] = urlDecoded
+			parts[1] = urlDecoded
 		}
 
 		args = append(args, URIKeyArg[parts[0]]+parts[1])
@@ -310,7 +310,7 @@ func RobloxStudio(args ...string) {
 	if len(args) < 1 {
 		args = []string{"-ide"}
 	} else if strings.HasPrefix(strings.Join(args, " "), "roblox-studio") {
-		exe = "RobloxStudioBeta.exe"
+		exe = RobloxFind(false, "RobloxStudioBeta.exe")
 	}
 
 	// DXVK does not work under studio.

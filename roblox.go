@@ -203,6 +203,7 @@ func BrowserArgsParse(launchURI string) (string, []string) {
 
 		if URIKeyArg[parts[0]] == "" {
 			log.Println("Unhandled URI Key:", parts[0])
+
 			continue
 		}
 

@@ -33,7 +33,7 @@ linters:
     - gofumpt
     # Splitting functions is unrealistic in the context of the
     # functions that have just some lines above the limit
-    # main()(14>10) & RobloxApplyFFlags(11>10)
+    # main()(16>10)
     - cyclop
     # Useless
     - noctx
@@ -47,10 +47,10 @@ issues:
       linters:
         - exhaustruct
 
-    # We don't need to tag them?
-    - path: config.go
+    # Better this way.
+    - path: fflags.go
       linters:
-        - musttag
+        - funlen
 
     # False alarm.
     - linters:

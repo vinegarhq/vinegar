@@ -259,7 +259,7 @@ func RobloxLaunch(exe string, args ...string) {
 		log.Fatal("roblox exec err: ", err)
 	}
 
-	if Config.AutoKillPfx {
+	if Config.AutoKill {
 		// Probably wouldn't want to use the full path of the EXE.
 		exeName := filepath.Base(exe)
 		CommLoop(exeName[:15])

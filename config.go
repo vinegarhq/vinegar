@@ -12,16 +12,17 @@ import (
 )
 
 type Configuration struct {
-	AutoKillPfx bool
-	Dxvk        bool
-	Log         bool
-	Prime       bool
-	Launcher    string
-	Renderer    string
-	Version     string
-	WineRoot    string
-	Env         map[string]string
-	FFlags      map[string]interface{}
+	RCO      bool                   `toml:"rco"`
+	AutoKill bool                   `toml:"autokill"`
+	Dxvk     bool                   `toml:"dxvk"`
+	Log      bool                   `toml:"log"`
+	Prime    bool                   `toml:"prime"`
+	Launcher string                 `toml:"launcher"`
+	Renderer string                 `toml:"renderer"`
+	Version  string                 `toml:"version"`
+	WineRoot string                 `toml:"wineroot"`
+	Env      map[string]string      `toml:"env"`
+	FFlags   map[string]interface{} `toml:"fflags"`
 }
 
 var (
@@ -31,14 +32,15 @@ var (
 
 func defConfig() Configuration {
 	return Configuration{
-		AutoKillPfx: true,
-		Dxvk:        true,
-		Log:         true,
-		Prime:       false,
-		Launcher:    "",
-		Renderer:    "D3D11",
-		Version:     "win10",
-		WineRoot:    "",
+		RCO:      true,
+		AutoKill: true,
+		Dxvk:     true,
+		Log:      true,
+		Prime:    false,
+		Launcher: "",
+		Renderer: "D3D11",
+		Version:  "win10",
+		WineRoot: "",
 		Env: map[string]string{
 			"WINEPREFIX": Dirs.Pfx,
 			"WINEARCH":   "win64",
@@ -54,7 +56,6 @@ func defConfig() Configuration {
 			"MESA_GL_VERSION_OVERRIDE":    "4.4",
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
-		// i'm not sure if make() is required here.
 		FFlags: make(map[string]interface{}),
 	}
 }
@@ -81,6 +82,28 @@ func writeConfigTemplate() {
 	}
 }
 
+func configPost(config *Configuration) {
+	if config.Prime {
+		config.Env["DRI_PRIME"] = "1"
+		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
+		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+	}
+
+	if config.RCO {
+		ApplyRCOFFlags(&config.FFlags)
+	}
+
+	if config.WineRoot != "" {
+		log.Println("Using Wine Root")
+		os.Setenv("PATH", filepath.Join(config.WineRoot, "bin")+":"+os.Getenv("PATH"))
+	}
+
+	for name, value := range config.Env {
+		os.Setenv(name, value)
+	}
+}
+
 func loadConfig() Configuration {
 	config := defConfig()
 
@@ -94,21 +117,7 @@ func loadConfig() Configuration {
 		log.Fatal("could not parse configuration file:", err)
 	}
 
-	if config.Prime {
-		config.Env["DRI_PRIME"] = "1"
-		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
-		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
-		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
-	}
-
-	if config.WineRoot != "" {
-		log.Println("Using Wine Root")
-		os.Setenv("PATH", filepath.Join(config.WineRoot, "bin")+":"+os.Getenv("PATH"))
-	}
-
-	for name, value := range config.Env {
-		os.Setenv(name, value)
-	}
+	configPost(&config)
 
 	return config
 }
@@ -174,5 +183,20 @@ func EditConfig() {
 		}
 
 		break
+	}
+}
+
+func printConfigFile() {
+	file, err := os.ReadFile(ConfigFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println(string(file))
+}
+
+func printConfig() {
+	if err := toml.NewEncoder(os.Stdout).Encode(Config); err != nil {
+		log.Fatal(err)
 	}
 }

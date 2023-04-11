@@ -10,7 +10,7 @@ import (
 var Version string
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [config|delete|edit|exec|kill|logs|reset|version]")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [config|configfile|delete|edit|exec|kill|logs|reset|version]")
 	fmt.Fprintln(os.Stderr, "       vinegar [player|studio] [args...]")
 
 	os.Exit(1)
@@ -25,15 +25,6 @@ func logToFile() {
 	log.SetOutput(logOutput)
 }
 
-func printConfig() {
-	file, err := os.ReadFile(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(string(file))
-}
-
 func main() {
 	if len(os.Args) < 2 {
 		usage()
@@ -42,6 +33,8 @@ func main() {
 	switch os.Args[1] {
 	case "config":
 		printConfig()
+	case "configfile":
+		printConfigFile()
 	case "delete":
 		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Data, Dirs.Cache)
@@ -69,6 +62,8 @@ func main() {
 		RobloxStudio(os.Args[2:]...)
 	case "version":
 		fmt.Println("Vinegar", Version)
+	case "print":
+		fmt.Println(Config.FFlags)
 	default:
 		usage()
 	}

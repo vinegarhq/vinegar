@@ -161,7 +161,6 @@ func RobloxApplyFFlags(app string, dir string) error {
 func RobloxPlayerLatestVersion(channel string) string {
 	log.Println("Getting latest Roblox client version")
 
-	log.Println("https://setup.rbxcdn.com" + channel + "/version")
 	// thanks pizzaboxer
 	resp, err := http.Get("https://setup.rbxcdn.com" + channel + "/version")
 	if err != nil {

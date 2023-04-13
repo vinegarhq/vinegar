@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 )
@@ -14,15 +13,6 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "       vinegar [player|studio] [args...]")
 
 	os.Exit(1)
-}
-
-func logToFile() {
-	if !Config.Log {
-		return
-	}
-
-	logOutput := io.MultiWriter(os.Stderr, LogFile("vinegar"))
-	log.SetOutput(logOutput)
 }
 
 func main() {
@@ -47,16 +37,16 @@ func main() {
 		PfxKill()
 	case "logs":
 		fmt.Println(Dirs.Log)
-		LatestLogFile("exec-*")
-		LatestLogFile("vinegar-*")
+		fmt.Println(LatestLogFile("exec-*"))
+		fmt.Println(LatestLogFile("vinegar-*"))
 	case "player":
-		logToFile()
+		LogToFile()
 		RobloxPlayer(os.Args[2:]...)
 	case "reset":
 		DeleteDirs(Dirs.Pfx, Dirs.Log)
 		CreateDirs(Dirs.Pfx, Dirs.Log)
 	case "studio":
-		logToFile()
+		LogToFile()
 		RobloxStudio(os.Args[2:]...)
 	case "version":
 		fmt.Println("Vinegar", Version)

@@ -8,19 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"time"
 )
-
-func LogFile(prefix string) *os.File {
-	// prefix-2006-01-02T15:04:05Z07:00.log
-	file, err := os.Create(filepath.Join(Dirs.Log, prefix+"-"+time.Now().Format(time.RFC3339)+".log"))
-	if err != nil {
-		log.Fatalf("failed to create %s log file: %s", prefix, err)
-	}
-
-	return file
-}
 
 func Exec(prog string, elog bool, args ...string) error {
 	if prog == "wine" {
@@ -47,7 +35,7 @@ func Exec(prog string, elog bool, args ...string) error {
 }
 
 func Download(source, file string) error {
-	log.Println("Downloading:", source)
+	log.Println("Downloading", source, "to", file)
 
 	out, err := os.Create(file)
 	if err != nil {
@@ -58,7 +46,6 @@ func Download(source, file string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("bad status: %s", resp.Status)
@@ -68,6 +55,10 @@ func Download(source, file string) error {
 	if err != nil {
 		return err
 	}
+
+	resp.Body.Close()
+
+	log.Println("Downloaded", file)
 
 	return nil
 }
@@ -113,52 +104,4 @@ func UnzipFile(source, target, file string) error {
 	log.Println("Removing source zip file")
 
 	return os.RemoveAll(source)
-}
-
-// Loop over all proc(5)fs PID directories and check if the given query (string)
-// matches the file contents of with a file called 'comm', within the PID
-// directory. For simplification purposes this will use a /proc/*/comm glob instead.
-// Once found a 'comm' file, simply return true; return false when not found.
-func CommFound(query string) bool {
-	comms, err := filepath.Glob("/proc/*/comm")
-	if err != nil {
-		log.Fatal("failed to locate procfs commands")
-	}
-
-	for _, comm := range comms {
-		c, err := os.ReadFile(comm)
-		// The 'comm' file contains a new line, we remove it, as it will mess up
-		// the query. hence 'minus'ing the length by 1 removes the newline.
-		if err == nil && string(c)[:len(c)-1] == query {
-			return true
-		}
-	}
-
-	return false
-}
-
-// Simply loop for every second to see if a process query 'comm' has not been
-// found, or in other words has exited. this function will simply stop the current
-// execution queue and simply just waits, and the functions following this one will
-// execute.
-func CommLoop(comm string) {
-	log.Println("Waiting for process command:", comm)
-
-	for {
-		time.Sleep(time.Second)
-
-		if !CommFound(comm) {
-			break
-		}
-	}
-}
-
-func LatestLogFile(glob string) {
-	// Since filepath.Glob sorts numerically, the 'newest' log files
-	// will always be last (hence why retrieveing the last array element
-	// is used), as they contain the date they were created at.
-	// On-top of this, it also sorts alphabetically, so we only check for
-	// log files that match the pattern.
-	LogFiles, _ := filepath.Glob(filepath.Join(Dirs.Log, glob))
-	fmt.Println(LogFiles[len(LogFiles)-1])
 }

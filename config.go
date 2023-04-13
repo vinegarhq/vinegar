@@ -2,10 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
@@ -70,13 +68,9 @@ func writeConfigTemplate() {
 		log.Fatal(err)
 	}
 
-	template := `
-# See how to configure Vinegar on the documentation website:
-# https://vinegarhq.github.io/Configuration
-`
+	template := "# See how to configure Vinegar on the documentation website:\n" +
+		"# https://vinegarhq.github.io/Configuration\n\n"
 
-	// [1:] is to slice the first entry, as it is a newline.
-	// Mainly to read the template easily
 	if _, err = file.WriteString(template[1:]); err != nil {
 		log.Fatal(err)
 	}
@@ -120,70 +114,6 @@ func loadConfig() Configuration {
 	configPost(&config)
 
 	return config
-}
-
-func GetEditor() (string, error) {
-	editor, ok := os.LookupEnv("EDITOR")
-
-	if !ok {
-		return "", errors.New("no $EDITOR variable set")
-	}
-
-	if _, err := exec.LookPath(editor); err != nil {
-		return "", fmt.Errorf("invalid $EDITOR: %w", err)
-	}
-
-	return editor, nil
-}
-
-func EditConfig() {
-	var testConfig Configuration
-
-	editor, err := GetEditor()
-	if err != nil {
-		log.Fatal("unable to find editor: ", err)
-	}
-
-	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tempConfigFilePath, err := filepath.Abs(tempConfigFile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	configFile, err := os.ReadFile(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err = tempConfigFile.Write(configFile); err != nil {
-		log.Fatal(err)
-	}
-
-	tempConfigFile.Close()
-
-	for {
-		if err := Exec(editor, "", tempConfigFilePath); err != nil {
-			log.Fatal(err)
-		}
-
-		if _, err := toml.DecodeFile(tempConfigFilePath, &testConfig); err != nil {
-			log.Println(err)
-			log.Println("Press enter to re-edit configuration file")
-			fmt.Scanln()
-
-			continue
-		}
-
-		if err := os.Rename(tempConfigFilePath, ConfigFilePath); err != nil {
-			log.Fatal(err)
-		}
-
-		break
-	}
 }
 
 func printConfig() {

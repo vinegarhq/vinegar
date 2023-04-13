@@ -50,6 +50,8 @@ issues:
     # Better this way.
     - path: fflags.go
       linters:
+        - lll
+        - maintidx
         - funlen
 
     # Roblox uses MD5, we do not have a choice.

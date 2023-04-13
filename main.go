@@ -32,7 +32,7 @@ func main() {
 		//	case "edit":
 		//		EditConfig()
 	case "exec":
-		if err := Exec("wine", false, os.Args[2:]...); err != nil {
+		if err := Exec("wine", "", os.Args[2:]...); err != nil {
 			log.Fatal(err)
 		}
 	case "kill":

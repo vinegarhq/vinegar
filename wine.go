@@ -29,13 +29,13 @@ func PfxInit() {
 
 	log.Println("Initializing wineprefix")
 
-	if err := Exec("wineboot", false, "-i"); err != nil {
+	if err := Exec("wineboot", "", "-i"); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Setting wineprefix version to", Config.Version)
 
-	if err := Exec("winecfg", false, "/v", Config.Version); err != nil {
+	if err := Exec("winecfg", "", "/v", Config.Version); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -43,5 +43,5 @@ func PfxInit() {
 func PfxKill() {
 	log.Println("Killing wineprefix")
 
-	_ = Exec("wineserver", false, "-k")
+	_ = Exec("wineserver", "", "-k")
 }

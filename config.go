@@ -166,7 +166,7 @@ func EditConfig() {
 	tempConfigFile.Close()
 
 	for {
-		if err := Exec(editor, false, tempConfigFilePath); err != nil {
+		if err := Exec(editor, "", tempConfigFilePath); err != nil {
 			log.Fatal(err)
 		}
 

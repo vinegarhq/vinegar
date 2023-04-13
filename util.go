@@ -14,7 +14,7 @@ import (
 	"strings"
 )
 
-func Exec(prog string, elog bool, args ...string) error {
+func Exec(prog string, logName string, args ...string) error {
 	if prog == "wine" {
 		PfxInit()
 	}
@@ -28,8 +28,8 @@ func Exec(prog string, elog bool, args ...string) error {
 	cmd.Stderr = os.Stderr
 	cmd.Stdout = os.Stdout
 
-	if elog {
-		logFile := LogFile("exec")
+	if logName != "" {
+		logFile := LogFile(logName)
 		log.Println("Log file:", logFile.Name())
 		cmd.Stderr = logFile
 		cmd.Stdout = logFile

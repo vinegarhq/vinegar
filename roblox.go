@@ -126,7 +126,7 @@ func (r *Roblox) Execute(args []string) {
 		prog = Config.Launcher
 	}
 
-	err := Exec(prog, false, args...)
+	err := Exec(prog, r.File, args...)
 
 	// exit code 41 is a false alarm.
 	if err != nil && err.Error() != "exit status 41" {

@@ -139,7 +139,7 @@ func DxvkUninstall(force bool) {
 	// Updating the wineprefix is necessary, since the DLLs
 	// that were overrided by DXVK, were subsequently deleted,
 	// and has to be restored (updated)
-	if err := Exec("wineboot", false, "-u"); err != nil {
+	if err := Exec("wineboot", "", "-u"); err != nil {
 		log.Fatal(err)
 	}
 

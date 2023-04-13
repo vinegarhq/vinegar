@@ -7,25 +7,19 @@ import (
 	"path/filepath"
 )
 
-var programDirs = defProgramDirs()
+var LocalProgramDir = defLocalProgramDir()
 
-func defProgramDirs() []string {
+func defLocalProgramDir() string {
 	user, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	dirs := []string{
-		filepath.Join("users", user.Username, "AppData/Local"),
-		"Program Files",
-		"Program Files (x86)",
-	}
+	dir := filepath.Join(Dirs.Pfx, "drive_c", "users", user.Username, "AppData/Local", "vinegar")
 
-	for i, dir := range dirs {
-		dirs[i] = filepath.Join(Dirs.Pfx, "drive_c", dir)
-	}
+	CreateDirs(dir)
 
-	return dirs
+	return dir
 }
 
 func PfxInit() {

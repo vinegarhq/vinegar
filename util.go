@@ -2,6 +2,8 @@ package main
 
 import (
 	"archive/zip"
+	"crypto/md5"
+	"encoding/hex"
 	"strings"
 	"fmt"
 	"io"
@@ -127,4 +129,25 @@ func UnzipFolder(source string, destDir string) error {
 	zip.Close()
 
 	return nil
+}
+
+func VerifyFileMD5(filePath string, signature string) {
+	log.Printf("Verifying file %s: %s", filePath, signature)
+
+	hash := md5.New()
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := io.Copy(hash, file); err != nil {
+		log.Fatal(err)
+	}
+
+	if signature != hex.EncodeToString(hash.Sum(nil)) {
+		log.Fatalf("File %s checksum mismatch: %x", filePath, hash.Sum(nil))
+	}
+
+	file.Close()
 }

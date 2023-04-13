@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 )
 
 var Version string
@@ -21,47 +20,54 @@ func main() {
 		usage()
 	}
 
+	log.Println("Vinegar", Version)
+
 	switch os.Args[1] {
-	case "config":
-		printConfig()
-	case "configfile":
-		printConfigFile()
+	case "player":
+		var rblx Roblox
+		rblx.File = "RobloxPlayerBeta.exe"
+		rblx.Version = GetLatestVersion()
+		rblx.Setup()
+//		rblx.Execute()
+//	switch os.Args[1] {
+//	case "config":
+//		printConfig()
+//	case "configfile":
+//		printConfigFile()
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
-	case "edit":
-		EditConfig()
-	case "exec":
-		if err := Exec("wine", false, os.Args[2:]...); err != nil {
-			log.Fatal("exec err:", err)
-		}
+//	case "edit":
+//		EditConfig()
+//	case "exec":
+//		if err := Exec("wine", false, os.Args[2:]...); err != nil {
+//			log.Fatal("exec err:", err)
+//		}
 	case "kill":
 		PfxKill()
-	case "logs":
-		fmt.Println(Dirs.Log)
-		fmt.Println(LatestLogFile("exec-*"))
-		fmt.Println(LatestLogFile("vinegar-*"))
-	case "player":
-		LogToFile()
-		RobloxPlayer(os.Args[2:]...)
-	case "reset":
-		DeleteDirs(Dirs.Pfx, Dirs.Log)
-		CreateDirs(Dirs.Pfx, Dirs.Log)
-	case "studio":
-		LogToFile()
-		RobloxStudio(os.Args[2:]...)
-	case "version":
-		fmt.Println("Vinegar", Version)
-	case "print":
-		fmt.Println(Config.FFlags)
-	case "get":
-		var pkgmanif PackageManifest
-
-		pkgmanif.Version = GetLatestVersion()
-		pkgmanif.Construct()
-		pkgmanif.DownloadAll()
-		pkgmanif.VerifyAll()
-		pkgmanif.ExtractAll(ClientPackageDirectories())
-		RobloxWriteAppSettings(filepath.Join(Dirs.Versions, pkgmanif.Version))
+//	case "logs":
+//		fmt.Println(Dirs.Log)
+//		fmt.Println(LatestLogFile("exec-*"))
+//		fmt.Println(LatestLogFile("vinegar-*"))
+//	case "player":
+//		LogToFile()
+//		RobloxPlayer(os.Args[2:]...)
+//	case "studio":
+//		LogToFile()
+//		RobloxStudio(os.Args[2:]...)
+//	case "version":
+//		fmt.Println("Vinegar", Version)
+//	case "print":
+//		fmt.Println(Config.FFlags)
+//	case "get":
+//		var pkgmanif PackageManifest
+//
+//		pkgmanif.Version = GetLatestVersion()
+//		pkgmanif.Construct()
+//		pkgmanif.DownloadAll()
+//		pkgmanif.VerifyAll()
+//		pkgmanif.ExtractAll(ClientPackageDirectories())
+//		RobloxWriteAppSettings(filepath.Join(LocalProgramDir, pkgmanif.Version))
+//		RobloxPlayer(pkgmanif.Version, "-app")
 	default:
 		usage()
 	}

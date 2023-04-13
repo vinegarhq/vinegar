@@ -1,9 +1,6 @@
 package main
 
 import (
-	"crypto/md5"
-	"encoding/hex"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -78,63 +75,46 @@ func (m *PackageManifest) Construct() {
 	}
 }
 
-func (m *PackageManifest) DownloadAll() {
+func (p *Package) Download(version string) {
+	packageURL := "https://setup.rbxcdn.com/" + version + "-" + p.Name
+	packagePath := filepath.Join(Dirs.Downloads, p.Signature)
+
+	if _, err := os.Stat(packagePath); err == nil {
+		log.Println("Found", packagePath)
+		return
+	}
+
+	if err := Download(packageURL, packagePath); err != nil {
+		log.Fatalf("failed to download package %s: %s", p.Name, err)
+	}
+}
+
+func (m *PackageManifest) DownloadVerifyAll() {
 	var waitGroup sync.WaitGroup
-
+	
 	waitGroup.Add(len(m.Packages))
-
+	
 	for _, pkg := range m.Packages {
 		go func(ver string, pkg Package) {
-			packageURL := "https://setup.rbxcdn.com/" + ver + "-" + pkg.Name
-			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-
-			if _, err := os.Stat(packagePath); err == nil {
-				log.Println("Found", packagePath)
-				waitGroup.Done()
-
-				return
-			}
-
-			if err := Download(packageURL, packagePath); err != nil {
-				log.Fatalf("failed to download package %s: %s", pkg.Name, err)
-			}
-
+			pkg.Download(ver)
 			waitGroup.Done()
 		}(m.Version, pkg)
 	}
 
 	waitGroup.Wait()
-}
 
-func (m *PackageManifest) VerifyAll() {
 	for _, pkg := range m.Packages {
-		log.Printf("Verifying Package %s: %s", pkg.Name, pkg.Signature)
-
-		hash := md5.New()
-
-		packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-
-		packageFile, err := os.Open(packagePath)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		if _, err := io.Copy(hash, packageFile); err != nil {
-			log.Fatal(err)
-		}
-
-		if pkg.Signature != hex.EncodeToString(hash.Sum(nil)) {
-			log.Fatalf("Package %s checksum mismatch: %x", pkg.Name, hash.Sum(nil))
-		}
-
-		packageFile.Close()
+		VerifyFileMD5(filepath.Join(Dirs.Downloads, pkg.Signature), pkg.Signature)
 	}
+
+	waitGroup.Add(len(m.Packages))
+	
 }
 
 func (m *PackageManifest) ExtractAll(directories map[string]string) {
 	for _, pkg := range m.Packages {
 		packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-		packageDirDest := filepath.Join(Dirs.Versions, m.Version, directories[pkg.Name])
+		packageDirDest := filepath.Join(LocalProgramDir, m.Version, directories[pkg.Name])
 
 		CreateDirs(packageDirDest)
 

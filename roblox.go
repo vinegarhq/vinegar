@@ -62,6 +62,8 @@ func (r *Roblox) Setup(directories map[string]string) {
 		log.Fatal(err)
 	}
 
+	DxvkStrap()
+
 	r.Path = exePath
 }
 
@@ -204,6 +206,8 @@ func RobloxStudio(args ...string) {
 	var rblx Roblox
 	rblx.File = "RobloxStudioBeta.exe"
 	rblx.Version = GetLatestVersion("versionQTStudio")
+	Config.Dxvk = false // Dxvk doesnt work under studio
+
 	rblx.Setup(directories)
 	rblx.Execute(args)
 

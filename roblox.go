@@ -10,6 +10,27 @@ import (
 	"strings"
 )
 
+func RobloxWriteAppSettings(versionDir string) {
+	log.Printf("Writing %s AppSettings file", filepath.Base(versionDir))
+
+	appSettingsFile, err := os.Create(filepath.Join(versionDir, "AppSettings.xml"))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	appSettings := `
+<?xml version="1.0" encoding="UTF-8"?>
+<Settings>
+        <ContentFolder>content</ContentFolder>
+        <BaseUrl>http://www.roblox.com</BaseUrl>
+</Settings>
+`
+
+	if _, err = appSettingsFile.WriteString(appSettings[1:]); err != nil {
+		log.Fatal(err)
+	}
+}
+
 // Loops over the global program directories, searching for Roblox's
 // version directory with a match of the given executable:
 //

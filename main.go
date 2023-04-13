@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 )
 
 var Version string
@@ -60,8 +61,7 @@ func main() {
 		pkgmanif.DownloadAll()
 		pkgmanif.VerifyAll()
 		pkgmanif.ExtractAll(ClientPackageDirectories())
-		//			ExtractPackage("cache", "bleh", pkg)
-		//		}
+		RobloxWriteAppSettings(filepath.Join(Dirs.Versions, pkgmanif.Version))
 	default:
 		usage()
 	}

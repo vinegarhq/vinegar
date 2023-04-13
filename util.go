@@ -63,6 +63,24 @@ func Download(source, file string) error {
 	return nil
 }
 
+func GetUrlBody(url string) (string, error) {
+	log.Println("Retrieving URL Body of", url)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return "", err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	resp.Body.Close()
+
+	return string(body), nil
+}
+
 // Unzip a single target file in the source zip file to a file,
 // and keep it's permissions, afterwards; remove the source zip file.
 // this is ONLY used for extracting rbxfpsunlocker,

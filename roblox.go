@@ -1,18 +1,18 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/url"
-	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 type Roblox struct {
-	File string
-	Path string
-	Version string
+	File       string
+	Path       string
+	Version    string
 	VersionDir string
 }
 
@@ -25,35 +25,34 @@ func (r *Roblox) AppSettings() {
 	}
 
 	appSettings := "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-                   "<Settings>\r\n" +
-                   "        <ContentFolder>content</ContentFolder>\r\n" +
-                   "        <BaseUrl>http://www.roblox.com</BaseUrl>\r\n" +
-                   "</Settings>\r\n"
+		"<Settings>\r\n" +
+		"        <ContentFolder>content</ContentFolder>\r\n" +
+		"        <BaseUrl>http://www.roblox.com</BaseUrl>\r\n" +
+		"</Settings>\r\n"
 
 	if _, err = appSettingsFile.WriteString(appSettings); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func (r *Roblox) Install() {
+func (r *Roblox) Install(directories map[string]string) {
 	var pkgmanif PackageManifest
 
 	log.Println("Installing Roblox", r.Version)
 
 	pkgmanif.Version = r.Version
 	pkgmanif.Construct()
-	pkgmanif.DownloadVerifyAll()
-	pkgmanif.ExtractAll(ClientPackageDirectories())
+	pkgmanif.DownloadVerifyExtractAll(directories)
 	r.AppSettings()
 }
 
-func (r *Roblox) Setup() {
+func (r *Roblox) Setup(directories map[string]string) {
 	r.VersionDir = filepath.Join(LocalProgramDir, r.Version)
 
 	log.Println("Checking for Roblox", r.File, r.Version)
 
 	if _, err := os.Stat(r.VersionDir); errors.Is(err, os.ErrNotExist) {
-		r.Install()
+		r.Install(directories)
 	} else if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +61,7 @@ func (r *Roblox) Setup() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	r.Path = exePath
 }
 
@@ -72,8 +71,6 @@ func (r *Roblox) Setup() {
 // RobloxPlayerBeta This function is mainly a hack to take place of what the
 // launcher would do, and would fork for RobloxPlayerBeta.
 func BrowserArgsParse(launchURI string) []string {
-//	var channel string
-
 	args := make([]string, 0)
 	URIKeyArg := map[string]string{
 		"launchmode":       "--",
@@ -97,9 +94,9 @@ func BrowserArgsParse(launchURI string) []string {
 			parts[1] = "app"
 		}
 
-//		if parts[0] == "channel" {
-//			channel = "/channel/" + strings.ToLower(parts[1])
-//		}
+		//		if parts[0] == "channel" {
+		//			channel = "/channel/" + strings.ToLower(parts[1])
+		//		}
 
 		if parts[0] == "placelauncherurl" {
 			urlDecoded, err := url.QueryUnescape(parts[1])
@@ -117,7 +114,7 @@ func BrowserArgsParse(launchURI string) []string {
 	return args
 }
 
-func (r *Roblox) Execute(args ...string) {
+func (r *Roblox) Execute(args []string) {
 	log.Println("Launching", r.File, r.Version)
 	log.Println(r.Path)
 	args = append([]string{r.Path}, args...)
@@ -133,44 +130,37 @@ func (r *Roblox) Execute(args ...string) {
 
 	// exit code 41 is a false alarm.
 	if err != nil && err.Error() != "exit status 41" {
-		log.Fatal("roblox exec err: ", err)
+		log.Fatalf("roblox exec err: %s", err)
 	}
-
-//	if Config.AutoKill {
-//		// Probably wouldn't want to use the full path of the EXE.
-//		exeName := filepath.Base(exe)
-//		CommLoop(exeName[:15])
-//		CommLoop(exeName[:12] + "Bet")
-//		PfxKill()
-//	}
 }
 
-// Handler for launching Roblox Studio, this is required since roblox-studio-auth
-// passes special arguments meant for RobloxStudioBeta.
-// Aditionally pass -ide if needed, and disable DXVK.
-//func RobloxStudio(args ...string) {
-//	exe := RobloxSetup("RobloxStudioLauncherBeta.exe")
-//
-//	// Protocol URI, Launcher cannot be used
-//	if len(args) < 1 {
-//		args = []string{"-ide"}
-//	} else if strings.HasPrefix(strings.Join(args, " "), "roblox-studio") {
-//		exe = RobloxFind(false, "RobloxStudioBeta.exe")
-//	}
-//
-//	// DXVK does not work under studio.
-//	Config.Dxvk = false
-//
-//	RobloxLaunch(exe, args...)
-// 	log.Println(args)
-// }
+func RobloxPlayer(args ...string) {
+	directories := map[string]string{
+		"RobloxApp.zip":                 "",
+		"shaders.zip":                   "shaders",
+		"ssl.zip":                       "ssl",
+		"content-avatar.zip":            "content/avatar",
+		"content-configs.zip":           "content/configs",
+		"content-fonts.zip":             "content/fonts",
+		"content-sky.zip":               "content/sky",
+		"content-sounds.zip":            "content/sounds",
+		"content-textures2.zip":         "content/textures",
+		"content-models.zip":            "content/models",
+		"content-textures3.zip":         "PlatformContent/pc/textures",
+		"content-terrain.zip":           "PlatformContent/pc/terrain",
+		"content-platform-fonts.zip":    "PlatformContent/pc/fonts",
+		"extracontent-luapackages.zip":  "ExtraContent/LuaPackages",
+		"extracontent-translations.zip": "ExtraContent/translations",
+		"extracontent-models.zip":       "ExtraContent/models",
+		"extracontent-textures.zip":     "ExtraContent/textures",
+		"extracontent-places.zip":       "ExtraContent/places",
+	}
 
-// Handler for launching Roblox Player, which checks if we are being launched
-// from the browser, and check if we have the latest Roblox version, if we do,
-// use RobloxPlayerBeta directly, which then we would need to format the Roblox
-// arguments ourselves, which is RobloxPlayerLauncher's job.
-// Using RobloxPlayerBeta can shave some time off when launching Roblox.
-//func RobloxPlayer(version string, args ...string) {
-//	exe := filepath.Join(LocalProgramDir, version, "RobloxPlayerBeta.exe")
-//	RobloxLaunch(exe, args...)
-//}
+	var rblx Roblox
+	rblx.File = "RobloxPlayerBeta.exe"
+	rblx.Version = GetLatestVersion()
+	rblx.Setup(directories)
+	rblx.Execute(args)
+
+	PfxKill()
+}

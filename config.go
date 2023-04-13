@@ -186,15 +186,6 @@ func EditConfig() {
 	}
 }
 
-func printConfigFile() {
-	file, err := os.ReadFile(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(string(file))
-}
-
 func printConfig() {
 	if err := toml.NewEncoder(os.Stdout).Encode(Config); err != nil {
 		log.Fatal(err)

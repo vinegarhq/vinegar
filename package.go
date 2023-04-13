@@ -81,6 +81,7 @@ func (p *Package) Download(version string) {
 
 	if _, err := os.Stat(packagePath); err == nil {
 		log.Println("Found", packagePath)
+
 		return
 	}
 
@@ -89,11 +90,11 @@ func (p *Package) Download(version string) {
 	}
 }
 
-func (m *PackageManifest) DownloadVerifyAll() {
+func (m *PackageManifest) DownloadVerifyExtractAll(directories map[string]string) {
 	var waitGroup sync.WaitGroup
-	
+
 	waitGroup.Add(len(m.Packages))
-	
+
 	for _, pkg := range m.Packages {
 		go func(ver string, pkg Package) {
 			pkg.Download(ver)
@@ -108,41 +109,21 @@ func (m *PackageManifest) DownloadVerifyAll() {
 	}
 
 	waitGroup.Add(len(m.Packages))
-	
-}
 
-func (m *PackageManifest) ExtractAll(directories map[string]string) {
 	for _, pkg := range m.Packages {
-		packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-		packageDirDest := filepath.Join(LocalProgramDir, m.Version, directories[pkg.Name])
+		go func(ver string, pkg Package, dirs map[string]string) {
+			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
+			packageDirDest := filepath.Join(LocalProgramDir, ver, dirs[pkg.Name])
 
-		CreateDirs(packageDirDest)
+			CreateDirs(packageDirDest)
 
-		if err := UnzipFolder(packagePath, packageDirDest); err != nil {
-			log.Fatalf("failed to extract package %s: %s", pkg.Name, err)
-		}
+			if err := UnzipFolder(packagePath, packageDirDest); err != nil {
+				log.Fatalf("failed to extract package %s: %s", pkg.Name, err)
+			}
+
+			waitGroup.Done()
+		}(m.Version, pkg, directories)
 	}
-}
 
-func ClientPackageDirectories() map[string]string {
-	return map[string]string{
-		"RobloxApp.zip":                 "",
-		"shaders.zip":                   "shaders",
-		"ssl.zip":                       "ssl",
-		"content-avatar.zip":            "content/avatar",
-		"content-configs.zip":           "content/configs",
-		"content-fonts.zip":             "content/fonts",
-		"content-sky.zip":               "content/sky",
-		"content-sounds.zip":            "content/sounds",
-		"content-textures2.zip":         "content/textures",
-		"content-models.zip":            "content/models",
-		"content-textures3.zip":         "PlatformContent/pc/textures",
-		"content-terrain.zip":           "PlatformContent/pc/terrain",
-		"content-platform-fonts.zip":    "PlatformContent/pc/fonts",
-		"extracontent-luapackages.zip":  "ExtraContent/LuaPackages",
-		"extracontent-translations.zip": "ExtraContent/translations",
-		"extracontent-models.zip":       "ExtraContent/models",
-		"extracontent-textures.zip":     "ExtraContent/textures",
-		"extracontent-places.zip":       "ExtraContent/places",
-	}
+	waitGroup.Wait()
 }

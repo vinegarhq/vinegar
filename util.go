@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"crypto/md5"
 	"encoding/hex"
-	"strings"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 func Exec(prog string, elog bool, args ...string) error {

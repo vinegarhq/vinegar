@@ -36,7 +36,6 @@ func main() {
 	case "configfile":
 		printConfigFile()
 	case "delete":
-		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "edit":
 		EditConfig()
@@ -54,9 +53,8 @@ func main() {
 		logToFile()
 		RobloxPlayer(os.Args[2:]...)
 	case "reset":
-		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Pfx, Dirs.Log)
-		CheckDirs(DirMode, Dirs.Pfx, Dirs.Log)
+		CreateDirs(Dirs.Pfx, Dirs.Log)
 	case "studio":
 		logToFile()
 		RobloxStudio(os.Args[2:]...)

@@ -41,7 +41,7 @@ func RobloxSetRenderer(renderer string, fflags *map[string]interface{}) {
 // the configuration, then indent it to look pretty and write.
 func RobloxApplyFFlags(app string, dir string) error {
 	fflagsDir := filepath.Join(dir, app+"Settings")
-	CheckDirs(DirMode, fflagsDir)
+	CreateDirs(fflagsDir)
 
 	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
 	if err != nil {

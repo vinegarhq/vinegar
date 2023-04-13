@@ -61,7 +61,7 @@ func defConfig() Configuration {
 }
 
 func writeConfigTemplate() {
-	CheckDirs(DirMode, Dirs.Config)
+	CreateDirs(Dirs.Config)
 
 	log.Println("Creating configuration template")
 

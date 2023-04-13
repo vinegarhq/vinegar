@@ -56,33 +56,43 @@ func defDirs() Directories {
 	dirs.Cwd = filepath.Join(dirs.Cache, "cwd")
 	dirs.Log = filepath.Join(dirs.Cache, "logs")
 
-	CheckDirs(DirMode, dirs.Cache, dirs.Config, dirs.Data, dirs.Pfx, dirs.Cwd, dirs.Log)
+	// Implicit root directory creation for Cache & Data
+	CreateDirs(dirs.Pfx, dirs.Log, dirs.Cwd)
 
 	return dirs
 }
 
-func CheckDirs(perm fs.FileMode, dirs ...string) {
+func CreateDirs(dirs ...string) {
+	for _, dir := range dirs {
+		// Don't do anything if the directory does exist, to just save some logging
+		if _, err := os.Stat(dir); !errors.Is(err, os.ErrNotExist) {
+			continue
+		}
+
+		log.Println("Creating directory:", dir)
+
+		if err := os.MkdirAll(dir, DirMode); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func SetPermDirs(perm fs.FileMode, dirs ...string) {
 	for _, dir := range dirs {
 		info, err := os.Stat(dir)
 
-		// Create the directory only when it does not exist.
-		// Since logging is preferred this is also preferred.
 		if errors.Is(err, os.ErrNotExist) {
-			log.Println("Creating", perm, "dir:", dir)
-
-			if err := os.MkdirAll(dir, perm); err != nil {
-				log.Fatal(err)
-			}
-
 			continue
+		} else if err != nil {
+			log.Fatal(err)
 		}
 
 		// The given permissions will always return if it is a file
 		// ---------- or a directory d---------, we simply get the string
 		// and remove the first character, which says if it is a file
 		// or a directory, since all we care about is the read & write permissions.
-		if err == nil && info.Mode().String()[1:] != perm.String()[1:] {
-			log.Println("Setting dir", dir, "permissions to", perm)
+		if info.Mode().String()[1:] != perm.String()[1:] {
+			log.Println("Setting directory", info.Name(), "permissions to", perm)
 
 			if err := os.Chmod(dir, perm); err != nil {
 				log.Fatal(err)

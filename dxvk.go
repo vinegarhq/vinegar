@@ -76,7 +76,8 @@ func DxvkExtract(tarball string) {
 
 		winDir := filepath.Join(Dirs.Pfx, "drive_c", "windows", winDir)
 
-		CheckDirs(DirMode, winDir)
+		// just in case
+		CreateDirs(winDir)
 
 		writer, err := os.Create(filepath.Join(winDir, path.Base(header.Name)))
 		if err != nil {

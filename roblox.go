@@ -154,8 +154,6 @@ func BrowserArgsParse(launchURI string) (string, []string) {
 // when launching Roblox, since the Launcher will always check if the installation
 // is outdated, then install it if necessary, and pass to RobloxPlayerBeta.
 func RobloxSetup(exe string) string {
-	EdgeDirSet(DirROMode, true)
-
 	if RobloxFind(false, exe) == "" {
 		if err := RobloxInstall("https://www.roblox.com/download/client"); err != nil {
 			log.Fatal("failed to install roblox: ", err)

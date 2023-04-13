@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/fs"
 	"log"
 	"os"
 	"os/user"
@@ -27,25 +26,6 @@ func defProgramDirs() []string {
 	}
 
 	return dirs
-}
-
-func EdgeDirSet(perm fs.FileMode, create bool) {
-	for _, programDir := range programDirs {
-		EdgeDir := filepath.Join(programDir, "Microsoft", "EdgeUpdate")
-
-		if create {
-			CheckDirs(DirMode, filepath.Dir(EdgeDir))
-			CheckDirs(perm, EdgeDir)
-
-			continue
-		}
-
-		if _, err := os.Stat(EdgeDir); err == nil {
-			if err := os.Chmod(EdgeDir, perm); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
 }
 
 func PfxInit() {

@@ -85,7 +85,11 @@ func configPost(config *Configuration) {
 	}
 
 	if config.RCO {
-		ApplyRCOFFlags(&config.FFlags)
+		config.SetRCOFFlags()
+	}
+
+	if config.Renderer != "" {
+		config.SetFFlagRenderer()
 	}
 
 	if config.WineRoot != "" {

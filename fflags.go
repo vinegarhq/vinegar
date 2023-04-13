@@ -9,7 +9,7 @@ import (
 
 // Validate the given renderer, and apply it to the given map (fflags);
 // It will also disable every other renderer.
-func RobloxSetRenderer(renderer string, fflags *map[string]interface{}) {
+func (c *Configuration) SetFFlagRenderer() {
 	possibleRenderers := []string{
 		"OpenGL",
 		"D3D11FL10",
@@ -20,7 +20,7 @@ func RobloxSetRenderer(renderer string, fflags *map[string]interface{}) {
 	validRenderer := false
 
 	for _, r := range possibleRenderers {
-		if renderer == r {
+		if c.Renderer == r {
 			validRenderer = true
 		}
 	}
@@ -30,42 +30,41 @@ func RobloxSetRenderer(renderer string, fflags *map[string]interface{}) {
 	}
 
 	for _, r := range possibleRenderers {
-		isRenderer := r == renderer
-		(*fflags)["FFlagDebugGraphicsPrefer"+r] = isRenderer
-		(*fflags)["FFlagDebugGraphicsDisable"+r] = !isRenderer
+		isRenderer := r == c.Renderer
+		c.FFlags["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		c.FFlags["FFlagDebugGraphicsDisable"+r] = !isRenderer
 	}
 }
 
 // Apply the configuration's FFlags to Roblox's FFlags file, named after app:
 // ClientAppSettings.json, we also set (and check) the renderer specified in
 // the configuration, then indent it to look pretty and write.
-func RobloxApplyFFlags(app string, dir string) error {
-	fflagsDir := filepath.Join(dir, app+"Settings")
+func (r *Roblox) ApplyFFlags(app string) {
+	fflagsDir := filepath.Join(r.VersionDir, app+"Settings")
 	CreateDirs(fflagsDir)
 
 	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	log.Println("Applying custom FFlags")
+	log.Printf("Applying custom FFlags to %s", app)
 
-	RobloxSetRenderer(Config.Renderer, &Config.FFlags)
+	Config.SetFFlagRenderer()
 
 	fflagsJSON, err := json.MarshalIndent(Config.FFlags, "", "  ")
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	if _, err := fflagsFile.Write(fflagsJSON); err != nil {
-		return err
+		log.Fatal(err)
 	}
-
-	return nil
 }
 
 // 'Append' RCO's FFlags to the given map pointer.
-func ApplyRCOFFlags(fflags *map[string]interface{}) {
+func (c *Configuration) SetRCOFFlags() {
+	log.Println("Applying RCO FFlags")
 	// FIntFlagUpdateVersion: 68
 	rco := map[string]interface{}{
 		"DFIntSecondsBetweenDynamicVariableReloading":                  31557600,
@@ -251,9 +250,9 @@ func ApplyRCOFFlags(fflags *map[string]interface{}) {
 		"DFFlagSimOptimizeInterpolationReturnPreviousIfSmallMovement2": true,
 	}
 
-	for key, val := range *fflags {
+	for key, val := range c.FFlags {
 		rco[key] = val
 	}
 
-	(*fflags) = rco
+	c.FFlags = rco
 }

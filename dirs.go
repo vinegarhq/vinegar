@@ -13,8 +13,10 @@ type Directories struct {
 	Config string
 	Cwd    string
 	Data   string
-	Pfx    string
+	Downloads string
 	Log    string
+	Pfx    string
+	Versions string
 }
 
 var (
@@ -52,12 +54,13 @@ func defDirs() Directories {
 		Data:   filepath.Join(xdgDirs["XDG_DATA_HOME"], "vinegar"),
 	}
 
-	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
 	dirs.Cwd = filepath.Join(dirs.Cache, "cwd")
+	dirs.Downloads = filepath.Join(dirs.Cache, "downloads")
 	dirs.Log = filepath.Join(dirs.Cache, "logs")
+	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
+	dirs.Versions = filepath.Join(dirs.Data, "versions")
 
-	// Implicit root directory creation for Cache & Data
-	CreateDirs(dirs.Pfx, dirs.Log, dirs.Cwd)
+	CreateDirs(dirs.Cwd, dirs.Downloads, dirs.Log, dirs.Pfx, dirs.Versions)
 
 	return dirs
 }

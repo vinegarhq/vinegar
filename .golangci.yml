@@ -52,10 +52,16 @@ issues:
       linters:
         - funlen
 
+    # Roblox uses MD5, we do not have a choice.
+    - path: package.go
+      linters:
+        - gosec
+
     # False alarm.
     - linters:
         - errorlint
       source: "err == io.EOF"
+
 
     # Schizophrenic linter
     # G107: Potential HTTP request made with variable url
@@ -64,3 +70,6 @@ issues:
       text: "G107:"
     - linters: gosec
       text: "G110:"
+    # I trust Roblox with my Filesystem.
+    - linters: gosec
+      text: "G305:"

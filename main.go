@@ -52,6 +52,16 @@ func main() {
 		fmt.Println("Vinegar", Version)
 	case "print":
 		fmt.Println(Config.FFlags)
+	case "get":
+		var pkgmanif PackageManifest
+
+		pkgmanif.Version = GetLatestVersion()
+		pkgmanif.Construct()
+		pkgmanif.DownloadAll()
+		pkgmanif.VerifyAll()
+		pkgmanif.ExtractAll(ClientPackageDirectories())
+		//			ExtractPackage("cache", "bleh", pkg)
+		//		}
 	default:
 		usage()
 	}

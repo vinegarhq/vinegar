@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 func Exec(prog string, elog bool, args ...string) error {
@@ -35,7 +36,7 @@ func Exec(prog string, elog bool, args ...string) error {
 }
 
 func Download(source, file string) error {
-	log.Println("Downloading", source, "to", file)
+	log.Println("Downloading", source)
 
 	out, err := os.Create(file)
 	if err != nil {
@@ -63,7 +64,7 @@ func Download(source, file string) error {
 	return nil
 }
 
-func GetUrlBody(url string) (string, error) {
+func GetURLBody(url string) (string, error) {
 	log.Println("Retrieving URL Body of", url)
 
 	resp, err := http.Get(url)
@@ -81,45 +82,47 @@ func GetUrlBody(url string) (string, error) {
 	return string(body), nil
 }
 
-// Unzip a single target file in the source zip file to a file,
-// and keep it's permissions, afterwards; remove the source zip file.
-// this is ONLY used for extracting rbxfpsunlocker,
-// as it will ignore all other files.
-func UnzipFile(source, target, file string) error {
-	log.Println("Unzipping:", source)
+func UnzipFolder(source string, destDir string) error {
+	log.Println("Extracting", source)
 
 	zip, err := zip.OpenReader(source)
 	if err != nil {
 		return err
 	}
 
-	for _, zipped := range zip.File {
-		if zipped.Name != target {
+	for _, file := range zip.File {
+		filePath := filepath.Join(destDir, file.Name)
+		log.Println("Unzipping", filePath)
+
+		if file.FileInfo().IsDir() {
+			CreateDirs(filePath)
+
 			continue
 		}
 
-		reader, err := zipped.Open()
+		if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
+			return err
+		}
+
+		destFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
 		if err != nil {
 			return err
 		}
 
-		target, err := os.OpenFile(file, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, zipped.Mode())
+		fileZipped, err := file.Open()
 		if err != nil {
 			return err
 		}
 
-		if _, err := io.Copy(target, reader); err != nil {
+		if _, err := io.Copy(destFile, fileZipped); err != nil {
 			return err
 		}
 
-		log.Println("Unzipped:", zipped.Name)
+		destFile.Close()
+		fileZipped.Close()
 	}
 
-	if _, err := os.Stat(file); err != nil {
-		return fmt.Errorf("target unzip file does not exist")
-	}
+	zip.Close()
 
-	log.Println("Removing source zip file")
-
-	return os.RemoveAll(source)
+	return nil
 }

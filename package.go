@@ -25,7 +25,7 @@ type PackageManifest struct {
 }
 
 func GetLatestVersion() string {
-	version, err := GetUrlBody("https://setup.rbxcdn.com/version")
+	version, err := GetURLBody("https://setup.rbxcdn.com/version")
 
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +41,7 @@ func (m *PackageManifest) Construct() {
 		log.Fatal("invalid version set")
 	}
 
-	rawManifest, err := GetUrlBody("https://setup.rbxcdn.com/" + m.Version + "-rbxPkgManifest.txt")
+	rawManifest, err := GetURLBody("https://setup.rbxcdn.com/" + m.Version + "-rbxPkgManifest.txt")
 
 	if err != nil {
 		log.Fatal(err)
@@ -79,38 +79,41 @@ func (m *PackageManifest) Construct() {
 }
 
 func (m *PackageManifest) DownloadAll() {
-	var wg sync.WaitGroup
+	var waitGroup sync.WaitGroup
 
-	wg.Add(len(m.Packages))
+	waitGroup.Add(len(m.Packages))
+
 	for _, pkg := range m.Packages {
-
 		go func(ver string, pkg Package) {
-			packageUrl := "https://setup.rbxcdn.com/" + ver + "-" + pkg.Name
+			packageURL := "https://setup.rbxcdn.com/" + ver + "-" + pkg.Name
 			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
 
 			if _, err := os.Stat(packagePath); err == nil {
 				log.Println("Found", packagePath)
-				wg.Done()
+				waitGroup.Done()
+
 				return
 			}
 
-			if err := Download(packageUrl, packagePath); err != nil {
+			if err := Download(packageURL, packagePath); err != nil {
 				log.Fatalf("failed to download package %s: %s", pkg.Name, err)
 			}
-			wg.Done()
+
+			waitGroup.Done()
 		}(m.Version, pkg)
 	}
 
-	wg.Wait()
+	waitGroup.Wait()
 }
 
 func (m *PackageManifest) VerifyAll() {
 	for _, pkg := range m.Packages {
-
 		log.Printf("Verifying Package %s: %s", pkg.Name, pkg.Signature)
+
 		hash := md5.New()
 
 		packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
+
 		packageFile, err := os.Open(packagePath)
 		if err != nil {
 			log.Fatal(err)
@@ -134,6 +137,7 @@ func (m *PackageManifest) ExtractAll(directories map[string]string) {
 		packageDirDest := filepath.Join(Dirs.Versions, m.Version, directories[pkg.Name])
 
 		CreateDirs(packageDirDest)
+
 		if err := UnzipFolder(packagePath, packageDirDest); err != nil {
 			log.Fatalf("failed to extract package %s: %s", pkg.Name, err)
 		}

@@ -9,14 +9,14 @@ import (
 )
 
 type Directories struct {
-	Cache  string
-	Config string
-	Cwd    string
-	Data   string
+	Cache     string
+	Config    string
+	Cwd       string
+	Data      string
 	Downloads string
-	Log    string
-	Pfx    string
-	Versions string
+	Log       string
+	Pfx       string
+	Versions  string
 }
 
 var (

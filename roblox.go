@@ -162,6 +162,11 @@ func RobloxPlayer(args ...string) {
 	rblx.File = "RobloxPlayerBeta.exe"
 	rblx.Version = GetLatestVersion("version")
 	rblx.Setup(directories)
+
+	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
+		args = BrowserArgsParse(args[0])
+	}
+
 	rblx.Execute(args)
 
 	PfxKill()

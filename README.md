@@ -29,6 +29,7 @@ A transparent launcher for Roblox Player and Roblox Studio.
 + Custom Roblox Player & Studio launcher
 + Faster installation and execution of Roblox
 + TOML Configuration file for setting environment variables and applying custom FFlags
++ Multiple instances of Roblox open simultaneously
 + Logging for both Vinegar and executions
 
 # See Also

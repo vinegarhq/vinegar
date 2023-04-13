@@ -21,8 +21,8 @@ type PackageManifest struct {
 	Packages []Package
 }
 
-func GetLatestVersion() string {
-	version, err := GetURLBody("https://setup.rbxcdn.com/version")
+func GetLatestVersion(versionFile string) string {
+	version, err := GetURLBody("https://setup.rbxcdn.com/" + versionFile)
 
 	if err != nil {
 		log.Fatal(err)

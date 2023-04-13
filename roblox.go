@@ -158,7 +158,52 @@ func RobloxPlayer(args ...string) {
 
 	var rblx Roblox
 	rblx.File = "RobloxPlayerBeta.exe"
-	rblx.Version = GetLatestVersion()
+	rblx.Version = GetLatestVersion("version")
+	rblx.Setup(directories)
+	rblx.Execute(args)
+
+	PfxKill()
+}
+
+func RobloxStudio(args ...string) {
+	directories := map[string]string{
+		"ApplicationConfig.zip":        "ApplicationConfig",
+		"BuiltInPlugins.zip":           "BuiltInPlugins",
+		"BuiltInStandalonePlugins.zip": "BuiltInStandalonePlugins",
+		"Plugins.zip":                  "Plugins",
+		"Qml.zip":                      "Qml",
+		"StudioFonts.zip":              "StudioFonts",
+		// "WebView2.zip": "",
+		// "WebView2RuntimeInstaller.zip": "",
+		"RobloxStudio.zip":                "",
+		"Libraries.zip":                   "",
+		"LibrariesQt5.zip":                "",
+		"content-avatar.zip":              "content/avatar",
+		"content-configs.zip":             "content/configs",
+		"content-fonts.zip":               "content/fonts",
+		"content-models.zip":              "content/models",
+		"content-qt_translations.zip":     "content/qt_translations",
+		"content-sky.zip":                 "content/sky",
+		"content-sounds.zip":              "content/sounds",
+		"shaders.zip":                     "shaders",
+		"ssl.zip":                         "ssl",
+		"content-textures2.zip":           "content/textures",
+		"content-textures3.zip":           "PlatformContent/pc/textures",
+		"content-studio_svg_textures.zip": "content/studio_svg_textures",
+		"content-terrain.zip":             "PlatformContent/pc/terrain",
+		"content-platform-fonts.zip":      "PlatformContent/pc/fonts",
+		"content-api-docs.zip":            "content/api_docs",
+		"extracontent-scripts.zip":        "ExtraContent/scripts",
+		"extracontent-luapackages.zip":    "ExtraContent/LuaPackages",
+		"extracontent-translations.zip":   "ExtraContent/translations",
+		"extracontent-models.zip":         "ExtraContent/models",
+		"extracontent-textures.zip":       "ExtraContent/textures",
+		"redist.zip":                      "",
+	}
+
+	var rblx Roblox
+	rblx.File = "RobloxStudioBeta.exe"
+	rblx.Version = GetLatestVersion("versionQTStudio")
 	rblx.Setup(directories)
 	rblx.Execute(args)
 

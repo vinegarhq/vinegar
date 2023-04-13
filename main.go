@@ -44,9 +44,8 @@ func main() {
 		//	case "player":
 		//		LogToFile()
 		//		RobloxPlayer(os.Args[2:]...)
-		//	case "studio":
-		//		LogToFile()
-		//		RobloxStudio(os.Args[2:]...)
+	case "studio":
+		RobloxStudio(os.Args[2:]...)
 	default:
 		usage()
 	}

@@ -35,5 +35,9 @@ func LatestLogFile(glob string) string {
 	// log files that match the pattern.
 	LogFiles, _ := filepath.Glob(filepath.Join(Dirs.Log, glob))
 
+	if len(LogFiles) < 1 {
+		return ""
+	}
+
 	return LogFiles[len(LogFiles)-1]
 }

@@ -6,7 +6,7 @@
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]
 
-A transparent wrapper for Roblox Player and Roblox Studio.
+A transparent launcher for Roblox Player and Roblox Studio.
 
 [workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml
 [version]: https://github.com/vinegarhq/vinegar/releases/latest
@@ -21,20 +21,24 @@ A transparent wrapper for Roblox Player and Roblox Studio.
 # Features
 + Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration (Includes a built in FPS unlocker)
 + Automatic DXVK Installer and uninstaller
-+ Automatic Wineprefix killer when Player or Studio has exited
 + Automatic Wineprefix version setter upon Wineprefix initialization
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix
 + Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
-+ Custom Wine 'root' (experimental)
-+ Faster Roblox Player launcher
++ Custom Wine 'root'
++ Custom Roblox Player & Studio launcher
++ Faster installation and execution of Roblox
 + TOML Configuration file for setting environment variables and applying custom FFlags
 + Logging for both Vinegar and executions
 
 # See Also
 + [Discord Server](https://discord.gg/dzdzZ6Pps2)
 + [Documentation](https://vinegarhq.github.io)
++ [Roblox-Studio-Mod-Manager](https://github.com/MaximumADHD/Roblox-Studio-Mod-Manager)
++ [Bloxstrap](https://github.com/pizzaboxer/bloxstrap)
 
 # Acknowledgements
++ Big Thanks to [pizzaboxer](https://github.com/pizzaboxer)
++ Credits to [MaximumADHD](https://github.com/MaximumADHD)
 + Logo modified with Katie, made by the [Twemoji team](https://twemoji.twitter.com/), Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 + Katie usage authorized by [kitteh](https://ksiv.neocities.org)

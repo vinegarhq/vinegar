@@ -1,25 +1,51 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
+	"io"
 	"log"
 	"os"
-	"strings"
-	"strconv"
-	"io"
 	"path/filepath"
-	"archive/zip"
+	"strconv"
+	"strings"
+	"sync"
 )
 
 type Package struct {
-	Name string
-	Signature string
+	Name       string
+	Signature  string
 	PackedSize int64
-	Size int64
+	Size       int64
 }
 
-func ConstructPackages(rawManifest string) []Package {
-	var packages []Package
+type PackageManifest struct {
+	Version  string
+	Packages []Package
+}
+
+func GetLatestVersion() string {
+	version, err := GetUrlBody("https://setup.rbxcdn.com/version")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return version
+}
+
+func (m *PackageManifest) Construct() {
 	log.Println("Constructing Package Manifest")
+
+	if len(m.Version) != 24 {
+		log.Fatal("invalid version set")
+	}
+
+	rawManifest, err := GetUrlBody("https://setup.rbxcdn.com/" + m.Version + "-rbxPkgManifest.txt")
+
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	manif := strings.Split(rawManifest, "\r\n")
 	index := 1
@@ -27,7 +53,7 @@ func ConstructPackages(rawManifest string) []Package {
 	if manif[0] != "v0" {
 		log.Fatal("invalid package manifest version", manif[0])
 	}
-	
+
 	for {
 		if index+4 > len(manif) {
 			break
@@ -43,30 +69,79 @@ func ConstructPackages(rawManifest string) []Package {
 			continue
 		}
 
-		packages = append(packages, Package{
-			Name: fileName,
-			Signature: signature,
+		m.Packages = append(m.Packages, Package{
+			Name:       fileName,
+			Signature:  signature,
 			PackedSize: packedSize,
-			Size: size,
+			Size:       size,
 		})
 	}
-
-	return packages
 }
 
-func DownloadPackage(version string, destDir string, pkg Package) {
-	packageUrl := "https://setup.rbxcdn.com/"+version+"-"+pkg.Name
-	packagePath := filepath.Join(destDir, pkg.Signature)
+func (m *PackageManifest) DownloadAll() {
+	var wg sync.WaitGroup
 
-	if _, err := os.Stat(packagePath); err == nil {
-		return
+	wg.Add(len(m.Packages))
+	for _, pkg := range m.Packages {
+
+		go func(ver string, pkg Package) {
+			packageUrl := "https://setup.rbxcdn.com/" + ver + "-" + pkg.Name
+			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
+
+			if _, err := os.Stat(packagePath); err == nil {
+				log.Println("Found", packagePath)
+				wg.Done()
+				return
+			}
+
+			if err := Download(packageUrl, packagePath); err != nil {
+				log.Fatalf("failed to download package %s: %s", pkg.Name, err)
+			}
+			wg.Done()
+		}(m.Version, pkg)
 	}
-	
-	Download(packageUrl, packagePath)
+
+	wg.Wait()
 }
 
-func ExtractPackage(pkg Package, sourceDir string, destDir string) {
-	packageDirectories := map[string]string{
+func (m *PackageManifest) VerifyAll() {
+	for _, pkg := range m.Packages {
+
+		log.Printf("Verifying Package %s: %s", pkg.Name, pkg.Signature)
+		hash := md5.New()
+
+		packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
+		packageFile, err := os.Open(packagePath)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if _, err := io.Copy(hash, packageFile); err != nil {
+			log.Fatal(err)
+		}
+
+		if pkg.Signature != hex.EncodeToString(hash.Sum(nil)) {
+			log.Fatalf("Package %s checksum mismatch: %x", pkg.Name, hash.Sum(nil))
+		}
+
+		packageFile.Close()
+	}
+}
+
+func (m *PackageManifest) ExtractAll(directories map[string]string) {
+	for _, pkg := range m.Packages {
+		packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
+		packageDirDest := filepath.Join(Dirs.Versions, m.Version, directories[pkg.Name])
+
+		CreateDirs(packageDirDest)
+		if err := UnzipFolder(packagePath, packageDirDest); err != nil {
+			log.Fatalf("failed to extract package %s: %s", pkg.Name, err)
+		}
+	}
+}
+
+func ClientPackageDirectories() map[string]string {
+	return map[string]string{
 		"RobloxApp.zip":                 "",
 		"shaders.zip":                   "shaders",
 		"ssl.zip":                       "ssl",
@@ -86,77 +161,4 @@ func ExtractPackage(pkg Package, sourceDir string, destDir string) {
 		"extracontent-textures.zip":     "ExtraContent/textures",
 		"extracontent-places.zip":       "ExtraContent/places",
 	}
-
-	packagePath := filepath.Join(sourceDir, pkg.Signature)
-	packageDest := filepath.Join(destDir, packageDirectories[pkg.Name])
-
-	UnzipFolder(packagePath, packageDest)
 }
-
-func UnzipFolder(source string, destDir string) {
-	log.Println("Extracting", source)
-
-	zip, err := zip.OpenReader(source)
-	if err != nil {
-		panic(err)
-	}
-
-	for _, file := range zip.File {
-		filePath := filepath.Join(destDir, file.Name)
-		log.Println("Unzipping", filePath)
-
-		if file.FileInfo().IsDir() {
-			os.MkdirAll(filePath, os.ModePerm)
-			continue
-		}
-
-		if err := os.MkdirAll(filepath.Dir(filePath), os.ModePerm); err != nil {
-			panic(err)
-		}
-
-		destFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
-		if err != nil {
-			panic(err)
-		}
-	
-		fileZipped, err := file.Open()
-		if err != nil {
-			panic(err)
-		}
-		if _, err := io.Copy(destFile, fileZipped); err != nil {
-			panic(err)
-		}
-	
-		destFile.Close()
-		fileZipped.Close()
-	}
-
-	zip.Close()
-}
-
-//func main() {
-//	log.Println("Today is a good day :D")
-//	ver := GetUrlBody("https://setup.rbxcdn.com/version")
-//
-//	if err := os.MkdirAll(ver, 0755); err != nil {
-//		panic(err)
-//	}
-//
-//	log.Println("Version", ver)
-//
-//	manif := GetUrlBody("https://setup.rbxcdn.com/" + ver + "-rbxPkgManifest.txt")
-//	pkgs := ConstructPackages(manif)
-//
-//	var wg sync.WaitGroup
-//	wg.Add(len(pkgs))
-//	
-//	for _, pkg := range pkgs {
-//		go func(ver string, pkg Package) {
-//			DownloadPackage(ver, "cache", pkg)
-//			ExtractPackage("cache", "bleh", pkg)
-//			wg.Done()
-//		}(ver, pkg)
-//	}
-//
-//	wg.Wait()
-//}

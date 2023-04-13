@@ -2,6 +2,7 @@ package main
 
 import (
 	"archive/zip"
+	"strings"
 	"fmt"
 	"io"
 	"log"
@@ -91,7 +92,8 @@ func UnzipFolder(source string, destDir string) error {
 	}
 
 	for _, file := range zip.File {
-		filePath := filepath.Join(destDir, file.Name)
+		// Roblox's Zip Files have windows paths in them
+		filePath := filepath.Join(destDir, strings.ReplaceAll(file.Name, `\`, "/"))
 		log.Println("Unzipping", filePath)
 
 		if file.FileInfo().IsDir() {

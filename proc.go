@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 )
 
 // Loop over all proc(5)fs PID directories and check if the given query (string)
@@ -27,20 +26,4 @@ func CommFound(query string) bool {
 	}
 
 	return false
-}
-
-// Simply loop for every second to see if a process query 'comm' has not been
-// found, or in other words has exited. this function will simply stop the current
-// execution queue and simply just waits, and the functions following this one will
-// execute.
-func CommLoop(comm string) {
-	log.Println("Waiting for process command:", comm)
-
-	for {
-		time.Sleep(time.Second)
-
-		if !CommFound(comm) {
-			break
-		}
-	}
 }

@@ -1,12 +1,9 @@
 package main
 
 import (
-	"archive/tar"
 	"archive/zip"
-	"compress/gzip"
 	"crypto/md5"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -132,58 +129,6 @@ func UnzipFolder(source string, destDir string) error {
 	}
 
 	zip.Close()
-
-	return nil
-}
-
-func UntarGzipFolder(source string, destDir string) error {
-	log.Println("Extracting", source)
-
-	tarball, err := os.Open(source)
-	if err != nil {
-		return err
-	}
-
-	stream, err := gzip.NewReader(tarball)
-	if err != nil {
-		return err
-	}
-
-	tar := tar.NewReader(stream)
-
-	for {
-		header, err := tar.Next()
-
-		if errors.Is(err, io.EOF) {
-			break
-		} else if err != nil {
-			return err
-		}
-
-		filePath := filepath.Join(destDir, header.Name)
-		info := header.FileInfo()
-
-		log.Println("Ungzipping", filePath)
-
-		if info.IsDir() {
-			if err := os.Mkdir(filePath, info.Mode()); err != nil {
-				return err
-			}
-
-			continue
-		}
-
-		destFile, err := os.OpenFile(filePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, info.Mode())
-		if err != nil {
-			return err
-		}
-
-		if _, err = io.Copy(destFile, tar); err != nil {
-			return err
-		}
-
-		destFile.Close()
-	}
 
 	return nil
 }

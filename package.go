@@ -115,7 +115,7 @@ func (m *PackageManifest) DownloadVerifyExtractAll(directories map[string]string
 			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
 			packageDirDest := filepath.Join(LocalProgramDir, ver, dirs[pkg.Name])
 
-			CreateDirs(packageDirDest)
+			CreateDirs(filepath.Dir(packageDirDest))
 
 			if err := UnzipFolder(packagePath, packageDirDest); err != nil {
 				log.Fatalf("failed to extract package %s: %s", pkg.Name, err)

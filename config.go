@@ -84,14 +84,6 @@ func configPost(config *Configuration) {
 		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
 	}
 
-	if config.RCO {
-		config.SetRCOFFlags()
-	}
-
-	if config.Renderer != "" {
-		config.SetFFlagRenderer()
-	}
-
 	if config.WineRoot != "" {
 		log.Println("Using Wine Root")
 		os.Setenv("PATH", filepath.Join(config.WineRoot, "bin")+":"+os.Getenv("PATH"))
@@ -120,7 +112,7 @@ func loadConfig() Configuration {
 	return config
 }
 
-func printConfig() {
+func PrintConfig() {
 	if err := toml.NewEncoder(os.Stdout).Encode(Config); err != nil {
 		log.Fatal(err)
 	}

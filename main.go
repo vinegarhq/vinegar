@@ -24,7 +24,7 @@ func main() {
 
 	switch os.Args[1] {
 	case "config":
-		PrintConfig()
+		Config.Print()
 	case "delete":
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "edit":

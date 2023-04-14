@@ -71,25 +71,25 @@ func writeConfigTemplate() {
 	template := "# See how to configure Vinegar on the documentation website:\n" +
 		"# https://vinegarhq.github.io/Configuration\n\n"
 
-	if _, err = file.WriteString(template[1:]); err != nil {
+	if _, err = file.WriteString(template); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func configPost(config *Configuration) {
-	if config.Prime {
-		config.Env["DRI_PRIME"] = "1"
-		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
-		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
-		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+func (c *Configuration) Post() {
+	if c.Prime {
+		c.Env["DRI_PRIME"] = "1"
+		c.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+		c.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
+		c.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
 	}
 
-	if config.WineRoot != "" {
+	if c.WineRoot != "" {
 		log.Println("Using Wine Root")
-		os.Setenv("PATH", filepath.Join(config.WineRoot, "bin")+":"+os.Getenv("PATH"))
+		os.Setenv("PATH", filepath.Join(c.WineRoot, "bin")+":"+os.Getenv("PATH"))
 	}
 
-	for name, value := range config.Env {
+	for name, value := range c.Env {
 		os.Setenv(name, value)
 	}
 }
@@ -107,13 +107,13 @@ func loadConfig() Configuration {
 		log.Fatal("could not parse configuration file:", err)
 	}
 
-	configPost(&config)
+	config.Post()
 
 	return config
 }
 
-func PrintConfig() {
-	if err := toml.NewEncoder(os.Stdout).Encode(Config); err != nil {
+func (c *Configuration) Print() {
+	if err := toml.NewEncoder(os.Stdout).Encode(c); err != nil {
 		log.Fatal(err)
 	}
 }

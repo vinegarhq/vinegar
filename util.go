@@ -15,10 +15,6 @@ import (
 )
 
 func Exec(prog string, logName string, args ...string) error {
-	if prog == "wine" {
-		PfxInit()
-	}
-
 	log.Println("Executing:", prog, args)
 
 	cmd := exec.Command(prog, args...)
@@ -99,7 +95,8 @@ func UnzipFolder(source string, destDir string) error {
 		log.Println("Unzipping", filePath)
 
 		if file.FileInfo().IsDir() {
-			if err := os.Mkdir(filePath, file.Mode()); err != nil {
+			log.Println("Creating directory", filePath)
+			if err := os.MkdirAll(filePath, file.Mode()); err != nil {
 				return err
 			}
 

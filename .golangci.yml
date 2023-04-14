@@ -39,38 +39,19 @@ linters:
     - noctx
 issues:
   exclude-rules:
-
     # The struct variables are set after the declaration, since we re-use values
     # from the struct itself, to set values in the struct as well, which isnt
     # possible during declaration.
     - path: dirs.go
-      linters:
-        - exhaustruct
-
-    # Better this way.
-    - path: fflags.go
-      linters:
-        - lll
-        - maintidx
-        - funlen
-
-    # Roblox uses MD5, we do not have a choice.
-    - path: util.go
-      linters:
-        - gosec
-
-    # False alarm.
-    - linters:
-        - errorlint
-      source: "err == io.EOF"
+      linters: exhaustruct
 
     # Schizophrenic linter
     # G107: Potential HTTP request made with variable url
     # G110: Potential DoS vulnerability via decompression bomb
+    # MD5 is also what Roblox uses, soo...
     - linters: gosec
       text: "G107:"
     - linters: gosec
       text: "G110:"
-    # I trust Roblox with my Filesystem.
     - linters: gosec
-      text: "G305:"
+      source: "md5"

@@ -67,7 +67,6 @@ func (c *Configuration) SetRCOFFlags() {
 	log.Println("Applying RCO FFlags")
 	// FIntFlagUpdateVersion: 78
 	rco := map[string]interface{}{
-		"FIntFlagUpdateVersion":                                         77,
 		"FStringNewInGameMenuForcedUserIds":                             "2323539704;3822626535;4126963942;2627408279;4329723352",
 		"DFIntSecondsBetweenDynamicVariableReloading":                   31557600,
 		"FIntRolloutEnrollmentExpirationMinutes":                        31557600,
@@ -321,7 +320,6 @@ func (c *Configuration) SetRCOFFlags() {
 		"FFlagBatchThumbnailFetcherTimedOutSupport":                     true,
 		"FFlagFileMeshToChunks2":                                        true,
 		"FFlagKickClientOnCoreGuiRenderOverflow":                        false,
-		"FFlagLaunchUAByDefault":                                        false,
 		"FFlagUniversalAppOnUWP":                                        false,
 		"FFlagUniversalAppOnWindows":                                    false,
 		"FFlagEnableUniversalAppUserAgentOnMacAndWin32":                 false,

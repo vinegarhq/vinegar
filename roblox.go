@@ -42,7 +42,7 @@ func (r *Roblox) Install(directories map[string]string) {
 
 	pkgmanif.Version = r.Version
 	pkgmanif.Construct()
-	pkgmanif.DownloadVerifyExtractAll(directories)
+	pkgmanif.DownloadVerifyExtractAll(r.VersionDir, directories)
 	r.AppSettings()
 }
 

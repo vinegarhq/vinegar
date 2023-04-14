@@ -30,7 +30,7 @@ func DxvkMarkerExist() bool {
 
 func DxvkStrap() {
 	if Config.Dxvk {
-		DxvkInstall(false)
+		DxvkInstall()
 
 		Config.Renderer = "D3D11"
 		Config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
@@ -39,12 +39,10 @@ func DxvkStrap() {
 		return
 	}
 
-	DxvkUninstall(false)
+	DxvkUninstall()
 }
 
 func DxvkExtract(tarball string) {
-	var winDir string
-
 	log.Println("Extracting DXVK")
 
 	dxvkTarball, err := os.Open(tarball)
@@ -65,21 +63,15 @@ func DxvkExtract(tarball string) {
 			continue
 		}
 
-		switch path.Base(path.Dir(header.Name)) {
-		case "x64":
-			winDir = "system32"
-		case "x32":
-			winDir = "syswow64"
-		default:
-			continue
+		dirs := map[string]string{
+			"x64": filepath.Join(Dirs.Pfx, "drive_c", "windows", "system32"),
+			"x32": filepath.Join(Dirs.Pfx, "drive_c", "windows", "syswow64"),
 		}
 
-		winDir := filepath.Join(Dirs.Pfx, "drive_c", "windows", winDir)
+		dllDestDir := dirs[filepath.Base(filepath.Dir(header.Name))]
+		CreateDirs(dllDestDir)
 
-		// just in case
-		CreateDirs(winDir)
-
-		writer, err := os.Create(filepath.Join(winDir, path.Base(header.Name)))
+		writer, err := os.Create(filepath.Join(dllDestDir, path.Base(header.Name)))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -92,11 +84,9 @@ func DxvkExtract(tarball string) {
 	}
 }
 
-func DxvkInstall(force bool) {
-	if !force {
-		if DxvkMarkerExist() {
-			return
-		}
+func DxvkInstall() {
+	if DxvkMarkerExist() {
+		return
 	}
 
 	dxvkTarballPath := filepath.Join(Dirs.Cache, DXVKTAR)
@@ -114,11 +104,9 @@ func DxvkInstall(force bool) {
 	}
 }
 
-func DxvkUninstall(force bool) {
-	if !force {
-		if !DxvkMarkerExist() {
-			return
-		}
+func DxvkUninstall() {
+	if !DxvkMarkerExist() {
+		return
 	}
 
 	log.Println("Uninstalling DXVK")

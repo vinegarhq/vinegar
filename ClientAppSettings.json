@@ -1,5 +1,5 @@
 {
-"FIntFlagUpdateVersion": 78,
+"FIntFlagUpdateVersion": 79,
 "FStringNewInGameMenuForcedUserIds": "2323539704;3822626535;4126963942;2627408279;4329723352",
 "DFIntSecondsBetweenDynamicVariableReloading": 31557600,
 "FIntRolloutEnrollmentExpirationMinutes": 31557600,
@@ -253,10 +253,6 @@
 "FFlagBatchThumbnailFetcherTimedOutSupport": true,
 "FFlagFileMeshToChunks2": true,
 "FFlagKickClientOnCoreGuiRenderOverflow": false,
-"FFlagLaunchUAByDefault": false,
-"FFlagUniversalAppOnUWP": false,
-"FFlagUniversalAppOnWindows": false,
-"FFlagEnableUniversalAppUserAgentOnMacAndWin32": false,
 "DFFlagEphemeralCounterInfluxReportingEnabled": false,
 "DFIntEphemeralCounterInfluxReportingPriorityHundredthsPercent": 0,
 "DFIntEphemeralCounterInfluxReportingThrottleHundredthsPercent": 100000,

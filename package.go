@@ -90,7 +90,7 @@ func (p *Package) Download(version string) {
 	}
 }
 
-func (m *PackageManifest) DownloadVerifyExtractAll(directories map[string]string) {
+func (m *PackageManifest) DownloadVerifyExtractAll(versionDir string, directories map[string]string) {
 	var waitGroup sync.WaitGroup
 
 	waitGroup.Add(len(m.Packages))
@@ -109,20 +109,19 @@ func (m *PackageManifest) DownloadVerifyExtractAll(directories map[string]string
 	}
 
 	waitGroup.Add(len(m.Packages))
+	CreateDirs(versionDir)
 
 	for _, pkg := range m.Packages {
-		go func(ver string, pkg Package, dirs map[string]string) {
+		go func(pkg Package, dirs map[string]string) {
 			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-			packageDirDest := filepath.Join(LocalProgramDir, ver, dirs[pkg.Name])
-
-			CreateDirs(filepath.Dir(packageDirDest))
+			packageDirDest := filepath.Join(versionDir, dirs[pkg.Name])
 
 			if err := UnzipFolder(packagePath, packageDirDest); err != nil {
 				log.Fatalf("failed to extract package %s: %s", pkg.Name, err)
 			}
 
 			waitGroup.Done()
-		}(m.Version, pkg, directories)
+		}(pkg, directories)
 	}
 
 	waitGroup.Wait()

@@ -96,6 +96,7 @@ func UnzipFolder(source string, destDir string) error {
 
 		if file.FileInfo().IsDir() {
 			log.Println("Creating directory", filePath)
+
 			if err := os.MkdirAll(filePath, file.Mode()); err != nil {
 				return err
 			}

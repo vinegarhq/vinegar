@@ -28,6 +28,8 @@ func main() {
 	case "edit":
 		EditConfig()
 	case "exec":
+		PfxInit()
+
 		if err := Exec("wine", "", os.Args[2:]...); err != nil {
 			log.Fatal(err)
 		}

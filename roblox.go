@@ -38,8 +38,8 @@ func (r *Roblox) AppSettings() {
 func (r *Roblox) Install(directories map[string]string) {
 	var pkgmanif PackageManifest
 
+	PfxInit()
 	log.Println("Installing Roblox", r.Version)
-
 	pkgmanif.Version = r.Version
 	pkgmanif.Construct()
 	pkgmanif.DownloadVerifyExtractAll(r.VersionDir, directories)

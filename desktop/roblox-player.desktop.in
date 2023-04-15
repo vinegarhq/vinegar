@@ -1,10 +1,9 @@
 [Desktop Entry]
 Type=Application
 Name=Roblox Player (Vinegar)
-Exec=vinegar player %u
-Terminal=false
-MimeType=x-scheme-handler/roblox-player
-Categories=Game
 NoDisplay=true
 Icon=$FLATPAK.player
-MimeType=x-scheme-handler/roblox-player;x-scheme-handler/roblox
+Exec=vinegar player %u
+Terminal=false
+MimeType=x-scheme-handler/roblox;x-scheme-handler/roblox-player
+Categories=Game

@@ -47,7 +47,7 @@ func (r *Roblox) Install(directories map[string]string) {
 }
 
 func (r *Roblox) Setup(directories map[string]string) {
-	r.VersionDir = filepath.Join(LocalProgramDir, r.Version)
+	r.VersionDir = filepath.Join(Dirs.Versions, r.Version)
 
 	log.Println("Checking for Roblox", r.File, r.Version)
 

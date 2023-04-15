@@ -3,26 +3,11 @@ package main
 import (
 	"log"
 	"os"
-	"os/user"
 	"path/filepath"
 )
 
-var LocalProgramDir = defLocalProgramDir()
-
-func defLocalProgramDir() string {
-	user, err := user.Current()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	dir := filepath.Join(Dirs.Pfx, "drive_c", "users", user.Username, "AppData/Local", "vinegar")
-
-	CreateDirs(dir)
-
-	return dir
-}
-
 func PfxInit() {
+	// Initialize the wineprefix only when the 'windows' directory is happy.
 	if _, err := os.Stat(filepath.Join(Dirs.Pfx, "drive_c", "windows")); err == nil {
 		return
 	}

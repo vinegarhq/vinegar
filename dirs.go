@@ -16,6 +16,7 @@ type Directories struct {
 	Downloads string
 	Log       string
 	Pfx       string
+	Versions  string
 }
 
 var (
@@ -57,8 +58,9 @@ func defDirs() Directories {
 	dirs.Downloads = filepath.Join(dirs.Cache, "downloads")
 	dirs.Log = filepath.Join(dirs.Cache, "logs")
 	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
+	dirs.Versions = filepath.Join(dirs.Data, "versions")
 
-	CreateDirs(dirs.Cwd, dirs.Downloads, dirs.Log, dirs.Pfx)
+	CreateDirs(dirs.Cwd, dirs.Downloads, dirs.Log, dirs.Pfx, dirs.Versions)
 
 	return dirs
 }

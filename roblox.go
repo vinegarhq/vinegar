@@ -117,7 +117,7 @@ func BrowserArgsParse(launchURI string) []string {
 }
 
 func (r *Roblox) GetNewestLogFile() string {
-	return NewestFile(filepath.Join(AppDataDir(), "Local", "Roblox", "logs", "*.log"))
+	return NewestFile(filepath.Join(AppDataDir, "Local", "Roblox", "logs", "*.log"))
 }
 
 func (r *Roblox) Execute(args []string) {

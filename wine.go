@@ -8,10 +8,12 @@ import (
 	"path/filepath"
 )
 
-func AppDataDir() string {
+var AppDataDir = defAppDataDir()
+
+func defAppDataDir() string {
 	user, err := user.Current()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not get current user: %s", err)
 	}
 
 	return filepath.Join(Dirs.Pfx, "drive_c", "users", user.Username, "AppData")

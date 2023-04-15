@@ -46,7 +46,6 @@ func DxvkExtract(tarball string) {
 	log.Println("Extracting DXVK")
 
 	dxvkTarball, err := os.Open(tarball)
-
 	if err != nil {
 		log.Fatal(err)
 	}

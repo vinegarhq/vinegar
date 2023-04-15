@@ -102,7 +102,6 @@ func BrowserArgsParse(launchURI string) []string {
 
 		if parts[0] == "placelauncherurl" {
 			urlDecoded, err := url.QueryUnescape(parts[1])
-
 			if err != nil {
 				log.Fatal(err)
 			}

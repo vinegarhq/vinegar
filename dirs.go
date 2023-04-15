@@ -21,9 +21,9 @@ type Directories struct {
 
 var (
 	Dirs                  = defDirs()
-	DirMode   fs.FileMode = 0755
-	DirROMode fs.FileMode = 0664
-	FileMode  fs.FileMode = 0644
+	DirMode   fs.FileMode = 0o755
+	DirROMode fs.FileMode = 0o664
+	FileMode  fs.FileMode = 0o644
 )
 
 // Function to declare the Directories struct with the default

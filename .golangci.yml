@@ -3,55 +3,17 @@ output:
   print-issued-lines: false
   sort-results: true
 linters:
-  enable-all: true
+  presets:
+    - bugs
+    - comment
+    - complexity
+    - format
+    - import
+    - metalinter
+    - module
+    - performance
+    - unused
   disable:
-    - ifshort
-    - structcheck
-    - maligned
-    - exhaustivestruct
-    - golint
-    - interfacer
-    - varcheck
-    - nosnakecase
-    - scopelint
-    - deadcode
-    - forbidigo
-    - rowserrcheck
-    - wastedassign
-    - goerr113
-
-    # We use globals to keep our code somewhat clean.
-    - gochecknoglobals
-    # TODO: i guess wrap or handle with fancy errors?
-    - wrapcheck
-    # Schizophrenic linter, complains about 'magic numbers'
-    #   if len(os.Args) > 2
-    - gomnd
-    # Basically this will change the global permissions of files
-    # from something along the lines of 0755 to 0o755, which does
-    # not make sense when working with permissions.
-    - gofumpt
-    # Splitting functions is unrealistic in the context of the
-    # functions that have just some lines above the limit
-    # main()(16>10)
+    - gosec
     - cyclop
-    # Useless
     - noctx
-issues:
-  exclude-rules:
-    # The struct variables are set after the declaration, since we re-use values
-    # from the struct itself, to set values in the struct as well, which isnt
-    # possible during declaration.
-    - path: dirs.go
-      linters: exhaustruct
-
-    # Schizophrenic linter
-    # G107: Potential HTTP request made with variable url
-    # G110: Potential DoS vulnerability via decompression bomb
-    # MD5 is also what Roblox uses, soo...
-    - linters: gosec
-      text: "G107:"
-    - linters: gosec
-      text: "G110:"
-    - linters: gosec
-      source: "md5"

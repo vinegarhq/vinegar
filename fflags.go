@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 )
 
-//go:embed ClientAppSettings.json
+//go:embed rco.json
 var rawRCO []byte
 
 // Validate the given renderer, and apply it to the given map (fflags);

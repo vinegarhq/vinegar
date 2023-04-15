@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
 )
@@ -126,7 +127,7 @@ func DxvkUninstall() {
 	// Updating the wineprefix is necessary, since the DLLs
 	// that were overrided by DXVK, were subsequently deleted,
 	// and has to be restored (updated)
-	if err := Exec("wineboot", "", "-u"); err != nil {
+	if err := exec.Command("wineboot", "-u").Run(); err != nil {
 		log.Fatal(err)
 	}
 

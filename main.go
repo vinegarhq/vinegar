@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"os/exec"
 )
 
 var Version = "no version set :("
@@ -13,6 +13,15 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "       vinegar [player|studio] [args...]")
 
 	os.Exit(1)
+}
+
+func execWine(args ...string) {
+	PfxInit()
+	execCmd := exec.Command("wine", args...)
+	execCmd.Stdin = os.Stdin
+	execCmd.Stdout = os.Stdout
+	execCmd.Stderr = os.Stderr
+	fmt.Println(execCmd.Run())
 }
 
 func main() {
@@ -28,17 +37,11 @@ func main() {
 	case "edit":
 		EditConfig()
 	case "exec":
-		PfxInit()
-
-		if err := Exec("wine", "", os.Args[2:]...); err != nil {
-			log.Fatal(err)
-		}
+		execWine(os.Args[2:]...)
 	case "kill":
 		PfxKill()
 	case "logs":
-		fmt.Println(Dirs.Log)
-		fmt.Println(LatestLogFile("*.log"))
-		fmt.Println(LatestLogFile("vinegar*.log"))
+		ListLogFiles()
 	case "player":
 		LogToFile()
 		RobloxPlayer(os.Args[2:]...)

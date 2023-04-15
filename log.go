@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -27,17 +28,9 @@ func LogFile(prefix string) *os.File {
 	return file
 }
 
-func LatestLogFile(glob string) string {
-	// Since filepath.Glob sorts numerically, the 'newest' log files
-	// will always be last (hence why retrieveing the last array element
-	// is used), as they contain the date they were created at.
-	// On-top of this, it also sorts alphabetically, so we only check for
-	// log files that match the pattern.
-	LogFiles, _ := filepath.Glob(filepath.Join(Dirs.Log, glob))
-
-	if len(LogFiles) < 1 {
-		return ""
+func ListLogFiles() {
+	logFiles, _ := filepath.Glob(filepath.Join(Dirs.Log, "*.log"))
+	for _, file := range logFiles {
+		fmt.Println(file)
 	}
-
-	return LogFiles[len(LogFiles)-1]
 }

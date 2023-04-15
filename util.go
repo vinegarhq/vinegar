@@ -9,30 +9,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 )
-
-func Exec(prog string, logName string, args ...string) error {
-	log.Println("Executing:", prog, args)
-
-	cmd := exec.Command(prog, args...)
-
-	cmd.Dir = Dirs.Cwd
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-
-	if logName != "" {
-		logFile := LogFile(logName)
-		log.Println("Log file:", logFile.Name())
-		cmd.Stderr = logFile
-		cmd.Stdout = logFile
-	}
-
-	return cmd.Run()
-}
 
 func Download(source, file string) error {
 	log.Println("Downloading", source)
@@ -146,4 +125,19 @@ func VerifyFileMD5(filePath string, signature string) {
 	}
 
 	file.Close()
+}
+
+func NewestFile(glob string) string {
+	// Since filepath.Glob sorts numerically, the 'newest' log files
+	// will always be last (hence why retrieveing the last array element
+	// is used), as they contain the date they were created at.
+	// On-top of this, it also sorts alphabetically, so we only check for
+	// log files that match the pattern.
+	files, _ := filepath.Glob(glob)
+
+	if len(files) < 1 {
+		return ""
+	}
+
+	return files[len(files)-1]
 }

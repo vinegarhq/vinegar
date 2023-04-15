@@ -54,8 +54,13 @@ func EditConfig() {
 
 	tempConfigFile.Close()
 
+	editorCmd := exec.Command(editor, tempConfigFilePath)
+	editorCmd.Stdin = os.Stdin
+	editorCmd.Stderr = os.Stderr
+	editorCmd.Stdout = os.Stdout
+
 	for {
-		if err := Exec(editor, "", tempConfigFilePath); err != nil {
+		if err := editorCmd.Run(); err != nil {
 			log.Fatal(err)
 		}
 

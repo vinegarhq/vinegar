@@ -3,8 +3,19 @@ package main
 import (
 	"log"
 	"os"
+	"os/exec"
+	"os/user"
 	"path/filepath"
 )
+
+func AppDataDir() string {
+	user, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return filepath.Join(Dirs.Pfx, "drive_c", "users", user.Username, "AppData")
+}
 
 func PfxInit() {
 	// Initialize the wineprefix only when the 'windows' directory is happy.
@@ -14,13 +25,13 @@ func PfxInit() {
 
 	log.Println("Initializing wineprefix")
 
-	if err := Exec("wineboot", "", "-i"); err != nil {
+	if err := exec.Command("wineboot", "-i").Run(); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Setting wineprefix version to", Config.Version)
 
-	if err := Exec("winecfg", "", "/v", Config.Version); err != nil {
+	if err := exec.Command("winecfg", "/v", Config.Version).Run(); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -28,5 +39,5 @@ func PfxInit() {
 func PfxKill() {
 	log.Println("Killing wineprefix")
 
-	_ = Exec("wineserver", "", "-k")
+	_ = exec.Command("wineserver", "-k").Run()
 }

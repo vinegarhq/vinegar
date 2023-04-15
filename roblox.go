@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 )
@@ -115,19 +116,29 @@ func BrowserArgsParse(launchURI string) []string {
 	return args
 }
 
+func (r *Roblox) GetNewestLogFile() string {
+	return NewestFile(filepath.Join(AppDataDir(), "Local", "Roblox", "logs", "*.log"))
+}
+
 func (r *Roblox) Execute(args []string) {
 	log.Println("Launching", r.File, r.Version)
-	log.Println(r.Path)
-	args = append([]string{r.Path}, args...)
 
-	prog := "wine"
+	args = append([]string{"wine", r.Path}, args...)
 
 	if Config.Launcher != "" {
-		args = append([]string{"wine"}, args...)
-		prog = Config.Launcher
+		args = append([]string{Config.Launcher}, args...)
 	}
 
-	err := Exec(prog, r.File, args...)
+	log.Println(args)
+	robloxCmd := exec.Command(args[0], args[1:]...)
+
+	logFile := LogFile(r.File)
+	log.Println("Wine log file:", logFile.Name())
+	robloxCmd.Stderr = logFile
+	robloxCmd.Stdout = logFile
+	err := robloxCmd.Run()
+
+	log.Println("Roblox log file:", r.GetNewestLogFile())
 
 	// exit code 41 is a false alarm.
 	if err != nil && err.Error() != "exit status 41" {

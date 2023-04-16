@@ -19,10 +19,6 @@ type Package struct {
 func (r *Roblox) GetPackages() {
 	log.Println("Constructing Package Manifest")
 
-	if len(r.Version) != 24 {
-		log.Fatal("invalid version set")
-	}
-
 	rawManifest, err := GetURLBody(r.URL + r.Version + "-rbxPkgManifest.txt")
 	if err != nil {
 		log.Fatal(err)

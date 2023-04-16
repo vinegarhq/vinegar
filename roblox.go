@@ -11,10 +11,14 @@ import (
 )
 
 type Roblox struct {
-	File       string
-	Path       string
-	Version    string
-	VersionDir string
+	URL         string
+	File        string
+	Path        string
+	Channel     string
+	Version     string
+	VersionDir  string
+	Directories map[string]string
+	Packages    []Package
 }
 
 func (r *Roblox) AppSettings() {
@@ -36,24 +40,43 @@ func (r *Roblox) AppSettings() {
 	}
 }
 
-func (r *Roblox) Install(directories map[string]string) {
-	var pkgmanif PackageManifest
+func (r *Roblox) SetupURL() {
+	r.URL = "https://setup.rbxcdn.com/"
 
+	if r.Channel != "" && r.Channel != "live" {
+		log.Printf("Detected user channel: %s", r.Channel)
+
+		r.URL += "channel/" + r.Channel + "/"
+	}
+
+	log.Println(r.URL)
+}
+
+func (r *Roblox) GetLatestVersion(versionFile string) {
+	version, err := GetURLBody(r.URL + versionFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	r.Version = version
+}
+
+func (r *Roblox) Install() {
 	PfxInit()
 	log.Println("Installing Roblox", r.Version)
-	pkgmanif.Version = r.Version
-	pkgmanif.Construct()
-	pkgmanif.DownloadVerifyExtractAll(r.VersionDir, directories)
+
+	r.GetPackages()
+	r.DownloadVerifyExtractAll()
 	r.AppSettings()
 }
 
-func (r *Roblox) Setup(directories map[string]string) {
+func (r *Roblox) Setup() {
 	r.VersionDir = filepath.Join(Dirs.Versions, r.Version)
 
 	log.Println("Checking for Roblox", r.File, r.Version)
 
 	if _, err := os.Stat(r.VersionDir); errors.Is(err, os.ErrNotExist) {
-		r.Install(directories)
+		r.Install()
 	} else if err != nil {
 		log.Fatal(err)
 	}
@@ -73,9 +96,9 @@ func (r *Roblox) Setup(directories map[string]string) {
 // Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to
 // RobloxPlayerBeta This function is mainly a hack to take place of what the
 // launcher would do, and would fork for RobloxPlayerBeta.
-func BrowserArgsParse(launchURI string) []string {
+func (r *Roblox) BrowserArgsParse(launchURI string) []string {
 	args := make([]string, 0)
-	URIKeyArg := map[string]string{
+	uris := map[string]string{
 		"launchmode":       "--",
 		"gameinfo":         "-t ",
 		"placelauncherurl": "-j ",
@@ -89,7 +112,7 @@ func BrowserArgsParse(launchURI string) []string {
 	for _, uri := range strings.Split(launchURI, "+") {
 		parts := strings.Split(uri, ":")
 
-		if URIKeyArg[parts[0]] == "" || parts[1] == "" {
+		if uris[parts[0]] == "" || parts[1] == "" {
 			continue
 		}
 
@@ -97,9 +120,9 @@ func BrowserArgsParse(launchURI string) []string {
 			parts[1] = "app"
 		}
 
-		//		if parts[0] == "channel" {
-		//			channel = "/channel/" + strings.ToLower(parts[1])
-		//		}
+		if parts[0] == "channel" {
+			r.Channel = strings.ToLower(parts[1])
+		}
 
 		if parts[0] == "placelauncherurl" {
 			urlDecoded, err := url.QueryUnescape(parts[1])
@@ -110,7 +133,7 @@ func BrowserArgsParse(launchURI string) []string {
 			parts[1] = urlDecoded
 		}
 
-		args = append(args, URIKeyArg[parts[0]]+parts[1])
+		args = append(args, uris[parts[0]]+parts[1])
 	}
 
 	return args
@@ -136,6 +159,7 @@ func (r *Roblox) Execute(args []string) {
 	log.Println("Wine log file:", logFile.Name())
 	robloxCmd.Stderr = logFile
 	robloxCmd.Stdout = logFile
+
 	err := robloxCmd.Run()
 
 	log.Println("Roblox log file:", r.GetNewestLogFile())
@@ -147,7 +171,9 @@ func (r *Roblox) Execute(args []string) {
 }
 
 func RobloxPlayer(args ...string) {
-	directories := map[string]string{
+	var rblx Roblox
+
+	rblx.Directories = map[string]string{
 		"RobloxApp.zip":                 "",
 		"shaders.zip":                   "shaders",
 		"ssl.zip":                       "ssl",
@@ -168,22 +194,23 @@ func RobloxPlayer(args ...string) {
 		"extracontent-places.zip":       "ExtraContent/places",
 	}
 
-	var rblx Roblox
-	rblx.File = "RobloxPlayerBeta.exe"
-	rblx.Version = GetLatestVersion("version")
-	rblx.Setup(directories)
-	rblx.ApplyFFlags("Client")
-
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
-		args = BrowserArgsParse(args[0])
+		args = rblx.BrowserArgsParse(args[0])
 	}
 
+	rblx.SetupURL()
+	rblx.File = "RobloxPlayerBeta.exe"
+	rblx.GetLatestVersion("version")
+	rblx.Setup()
+	rblx.ApplyFFlags("Client")
 	rblx.Execute(args)
 	PfxKill()
 }
 
 func RobloxStudio(args ...string) {
-	directories := map[string]string{
+	var rblx Roblox
+
+	rblx.Directories = map[string]string{
 		"ApplicationConfig.zip":        "ApplicationConfig",
 		"BuiltInPlugins.zip":           "BuiltInPlugins",
 		"BuiltInStandalonePlugins.zip": "BuiltInStandalonePlugins",
@@ -218,14 +245,11 @@ func RobloxStudio(args ...string) {
 		"redist.zip":                      "",
 	}
 
-	var rblx Roblox
 	rblx.File = "RobloxStudioBeta.exe"
-	rblx.Version = GetLatestVersion("versionQTStudio")
+	rblx.GetLatestVersion("versionQTStudio")
 	Config.Dxvk = false // Dxvk doesnt work under studio
-
-	rblx.Setup(directories)
+	rblx.Setup()
 	rblx.ApplyFFlags("Studio")
 	rblx.Execute(args)
-
 	PfxKill()
 }

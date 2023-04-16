@@ -16,28 +16,14 @@ type Package struct {
 	Size       int64
 }
 
-type PackageManifest struct {
-	Version  string
-	Packages []Package
-}
-
-func GetLatestVersion(versionFile string) string {
-	version, err := GetURLBody("https://setup.rbxcdn.com/" + versionFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return version
-}
-
-func (m *PackageManifest) Construct() {
+func (r *Roblox) GetPackages() {
 	log.Println("Constructing Package Manifest")
 
-	if len(m.Version) != 24 {
+	if len(r.Version) != 24 {
 		log.Fatal("invalid version set")
 	}
 
-	rawManifest, err := GetURLBody("https://setup.rbxcdn.com/" + m.Version + "-rbxPkgManifest.txt")
+	rawManifest, err := GetURLBody(r.URL + r.Version + "-rbxPkgManifest.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,7 +50,7 @@ func (m *PackageManifest) Construct() {
 			continue
 		}
 
-		m.Packages = append(m.Packages, Package{
+		r.Packages = append(r.Packages, Package{
 			Name:       fileName,
 			Signature:  signature,
 			PackedSize: packedSize,
@@ -73,8 +59,8 @@ func (m *PackageManifest) Construct() {
 	}
 }
 
-func (p *Package) Download(version string) {
-	packageURL := "https://setup.rbxcdn.com/" + version + "-" + p.Name
+func (p *Package) Download(hostURL string, version string) {
+	packageURL := hostURL + version + "-" + p.Name
 	packagePath := filepath.Join(Dirs.Downloads, p.Signature)
 
 	if _, err := os.Stat(packagePath); err == nil {
@@ -88,38 +74,38 @@ func (p *Package) Download(version string) {
 	}
 }
 
-func (m *PackageManifest) DownloadVerifyExtractAll(versionDir string, directories map[string]string) {
+func (r *Roblox) DownloadVerifyExtractAll() {
 	var waitGroup sync.WaitGroup
 
-	waitGroup.Add(len(m.Packages))
+	waitGroup.Add(len(r.Packages))
 
-	for _, pkg := range m.Packages {
-		go func(ver string, pkg Package) {
-			pkg.Download(ver)
+	for _, pkg := range r.Packages {
+		go func(url string, ver string, pkg Package) {
+			pkg.Download(url, ver)
 			waitGroup.Done()
-		}(m.Version, pkg)
+		}(r.URL, r.Version, pkg)
 	}
 
 	waitGroup.Wait()
 
-	for _, pkg := range m.Packages {
+	for _, pkg := range r.Packages {
 		VerifyFileMD5(filepath.Join(Dirs.Downloads, pkg.Signature), pkg.Signature)
 	}
 
-	waitGroup.Add(len(m.Packages))
-	CreateDirs(versionDir)
+	waitGroup.Add(len(r.Packages))
+	CreateDirs(r.VersionDir)
 
-	for _, pkg := range m.Packages {
+	for _, pkg := range r.Packages {
 		go func(pkg Package, dirs map[string]string) {
 			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-			packageDirDest := filepath.Join(versionDir, dirs[pkg.Name])
+			packageDirDest := filepath.Join(r.VersionDir, dirs[pkg.Name])
 
 			if err := UnzipFolder(packagePath, packageDirDest); err != nil {
 				log.Fatalf("failed to extract package %s: %s", pkg.Name, err)
 			}
 
 			waitGroup.Done()
-		}(pkg, directories)
+		}(pkg, r.Directories)
 	}
 
 	waitGroup.Wait()

@@ -59,21 +59,6 @@ func (r *Roblox) GetPackages() {
 	}
 }
 
-func (p *Package) Download(hostURL string, version string) {
-	packageURL := hostURL + version + "-" + p.Name
-	packagePath := filepath.Join(Dirs.Downloads, p.Signature)
-
-	if _, err := os.Stat(packagePath); err == nil {
-		log.Println("Found", packagePath)
-
-		return
-	}
-
-	if err := Download(packageURL, packagePath); err != nil {
-		log.Fatalf("failed to download package %s: %s", p.Name, err)
-	}
-}
-
 func (r *Roblox) DownloadVerifyExtractAll() {
 	var waitGroup sync.WaitGroup
 
@@ -81,7 +66,19 @@ func (r *Roblox) DownloadVerifyExtractAll() {
 
 	for _, pkg := range r.Packages {
 		go func(url string, ver string, pkg Package) {
-			pkg.Download(url, ver)
+			packageURL := url + ver + "-" + pkg.Name
+			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
+
+			if _, err := os.Stat(packagePath); err == nil {
+				log.Println("Found", packagePath)
+
+				return
+			}
+
+			if err := Download(packageURL, packagePath); err != nil {
+				log.Fatalf("failed to download package %s: %s", pkg.Name, err)
+			}
+
 			waitGroup.Done()
 		}(r.URL, r.Version, pkg)
 	}

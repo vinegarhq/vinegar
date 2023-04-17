@@ -59,7 +59,9 @@ func defConfig() Configuration {
 }
 
 func writeConfigTemplate() {
-	CreateDirs(Dirs.Config)
+	if err := Mkdirs(Dirs.Config); err != nil {
+		log.Fatal(err)
+	}
 
 	log.Println("Creating configuration template")
 

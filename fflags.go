@@ -45,7 +45,10 @@ func (c *Configuration) SetFFlagRenderer() {
 // the configuration, then indent it to look pretty and write.
 func (r *Roblox) ApplyFFlags(app string) {
 	fflagsDir := filepath.Join(r.VersionDir, app+"Settings")
-	CreateDirs(fflagsDir)
+
+	if err := Mkdirs(fflagsDir); err != nil {
+		log.Fatalf("unable to create fflags directory: %s", err)
+	}
 
 	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
 	if err != nil {

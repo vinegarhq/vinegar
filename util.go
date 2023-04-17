@@ -107,18 +107,16 @@ func UnzipFolder(source string, destDir string) error {
 }
 
 // A MD5 file checksum verification function, used alongside
-// Roblox's _provided_ MD5 checksums. 
+// Roblox's _provided_ MD5 checksums.
 func VerifyFileMD5(filePath string, signature string) error {
-	log.Printf("Verifying file %s: %s", filePath, signature)
-
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		file.Close()
 		return err
 	}
 
@@ -126,7 +124,7 @@ func VerifyFileMD5(filePath string, signature string) error {
 		return fmt.Errorf("file %s checksum mismatch: %x", filePath, hash.Sum(nil))
 	}
 
-	return file.Close()
+	return nil
 }
 
 func NewestFile(glob string) string {

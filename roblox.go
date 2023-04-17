@@ -86,7 +86,9 @@ func (r *Roblox) Setup() {
 		log.Fatal(err)
 	}
 
-	DxvkStrap()
+	if err := DxvkStrap(); err != nil {
+		log.Println("warning: couldn't install dxvk: %w", err)
+	}
 
 	r.Path = exePath
 }

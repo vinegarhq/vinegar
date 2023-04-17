@@ -17,3 +17,8 @@ linters:
     - gosec
     - cyclop
     - noctx
+issues:
+  exclude-rules:
+  # https://github.com/polyfloyd/go-errorlint/issues/4
+    - linters: errorlint
+      source: "err == io.EOF"

@@ -82,11 +82,16 @@ func (r *Roblox) DownloadVerifyExtractAll() {
 	waitGroup.Wait()
 
 	for _, pkg := range r.Packages {
-		VerifyFileMD5(filepath.Join(Dirs.Downloads, pkg.Signature), pkg.Signature)
+		if err := VerifyFileMD5(filepath.Join(Dirs.Downloads, pkg.Signature), pkg.Signature); err != nil {
+			log.Fatalf("unable to verify package %s; is your internet connection stable?: %s", pkg.Name, err)
+		}
 	}
 
 	waitGroup.Add(len(r.Packages))
-	CreateDirs(r.VersionDir)
+
+	if err := Mkdirs(r.VersionDir); err != nil {
+		log.Fatalf("failed to create version directory: %s", err)
+	}
 
 	for _, pkg := range r.Packages {
 		go func(pkg Package, dirs map[string]string) {

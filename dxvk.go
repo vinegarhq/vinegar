@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 )
+
 // this file, created on DXVK installation and removed at DXVK uninstallation,
 // is an easy way to tell if DXVK is installed, necessary for automatic installation
 // and uninstallation of DXVK.
@@ -118,7 +119,9 @@ func DxvkExtract(source string) error {
 			"x32": filepath.Join(Dirs.Pfx, "drive_c", "windows", "syswow64"),
 		}[filepath.Base(filepath.Dir(header.Name))]
 
-		CreateDirs(destDir)
+		if err := Mkdirs(destDir); err != nil {
+			return err
+		}
 
 		file, err := os.Create(filepath.Join(destDir, path.Base(header.Name)))
 		if err != nil {
@@ -165,6 +168,6 @@ func DxvkUninstall() error {
 	if err := os.Remove(DxvkInstallMarker); err != nil {
 		return fmt.Errorf("dxvk marker file: %w", err)
 	}
-	
+
 	return nil
 }

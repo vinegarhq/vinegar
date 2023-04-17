@@ -58,12 +58,14 @@ func defDirs() Directories {
 	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
 	dirs.Versions = filepath.Join(dirs.Data, "versions")
 
-	CreateDirs(dirs.Downloads, dirs.Log, dirs.Pfx, dirs.Versions)
+	if err := Mkdirs(dirs.Downloads, dirs.Log, dirs.Pfx, dirs.Versions); err != nil {
+		log.Fatal(err)
+	}
 
 	return dirs
 }
 
-func CreateDirs(dirs ...string) {
+func Mkdirs(dirs ...string) error {
 	for _, dir := range dirs {
 		// Don't do anything if the directory does exist, to just save some logging
 		if _, err := os.Stat(dir); !errors.Is(err, os.ErrNotExist) {
@@ -73,9 +75,11 @@ func CreateDirs(dirs ...string) {
 		log.Println("Creating directory:", dir)
 
 		if err := os.MkdirAll(dir, DirMode); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
+
+	return nil
 }
 
 func SetPermDirs(perm fs.FileMode, dirs ...string) {

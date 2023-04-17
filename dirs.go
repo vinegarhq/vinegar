@@ -11,7 +11,6 @@ import (
 type Directories struct {
 	Cache     string
 	Config    string
-	Cwd       string
 	Data      string
 	Downloads string
 	Log       string
@@ -54,13 +53,12 @@ func defDirs() Directories {
 		Data:   filepath.Join(xdgDirs["XDG_DATA_HOME"], "vinegar"),
 	}
 
-	dirs.Cwd = filepath.Join(dirs.Cache, "cwd")
 	dirs.Downloads = filepath.Join(dirs.Cache, "downloads")
 	dirs.Log = filepath.Join(dirs.Cache, "logs")
 	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
 	dirs.Versions = filepath.Join(dirs.Data, "versions")
 
-	CreateDirs(dirs.Cwd, dirs.Downloads, dirs.Log, dirs.Pfx, dirs.Versions)
+	CreateDirs(dirs.Downloads, dirs.Log, dirs.Pfx, dirs.Versions)
 
 	return dirs
 }

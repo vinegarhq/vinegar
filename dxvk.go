@@ -63,15 +63,16 @@ func DxvkExtract(tarball string) {
 			continue
 		}
 
-		dirs := map[string]string{
+		// Uses the DLL's parent directory {x64, x32) to determine where
+		// it's installation directory is set to. map["x64"] -> system32
+		destDir := map[string]string{
 			"x64": filepath.Join(Dirs.Pfx, "drive_c", "windows", "system32"),
 			"x32": filepath.Join(Dirs.Pfx, "drive_c", "windows", "syswow64"),
-		}
+		}[filepath.Base(filepath.Dir(header.Name))]
 
-		dllDestDir := dirs[filepath.Base(filepath.Dir(header.Name))]
-		CreateDirs(dllDestDir)
+		CreateDirs(destDir)
 
-		writer, err := os.Create(filepath.Join(dllDestDir, path.Base(header.Name)))
+		writer, err := os.Create(filepath.Join(destDir, path.Base(header.Name)))
 		if err != nil {
 			log.Fatal(err)
 		}

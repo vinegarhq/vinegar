@@ -6,65 +6,30 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
 
-func GetEditor() (string, error) {
-	editor, ok := os.LookupEnv("EDITOR")
-
-	if !ok {
-		return "", errors.New("no $EDITOR variable set")
-	}
-
-	if _, err := exec.LookPath(editor); err != nil {
-		return "", fmt.Errorf("invalid $EDITOR: %w", err)
-	}
-
-	return editor, nil
-}
-
+// 'Easy and convenient' way to edit Vinegar's configuration, which uses
+// a temporary configuration file for changes, and uses the $EDITOR variable.
 func EditConfig() {
 	var testConfig Configuration
 
-	editor, err := GetEditor()
+	temp, err := TempConfigFile()
 	if err != nil {
-		log.Fatal("unable to find editor: ", err)
+		log.Fatalf("failed to create temp config file: %s", err)
 	}
-
-	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	tempConfigFilePath, err := filepath.Abs(tempConfigFile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	configFile, err := os.ReadFile(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err = tempConfigFile.Write(configFile); err != nil {
-		log.Fatal(err)
-	}
-
-	tempConfigFile.Close()
-
-	editorCmd := exec.Command(editor, tempConfigFilePath)
-	editorCmd.Stdin = os.Stdin
-	editorCmd.Stderr = os.Stderr
-	editorCmd.Stdout = os.Stdout
 
 	for {
-		if err := editorCmd.Run(); err != nil {
+		if err := ExecEditor(temp); err != nil {
+			// Immediately remove the temp file after failure
+			// of editing the file.
+			os.Remove(temp)
+
 			log.Fatal(err)
 		}
 
-		if _, err := toml.DecodeFile(tempConfigFilePath, &testConfig); err != nil {
+		if _, err := toml.DecodeFile(temp, &testConfig); err != nil {
 			log.Println(err)
 			log.Println("Press enter to re-edit configuration file")
 			fmt.Scanln()
@@ -72,10 +37,55 @@ func EditConfig() {
 			continue
 		}
 
-		if err := os.Rename(tempConfigFilePath, ConfigFilePath); err != nil {
+		// After the temporary configuration file has no errors,
+		// move it to the global configuration file.
+		if err := os.Rename(temp, ConfigFilePath); err != nil {
 			log.Fatal(err)
 		}
 
 		break
 	}
+}
+
+// Launches $EDITOR with the given filepath. $EDITOR is used here
+// as a way to retrieve the system's editor, as it is a great standard
+// used by many applications (also POSIX specifies it).
+func ExecEditor(filePath string) error {
+	editor, ok := os.LookupEnv("EDITOR")
+
+	if !ok {
+		return errors.New("no $EDITOR variable set")
+	}
+
+	cmd := exec.Command(editor, filePath)
+
+	// Required, causes problems with the editor otherwise.
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+
+	return cmd.Run()
+}
+
+func TempConfigFile() (string, error) {
+	temp, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
+	if err != nil {
+		return "", err
+	}
+	defer temp.Close()
+
+	// Open the configuration file, for copying it's contents
+	// to the temporary configuration file.
+	config, err := os.ReadFile(ConfigFilePath)
+	if err != nil {
+		return "", err
+	}
+
+	// We use CreateTemp, and this is one of (if not) the only
+	// ways to copy the configuration file's contents.
+	if _, err = temp.Write(config); err != nil {
+		return "", err
+	}
+
+	return temp.Name(), nil
 }

@@ -41,14 +41,6 @@ func DxvkStrap() error {
 		return fmt.Errorf("failed to install dxvk: %w", err)
 	}
 
-	// Forces Roblox to use the D3D11 renderer, which is needed by
-	// DXVK to do its thing.
-	Config.Renderer = "D3D11"
-
-	// Tells wine to use the DXVK DLLs
-	Config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
-	os.Setenv("WINEDLLOVERRIDES", Config.Env["WINEDLLOVERRIDES"])
-
 	return nil
 }
 

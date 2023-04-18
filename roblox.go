@@ -22,7 +22,7 @@ type Roblox struct {
 }
 
 func (r *Roblox) AppSettings() {
-	log.Printf("Writing %s AppSettings file", filepath.Base(r.VersionDir))
+	log.Printf("Writing %s AppSettings file", Version)
 
 	appSettingsFile, err := os.Create(filepath.Join(r.VersionDir, "AppSettings.xml"))
 	if err != nil {
@@ -48,8 +48,6 @@ func (r *Roblox) SetupURL() {
 
 		r.URL += "channel/" + r.Channel + "/"
 	}
-
-	log.Println(r.URL)
 }
 
 func (r *Roblox) GetLatestVersion(versionFile string) {
@@ -141,10 +139,6 @@ func (r *Roblox) BrowserArgsParse(launchURI string) []string {
 	return args
 }
 
-func (r *Roblox) GetNewestLogFile() string {
-	return NewestFile(filepath.Join(AppDataDir, "Local", "Roblox", "logs", "*.log"))
-}
-
 func (r *Roblox) Execute(args []string) {
 	log.Println("Launching", r.File, r.Version)
 
@@ -158,16 +152,12 @@ func (r *Roblox) Execute(args []string) {
 	robloxCmd := exec.Command(args[0], args[1:]...)
 
 	logFile := LogFile(r.File)
-	log.Println("Wine log file:", logFile.Name())
 	robloxCmd.Stderr = logFile
 	robloxCmd.Stdout = logFile
-
-	err := robloxCmd.Run()
-
-	log.Println("Roblox log file:", r.GetNewestLogFile())
+	log.Println("Wine log file:", logFile.Name())
 
 	// exit code 41 is a false alarm.
-	if err != nil && err.Error() != "exit status 41" {
+	if err := robloxCmd.Run(); err != nil && err.Error() != "exit status 41" {
 		log.Fatalf("roblox exec err: %s", err)
 	}
 }

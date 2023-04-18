@@ -10,37 +10,53 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-// 'Easy and convenient' way to edit Vinegar's configuration, which uses
-// a temporary configuration file for changes, and uses the $EDITOR variable.
+// 'Easy and convenient' way to edit Vinegar's configuration, which
+// directly edits the _global configuration file_ for changes, and
+// decodes it, to check for errors and allows the user to re-edit the file.
 func EditConfig() {
 	var testConfig Configuration
 
-	temp, err := TempConfigFile()
-	if err != nil {
-		log.Fatalf("failed to create temp config file: %s", err)
+	if err := os.MkdirAll(Dirs.Config, 0o755); err != nil {
+		log.Fatal(err)
 	}
 
-	for {
-		if err := ExecEditor(temp); err != nil {
-			// Immediately remove the temp file after failure
-			// of editing the file.
-			os.Remove(temp)
+	// Open or create the configuration file
+	file, err := os.OpenFile(ConfigFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	info, err := file.Stat()
+	if err != nil {
+		file.Close()
+		log.Fatal(err)
+	}
+
+	template := "# See how to configure Vinegar on the documentation website:\n" +
+		"# https://vinegarhq.github.io/Configuration\n\n"
+
+	// Write the template to the file if it is empty.
+	if info.Size() < 1 {
+		if _, err := file.WriteString(template); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// Close the file as soon as we are done with it, as the editor
+	// will open it next.
+	file.Close()
+
+	for {
+		if err := ExecEditor(ConfigFilePath); err != nil {
 			log.Fatal(err)
 		}
 
-		if _, err := toml.DecodeFile(temp, &testConfig); err != nil {
+		if _, err := toml.DecodeFile(ConfigFilePath, &testConfig); err != nil {
 			log.Println(err)
 			log.Println("Press enter to re-edit configuration file")
 			fmt.Scanln()
 
 			continue
-		}
-
-		// After the temporary configuration file has no errors,
-		// move it to the global configuration file.
-		if err := os.Rename(temp, ConfigFilePath); err != nil {
-			log.Fatal(err)
 		}
 
 		break
@@ -65,27 +81,4 @@ func ExecEditor(filePath string) error {
 	cmd.Stdout = os.Stdout
 
 	return cmd.Run()
-}
-
-func TempConfigFile() (string, error) {
-	temp, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
-	if err != nil {
-		return "", err
-	}
-	defer temp.Close()
-
-	// Open the configuration file, for copying it's contents
-	// to the temporary configuration file.
-	config, err := os.ReadFile(ConfigFilePath)
-	if err != nil {
-		return "", err
-	}
-
-	// We use CreateTemp, and this is one of (if not) the only
-	// ways to copy the configuration file's contents.
-	if _, err = temp.Write(config); err != nil {
-		return "", err
-	}
-
-	return temp.Name(), nil
 }

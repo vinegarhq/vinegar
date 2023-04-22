@@ -6,7 +6,7 @@
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]
 
-A transparent launcher for Roblox Player and Roblox Studio.
+An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
 
 [workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml
 [version]: https://github.com/vinegarhq/vinegar/releases/latest
@@ -19,15 +19,19 @@ A transparent launcher for Roblox Player and Roblox Studio.
 [discord_img]: https://img.shields.io/discord/1069506340973707304
 
 # Features
-+ Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration (Includes a built in FPS unlocker)
++ Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration 
+  + Includes a built in FPS unlocker
+  + Optimizes Roblox's performance
+  + Disables a large portion of client telemetry
 + Automatic DXVK Installer and uninstaller
++ Automatic Wineprefix killer when Roblox has quit
 + Automatic Wineprefix version setter upon Wineprefix initialization
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix
 + Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
 + Custom Wine 'root'
 + Custom Roblox Player & Studio launcher
-+ Faster installation and execution of Roblox
++ Faster Multi-threaded installation and execution of Roblox
 + TOML Configuration file for setting environment variables and applying custom FFlags
 + Multiple instances of Roblox open simultaneously
 + Logging for both Vinegar and executions

@@ -46,8 +46,8 @@ func (c *Configuration) SetFFlagRenderer() {
 func (r *Roblox) ApplyFFlags(app string) {
 	fflagsDir := filepath.Join(r.VersionDir, app+"Settings")
 
-	if err := Mkdirs(fflagsDir); err != nil {
-		log.Fatalf("unable to create fflags directory: %s", err)
+	if err := os.MkdirAll(fflagsDir, 0o755); err != nil {
+		log.Fatal(err)
 	}
 
 	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))

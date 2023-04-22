@@ -1,8 +1,6 @@
 package main
 
 import (
-	"errors"
-	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,23 +11,18 @@ type Directories struct {
 	Config    string
 	Data      string
 	Downloads string
-	Log       string
-	Pfx       string
+	Logs      string
+	Prefix    string
 	Versions  string
 }
 
-var (
-	Dirs                  = defDirs()
-	DirMode   fs.FileMode = 0o755
-	DirROMode fs.FileMode = 0o664
-	FileMode  fs.FileMode = 0o644
-)
+var Dirs = GetDirectories()
 
 // Function to declare the Directories struct with the default
 // values. We prefer the XDG Variables over the default values, since in
 // sandboxed environments such as Flatpak, it will set those variables with
 // the appropriate sandboxed values.
-func defDirs() Directories {
+func GetDirectories() Directories {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal("failed to get home directory")
@@ -54,62 +47,15 @@ func defDirs() Directories {
 	}
 
 	dirs.Downloads = filepath.Join(dirs.Cache, "downloads")
-	dirs.Log = filepath.Join(dirs.Cache, "logs")
-	dirs.Pfx = filepath.Join(dirs.Data, "pfx")
+	dirs.Logs = filepath.Join(dirs.Cache, "logs")
+	dirs.Prefix = filepath.Join(dirs.Data, "prefix")
 	dirs.Versions = filepath.Join(dirs.Data, "versions")
-
-	if err := Mkdirs(dirs.Downloads, dirs.Log, dirs.Pfx, dirs.Versions); err != nil {
-		log.Fatal(err)
-	}
 
 	return dirs
 }
 
-func Mkdirs(dirs ...string) error {
-	for _, dir := range dirs {
-		// Don't do anything if the directory does exist, to just save some logging
-		if _, err := os.Stat(dir); !errors.Is(err, os.ErrNotExist) {
-			continue
-		}
-
-		log.Println("Creating directory:", dir)
-
-		if err := os.MkdirAll(dir, DirMode); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func SetPermDirs(perm fs.FileMode, dirs ...string) {
-	for _, dir := range dirs {
-		info, err := os.Stat(dir)
-
-		if errors.Is(err, os.ErrNotExist) {
-			continue
-		} else if err != nil {
-			log.Fatal(err)
-		}
-
-		// The given permissions will always return if it is a file
-		// ---------- or a directory d---------, we simply get the string
-		// and remove the first character, which says if it is a file
-		// or a directory, since all we care about is the read & write permissions.
-		if info.Mode().String()[1:] != perm.String()[1:] {
-			log.Println("Setting directory", info.Name(), "permissions to", perm)
-
-			if err := os.Chmod(dir, perm); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
-}
-
 func DeleteDirs(dir ...string) {
 	for _, d := range dir {
-		log.Println("Deleting dir:", d)
-
 		if err := os.RemoveAll(d); err != nil {
 			log.Fatal(err)
 		}

@@ -4,107 +4,146 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"sync"
+
+	"github.com/vinegarhq/vinegar/util"
+	"golang.org/x/sync/errgroup"
 )
 
 type Package struct {
-	Name       string
-	Signature  string
-	PackedSize int64
-	Size       int64
+	Name     string
+	URL      string
+	Checksum string
 }
 
-func (r *Roblox) GetPackages() {
-	log.Println("Constructing Package Manifest")
+type Packages []Package
 
-	rawManifest, err := GetURLBody(r.URL + r.Version + "-rbxPkgManifest.txt")
+func GetPackages(url string) Packages {
+	log.Printf("Fetching packages for %s", url)
+
+	rawManif, err := util.URLBody(url + "-rbxPkgManifest.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	manif := strings.Split(rawManifest, "\r\n")
-	index := 1
+	manif := strings.Split(string(rawManif), "\r\n")
 
 	if manif[0] != "v0" {
-		log.Fatal("invalid package manifest version", manif[0])
+		log.Fatal(err)
 	}
 
-	for {
-		if index+4 > len(manif) {
-			break
-		}
-
-		fileName := manif[index]
-		signature := manif[index+1]
-		packedSize, _ := strconv.ParseInt(manif[index+2], 10, 64)
-		size, _ := strconv.ParseInt(manif[index+3], 10, 64)
-		index += 4
-
-		if fileName == "RobloxPlayerLauncher.exe" {
+	var pkgs Packages
+	for i := 1; i < len(manif)-4; i += 4 {
+		if IsExcluded(manif[i]) {
 			continue
 		}
 
-		r.Packages = append(r.Packages, Package{
-			Name:       fileName,
-			Signature:  signature,
-			PackedSize: packedSize,
-			Size:       size,
+		pkgs = append(pkgs, Package{
+			manif[i],
+			url + "-" + manif[i],
+			manif[i+1],
 		})
 	}
+
+	return pkgs
 }
 
-func (r *Roblox) DownloadVerifyExtractAll() {
-	var waitGroup sync.WaitGroup
-
-	waitGroup.Add(len(r.Packages))
-
-	for _, pkg := range r.Packages {
-		go func(url string, ver string, pkg Package) {
-			packageURL := url + ver + "-" + pkg.Name
-			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-
-			if _, err := os.Stat(packagePath); err == nil {
-				log.Println("Found", packagePath)
-
-				return
-			}
-
-			if err := Download(packageURL, packagePath); err != nil {
-				log.Fatalf("failed to download package %s: %s", pkg.Name, err)
-			}
-
-			waitGroup.Done()
-		}(r.URL, r.Version, pkg)
-	}
-
-	waitGroup.Wait()
-
-	for _, pkg := range r.Packages {
-		if err := VerifyFileMD5(filepath.Join(Dirs.Downloads, pkg.Signature), pkg.Signature); err != nil {
-			log.Fatalf("unable to verify package %s; is your internet connection stable?: %s", pkg.Name, err)
+func IsExcluded(name string) bool {
+	for _, ex := range []string{
+		"RobloxPlayerLauncher.exe",
+		"WebView2RuntimeInstaller.zip",
+	} {
+		if name == ex {
+			return true
 		}
 	}
 
-	waitGroup.Add(len(r.Packages))
+	return false
+}
 
-	if err := Mkdirs(r.VersionDir); err != nil {
-		log.Fatalf("failed to create version directory: %s", err)
+func (ps Packages) Download() {
+	eg := new(errgroup.Group)
+
+	if err := os.MkdirAll(Dirs.Downloads, 0o755); err != nil {
+		log.Fatal(err)
 	}
 
-	for _, pkg := range r.Packages {
-		go func(pkg Package, dirs map[string]string) {
-			packagePath := filepath.Join(Dirs.Downloads, pkg.Signature)
-			packageDirDest := filepath.Join(r.VersionDir, dirs[pkg.Name])
+	log.Println("Downloading all packages")
+	for _, pkg := range ps {
+		dst := filepath.Join(Dirs.Downloads, pkg.Checksum)
+		pkg := pkg
 
-			if err := UnzipFolder(packagePath, packageDirDest); err != nil {
-				log.Fatalf("failed to extract package %s: %s", pkg.Name, err)
+		eg.Go(func() error {
+			if _, err := os.Stat(dst); err != nil {
+				if err := util.Download(pkg.URL, dst); err != nil {
+					return err
+				}
 			}
 
-			waitGroup.Done()
-		}(pkg, r.Directories)
+			log.Printf("Verifying %s package %s", pkg.Checksum, pkg.Name)
+
+			return util.Verify(dst, pkg.Checksum)
+		})
 	}
 
-	waitGroup.Wait()
+	if err := eg.Wait(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func (ps Packages) Extract(dstDir string, dsts map[string]string) {
+	eg := new(errgroup.Group)
+
+	log.Println("Extracting all packages")
+	if err := os.MkdirAll(dstDir, 0o755); err != nil {
+		log.Fatal(err)
+	}
+
+	for _, pkg := range ps {
+		src := filepath.Join(Dirs.Downloads, pkg.Checksum)
+
+		if _, ok := dsts[pkg.Name]; !ok {
+			log.Printf("Warning: unhandled package: %s", pkg.Name)
+			continue
+		}
+
+		dst := filepath.Join(dstDir, dsts[pkg.Name])
+		pkg := pkg
+
+		eg.Go(func() error {
+			err := util.Unzip(src, dst)
+			if err != nil {
+				return err
+			}
+
+			log.Printf("Extracted package %s", pkg.Name)
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		log.Fatal("extract: ", err)
+	}
+}
+
+func (ps Packages) Cleanup() {
+	log.Println("Removing unused packages")
+	pkgFiles, err := os.ReadDir(Dirs.Downloads)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+find:
+	for _, file := range pkgFiles {
+		for _, pkg := range ps {
+			if file.Name() == pkg.Checksum {
+				continue find
+			}
+		}
+
+		log.Printf("Removing %s", file.Name())
+		if err := os.Remove(filepath.Join(Dirs.Downloads, file.Name())); err != nil {
+			log.Fatal(err)
+		}
+	}
 }

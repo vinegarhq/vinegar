@@ -4,47 +4,41 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
+
+	"github.com/vinegarhq/vinegar/util"
 )
 
 // this file, created on DXVK installation and removed at DXVK uninstallation,
 // is an easy way to tell if DXVK is installed, necessary for automatic installation
 // and uninstallation of DXVK.
-var DxvkInstallMarker = filepath.Join(Dirs.Pfx, ".vinegar-dxvk")
+var DxvkInstallMarker = filepath.Join(Dirs.Prefix, ".vinegar-dxvk")
 
 const DXVKVER = "2.1"
 
-func DxvkStrap() error {
+func DxvkStrap() {
 	_, err := os.Stat(DxvkInstallMarker)
 
 	// Uninstall DXVK when DXVK is disabled, and if the file exists (no error)
-	if !Config.Dxvk && err == nil {
-		if err = DxvkUninstall(); err != nil {
-			return fmt.Errorf("failed to uninstall dxvk: %w", err)
+	if !Config.Dxvk {
+		if err == nil {
+			DxvkUninstall()
 		}
+
+		return
 	}
 
-	// ENOENT is all we care about, any other errors are then catched.
-	if !errors.Is(err, os.ErrNotExist) {
-		return err
-	}
-
-	log.Printf("Installing DXVK %s", DXVKVER)
-
-	if err := DxvkInstall(); err != nil {
-		return fmt.Errorf("failed to install dxvk: %w", err)
-	}
-
-	return nil
+	DxvkInstall()
 }
 
-func DxvkInstall() error {
+func DxvkInstall() {
+	log.Printf("Installing DXVK %s", DXVKVER)
+
 	tarName := "dxvk-" + DXVKVER + ".tar.gz"
 	tarPath := filepath.Join(Dirs.Cache, tarName)
 	url := "https://github.com/doitsujin/dxvk/releases/download/v" + DXVKVER + "/" + tarName
@@ -52,23 +46,21 @@ func DxvkInstall() error {
 	// Check if the DXVK tarball exists, if not; download it.
 	// Catch any other errors by stat(2)
 	if _, err := os.Stat(tarPath); errors.Is(err, os.ErrNotExist) {
-		if err := Download(url, tarPath); err != nil {
-			return err
+		if err := util.Download(url, tarPath); err != nil {
+			log.Fatal(err)
 		}
 	} else if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	if err := DxvkExtract(tarPath); err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	// After installation, create the marker file
 	if _, err := os.Create(DxvkInstallMarker); err != nil {
-		return fmt.Errorf("dxvk marker file: %w", err)
+		log.Fatal(err)
 	}
-
-	return nil
 }
 
 func DxvkExtract(source string) error {
@@ -107,11 +99,11 @@ func DxvkExtract(source string) error {
 		// Uses the DLL's parent directory {x64, x32) to determine where
 		// it's installation directory is set to. map["x64"] -> system32
 		destDir := map[string]string{
-			"x64": filepath.Join(Dirs.Pfx, "drive_c", "windows", "system32"),
-			"x32": filepath.Join(Dirs.Pfx, "drive_c", "windows", "syswow64"),
+			"x64": filepath.Join(Dirs.Prefix, "drive_c", "windows", "system32"),
+			"x32": filepath.Join(Dirs.Prefix, "drive_c", "windows", "syswow64"),
 		}[filepath.Base(filepath.Dir(header.Name))]
 
-		if err := Mkdirs(destDir); err != nil {
+		if err := os.MkdirAll(destDir, 0o755); err != nil {
 			return err
 		}
 
@@ -133,16 +125,16 @@ func DxvkExtract(source string) error {
 	return nil
 }
 
-func DxvkUninstall() error {
+func DxvkUninstall() {
 	log.Println("Uninstalling DXVK")
 
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
-			dllFile := filepath.Join(Dirs.Pfx, "drive_c", "windows", dir, dll+".dll")
+			dllFile := filepath.Join(Dirs.Prefix, "drive_c", "windows", dir, dll+".dll")
 			log.Println("Removing DLL:", dllFile)
 
 			if err := os.Remove(dllFile); err != nil {
-				return err
+				log.Fatal(err)
 			}
 		}
 	}
@@ -153,13 +145,11 @@ func DxvkUninstall() error {
 	// that were overrided by DXVK, were subsequently deleted,
 	// and has to be restored (updated)
 	if err := exec.Command("wineboot", "-u").Run(); err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	// Remove the file that indicates DXVK installation.
 	if err := os.Remove(DxvkInstallMarker); err != nil {
-		return fmt.Errorf("dxvk marker file: %w", err)
+		log.Fatal(err)
 	}
-
-	return nil
 }

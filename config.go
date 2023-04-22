@@ -78,7 +78,7 @@ func DefaultConfig() Configuration {
 		Renderer: "D3D11",
 		Version:  "win10",
 		Env: map[string]string{
-			"WINEPREFIX":       Dirs.Pfx,
+			"WINEPREFIX":       Dirs.Prefix,
 			"WINEARCH":         "win64",
 			"WINEDEBUG":        "-all",
 			"WINEESYNC":        "1",

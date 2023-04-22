@@ -8,21 +8,22 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/vinegarhq/vinegar/util"
 )
 
+const RBXCDNURL = "https://setup.rbxcdn.com/"
+
 type Roblox struct {
-	URL         string
-	File        string
-	Path        string
-	Channel     string
-	Version     string
-	VersionDir  string
-	Directories map[string]string
-	Packages    []Package
+	BaseURL      string
+	Version      string
+	VersionDir   string
+	PackageDests map[string]string
+	Packages
 }
 
 func (r *Roblox) AppSettings() {
-	log.Printf("Writing %s AppSettings file", Version)
+	log.Printf("Writing %s AppSettings file", r.Version)
 
 	appSettingsFile, err := os.Create(filepath.Join(r.VersionDir, "AppSettings.xml"))
 	if err != nil {
@@ -36,22 +37,23 @@ func (r *Roblox) AppSettings() {
 		"</Settings>\r\n"
 
 	if _, err = appSettingsFile.WriteString(appSettings); err != nil {
+		appSettingsFile.Close()
 		log.Fatal(err)
 	}
 }
 
-func (r *Roblox) SetupURL() {
-	r.URL = "https://setup.rbxcdn.com/"
+func (r *Roblox) SetupURL(channel string) {
+	r.BaseURL = RBXCDNURL
 
-	if r.Channel != "" && r.Channel != "live" {
-		log.Printf("Detected user channel: %s", r.Channel)
+	if channel != "" && channel != "live" && channel != "LIVE" {
+		log.Printf("Warning: Using user channel %s", channel)
 
-		r.URL += "channel/" + r.Channel + "/"
+		r.BaseURL += "channel/" + channel + "/"
 	}
 }
 
-func (r *Roblox) GetLatestVersion(versionFile string) {
-	version, err := GetURLBody(r.URL + versionFile)
+func (r *Roblox) GetVersion(versionFile string) {
+	version, err := util.URLBody(r.BaseURL + versionFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,15 +65,16 @@ func (r *Roblox) Install() {
 	PfxInit()
 	log.Println("Installing Roblox", r.Version)
 
-	r.GetPackages()
-	r.DownloadVerifyExtractAll()
+	r.Packages = GetPackages(r.BaseURL + r.Version)
+	r.Packages.Download()
+	r.Packages.Extract(r.VersionDir, r.PackageDests)
 	r.AppSettings()
 }
 
 func (r *Roblox) Setup() {
 	r.VersionDir = filepath.Join(Dirs.Versions, r.Version)
 
-	log.Println("Checking for Roblox", r.File, r.Version)
+	log.Println("Checking for Roblox", r.Version)
 
 	if _, err := os.Stat(r.VersionDir); errors.Is(err, os.ErrNotExist) {
 		r.Install()
@@ -79,24 +82,12 @@ func (r *Roblox) Setup() {
 		log.Fatal(err)
 	}
 
-	exePath, err := filepath.Abs(filepath.Join(r.VersionDir, r.File))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := DxvkStrap(); err != nil {
-		log.Println("warning: couldn't install dxvk: %w", err)
-	}
-
-	r.Path = exePath
+	DxvkStrap()
 }
 
-// THANKS PIZZABOXER
-//
-// Hack to parse Roblox.com's given arguments from RobloxPlayerLauncher to
-// RobloxPlayerBeta This function is mainly a hack to take place of what the
-// launcher would do, and would fork for RobloxPlayerBeta.
-func (r *Roblox) BrowserArgsParse(launchURI string) []string {
+// THANKS PIZZABOXER.
+func BrowserArgsParse(launchURI string) (string, []string) {
+	chnl := ""
 	args := make([]string, 0)
 	uris := map[string]string{
 		"launchmode":       "--",
@@ -121,7 +112,7 @@ func (r *Roblox) BrowserArgsParse(launchURI string) []string {
 		}
 
 		if parts[0] == "channel" {
-			r.Channel = strings.ToLower(parts[1])
+			chnl = strings.ToLower(parts[1])
 		}
 
 		if parts[0] == "placelauncherurl" {
@@ -136,13 +127,13 @@ func (r *Roblox) BrowserArgsParse(launchURI string) []string {
 		args = append(args, uris[parts[0]]+parts[1])
 	}
 
-	return args
+	return chnl, args
 }
 
-func (r *Roblox) Execute(args []string) {
-	log.Println("Launching", r.File, r.Version)
+func (r *Roblox) Execute(exe string, args []string) {
+	log.Println("Launching", exe, r.Version)
 
-	args = append([]string{"wine", r.Path}, args...)
+	args = append([]string{"wine", filepath.Join(r.VersionDir, exe)}, args...)
 
 	if Config.Launcher != "" {
 		args = append([]string{Config.Launcher}, args...)
@@ -151,97 +142,44 @@ func (r *Roblox) Execute(args []string) {
 	log.Println(args)
 	robloxCmd := exec.Command(args[0], args[1:]...)
 
-	logFile := LogFile(r.File)
+	logFile := LogFile(exe)
 	robloxCmd.Stderr = logFile
 	robloxCmd.Stdout = logFile
 	log.Println("Wine log file:", logFile.Name())
 
-	// exit code 41 is a false alarm.
-	if err := robloxCmd.Run(); err != nil && err.Error() != "exit status 41" {
-		log.Fatalf("roblox exec err: %s", err)
+	if err := robloxCmd.Run(); err != nil {
+		log.Fatal(err)
 	}
 }
 
 func RobloxPlayer(args ...string) {
 	var rblx Roblox
-
-	rblx.Directories = map[string]string{
-		"RobloxApp.zip":                 "",
-		"shaders.zip":                   "shaders",
-		"ssl.zip":                       "ssl",
-		"content-avatar.zip":            "content/avatar",
-		"content-configs.zip":           "content/configs",
-		"content-fonts.zip":             "content/fonts",
-		"content-sky.zip":               "content/sky",
-		"content-sounds.zip":            "content/sounds",
-		"content-textures2.zip":         "content/textures",
-		"content-models.zip":            "content/models",
-		"content-textures3.zip":         "PlatformContent/pc/textures",
-		"content-terrain.zip":           "PlatformContent/pc/terrain",
-		"content-platform-fonts.zip":    "PlatformContent/pc/fonts",
-		"extracontent-luapackages.zip":  "ExtraContent/LuaPackages",
-		"extracontent-translations.zip": "ExtraContent/translations",
-		"extracontent-models.zip":       "ExtraContent/models",
-		"extracontent-textures.zip":     "ExtraContent/textures",
-		"extracontent-places.zip":       "ExtraContent/places",
-	}
+	var channel string
 
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
-		args = rblx.BrowserArgsParse(args[0])
+		channel, args = BrowserArgsParse(args[0])
 	}
 
-	rblx.SetupURL()
-	rblx.File = "RobloxPlayerBeta.exe"
-	rblx.GetLatestVersion("version")
+	rblx.PackageDests = PlayerPackages()
+	rblx.SetupURL(channel)
+	rblx.GetVersion("version")
+
 	rblx.Setup()
 	rblx.ApplyFFlags("Client")
-	rblx.Execute(args)
+	rblx.Execute("RobloxPlayerBeta.exe", args)
 	PfxKill()
 }
 
 func RobloxStudio(args ...string) {
 	var rblx Roblox
 
-	rblx.Directories = map[string]string{
-		"ApplicationConfig.zip":        "ApplicationConfig",
-		"BuiltInPlugins.zip":           "BuiltInPlugins",
-		"BuiltInStandalonePlugins.zip": "BuiltInStandalonePlugins",
-		"Plugins.zip":                  "Plugins",
-		"Qml.zip":                      "Qml",
-		"StudioFonts.zip":              "StudioFonts",
-		// "WebView2.zip": "",
-		// "WebView2RuntimeInstaller.zip": "",
-		"RobloxStudio.zip":                "",
-		"Libraries.zip":                   "",
-		"LibrariesQt5.zip":                "",
-		"content-avatar.zip":              "content/avatar",
-		"content-configs.zip":             "content/configs",
-		"content-fonts.zip":               "content/fonts",
-		"content-models.zip":              "content/models",
-		"content-qt_translations.zip":     "content/qt_translations",
-		"content-sky.zip":                 "content/sky",
-		"content-sounds.zip":              "content/sounds",
-		"shaders.zip":                     "shaders",
-		"ssl.zip":                         "ssl",
-		"content-textures2.zip":           "content/textures",
-		"content-textures3.zip":           "PlatformContent/pc/textures",
-		"content-studio_svg_textures.zip": "content/studio_svg_textures",
-		"content-terrain.zip":             "PlatformContent/pc/terrain",
-		"content-platform-fonts.zip":      "PlatformContent/pc/fonts",
-		"content-api-docs.zip":            "content/api_docs",
-		"extracontent-scripts.zip":        "ExtraContent/scripts",
-		"extracontent-luapackages.zip":    "ExtraContent/LuaPackages",
-		"extracontent-translations.zip":   "ExtraContent/translations",
-		"extracontent-models.zip":         "ExtraContent/models",
-		"extracontent-textures.zip":       "ExtraContent/textures",
-		"redist.zip":                      "",
-	}
-
-	rblx.File = "RobloxStudioBeta.exe"
-	rblx.GetLatestVersion("versionQTStudio")
+	rblx.PackageDests = StudioPackages()
+	rblx.SetupURL("LIVE")
+	rblx.GetVersion("versionQTStudio")
 	Config.Dxvk = false // Dxvk doesnt work under studio
+
 	rblx.Setup()
 	rblx.ApplyFFlags("Studio")
-	rblx.Execute(args)
+	rblx.Execute("RobloxStudioBeta.exe", args)
 	PfxKill()
 }

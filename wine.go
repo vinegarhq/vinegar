@@ -16,12 +16,16 @@ func defAppDataDir() string {
 		log.Fatalf("could not get current user: %s", err)
 	}
 
-	return filepath.Join(Dirs.Pfx, "drive_c", "users", user.Username, "AppData")
+	return filepath.Join(Dirs.Prefix, "drive_c", "users", user.Username, "AppData")
 }
 
 func PfxInit() {
+	if err := os.MkdirAll(Dirs.Prefix, 0o755); err != nil {
+		log.Fatal(err)
+	}
+
 	// Initialize the wineprefix only when the 'windows' directory is happy.
-	if _, err := os.Stat(filepath.Join(Dirs.Pfx, "drive_c", "windows")); err == nil {
+	if _, err := os.Stat(filepath.Join(Dirs.Prefix, "drive_c", "windows")); err == nil {
 		return
 	}
 

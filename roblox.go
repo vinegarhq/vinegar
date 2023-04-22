@@ -176,7 +176,7 @@ func RobloxStudio(args ...string) {
 	rblx.PackageDests = StudioPackages()
 	rblx.SetupURL("LIVE")
 	rblx.GetVersion("versionQTStudio")
-	Config.Dxvk = false // Dxvk doesnt work under studio
+	Config.Dxvk = false // Dxvk doesnt work under Studio
 
 	rblx.Setup()
 	rblx.ApplyFFlags("Studio")

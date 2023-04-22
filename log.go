@@ -19,7 +19,7 @@ func LogToFile() {
 }
 
 func LogFile(prefix string) *os.File {
-	if err := os.MkdirAll(Dirs.Logs, 0o755); err != nil {
+	if err := os.MkdirAll(Dirs.Logs, DirMode); err != nil {
 		log.Fatal(err)
 	}
 
@@ -34,6 +34,7 @@ func LogFile(prefix string) *os.File {
 
 func ListLogFiles() {
 	logFiles, _ := filepath.Glob(filepath.Join(Dirs.Logs, "*.log"))
+
 	for _, file := range logFiles {
 		fmt.Println(file)
 	}

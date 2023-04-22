@@ -52,6 +52,9 @@ func LoadConfigFile() Configuration {
 	}
 
 	if config.WineRoot != "" {
+		log.Printf("Using Wine Root: %s", config.WineRoot)
+
+		// I'm not sure if this is how it should be done, but it works *shrug*
 		config.Env["PATH"] = filepath.Join(config.WineRoot, "bin") + ":" + os.Getenv("PATH")
 	}
 
@@ -80,16 +83,16 @@ func DefaultConfig() Configuration {
 		Env: map[string]string{
 			"WINEPREFIX":       Dirs.Prefix,
 			"WINEARCH":         "win64",
-			"WINEDEBUG":        "-all",
+			"WINEDEBUG":        "-all", // Peformance gain by removing most Wine logging
 			"WINEESYNC":        "1",
 			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;",
 
-			"DXVK_LOG_LEVEL":        "warn",
-			"DXVK_LOG_PATH":         "none",
+			"DXVK_LOG_LEVEL":        "info",
+			"DXVK_LOG_PATH":         "none", // DXVK will leave log files in CWD
 			"DXVK_STATE_CACHE_PATH": filepath.Join(Dirs.Cache, "dxvk"),
 
-			"MESA_GL_VERSION_OVERRIDE":    "4.4",
-			"__GL_THREADED_OPTIMIZATIONS": "1",
+			"MESA_GL_VERSION_OVERRIDE":    "4.4", // Fixes many 'white screen' issues
+			"__GL_THREADED_OPTIMIZATIONS": "1",   // NVIDIA
 		},
 	}
 }

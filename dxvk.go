@@ -63,6 +63,11 @@ func DxvkInstall() {
 	}
 }
 
+// Extracting the decompression to another function in the util library is
+// bigger than the final used function, and it will be unrealistic, since
+// all we want in the tarball is the specific set of DLLs, but not to extract
+// them to a specific directory, which requires scanning it, and copying the
+// required DLLs, which in return is bigger than the function below.
 func DxvkExtract(source string) error {
 	log.Println("Extracting DXVK")
 
@@ -103,7 +108,7 @@ func DxvkExtract(source string) error {
 			"x32": filepath.Join(Dirs.Prefix, "drive_c", "windows", "syswow64"),
 		}[filepath.Base(filepath.Dir(header.Name))]
 
-		if err := os.MkdirAll(destDir, 0o755); err != nil {
+		if err := os.MkdirAll(destDir, DirMode); err != nil {
 			return err
 		}
 

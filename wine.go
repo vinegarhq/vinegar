@@ -20,7 +20,7 @@ func defAppDataDir() string {
 }
 
 func PfxInit() {
-	if err := os.MkdirAll(Dirs.Prefix, 0o755); err != nil {
+	if err := os.MkdirAll(Dirs.Prefix, DirMode); err != nil {
 		log.Fatal(err)
 	}
 

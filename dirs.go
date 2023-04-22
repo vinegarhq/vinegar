@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
@@ -16,12 +17,14 @@ type Directories struct {
 	Versions  string
 }
 
-var Dirs = GetDirectories()
+var (
+	Dirs                = GetDirectories()
+	DirMode fs.FileMode = 0o755
+)
 
-// Function to declare the Directories struct with the default
-// values. We prefer the XDG Variables over the default values, since in
-// sandboxed environments such as Flatpak, it will set those variables with
-// the appropriate sandboxed values.
+// prefer the XDG Variables over the default values, since in sandboxed
+// environments such as Flatpak, it will set those variables with the
+// appropriate sandboxed values.
 func GetDirectories() Directories {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {

@@ -16,7 +16,7 @@ import (
 func EditConfig() {
 	var testConfig Configuration
 
-	if err := os.MkdirAll(Dirs.Config, 0o755); err != nil {
+	if err := os.MkdirAll(Dirs.Config, DirMode); err != nil {
 		log.Fatal(err)
 	}
 

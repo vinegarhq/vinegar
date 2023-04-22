@@ -19,9 +19,10 @@ type Package struct {
 type Packages []Package
 
 func GetPackages(url string) Packages {
-	log.Printf("Fetching packages for %s", url)
+	url += "-rbxPkgManifest.txt"
 
-	rawManif, err := util.URLBody(url + "-rbxPkgManifest.txt")
+	log.Printf("Fetching packages for %s", url)
+	rawManif, err := util.URLBody(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -61,10 +62,13 @@ func IsExcluded(name string) bool {
 	return false
 }
 
+// The usage of errgroup is always preferred over waitgroups, since Vinegar's
+// error handling is not return handled, and will always stop Vinegar's execution.
+
 func (ps Packages) Download() {
 	eg := new(errgroup.Group)
 
-	if err := os.MkdirAll(Dirs.Downloads, 0o755); err != nil {
+	if err := os.MkdirAll(Dirs.Downloads, DirMode); err != nil {
 		log.Fatal(err)
 	}
 
@@ -95,7 +99,7 @@ func (ps Packages) Extract(dstDir string, dsts map[string]string) {
 	eg := new(errgroup.Group)
 
 	log.Println("Extracting all packages")
-	if err := os.MkdirAll(dstDir, 0o755); err != nil {
+	if err := os.MkdirAll(dstDir, DirMode); err != nil {
 		log.Fatal(err)
 	}
 
@@ -128,6 +132,7 @@ func (ps Packages) Extract(dstDir string, dsts map[string]string) {
 
 func (ps Packages) Cleanup() {
 	log.Println("Removing unused packages")
+
 	pkgFiles, err := os.ReadDir(Dirs.Downloads)
 	if err != nil {
 		log.Fatal(err)

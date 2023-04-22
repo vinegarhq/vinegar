@@ -1,5 +1,6 @@
 package main
 
+/* github.com/pizzaboxer/bloxstrap/blob/main/Bloxstrap/Bootstrapper.cs */
 func PlayerPackages() map[string]string {
 	return map[string]string{
 		"RobloxApp.zip":                 "",
@@ -24,6 +25,7 @@ func PlayerPackages() map[string]string {
 	}
 }
 
+/* github.com/MaximumADHD/Roblox-Studio-Mod-Manager/blob/main/Config/KnownRoots.json */
 func StudioPackages() map[string]string {
 	return map[string]string{
 		"ApplicationConfig.zip":           "ApplicationConfig",

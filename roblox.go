@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/vinegarhq/vinegar/util"
 )
@@ -152,6 +153,14 @@ func (r *Roblox) Execute(exe string, args []string) {
 	}
 }
 
+func RobloxKillPfx() {
+	time.Sleep(1 * time.Second)
+
+	if !CommFound("Roblox") {
+		PfxKill()
+	}
+}
+
 func RobloxPlayer(args ...string) {
 	var rblx Roblox
 	var channel string
@@ -167,7 +176,7 @@ func RobloxPlayer(args ...string) {
 	rblx.Setup()
 	rblx.ApplyFFlags("Client")
 	rblx.Execute("RobloxPlayerBeta.exe", args)
-	PfxKill()
+	RobloxKillPfx()
 }
 
 func RobloxStudio(args ...string) {
@@ -181,5 +190,5 @@ func RobloxStudio(args ...string) {
 	rblx.Setup()
 	rblx.ApplyFFlags("Studio")
 	rblx.Execute("RobloxStudioBeta.exe", args)
-	PfxKill()
+	RobloxKillPfx()
 }

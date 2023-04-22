@@ -19,10 +19,9 @@ type Package struct {
 type Packages []Package
 
 func GetPackages(url string) Packages {
-	url += "-rbxPkgManifest.txt"
-
 	log.Printf("Fetching packages for %s", url)
-	rawManif, err := util.URLBody(url)
+
+	rawManif, err := util.URLBody(url + "-rbxPkgManifest.txt")
 	if err != nil {
 		log.Fatal(err)
 	}

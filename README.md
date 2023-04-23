@@ -10,13 +10,15 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 
 # DISCLAIMER
 
-Hi all, Roblox has made the terrible decision of intentionally disabling wine support with the new 64-bit client for the foreseeable future. If you encounter the message "Wine is not supported", please know that it comes as a result of their poor choices.
+Hi all, Roblox is currently blocking Wine users with the new 64-bit client for the foreseeable future. If you encounter the message "Wine is not supported", please know that it comes from Roblox's side. There's nothing we can do at the moment.
 
-Additionally, they have chosen to use some obscure Windows functions in the new build of Roblox Studio, breaking Wine support. Several communities are currently working to resolve this issue.
+Additionally, the new version of Studio is using obscure Windows functions which are currently unsupported by Wine. Several communities are currently working to resolve this issue.
 
-We apologize for any downtime, and we heavily condemn Roblox for their alienation of Linux users.
+We apologize for any downtime. These updates are detrimental to Wine users. For Player, the only thing that can be done at the moment is to express feedback to Roblox, as they have mentioned they are open towards Wine usage in the future.
 
-If anyone has effective suggestions in making either work again, please leave a message here.
+If you have any clue on how to continue the Roblox on Linux experience, please lend a hand!
+
+Thank you. 
 
 [workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml
 [version]: https://github.com/vinegarhq/vinegar/releases/latest

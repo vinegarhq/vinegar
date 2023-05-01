@@ -25,8 +25,8 @@ func DxvkStrap() {
 	_, err := os.Stat(DxvkInstallMarker)
 
 	// Uninstall DXVK when DXVK is disabled, and if the file exists (no error)
-	if !Config.Dxvk {
-		if err == nil {
+	if err == nil {
+		if !Config.Dxvk {
 			DxvkUninstall()
 		}
 

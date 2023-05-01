@@ -165,8 +165,18 @@ func RobloxPlayer(args ...string) {
 	var rblx Roblox
 	var channel string
 
+	log.Println(args)
+
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
 		channel, args = BrowserArgsParse(args[0])
+	}
+
+	if channel != Config.Channels.Player {
+		log.Printf("Warning: Roblox user set channel: %s", channel)
+	}
+
+	if Config.Channels.Force {
+		channel = Config.Channels.Player
 	}
 
 	rblx.PackageDests = PlayerPackages()
@@ -181,9 +191,14 @@ func RobloxPlayer(args ...string) {
 
 func RobloxStudio(args ...string) {
 	var rblx Roblox
+	var channel string
+
+	if Config.Channels.Force {
+		channel = Config.Channels.Studio
+	}
 
 	rblx.PackageDests = StudioPackages()
-	rblx.SetupURL("LIVE")
+	rblx.SetupURL(channel)
 	rblx.GetVersion("versionQTStudio")
 	Config.Dxvk = false // Dxvk doesnt work under Studio
 

@@ -9,6 +9,12 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
+type Channels struct {
+	Force  bool   `toml:"force"`
+	Player string `toml:"player"`
+	Studio string `toml:"studio"`
+}
+
 type Configuration struct {
 	// Tagging required for the pretty print to make sense
 	RCO      bool                   `toml:"rco"`
@@ -17,6 +23,7 @@ type Configuration struct {
 	Log      bool                   `toml:"log"`
 	Prime    bool                   `toml:"prime"`
 	Launcher string                 `toml:"launcher"`
+	Channels Channels               `toml:"channels"`
 	Renderer string                 `toml:"renderer"`
 	Version  string                 `toml:"version"`
 	WineRoot string                 `toml:"wineroot"`
@@ -80,6 +87,13 @@ func DefaultConfig() Configuration {
 		Prime:    false,
 		Renderer: "D3D11",
 		Version:  "win10",
+		// Dont use 'LIVE' as the default channel, as an empty
+		// channel, as roblox sets empty channels for live users.
+		Channels: Channels{
+			Force:  false,
+			Player: "",
+			Studio: "",
+		},
 		Env: map[string]string{
 			"WINEPREFIX":       Dirs.Prefix,
 			"WINEARCH":         "win64",

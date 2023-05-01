@@ -40,11 +40,12 @@ Thank you.
 + Automatic Wineprefix version setter upon Wineprefix initialization
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix
++ TOML Configuration file for setting environment variables (such as `DXVK_HUD`) and applying custom FFlags
 + Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
 + Custom Wine 'root'
 + Custom Roblox Player & Studio launcher
++ Select/Force Roblox release channels
 + Faster Multi-threaded installation and execution of Roblox
-+ TOML Configuration file for setting environment variables and applying custom FFlags
 + Multiple instances of Roblox open simultaneously
 + Logging for both Vinegar and executions
 

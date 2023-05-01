@@ -21,7 +21,7 @@ func EditConfig() {
 	}
 
 	// Open or create the configuration file
-	file, err := os.OpenFile(ConfigFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
+	file, err := os.OpenFile(ConfigFilePath, os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,6 +37,8 @@ func EditConfig() {
 
 	// Write the template to the file if it is empty.
 	if info.Size() < 1 {
+		log.Println("Writing Configuration template")
+
 		if _, err := file.WriteString(template); err != nil {
 			log.Fatal(err)
 		}

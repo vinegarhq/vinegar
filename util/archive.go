@@ -2,6 +2,7 @@ package util
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,6 +19,10 @@ func Unzip(source string, destDir string) error {
 	for _, file := range zip.File {
 		// Roblox's Zip Files have windows paths in them
 		filePath := filepath.Join(destDir, strings.ReplaceAll(file.Name, `\`, "/"))
+
+		if !strings.HasPrefix(filePath, filepath.Clean(destDir)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", filePath)
+		}
 
 		if file.FileInfo().IsDir() {
 			if err := os.MkdirAll(filePath, file.Mode()); err != nil {

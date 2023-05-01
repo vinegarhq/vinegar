@@ -29,7 +29,7 @@ func GetPackages(url string) Packages {
 	manif := strings.Split(string(rawManif), "\r\n")
 
 	if manif[0] != "v0" {
-		log.Fatal(err)
+		log.Fatalf("unhandled package manifest version: %s", manif)
 	}
 
 	var pkgs Packages

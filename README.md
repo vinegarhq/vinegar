@@ -6,10 +6,10 @@
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]
 
-=======
+
 ## WARNING: DUE TO BYFRON ANTI-CHEAT, ROBLOX PLAYER CANNOT BE RUN UNDER WINE AT ALL UNDER VINEGAR OR ANY OTHER WRAPPER AT THIS TIME
 
-A transparent wrapper for Roblox Player and Roblox Studio.
+An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
 
 [workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml
 [version]: https://github.com/vinegarhq/vinegar/releases/latest

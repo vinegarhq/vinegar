@@ -6,19 +6,10 @@
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]
 
-An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
+=======
+## WARNING: DUE TO BYFRON ANTI-CHEAT, ROBLOX PLAYER CANNOT BE RUN UNDER WINE AT ALL UNDER VINEGAR OR ANY OTHER WRAPPER AT THIS TIME
 
-# DISCLAIMER
-
-Hi all, Roblox is currently blocking Wine users with the new 64-bit client for the foreseeable future. If you encounter the message "Wine is not supported", please know that it comes from Roblox's side. There's nothing we can do at the moment.
-
-Additionally, the new version of Studio is using obscure Windows functions which are currently unsupported by Wine. Several communities are currently working to resolve this issue.
-
-We apologize for any downtime. These updates are detrimental to Wine users. For Player, the only thing that can be done at the moment is to express feedback to Roblox, as they have mentioned they are open towards Wine usage in the future.
-
-If you have any clue on how to continue the Roblox on Linux experience, please lend a hand!
-
-Thank you. 
+A transparent wrapper for Roblox Player and Roblox Studio.
 
 [workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml
 [version]: https://github.com/vinegarhq/vinegar/releases/latest

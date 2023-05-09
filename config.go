@@ -2,110 +2,72 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
 )
 
-type Configuration struct {
-	ApplyRCO    bool
-	AutoKillPfx bool
-	Dxvk        bool
-	Log         bool
-	Prime       bool
-	Launcher    string
-	Renderer    string
-	Version     string
-	WineRoot    string
-	Env         map[string]string
-	FFlags      map[string]interface{}
+type Channels struct {
+	Force  bool   `toml:"force"`
+	Player string `toml:"player"`
+	Studio string `toml:"studio"`
 }
 
+type Configuration struct {
+	// Tagging required for the pretty print to make sense
+	RCO      bool                   `toml:"rco"`
+	AutoKill bool                   `toml:"autokill"`
+	Dxvk     bool                   `toml:"dxvk"`
+	Log      bool                   `toml:"log"`
+	Prime    bool                   `toml:"prime"`
+	Launcher string                 `toml:"launcher"`
+	Channels Channels               `toml:"channels"`
+	Renderer string                 `toml:"renderer"`
+	Version  string                 `toml:"version"`
+	WineRoot string                 `toml:"wineroot"`
+	Env      map[string]string      `toml:"env"`
+	FFlags   map[string]interface{} `toml:"fflags"`
+}
+
+// Global Configuration for all of Vinegar's functions to be able to access.
+// The configuration will ALWAYS be loaded upon vinegar's launch.
 var (
 	ConfigFilePath = filepath.Join(Dirs.Config, "config.toml")
-	Config         = loadConfig()
+	Config         = LoadConfigFile()
 )
 
-func defConfig() Configuration {
-	return Configuration{
-		ApplyRCO:    true,
-		AutoKillPfx: true,
-		Dxvk:        true,
-		Log:         true,
-		Prime:       false,
-		Launcher:    "",
-		Renderer:    "D3D11",
-		Version:     "win10",
-		WineRoot:    "",
-		Env: map[string]string{
-			"WINEPREFIX": Dirs.Pfx,
-			"WINEARCH":   "win64",
-			// "WINEDEBUG":        "fixme-all,-wininet,-ntlm,-winediag,-kerberos",
-			"WINEDEBUG":        "-all",
-			"WINEESYNC":        "1",
-			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;",
-
-			"DXVK_LOG_LEVEL":        "warn",
-			"DXVK_LOG_PATH":         "none",
-			"DXVK_STATE_CACHE_PATH": filepath.Join(Dirs.Cache, "dxvk"),
-
-			"MESA_GL_VERSION_OVERRIDE":    "4.4",
-			"__GL_THREADED_OPTIMIZATIONS": "1",
-		},
-		// i'm not sure if make() is required here.
-		FFlags: make(map[string]interface{}),
-	}
-}
-
-func writeConfigTemplate() {
-	CheckDirs(DirMode, Dirs.Config)
-
-	log.Println("Creating configuration template")
-
-	file, err := os.Create(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	template := `
-# See how to configure Vinegar on the documentation website:
-# https://vinegarhq.github.io/Configuration
-`
-
-	// [1:] is to slice the first entry, as it is a newline.
-	// Mainly to read the template easily
-	if _, err = file.WriteString(template[1:]); err != nil {
-		log.Fatal(err)
-	}
-}
-
-func loadConfig() Configuration {
-	config := defConfig()
+func LoadConfigFile() Configuration {
+	config := DefaultConfig()
 
 	if _, err := os.Stat(ConfigFilePath); errors.Is(err, os.ErrNotExist) {
-		writeConfigTemplate()
-	} else if err != nil {
-		log.Fatal(err)
+		log.Println("Using default configuration")
+
+		return config
 	}
 
 	if _, err := toml.DecodeFile(ConfigFilePath, &config); err != nil {
-		log.Fatal("could not parse configuration file:", err)
+		log.Fatal(err)
 	}
 
 	if config.Prime {
-		config.Env["DRI_PRIME"] = "1"
+		config.Env["DRI_PRIME"] = "1" // nouveau
 		config.Env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
 		config.Env["__VK_LAYER_NV_optimus"] = "NVIDIA_only"
 		config.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
 	}
 
 	if config.WineRoot != "" {
-		log.Println("Using Wine Root")
-		os.Setenv("PATH", filepath.Join(config.WineRoot, "bin")+":"+os.Getenv("PATH"))
+		log.Printf("Using Wine Root: %s", config.WineRoot)
+
+		// I'm not sure if this is how it should be done, but it works *shrug*
+		config.Env["PATH"] = filepath.Join(config.WineRoot, "bin") + ":" + os.Getenv("PATH")
+	}
+
+	if config.Dxvk {
+		// Tells wine to use the DXVK DLLs
+		config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
 	}
 
 	for name, value := range config.Env {
@@ -115,66 +77,42 @@ func loadConfig() Configuration {
 	return config
 }
 
-func GetEditor() (string, error) {
-	editor, ok := os.LookupEnv("EDITOR")
+// Default or 'sane' configuration of Vinegar.
+func DefaultConfig() Configuration {
+	return Configuration{
+		RCO:      true,
+		AutoKill: true,
+		Dxvk:     true,
+		Log:      true,
+		Prime:    false,
+		Renderer: "D3D11",
+		Version:  "win10",
+		// Dont use 'LIVE' as the default channel, as an empty
+		// channel, as roblox sets empty channels for live users.
+		Channels: Channels{
+			Force:  false,
+			Player: "",
+			Studio: "",
+		},
+		Env: map[string]string{
+			"WINEPREFIX":       Dirs.Prefix,
+			"WINEARCH":         "win64",
+			"WINEDEBUG":        "-all", // Peformance gain by removing most Wine logging
+			"WINEESYNC":        "1",
+			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d;",
 
-	if !ok {
-		return "", errors.New("no $EDITOR variable set")
+			"DXVK_LOG_LEVEL":        "info",
+			"DXVK_LOG_PATH":         "none", // DXVK will leave log files in CWD
+			"DXVK_STATE_CACHE_PATH": filepath.Join(Dirs.Cache, "dxvk"),
+
+			"MESA_GL_VERSION_OVERRIDE":    "4.4", // Fixes many 'white screen' issues
+			"__GL_THREADED_OPTIMIZATIONS": "1",   // NVIDIA
+		},
 	}
-
-	if _, err := exec.LookPath(editor); err != nil {
-		return "", fmt.Errorf("invalid $EDITOR: %w", err)
-	}
-
-	return editor, nil
 }
 
-func EditConfig() {
-	var testConfig Configuration
-
-	editor, err := GetEditor()
-	if err != nil {
-		log.Fatal("unable to find editor: ", err)
-	}
-
-	tempConfigFile, err := os.CreateTemp(Dirs.Config, "testconfig.*.toml")
-	if err != nil {
+func (c *Configuration) Print() {
+	if err := toml.NewEncoder(os.Stdout).Encode(c); err != nil {
 		log.Fatal(err)
-	}
-
-	tempConfigFilePath, err := filepath.Abs(tempConfigFile.Name())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	configFile, err := os.ReadFile(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if _, err = tempConfigFile.Write(configFile); err != nil {
-		log.Fatal(err)
-	}
-
-	tempConfigFile.Close()
-
-	for {
-		if err := Exec(editor, false, tempConfigFilePath); err != nil {
-			log.Fatal(err)
-		}
-
-		if _, err := toml.DecodeFile(tempConfigFilePath, &testConfig); err != nil {
-			log.Println(err)
-			log.Println("Press enter to re-edit configuration file")
-			fmt.Scanln()
-
-			continue
-		}
-
-		if err := os.Rename(tempConfigFilePath, ConfigFilePath); err != nil {
-			log.Fatal(err)
-		}
-
-		break
 	}
 }

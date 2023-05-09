@@ -1,9 +1,8 @@
 [Desktop Entry]
 Type=Application
 Name=Roblox Studio (Vinegar)
+Icon=$FLATPAK.studio
 Exec=vinegar studio %u
 Terminal=false
-MimeType=x-scheme-handler/roblox-studio
+MimeType=application/x-roblox-rbxl;application/x-roblox-rbxlx;x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth
 Categories=Game
-Icon=$FLATPAK.studio
-MimeType=x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth;application/x-roblox-rbxlx

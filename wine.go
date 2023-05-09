@@ -1,67 +1,43 @@
 package main
 
 import (
-	"io/fs"
 	"log"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 )
 
-var programDirs = defProgramDirs()
+var AppDataDir = defAppDataDir()
 
-func defProgramDirs() []string {
+func defAppDataDir() string {
 	user, err := user.Current()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("could not get current user: %s", err)
 	}
 
-	dirs := []string{
-		filepath.Join("users", user.Username, "AppData/Local"),
-		"Program Files",
-		"Program Files (x86)",
-	}
-
-	for i, dir := range dirs {
-		dirs[i] = filepath.Join(Dirs.Pfx, "drive_c", dir)
-	}
-
-	return dirs
-}
-
-func EdgeDirSet(perm fs.FileMode, create bool) {
-	for _, programDir := range programDirs {
-		EdgeDir := filepath.Join(programDir, "Microsoft", "EdgeUpdate")
-
-		if create {
-			CheckDirs(DirMode, filepath.Dir(EdgeDir))
-			CheckDirs(perm, EdgeDir)
-
-			continue
-		}
-
-		if _, err := os.Stat(EdgeDir); err == nil {
-			if err := os.Chmod(EdgeDir, perm); err != nil {
-				log.Fatal(err)
-			}
-		}
-	}
+	return filepath.Join(Dirs.Prefix, "drive_c", "users", user.Username, "AppData")
 }
 
 func PfxInit() {
-	if _, err := os.Stat(filepath.Join(Dirs.Pfx, "drive_c", "windows")); err == nil {
+	if err := os.MkdirAll(Dirs.Prefix, DirMode); err != nil {
+		log.Fatal(err)
+	}
+
+	// Initialize the wineprefix only when the 'windows' directory is happy.
+	if _, err := os.Stat(filepath.Join(Dirs.Prefix, "drive_c", "windows")); err == nil {
 		return
 	}
 
 	log.Println("Initializing wineprefix")
 
-	if err := Exec("wineboot", false, "-i"); err != nil {
+	if err := exec.Command("wineboot", "-i").Run(); err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Setting wineprefix version to", Config.Version)
 
-	if err := Exec("winecfg", false, "/v", Config.Version); err != nil {
+	if err := exec.Command("winecfg", "/v", Config.Version).Run(); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -69,5 +45,5 @@ func PfxInit() {
 func PfxKill() {
 	log.Println("Killing wineprefix")
 
-	_ = Exec("wineserver", false, "-k")
+	_ = exec.Command("wineserver", "-k").Run()
 }

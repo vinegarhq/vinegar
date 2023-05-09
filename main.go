@@ -2,36 +2,26 @@ package main
 
 import (
 	"fmt"
-	"io"
-	"log"
 	"os"
+	"os/exec"
 )
 
-var Version string
+var Version = "no version set :("
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [config|delete|edit|exec|kill|logs|reset|version]")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [config|delete|edit|exec|kill|logs|version]")
 	fmt.Fprintln(os.Stderr, "       vinegar [player|studio] [args...]")
 
 	os.Exit(1)
 }
 
-func logToFile() {
-	if !Config.Log {
-		return
-	}
-
-	logOutput := io.MultiWriter(os.Stderr, LogFile("vinegar"))
-	log.SetOutput(logOutput)
-}
-
-func printConfig() {
-	file, err := os.ReadFile(ConfigFilePath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(string(file))
+func execWine(args ...string) {
+	PfxInit()
+	execCmd := exec.Command("wine", args...)
+	execCmd.Stdin = os.Stdin
+	execCmd.Stdout = os.Stdout
+	execCmd.Stderr = os.Stderr
+	fmt.Println(execCmd.Run())
 }
 
 func main() {
@@ -41,31 +31,22 @@ func main() {
 
 	switch os.Args[1] {
 	case "config":
-		printConfig()
+		Config.Print()
 	case "delete":
-		EdgeDirSet(DirMode, false)
 		DeleteDirs(Dirs.Data, Dirs.Cache)
 	case "edit":
 		EditConfig()
 	case "exec":
-		if err := Exec("wine", false, os.Args[2:]...); err != nil {
-			log.Fatal("exec err:", err)
-		}
+		execWine(os.Args[2:]...)
 	case "kill":
 		PfxKill()
 	case "logs":
-		fmt.Println(Dirs.Log)
-		LatestLogFile("exec-*")
-		LatestLogFile("vinegar-*")
+		ListLogFiles()
 	case "player":
-		logToFile()
-		RobloxLaunch("RobloxPlayerLauncher.exe", "Client", os.Args[2:]...)
-	case "reset":
-		EdgeDirSet(DirMode, false)
-		DeleteDirs(Dirs.Pfx, Dirs.Log)
-		CheckDirs(DirMode, Dirs.Pfx, Dirs.Log)
+		LogToFile()
+		RobloxPlayer(os.Args[2:]...)
 	case "studio":
-		logToFile()
+		LogToFile()
 		RobloxStudio(os.Args[2:]...)
 	case "version":
 		fmt.Println("Vinegar", Version)

@@ -1,234 +1,209 @@
 package main
 
 import (
-	"encoding/json"
+	"errors"
 	"log"
+	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
+	"time"
+
+	"github.com/vinegarhq/vinegar/util"
 )
 
-const RCOURL = "https://raw.githubusercontent.com/L8X/Roblox-Client-Optimizer/main/ClientAppSettings.json"
+const RBXCDNURL = "https://setup.rbxcdn.com/"
 
-// Loops over the global program directories, searching for Roblox's
-// version directory with a match of the given executable:
-//
-//	programdir/Roblox/Versions/version-XXXXXXXX/exe
-//
-// For Roblox Studio, this is simply at the root of the versions directory.
-// giveDir is used mainly to get the location of the executable's directory,
-// which can be used to place the FFlags file into.
-func RobloxFind(giveDir bool, exe string) string {
-	for _, programDir := range programDirs {
-		versionDir := filepath.Join(programDir, "Roblox/Versions")
-
-		// Studio
-		rootExe := filepath.Join(versionDir, exe)
-		if _, e := os.Stat(rootExe); e == nil {
-			if !giveDir {
-				return rootExe
-			}
-
-			return versionDir
-		}
-
-		// Glob for programdir/Roblox/Versions/version-*/exe
-		versionExe, _ := filepath.Glob(filepath.Join(versionDir, "*", exe))
-
-		if versionExe == nil {
-			continue
-		}
-
-		if !giveDir {
-			return versionExe[0]
-		}
-
-		return filepath.Dir(versionExe[0])
-	}
-
-	return ""
+type Roblox struct {
+	BaseURL      string
+	Version      string
+	VersionDir   string
+	PackageDests map[string]string
+	Packages
 }
 
-// Simply download the given URL and execute it, which is used
-// only for installing Roblox, as the default behavior of launching
-// Roblox's launchers is to always install it. Afterwards, we remove
-// the installer as we no longer need it.
-func RobloxInstall(url string) error {
-	log.Println("Installing Roblox")
+func (r *Roblox) AppSettings() {
+	log.Printf("Writing %s AppSettings file", r.Version)
 
-	installerPath := filepath.Join(Dirs.Cache, "rbxinstall.exe")
-
-	if err := Download(url, installerPath); err != nil {
-		return err
-	}
-
-	if err := Exec("wine", true, installerPath); err != nil {
-		return err
-	}
-
-	return os.RemoveAll(installerPath)
-}
-
-// Validate the given renderer, and apply it to the given map (fflags);
-// It will also disable every other renderer.
-func RobloxSetRenderer(renderer string, fflags map[string]interface{}) {
-	possibleRenderers := []string{
-		"OpenGL",
-		"D3D11FL10",
-		"D3D11",
-		"Vulkan",
-	}
-
-	validRenderer := false
-
-	for _, r := range possibleRenderers {
-		if renderer == r {
-			validRenderer = true
-		}
-	}
-
-	if !validRenderer {
-		log.Fatal("invalid renderer, must be one of:", possibleRenderers)
-	}
-
-	for _, r := range possibleRenderers {
-		isRenderer := r == renderer
-		fflags["FFlagDebugGraphicsPrefer"+r] = isRenderer
-		fflags["FFlagDebugGraphicsDisable"+r] = !isRenderer
-	}
-}
-
-// Create the fflags directory;which sebsequently contains the FFlags
-// file, which is also created immediately afterwards, and if the configuration
-// specifies to use RCO, the RCO FFlags file overrwrites the FFlags file
-// entirely. Checking if the file is empty is necessary to prevent JSON
-// Unmarshalling errors, for when RCO hasn't been applied.
-// Afterwards we set the user-set FFlags, which is then idented to look pretty
-// and then written to the fflags file.
-func RobloxApplyFFlags(app string, dir string) error {
-	fflags := make(map[string]interface{})
-
-	if app == "Studio" {
-		return nil
-	}
-
-	fflagsDir := filepath.Join(dir, app+"Settings")
-	CheckDirs(DirMode, fflagsDir)
-
-	fflagsFile, err := os.Create(filepath.Join(fflagsDir, app+"AppSettings.json"))
+	appSettingsFile, err := os.Create(filepath.Join(r.VersionDir, "AppSettings.xml"))
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
-	if Config.ApplyRCO {
-		log.Println("Applying RCO FFlags")
+	appSettings := "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
+		"<Settings>\r\n" +
+		"        <ContentFolder>content</ContentFolder>\r\n" +
+		"        <BaseUrl>http://www.roblox.com</BaseUrl>\r\n" +
+		"</Settings>\r\n"
 
-		if err := Download(RCOURL, fflagsFile.Name()); err != nil {
-			return err
-		}
+	if _, err = appSettingsFile.WriteString(appSettings); err != nil {
+		appSettingsFile.Close()
+		log.Fatal(err)
 	}
-
-	fflagsFileContents, err := os.ReadFile(fflagsFile.Name())
-	if err != nil {
-		return err
-	}
-
-	if string(fflagsFileContents) != "" {
-		if err := json.Unmarshal(fflagsFileContents, &fflags); err != nil {
-			return err
-		}
-	}
-
-	log.Println("Applying custom FFlags")
-
-	RobloxSetRenderer(Config.Renderer, fflags)
-
-	for fflag, value := range Config.FFlags {
-		fflags[fflag] = value
-	}
-
-	fflagsJSON, err := json.MarshalIndent(fflags, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	if _, err := fflagsFile.Write(fflagsJSON); err != nil {
-		return err
-	}
-
-	return nil
 }
 
-// Create or set Microsoft's Edge installation directories to be read only,
-// since Studio for whatever reason will install it, though it is not needed.
-// Check if the versions (with the exe) exists, if not install the Roblox Client,
-// which brings with it the Studio installer in the root of the versions directory.
-// However, if roblox has still not been found, exit immediately. Apply fflags,
-// Install DXVK when specified in configuration.
-// Additionally, launch wine with the specified 'launcher' in the configuration
-// when set, for example: <launcher> wine ../RobloxPlayerLauncher.exe
-// The arguments seen below is a result of Go's slice arrays and wanting to add
-// custom arguments, so i simply chose to append what we need to the array instead.
-// When enabled in configuration, we also wait for Roblox to exit (queried with the given string)
-//
-//	RobloxPlayerLauncher.exe -> RobloxPlayerLau
-//	RobloxPlayerLauncher.exe -> RobloxPlayer + Bet
-//
-// Linux's procfs 'comm' file has a maximum string length of 16 characters, which is
-// why using sliced [:15] is preffered to provided directly.
-func RobloxLaunch(exe string, app string, args ...string) {
-	EdgeDirSet(DirROMode, true)
+func (r *Roblox) SetupURL(channel string) {
+	r.BaseURL = RBXCDNURL
 
-	if RobloxFind(false, exe) == "" {
-		if err := RobloxInstall("https://www.roblox.com/download/client"); err != nil {
-			log.Fatal("failed to install roblox: ", err)
-		}
+	if channel != "" && channel != "live" && channel != "LIVE" {
+		log.Printf("Warning: Using user channel %s", channel)
+
+		r.BaseURL += "channel/" + channel + "/"
+	}
+}
+
+func (r *Roblox) GetVersion(versionFile string) {
+	version, err := util.URLBody(r.BaseURL + versionFile)
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	robloxRoot := RobloxFind(true, exe)
+	r.Version = version
+}
 
-	if robloxRoot == "" {
-		log.Fatal("failed to find roblox")
+func (r *Roblox) Install() {
+	PfxInit()
+	log.Println("Installing Roblox", r.Version)
+
+	r.Packages = GetPackages(r.BaseURL + r.Version)
+	r.Packages.Download()
+	r.Packages.Extract(r.VersionDir, r.PackageDests)
+	r.AppSettings()
+}
+
+func (r *Roblox) Setup() {
+	r.VersionDir = filepath.Join(Dirs.Versions, r.Version)
+
+	log.Println("Checking for Roblox", r.Version)
+
+	if _, err := os.Stat(r.VersionDir); errors.Is(err, os.ErrNotExist) {
+		r.Install()
+	} else if err != nil {
+		log.Fatal(err)
 	}
 
 	DxvkStrap()
+}
 
-	if err := RobloxApplyFFlags(app, robloxRoot); err != nil {
-		log.Fatal("failed to apply fflags: ", err)
+// THANKS PIZZABOXER.
+func BrowserArgsParse(launchURI string) (string, []string) {
+	chnl := ""
+	args := make([]string, 0)
+	uris := map[string]string{
+		"launchmode":       "--",
+		"gameinfo":         "-t ",
+		"placelauncherurl": "-j ",
+		"launchtime":       "--launchtime=",
+		"browsertrackerid": "-b ",
+		"robloxLocale":     "--rloc ",
+		"gameLocale":       "--gloc ",
+		"channel":          "-channel ",
 	}
 
-	log.Println("Launching", exe)
-	args = append([]string{filepath.Join(robloxRoot, exe)}, args...)
+	for _, uri := range strings.Split(launchURI, "+") {
+		parts := strings.Split(uri, ":")
 
-	prog := "wine"
+		if uris[parts[0]] == "" || parts[1] == "" {
+			continue
+		}
+
+		if parts[0] == "launchmode" && parts[1] == "play" {
+			parts[1] = "app"
+		}
+
+		if parts[0] == "channel" {
+			chnl = strings.ToLower(parts[1])
+		}
+
+		if parts[0] == "placelauncherurl" {
+			urlDecoded, err := url.QueryUnescape(parts[1])
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			parts[1] = urlDecoded
+		}
+
+		args = append(args, uris[parts[0]]+parts[1])
+	}
+
+	return chnl, args
+}
+
+func (r *Roblox) Execute(exe string, args []string) {
+	log.Println("Launching", exe, r.Version)
+
+	args = append([]string{"wine", filepath.Join(r.VersionDir, exe)}, args...)
 
 	if Config.Launcher != "" {
-		args = append([]string{"wine"}, args...)
-		prog = Config.Launcher
+		args = append([]string{Config.Launcher}, args...)
 	}
 
-	if err := Exec(prog, true, args...); err != nil {
-		log.Fatal("roblox exec err: ", err)
-	}
+	log.Println(args)
+	robloxCmd := exec.Command(args[0], args[1:]...)
 
-	if Config.AutoKillPfx {
-		CommLoop(exe[:15])
-		CommLoop(exe[:12] + "Bet")
+	logFile := LogFile(exe)
+	robloxCmd.Stderr = logFile
+	robloxCmd.Stdout = logFile
+	log.Println("Wine log file:", logFile.Name())
+
+	if err := robloxCmd.Run(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func RobloxKillPfx() {
+	time.Sleep(1 * time.Second)
+
+	if !CommFound("Roblox") {
 		PfxKill()
 	}
 }
 
-func RobloxStudio(args ...string) {
-	exe := "RobloxStudioLauncherBeta.exe"
+func RobloxPlayer(args ...string) {
+	var rblx Roblox
+	var channel string
 
-	// Protocol URI, Launcher cannot be used
-	if len(args) < 1 {
-		args = []string{"-ide"}
-	} else if len(args[0]) > 12 && args[0][:13] == "roblox-studio" {
-		exe = "RobloxStudioBeta.exe"
+	log.Println(args)
+
+	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
+		channel, args = BrowserArgsParse(args[0])
 	}
 
-	// DXVK does not work under studio.
-	Config.Dxvk = false
+	if channel != Config.Channels.Player {
+		log.Printf("Warning: Roblox user set channel: %s", channel)
+	}
 
-	RobloxLaunch(exe, "Studio", args...)
+	if Config.Channels.Force {
+		channel = Config.Channels.Player
+	}
+
+	rblx.PackageDests = PlayerPackages()
+	rblx.SetupURL(channel)
+	rblx.GetVersion("version")
+
+	rblx.Setup()
+	rblx.ApplyFFlags("Client")
+	rblx.Execute("RobloxPlayerBeta.exe", args)
+	RobloxKillPfx()
+}
+
+func RobloxStudio(args ...string) {
+	var rblx Roblox
+	var channel string
+
+	if Config.Channels.Force {
+		channel = Config.Channels.Studio
+	}
+
+	rblx.PackageDests = StudioPackages()
+	rblx.SetupURL(channel)
+	rblx.GetVersion("versionQTStudio")
+	Config.Dxvk = false // Dxvk doesnt work under Studio
+
+	rblx.Setup()
+	rblx.ApplyFFlags("Studio")
+	rblx.Execute("RobloxStudioBeta.exe", args)
+	RobloxKillPfx()
 }

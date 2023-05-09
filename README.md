@@ -6,6 +6,8 @@
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]
 
+## WARNING: DUE TO BYFRON ANTI-CHEAT, ROBLOX PLAYER CANNOT BE RUN UNDER WINE AT ALL UNDER VINEGAR OR ANY OTHER WRAPPER AT THIS TIME
+
 A transparent wrapper for Roblox Player and Roblox Studio.
 
 [workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml

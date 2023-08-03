@@ -19,7 +19,7 @@ import (
 // and uninstallation of DXVK.
 var DxvkInstallMarker = filepath.Join(Dirs.Prefix, ".vinegar-dxvk")
 
-const DXVKVER = "2.1"
+const DXVKVER = "2.2"
 
 func DxvkStrap() {
 	_, err := os.Stat(DxvkInstallMarker)

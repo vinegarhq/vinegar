@@ -186,9 +186,9 @@ func RobloxPlayer(args ...string) {
 	rblx.Setup()
 
 	DxvkStrap()
-	if config.Dxvk {
+	if Config.Dxvk {
 		// Tells wine to use the DXVK DLLs
-		config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
+		Config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
 	}
 
 	rblx.ApplyFFlags("Client")

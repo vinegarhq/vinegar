@@ -65,11 +65,6 @@ func LoadConfigFile() Configuration {
 		config.Env["PATH"] = filepath.Join(config.WineRoot, "bin") + ":" + os.Getenv("PATH")
 	}
 
-	if config.Dxvk {
-		// Tells wine to use the DXVK DLLs
-		config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
-	}
-
 	for name, value := range config.Env {
 		os.Setenv(name, value)
 	}

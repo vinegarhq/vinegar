@@ -184,6 +184,13 @@ func RobloxPlayer(args ...string) {
 	rblx.GetVersion("version")
 
 	rblx.Setup()
+
+	DxvkStrap()
+	if config.Dxvk {
+		// Tells wine to use the DXVK DLLs
+		config.Env["WINEDLLOVERRIDES"] += "d3d10core=n;d3d11=n;d3d9=n;dxgi=n"
+	}
+
 	rblx.ApplyFFlags("Client")
 	rblx.Execute("RobloxPlayerBeta.exe", args)
 	RobloxKillPfx()
@@ -200,7 +207,6 @@ func RobloxStudio(args ...string) {
 	rblx.PackageDests = StudioPackages()
 	rblx.SetupURL(channel)
 	rblx.GetVersion("versionQTStudio")
-	Config.Dxvk = false // Dxvk doesnt work under Studio
 
 	rblx.Setup()
 	rblx.ApplyFFlags("Studio")

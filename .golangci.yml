@@ -18,6 +18,7 @@ linters:
     - cyclop
     - noctx
     - godot
+    - depguard
 issues:
   exclude-rules:
   # https://github.com/polyfloyd/go-errorlint/issues/4

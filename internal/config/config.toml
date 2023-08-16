@@ -1,0 +1,19 @@
+[env]
+WINEARCH = "win64"
+WINEDEBUG = "-all"
+WINEESYNC = "1"
+WINEDLLOVERRIDES = "dxdiagn=d;winemenubuilder.exe=d"
+
+DXVK_LOG_LEVEL = "info"
+DXVK_LOG_PATH = "none"
+
+MESA_GL_VERSION_OVERRIDE = "4.4"
+__GL_THREADED_OPTIMIZATIONS = "1"
+
+[player]
+channel = "LIVE"
+renderer = "D3D11"
+dxvk = true
+
+[player.env]
+DXVK_HUD = "1"

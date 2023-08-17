@@ -1,8 +1,8 @@
 package bootstrapper
 
 import (
-	"strings"
 	"net/url"
+	"strings"
 )
 
 var PlayerURIKeyFlags = map[string]string{

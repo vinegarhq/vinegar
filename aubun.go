@@ -3,15 +3,15 @@ package main
 import (
 	"log"
 	"os"
-	"strings"
 	"path/filepath"
+	"strings"
 
 	"github.com/vinegarhq/aubun/bootstrapper"
-	"github.com/vinegarhq/aubun/wine"
-	"github.com/vinegarhq/aubun/wine/dxvk"
 	"github.com/vinegarhq/aubun/internal/config"
 	"github.com/vinegarhq/aubun/internal/config/state"
 	"github.com/vinegarhq/aubun/internal/dirs"
+	"github.com/vinegarhq/aubun/wine"
+	"github.com/vinegarhq/aubun/wine/dxvk"
 )
 
 func Setup(ver bootstrapper.Version, dir string) {
@@ -78,7 +78,7 @@ func Binary(pfx *wine.Prefix, bin bootstrapper.BinaryType, cfg config.Applicatio
 			if err := dxvk.Fetch(dirs.Cache); err != nil {
 				log.Fatal(err)
 			}
-		
+
 			if err := dxvk.Extract(dirs.Cache, pfx); err != nil {
 				log.Fatal(err)
 			}
@@ -134,8 +134,8 @@ func main() {
 		args := os.Args[2:]
 		channel := cfg.Player.Channel
 
-		if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
-			channel, args = bootstrapper.ParsePlayerURI(args[0])
+		if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1") {
+			args, channel = bootstrapper.ParsePlayerURI(args[0])
 		}
 
 		if channel != cfg.Player.Channel {
@@ -148,6 +148,6 @@ func main() {
 	case "exec":
 		if err := pfx.Exec(os.Args[2:]...); err != nil {
 			log.Fatal(err)
-		}	
+		}
 	}
 }

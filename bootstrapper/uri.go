@@ -6,42 +6,40 @@ import (
 )
 
 var PlayerURIKeyFlags = map[string]string{
-	"launchmode":       "--",
-	"gameinfo":         "-t ",
-	"placelauncherurl": "-j ",
-	"launchtime":       "--launchtime=",
-	"browsertrackerid": "-b ",
-	"robloxLocale":     "--rloc ",
-	"gameLocale":       "--gloc ",
-	"channel":          "-channel ",
+	"gameinfo":         "--authenticationTicket",
+	"placelauncherurl": "--joinScriptUrl",
+	"launchtime":       "--launchtime",
+	"browsertrackerid": "--browserTrackerId",
+	"robloxLocale":     "--rloc",
+	"gameLocale":       "--gloc",
+	"channel":          "-channel", // undocumented
 }
 
-func ParsePlayerURI(launchURI string) (string, []string) {
-	channel := ""
-	args := make([]string, 0)
+func ParsePlayerURI(launchURI string) (args []string, channel string) {
+	// Roblox Client forces usage of the desktop app
+	args = append(args, "--app")
 
-	for _, uri := range strings.Split(launchURI, "+") {
-		parts := strings.Split(uri, ":")
+	for _, param := range strings.Split(launchURI, "+") {
+		pair := strings.Split(param, ":")
+		key, val := pair[0], pair[1]
 
-		if len(parts) != 2 || URIMap[parts[0]] == "" {
+		flag, ok := PlayerURIKeyFlags[key]
+		if !ok || val == "" {
 			continue
 		}
 
-		if parts[0] == "launchmode" && parts[1] == "play" {
-			parts[1] = "app"
+		if key == "channel" {
+			channel = val
 		}
 
-		if parts[0] == "channel" {
-			channel = strings.ToLower(parts[1])
+		if key == "placelauncherurl" {
+			urlDecoded, _ := url.QueryUnescape(val)
+			val = urlDecoded
 		}
 
-		if parts[0] == "placelauncherurl" {
-			urlDecoded, _ := url.QueryUnescape(parts[1])
-			parts[1] = urlDecoded
-		}
-
-		args = append(args, URIMap[parts[0]]+parts[1])
+		// arguments are given as --flag value
+		args = append(args, flag, val)
 	}
 
-	return channel, args
+	return
 }

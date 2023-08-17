@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"encoding/json"
 	"path/filepath"
 	"strings"
 	"time"
@@ -43,6 +44,14 @@ func (r *Roblox) AppSettings() {
 	}
 }
 
+type ClientVersion struct {
+	Version                 string `json:"version"`
+	ClientVersionUpload     string `json:"clientVersionUpload"`
+	BootstrapperVersion     string `json:"bootstrapperVersion"`
+	NextClientVersionUpload string `json:"nextClientVersionUpload"`
+	NextClientVersion       string `json:"nextClientVersion"`
+}
+
 func (r *Roblox) SetupURL(channel string) {
 	r.BaseURL = RBXCDNURL
 
@@ -54,12 +63,18 @@ func (r *Roblox) SetupURL(channel string) {
 }
 
 func (r *Roblox) GetVersion(versionFile string) {
-	version, err := util.URLBody(r.BaseURL + versionFile)
+	var cv ClientVersion
+
+	version, err := util.URLBody("https://clientsettings.roblox.com/v2/client-version/WindowsPlayer/channel/zintegration")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r.Version = version
+	if err := json.Unmarshal([]byte(version), &cv); err != nil {
+		log.Fatal(err)
+	}
+
+	r.Version = cv.ClientVersionUpload
 }
 
 func (r *Roblox) Install() {

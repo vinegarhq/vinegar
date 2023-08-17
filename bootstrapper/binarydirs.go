@@ -73,18 +73,3 @@ var StudioDirectories = PackageDirectories{
 	"RobloxStudio.zip":                "",
 	"WebView2RuntimeInstaller.zip":    "",
 }
-
-var ExcludedPackages = []string{
-	"RobloxPlayerLauncher.exe",
-	"WebView2RuntimeInstaller.zip",
-}
-
-func PackageExcluded(name string) bool {
-	for _, ex := range ExcludedPackages {
-		if name == ex {
-			return true
-		}
-	}
-
-	return false
-}

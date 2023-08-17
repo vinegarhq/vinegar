@@ -11,6 +11,10 @@ import (
 var (
 	ErrInvalidManifest          = errors.New("invalid package manifest given")
 	ErrUnhandledManifestVersion = errors.New("unhandled package manifest version")
+	ExcludedPackages            = []string{
+		"RobloxPlayerLauncher.exe",
+		"WebView2RuntimeInstaller.zip",
+	}
 )
 
 type Package struct {
@@ -64,4 +68,14 @@ func (pkgs Packages) Perform(fn func(Package) error) error {
 	}
 
 	return eg.Wait()
+}
+
+func PackageExcluded(name string) bool {
+	for _, ex := range ExcludedPackages {
+		if name == ex {
+			return true
+		}
+	}
+
+	return false
 }

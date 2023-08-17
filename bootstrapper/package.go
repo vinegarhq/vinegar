@@ -27,7 +27,7 @@ func ParsePackages(manif []string) (Packages, error) {
 			continue
 		}
 
-		size, err := strconv.ParseInt(manif[i+2], 10, 64)
+		size, err := strconv.ParseInt(manif[i+3], 10, 64)
 		if err != nil {
 			return pkgs, err
 		}

@@ -56,16 +56,12 @@ func Binary(pfx *wine.Prefix, bin bootstrapper.BinaryType, cfg config.Applicatio
 	}
 	verDir := filepath.Join(dirs.Versions, ver.GUID)
 
-	storedVersion, err := state.Version(bin)
+	_, err = os.Stat(filepath.Join(verDir, "AppSettings.xml"))
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	if storedVersion != ver.GUID {
 		log.Printf("Updating %s", bin.String())
 		Setup(ver, verDir)
 	} else {
-		log.Printf("%s is up to date (%s)", bin.String(), storedVersion)
+		log.Printf("%s is up to date (%s)", bin.String(), ver.GUID)
 	}
 
 	dxvkInstalled, err := state.DxvkInstalled()

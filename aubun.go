@@ -135,7 +135,7 @@ func main() {
 		channel := cfg.Player.Channel
 
 		if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1+launchmode:") {
-			channel, args = bootstrapper.ParseURI(args[0])
+			channel, args = bootstrapper.ParsePlayerURI(args[0])
 		}
 
 		if channel != cfg.Player.Channel {

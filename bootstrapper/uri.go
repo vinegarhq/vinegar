@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-var URIMap = map[string]string{
+var PlayerURIKeyFlags = map[string]string{
 	"launchmode":       "--",
 	"gameinfo":         "-t ",
 	"placelauncherurl": "-j ",
@@ -16,7 +16,7 @@ var URIMap = map[string]string{
 	"channel":          "-channel ",
 }
 
-func ParseURI(launchURI string) (string, []string) {
+func ParsePlayerURI(launchURI string) (string, []string) {
 	channel := ""
 	args := make([]string, 0)
 

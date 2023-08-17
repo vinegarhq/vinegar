@@ -32,7 +32,7 @@ func Setup(ver bootstrapper.Version, dir string) {
 		log.Fatal(err)
 	}
 
-	if err := manifest.Extract(dir, bootstrapper.BinaryDirectories(ver.Type)); err != nil {
+	if err := manifest.Extract(dir, ver.Type.Directories()); err != nil {
 		log.Fatal(err)
 	}
 

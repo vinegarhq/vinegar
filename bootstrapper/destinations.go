@@ -2,6 +2,17 @@ package bootstrapper
 
 type PackageDirectories map[string]string
 
+func (bt BinaryType) Directories() PackageDirectories {
+	switch bt {
+	case Player:
+		return PlayerDirectories
+	case Studio:
+		return StudioDirectories
+	}
+
+	return nil
+}
+
 /* github.com/pizzaboxer/bloxstrap/blob/main/Bloxstrap/Bootstrapper.cs */
 var PlayerDirectories = PackageDirectories{
 	"RobloxApp.zip":                 "",
@@ -76,15 +87,4 @@ func IsExcluded(name string) bool {
 	}
 
 	return false
-}
-
-func BinaryDirectories(bt BinaryType) PackageDirectories {
-	switch bt {
-	case Player:
-		return PlayerDirectories
-	case Studio:
-		return StudioDirectories
-	}
-
-	return nil
 }

@@ -23,14 +23,14 @@ type Manifest struct {
 func FetchManifest(ver Version, srcDir string) (Manifest, error) {
 	log.Printf("Fetching latest manifest for %s", ver.GUID)
 
-	manifest, err := util.Body(ver.URL + ManifestSuffix)
+	manifest, err := util.Body(ver.DeployURL + ManifestSuffix)
 	if err != nil {
 		return Manifest{}, fmt.Errorf("failed to fetch manifest: %w, is your channel valid?", err)
 	}
 
 	pkgs, err := ParsePackages(strings.Split(manifest, "\r\n"))
 	if err != nil {
-		return Manifest{}, fmt.Errorf("failed to parse manifest: %w", err) 
+		return Manifest{}, fmt.Errorf("failed to parse manifest: %w", err)
 	}
 
 	return Manifest{
@@ -47,7 +47,7 @@ func (m Manifest) Download() error {
 		dest := filepath.Join(m.SourceDir, pkg.Checksum)
 
 		if _, err := os.Stat(dest); errors.Is(err, fs.ErrNotExist) {
-			url := m.Version.URL + "-" + pkg.Name
+			url := m.Version.DeployURL + "-" + pkg.Name
 
 			if err := util.Download(url, dest); err != nil {
 				return fmt.Errorf("failed to download package %s: %w", pkg.Name, err)

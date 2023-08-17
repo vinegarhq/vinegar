@@ -1,17 +1,20 @@
 package bootstrapper
 
 import (
-	"strings"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/vinegarhq/aubun/util"
 )
 
-const VersionCheckURL = "https://clientsettingscdn.roblox.com/v2/client-version"
+const (
+	DefaultChannel  = "LIVE"
+	VersionCheckURL = "https://clientsettingscdn.roblox.com/v2/client-version"
+)
 
 var (
 	ErrNoCDNFound = errors.New("failed to find an accessible roblox deploy mirror")
@@ -28,26 +31,26 @@ type ClientVersion struct {
 	Version                 string `json:"version"`
 	ClientVersionUpload     string `json:"clientVersionUpload"`
 	BootstrapperVersion     string `json:"bootstrapperVersion"`
-	NextClientVersionUpload	string `json:"nextClientVersionUpload"`
-	NextClientVersion	    string `json:"nextClientVersion"`
+	NextClientVersionUpload string `json:"nextClientVersionUpload"`
+	NextClientVersion       string `json:"nextClientVersion"`
 }
 
 type Version struct {
-	Type BinaryType
-	URL  string
-	GUID string
+	Type      BinaryType
+	DeployURL string
+	GUID      string
 }
 
 func FindCDN() (string, error) {
-	log.Println("Finding an accessible roblox deploy mirror")
+	log.Println("Finding an accessible Roblox deploy mirror")
 
-	for _, _cdn := range CDNURLs {
-		resp, err := http.Head(_cdn + "/" + "version")
+	for _, cdn := range CDNURLs {
+		resp, err := http.Head(cdn + "/" + "version")
 
 		if err == nil && resp.StatusCode == 200 {
-			log.Printf("Found mirror: %s", _cdn)
+			log.Printf("Found deploy mirror: %s", cdn)
 
-			return _cdn, nil
+			return cdn, nil
 		}
 	}
 
@@ -55,26 +58,31 @@ func FindCDN() (string, error) {
 }
 
 func LatestVersion(bt BinaryType, channel string) (Version, error) {
+	var cv ClientVersion
+
+	// Ensure that the channel is lowercased, since internally in
+	// ClientSettings it will be lowercased, but not on the deploy mirror.
+	channel = strings.ToLower(channel)
+
 	if channel == "" {
-		channel = "LIVE"
+		channel = DefaultChannel
 	}
 
-	// deploy mirror doesnt like uppercase channel names
-	suf := "/"
-	if channel != "" && channel != "LIVE" {
-		suf += "channel/" + strings.ToLower(channel) + "/"
+	channelPath := "/"
+	if channel != DefaultChannel {
+		channelPath += "channel/" + channel + "/"
 	}
 
 	log.Printf("Fetching latest version of %s for channel %s", bt.String(), channel)
 
-	resp, err := util.Body(VersionCheckURL + "/" + bt.String() + "/channel/" + channel)
+	resp, err := util.Body(VersionCheckURL + "/" + bt.String() + channelPath)
 	if err != nil {
 		return Version{}, fmt.Errorf("failed to fetch version: %w", err)
 	}
 
-	var cv ClientVersion
-	if err := json.Unmarshal([]byte(resp), &cv); err != nil {
-		return Version{}, fmt.Errorf("failed to parse clientsettings: %w", err)
+	err = json.Unmarshal([]byte(resp), &cv)
+	if err != nil {
+		return Version{}, fmt.Errorf("failed to unmarshal clientsettings: %w", err)
 	}
 
 	if cv.ClientVersionUpload == "" {
@@ -85,12 +93,12 @@ func LatestVersion(bt BinaryType, channel string) (Version, error) {
 
 	cdn, err := FindCDN()
 	if err != nil {
-		return Version{}, err
+		return Version{}, fmt.Errorf("failed to find deploy mirror: %w", err)
 	}
 
 	return Version{
-		Type: bt,
-		URL:  cdn + suf + cv.ClientVersionUpload,
-		GUID: cv.ClientVersionUpload,
+		Type:      bt,
+		DeployURL: cdn + channelPath + cv.ClientVersionUpload,
+		GUID:      cv.ClientVersionUpload,
 	}, nil
 }

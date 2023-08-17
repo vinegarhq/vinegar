@@ -8,7 +8,7 @@ import (
 )
 
 type Prefix struct {
-	Dir string
+	Dir     string
 	Version string
 }
 
@@ -18,7 +18,7 @@ func New(dir string, ver string) Prefix {
 	}
 
 	return Prefix{
-		Dir: dir,
+		Dir:     dir,
 		Version: ver,
 	}
 }

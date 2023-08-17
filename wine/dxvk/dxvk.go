@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	Repo = "https://github.com/doitsujin/dxvk"
-	Version = "2.2"
-	TarName = "dxvk-" + Version + ".tar.gz"
+	Repo        = "https://github.com/doitsujin/dxvk"
+	Version     = "2.2"
+	TarName     = "dxvk-" + Version + ".tar.gz"
 	WineVarName = "WINEDLLOVERRIDES"
 )
 
@@ -27,7 +27,7 @@ var URL = Repo + "/releases/download/v" + Version + "/" + TarName
 func Setenv() {
 	log.Printf("Using DXVK %s", Version)
 
-	os.Setenv(WineVarName, os.Getenv(WineVarName) + "d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
+	os.Setenv(WineVarName, os.Getenv(WineVarName)+"d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
 func Fetch(dir string) error {

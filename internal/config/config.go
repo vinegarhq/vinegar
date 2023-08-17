@@ -2,9 +2,9 @@ package config
 
 import (
 	_ "embed"
+	"errors"
 	"log"
 	"os"
-	"errors"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"

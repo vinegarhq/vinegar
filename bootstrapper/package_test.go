@@ -1,8 +1,8 @@
 package bootstrapper
 
 import (
-	"strconv"
 	"errors"
+	"strconv"
 	"testing"
 )
 
@@ -60,7 +60,7 @@ func TestInvalidPackageManifest(t *testing.T) {
 	if !errors.Is(err, ErrInvalidManifest) {
 		t.Fail()
 	}
-	
+
 	manifest = append(manifest, "foo")
 
 	_, err = ParsePackages(manifest)

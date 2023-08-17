@@ -1,9 +1,9 @@
 package state
 
 import (
-	"os"
-	"log"
 	"errors"
+	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
@@ -14,7 +14,7 @@ import (
 var path = filepath.Join(dirs.Config, "state.toml")
 
 type ApplicationState struct {
-	Version string
+	Version  string
 	Packages []string
 }
 
@@ -22,11 +22,11 @@ type ApplicationStates map[string]ApplicationState
 
 type State struct {
 	DxvkInstalled bool
-	Applications ApplicationStates
+	Applications  ApplicationStates
 }
 
 func Save(state *State) error {
-	file, err := os.OpenFile(path, os.O_WRONLY | os.O_CREATE | os.O_TRUNC, 0o644)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
@@ -133,7 +133,6 @@ func Versions() ([]string, error) {
 
 	return versions, nil
 }
-
 
 func DxvkInstalled() (bool, error) {
 	states, err := Load()

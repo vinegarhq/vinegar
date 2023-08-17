@@ -1,8 +1,8 @@
 package state
 
 import (
-	"os"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/vinegarhq/aubun/internal/dirs"
@@ -36,5 +36,3 @@ func CleanVersions() error {
 		return os.RemoveAll(filepath.Join(dirs.Versions, path))
 	})
 }
-
-

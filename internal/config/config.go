@@ -30,7 +30,6 @@ type Application struct {
 	Channel  string
 	Renderer string
 	Dxvk     bool
-	Force    bool
 	FFlags
 	Env Environment
 }

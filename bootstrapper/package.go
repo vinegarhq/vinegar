@@ -22,7 +22,7 @@ func ParsePackages(manif []string) (Packages, error) {
 		return pkgs, fmt.Errorf("unhandled package manifest version: %s", manif)
 	}
 
-	for i := 1; i < len(manif)-4; i += 4 {
+	for i := 1; i <= len(manif)-4; i += 4 {
 		if IsExcluded(manif[i]) {
 			continue
 		}

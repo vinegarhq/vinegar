@@ -79,7 +79,7 @@ var ExcludedPackages = []string{
 	"WebView2RuntimeInstaller.zip",
 }
 
-func IsExcluded(name string) bool {
+func PackageExcluded(name string) bool {
 	for _, ex := range ExcludedPackages {
 		if name == ex {
 			return true

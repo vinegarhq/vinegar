@@ -1,10 +1,16 @@
 package bootstrapper
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 
 	"golang.org/x/sync/errgroup"
+)
+
+var (
+	ErrInvalidManifest          = errors.New("invalid package manifest given")
+	ErrUnhandledManifestVersion = errors.New("unhandled package manifest version")
 )
 
 type Package struct {
@@ -18,12 +24,16 @@ type Packages []Package
 func ParsePackages(manif []string) (Packages, error) {
 	pkgs := make(Packages, 0)
 
+	if len(manif) < 5 {
+		return pkgs, ErrInvalidManifest
+	}
+
 	if manif[0] != "v0" {
-		return pkgs, fmt.Errorf("unhandled package manifest version: %s", manif)
+		return pkgs, fmt.Errorf("%w: %s", ErrUnhandledManifestVersion, manif[0])
 	}
 
 	for i := 1; i <= len(manif)-4; i += 4 {
-		if IsExcluded(manif[i]) {
+		if PackageExcluded(manif[i]) {
 			continue
 		}
 

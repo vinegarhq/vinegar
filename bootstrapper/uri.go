@@ -21,8 +21,11 @@ func ParsePlayerURI(launchURI string) (args []string, channel string) {
 
 	for _, param := range strings.Split(launchURI, "+") {
 		pair := strings.Split(param, ":")
-		key, val := pair[0], pair[1]
+		if len(pair) != 2 {
+			continue
+		}
 
+		key, val := pair[0], pair[1]
 		flag, ok := PlayerURIKeyFlags[key]
 		if !ok || val == "" {
 			continue

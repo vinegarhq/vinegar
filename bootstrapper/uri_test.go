@@ -39,3 +39,11 @@ func TestPlayerURIParsed(t *testing.T) {
 		t.Fatalf("launch player uri parsing failed, %v, want channel match for %s", channel, channelWant)
 	}
 }
+
+func TestPlayerURIInvalidKey(t *testing.T) {
+	args, _ := ParsePlayerURI("roblox-player:1+launchmode:play+channel")
+
+	if len(args) == 1 && args[0] != "--app" {
+		t.Fail()
+	}
+}

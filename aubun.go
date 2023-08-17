@@ -138,7 +138,7 @@ func main() {
 			args, channel = bootstrapper.ParsePlayerURI(args[0])
 		}
 
-		if channel != cfg.Player.Channel {
+		if channel != cfg.Player.Channel && channel != "" {
 			log.Printf("WARNING: Launch URI has a different channel: %s, forcing user-specified channel", channel)
 		}
 

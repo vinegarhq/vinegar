@@ -27,6 +27,11 @@ type State struct {
 }
 
 func Save(state *State) error {
+	err := dirs.Mkdir(dirs.Config)
+	if err != nil {
+		return err
+	}
+
 	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err

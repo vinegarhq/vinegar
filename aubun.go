@@ -66,6 +66,10 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		log.Fatal(err)
 	}
 
+	if err := dirs.Mkdir(dirs.Cache); err != nil {
+		log.Fatal(err)
+	}
+
 	if appCfg.Dxvk {
 		if !dxvkInstalled {
 			if err := dxvk.Fetch(dirs.Cache); err != nil {

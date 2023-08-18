@@ -1,4 +1,4 @@
-package bootstrapper
+package roblox
 
 import (
 	"encoding/json"

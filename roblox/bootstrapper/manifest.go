@@ -9,18 +9,19 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/vinegarhq/aubun/roblox"
 	"github.com/vinegarhq/aubun/util"
 )
 
 const ManifestSuffix = "-rbxPkgManifest.txt"
 
 type Manifest struct {
-	Version
+	roblox.Version
 	SourceDir string
 	Packages
 }
 
-func FetchManifest(ver Version, srcDir string) (Manifest, error) {
+func FetchManifest(ver roblox.Version, srcDir string) (Manifest, error) {
 	log.Printf("Fetching latest manifest for %s", ver.GUID)
 
 	manifest, err := util.Body(ver.DeployURL + ManifestSuffix)

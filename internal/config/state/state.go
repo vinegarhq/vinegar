@@ -7,8 +7,9 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/vinegarhq/aubun/bootstrapper"
 	"github.com/vinegarhq/aubun/internal/dirs"
+	"github.com/vinegarhq/aubun/roblox"
+	"github.com/vinegarhq/aubun/roblox/bootstrapper"
 )
 
 var path = filepath.Join(dirs.Config, "state.toml")
@@ -110,7 +111,7 @@ func Packages() ([]string, error) {
 	return packages, nil
 }
 
-func Version(bt bootstrapper.BinaryType) (string, error) {
+func Version(bt roblox.BinaryType) (string, error) {
 	states, err := Load()
 	if err != nil {
 		return "", err

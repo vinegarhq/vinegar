@@ -1,12 +1,16 @@
 package bootstrapper
 
+import (
+	"github.com/vinegarhq/aubun/roblox"
+)
+
 type PackageDirectories map[string]string
 
-func (bt BinaryType) Directories() PackageDirectories {
+func Directories(bt roblox.BinaryType) PackageDirectories {
 	switch bt {
-	case Player:
+	case roblox.Player:
 		return PlayerDirectories
-	case Studio:
+	case roblox.Studio:
 		return StudioDirectories
 	}
 

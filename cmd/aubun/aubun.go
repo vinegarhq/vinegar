@@ -167,6 +167,8 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	}
 
 	if appCfg.ForcedVersion != "" {
+		log.Printf("WARNING: using forced version: %s", appCfg.ForcedVersion)
+
 		ver, err = roblox.ForceVersion(bt, channel, appCfg.ForcedVersion)
 		if err != nil {
 			log.Fatal(err)

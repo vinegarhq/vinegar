@@ -45,22 +45,25 @@ func (m Manifest) Download() error {
 	log.Printf("Downloading %d Packages", len(m.Packages))
 
 	return m.Packages.Perform(func(pkg Package) error {
+		url := m.Version.DeployURL + "-" + pkg.Name
 		dest := filepath.Join(m.SourceDir, pkg.Checksum)
 
-		if _, err := os.Stat(dest); errors.Is(err, fs.ErrNotExist) {
-			url := m.Version.DeployURL + "-" + pkg.Name
+		if _, err := os.Stat(dest); err == nil {
+			log.Printf("Package %s is already downloaded", pkg.Name)
+			return util.VerifyFileMD5(dest, pkg.Checksum)
+		} else if !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+
+		if err := util.Download(url, dest); err != nil {
+			log.Printf("Unable to download package %s, retrying...", pkg.Name)
 
 			if err := util.Download(url, dest); err != nil {
 				return fmt.Errorf("failed to download package %s: %w", pkg.Name, err)
 			}
-
-			log.Printf("Downloaded Package %s", pkg.Name)
-		} else if err == nil {
-			log.Printf("Package %s is already downloaded", pkg.Name)
-		} else if err != nil {
-			return err
 		}
 
+		log.Printf("Downloaded Package %s", pkg.Name)
 		return util.VerifyFileMD5(dest, pkg.Checksum)
 	})
 }

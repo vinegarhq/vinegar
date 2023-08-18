@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,7 +16,17 @@ import (
 	"github.com/vinegarhq/aubun/wine/dxvk"
 )
 
+func usage() {
+	fmt.Fprintln(os.Stderr, "usage: aubun kill|player|studio|exec [args...]")
+
+	os.Exit(1)
+}
+
 func main() {
+	if len(os.Args) < 2 {
+		usage()
+	}
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	cfg := config.Load()

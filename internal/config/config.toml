@@ -4,7 +4,7 @@ WINEDEBUG = "-all"
 WINEESYNC = "1"
 WINEDLLOVERRIDES = "dxdiagn=d;winemenubuilder.exe=d"
 
-DXVK_LOG_LEVEL = "info"
+DXVK_LOG_LEVEL = "warn"
 DXVK_LOG_PATH = "none"
 
 MESA_GL_VERSION_OVERRIDE = "4.4"
@@ -17,3 +17,6 @@ dxvk = true
 
 [player.env]
 DXVK_HUD = "1"
+
+[player.fflags]
+DFIntTaskSchedulerTargetFps = 10000

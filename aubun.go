@@ -166,5 +166,7 @@ func main() {
 		if err := pfx.Exec(os.Args[2:]...); err != nil {
 			log.Fatal(err)
 		}
+	case "kill":
+		pfx.Kill()
 	}
 }

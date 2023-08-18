@@ -63,5 +63,5 @@ func (p *Prefix) Initialize() error {
 func (p *Prefix) Kill() {
 	log.Println("Killing wineprefix")
 
-	_ = p.Exec("wineserver", "-k")
+	_ = p.Exec("wineboot", "-e")
 }

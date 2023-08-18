@@ -74,6 +74,19 @@ func ChannelPath(channel string) string {
 	return channelPath
 }
 
+func ForceVersion(bt BinaryType, channel string, GUID string) (Version, error) {
+	cdn, err := FindCDN()
+	if err != nil {
+		return Version{}, fmt.Errorf("failed to find deploy mirror: %w", err)
+	}
+
+	return Version{
+		Type:      bt,
+		DeployURL: cdn + ChannelPath(channel) + GUID,
+		GUID:      GUID,
+	}, nil
+}
+
 func LatestVersion(bt BinaryType, channel string) (Version, error) {
 	var cv ClientVersion
 

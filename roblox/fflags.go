@@ -69,7 +69,7 @@ func (f *FFlags) SetRenderer(renderer string) error {
 		return fmt.Errorf("%w: %s", ErrInvalidRenderer, renderer)
 	}
 
-	if *f == nil {
+	if len(*f) == 0 {
 		*f = make(FFlags)
 	}
 

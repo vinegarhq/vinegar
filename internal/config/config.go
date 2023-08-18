@@ -26,6 +26,7 @@ type Application struct {
 }
 
 type Config struct {
+	WineRoot string
 	Player Application
 	Studio Application
 	roblox.FFlags
@@ -48,6 +49,22 @@ func Load() Config {
 
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
 		log.Printf("Failed to load configuration: %s, using default configuration", err)
+	}
+
+	if cfg.WineRoot != "" {
+		log.Printf("Using Wine Root: %s", cfg.WineRoot)
+		bin := filepath.Join(cfg.WineRoot, "bin")
+
+		if !filepath.IsAbs(cfg.WineRoot) {
+			log.Fatal("ensure that the wine root given is an absolute path")
+		}
+
+		_, err := os.Stat(filepath.Join(bin, "wine"))
+		if err != nil {
+			log.Fatalf("invalid wine root given: %s", err)
+		}
+
+		cfg.Env["PATH"] = bin + ":" + os.Getenv("PATH")
 	}
 
 	return cfg

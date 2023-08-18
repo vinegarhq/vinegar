@@ -53,7 +53,7 @@ func Remove(pfx *wine.Prefix) error {
 
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
-			dllPath := filepath.Join("windows", dir, dll+".dll")
+			dllPath := filepath.Join("drive_c", "windows", dir, dll+".dll")
 
 			log.Println("Removing DLL:", dllPath)
 

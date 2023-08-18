@@ -57,9 +57,7 @@ func FindCDN() (string, error) {
 	return "", ErrNoCDNFound
 }
 
-func LatestVersion(bt BinaryType, channel string) (Version, error) {
-	var cv ClientVersion
-
+func ChannelPath(channel string) string {
 	// Ensure that the channel is lowercased, since internally in
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
@@ -73,9 +71,17 @@ func LatestVersion(bt BinaryType, channel string) (Version, error) {
 		channelPath += "channel/" + channel + "/"
 	}
 
+	return channelPath
+}
+
+func LatestVersion(bt BinaryType, channel string) (Version, error) {
+	var cv ClientVersion
+
+	path := ChannelPath(channel)
+
 	log.Printf("Fetching latest version of %s for channel %s", bt.String(), channel)
 
-	resp, err := util.Body(VersionCheckURL + "/" + bt.String() + channelPath)
+	resp, err := util.Body(VersionCheckURL + "/" + bt.String() + path)
 	if err != nil {
 		return Version{}, fmt.Errorf("failed to fetch version: %w", err)
 	}
@@ -98,7 +104,7 @@ func LatestVersion(bt BinaryType, channel string) (Version, error) {
 
 	return Version{
 		Type:      bt,
-		DeployURL: cdn + channelPath + cv.ClientVersionUpload,
+		DeployURL: cdn + path + cv.ClientVersionUpload,
 		GUID:      cv.ClientVersionUpload,
 	}, nil
 }

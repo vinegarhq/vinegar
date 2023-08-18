@@ -9,6 +9,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/aubun/internal/dirs"
+	"github.com/vinegarhq/aubun/roblox"
 )
 
 //go:embed config.toml
@@ -21,23 +22,20 @@ var Renderers = []string{
 	"Vulkan",
 }
 
-type (
-	FFlags      map[string]interface{}
-	Environment map[string]string
-)
+type Environment map[string]string
 
 type Application struct {
 	Channel  string
 	Renderer string
 	Dxvk     bool
-	FFlags
+	roblox.FFlags
 	Env Environment
 }
 
 type Config struct {
 	Player Application
 	Studio Application
-	FFlags
+	roblox.FFlags
 	Env Environment
 }
 

@@ -116,6 +116,16 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		log.Printf("%s is up to date (%s)", name, ver.GUID)
 	}
 
+	err = cfg.FFlags.Apply(verDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = appCfg.FFlags.Apply(verDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Printf("Launching %s", name)
 
 	args = append([]string{filepath.Join(verDir, bt.Executable())}, args...)

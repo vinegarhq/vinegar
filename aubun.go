@@ -29,6 +29,11 @@ func Uninstall() {
 			log.Fatal(err)
 		}
 	}
+
+	err = state.ClearApplications()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func SetupBinary(ver roblox.Version, dir string) {

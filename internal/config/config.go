@@ -54,7 +54,7 @@ func Load() Config {
 }
 
 func (e *Environment) Setenv() {
-	for name, value := range (*e) {
+	for name, value := range *e {
 		os.Setenv(name, value)
 	}
 }

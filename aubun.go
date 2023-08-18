@@ -52,18 +52,13 @@ func SetupBinary(ver roblox.Version, dir string) {
 
 func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...string) {
 	var appCfg config.Application
-	var exe string
 	name := bt.String()
 
 	switch bt {
 	case roblox.Player:
 		appCfg = cfg.Player
-		exe = "RobloxPlayerBeta.exe"
 	case roblox.Studio:
 		appCfg = cfg.Player
-		exe = "RobloxStudioBeta.exe"
-	default:
-		log.Fatal("invalid binary type given")
 	}
 
 	if appCfg.Dxvk {
@@ -123,7 +118,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 
 	log.Printf("Launching %s", name)
 
-	args = append([]string{filepath.Join(verDir, exe)}, args...)
+	args = append([]string{filepath.Join(verDir, bt.Executable())}, args...)
 
 	if err := pfx.Exec(args...); err != nil {
 		log.Fatal(err)

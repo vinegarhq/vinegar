@@ -46,6 +46,7 @@ func FindCDN() (string, error) {
 
 	for _, cdn := range CDNURLs {
 		resp, err := http.Head(cdn + "/" + "version")
+		resp.Body.Close()
 
 		if err == nil && resp.StatusCode == 200 {
 			log.Printf("Found deploy mirror: %s", cdn)

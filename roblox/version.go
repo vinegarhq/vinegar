@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	DefaultChannel  = "LIVE"
+	DefaultChannel  = "live"
 	VersionCheckURL = "https://clientsettingscdn.roblox.com/v2/client-version"
 )
 

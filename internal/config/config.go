@@ -15,13 +15,6 @@ import (
 //go:embed config.toml
 var DefaultConfig string
 
-var Renderers = []string{
-	"OpenGL",
-	"D3D11FL10",
-	"D3D11",
-	"Vulkan",
-}
-
 type Environment map[string]string
 
 type Application struct {
@@ -60,8 +53,8 @@ func Load() Config {
 	return cfg
 }
 
-func (c *Config) Setenv() {
-	for name, value := range c.Env {
+func (e *Environment) Setenv() {
+	for name, value := range (*e) {
 		os.Setenv(name, value)
 	}
 }

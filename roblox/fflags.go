@@ -3,9 +3,20 @@ package roblox
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+)
+
+var (
+	ErrInvalidRenderer = errors.New("invalid renderer given")
+	Renderers          = []string{
+		"OpenGL",
+		"D3D11FL10",
+		"D3D11",
+		"Vulkan",
+	}
 )
 
 type FFlags map[string]interface{}
@@ -40,6 +51,34 @@ func (f *FFlags) Apply(versionDir string) error {
 	_, err = file.Write(fflags)
 	if err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (f *FFlags) SetRenderer(renderer string) error {
+	valid := false
+
+	for _, r := range Renderers {
+		if renderer == r {
+			valid = true
+		}
+	}
+
+	if !valid {
+		return fmt.Errorf("%w: %w", ErrInvalidRenderer, renderer)
+	}
+
+	if *f == nil {
+		*f = make(FFlags)
+	}
+
+	// Disable all other renderers except the given one.
+	for _, r := range Renderers {
+		isRenderer := r == renderer
+
+		(*f)["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		(*f)["FFlagDebugGraphicsDisable"+r] = !isRenderer
 	}
 
 	return nil

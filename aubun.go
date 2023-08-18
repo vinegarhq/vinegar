@@ -58,15 +58,15 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	case roblox.Player:
 		appCfg = cfg.Player
 	case roblox.Studio:
-		appCfg = cfg.Player
+		appCfg = cfg.Studio
+	}
+
+	dxvkInstalled, err := state.DxvkInstalled()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	if appCfg.Dxvk {
-		dxvkInstalled, err := state.DxvkInstalled()
-		if err != nil {
-			log.Fatal(err)
-		}
-
 		if !dxvkInstalled {
 			if err := dxvk.Fetch(dirs.Cache); err != nil {
 				log.Fatal(err)
@@ -82,7 +82,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		}
 
 		dxvk.Setenv()
-	} else if !cfg.Player.Dxvk && !cfg.Studio.Dxvk {
+	} else if dxvkInstalled && !cfg.Player.Dxvk && !cfg.Studio.Dxvk {
 		if err := dxvk.Remove(pfx); err != nil {
 			log.Fatal(err)
 		}
@@ -116,6 +116,13 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		log.Printf("%s is up to date (%s)", name, ver.GUID)
 	}
 
+	appCfg.Env.Setenv()
+
+	err = cfg.FFlags.SetRenderer(appCfg.Renderer)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	err = cfg.FFlags.Apply(verDir)
 	if err != nil {
 		log.Fatal(err)
@@ -139,7 +146,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	cfg := config.Load()
-	cfg.Setenv()
+	cfg.Env.Setenv()
 
 	pfx := wine.New(dirs.Prefix, "")
 	if err := pfx.Setup(); err != nil {

@@ -15,6 +15,33 @@ import (
 	"github.com/vinegarhq/aubun/wine/dxvk"
 )
 
+func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	cfg := config.Load()
+	cfg.Env.Setenv()
+
+	pfx := wine.New(dirs.Prefix, "")
+	if err := pfx.Setup(); err != nil {
+		log.Fatal(err)
+	}
+
+	switch os.Args[1] {
+	case "player":
+		Binary(roblox.Player, &cfg, &pfx, os.Args[2:]...)
+	case "studio":
+		Binary(roblox.Studio, &cfg, &pfx, os.Args[2:]...)
+	case "exec":
+		if err := pfx.Exec(os.Args[2:]...); err != nil {
+			log.Fatal(err)
+		}
+	case "kill":
+		pfx.Kill()
+	case "uninstall":
+		Uninstall()
+	}
+}
+
 func Uninstall() {
 	vers, err := state.Versions()
 	if err != nil {
@@ -169,32 +196,5 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 
 	if err := pfx.Exec(args...); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func main() {
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	cfg := config.Load()
-	cfg.Env.Setenv()
-
-	pfx := wine.New(dirs.Prefix, "")
-	if err := pfx.Setup(); err != nil {
-		log.Fatal(err)
-	}
-
-	switch os.Args[1] {
-	case "player":
-		Binary(roblox.Player, &cfg, &pfx, os.Args[2:]...)
-	case "studio":
-		Binary(roblox.Studio, &cfg, &pfx, os.Args[2:]...)
-	case "exec":
-		if err := pfx.Exec(os.Args[2:]...); err != nil {
-			log.Fatal(err)
-		}
-	case "kill":
-		pfx.Kill()
-	case "uninstall":
-		Uninstall()
 	}
 }

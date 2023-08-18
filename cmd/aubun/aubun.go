@@ -111,6 +111,7 @@ func SetupBinary(ver roblox.Version, dir string) {
 
 func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...string) {
 	var appCfg config.Application
+	var ver roblox.Version
 	name := bt.String()
 
 	switch bt {
@@ -165,10 +166,18 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		channel = appCfg.Channel
 	}
 
-	ver, err := roblox.LatestVersion(bt, channel)
-	if err != nil {
-		log.Fatal(err)
+	if appCfg.ForcedVersion != "" {
+		ver, err = roblox.ForceVersion(bt, channel, appCfg.ForcedVersion)
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		ver, err = roblox.LatestVersion(bt, channel)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+
 	verDir := filepath.Join(dirs.Versions, ver.GUID)
 
 	_, err = os.Stat(filepath.Join(verDir, "AppSettings.xml"))

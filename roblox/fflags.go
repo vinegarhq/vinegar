@@ -66,7 +66,7 @@ func (f *FFlags) SetRenderer(renderer string) error {
 	}
 
 	if !valid {
-		return fmt.Errorf("%w: %w", ErrInvalidRenderer, renderer)
+		return fmt.Errorf("%w: %s", ErrInvalidRenderer, renderer)
 	}
 
 	if *f == nil {

@@ -140,6 +140,17 @@ func Versions() ([]string, error) {
 	return versions, nil
 }
 
+func ClearApplications() error {
+	state, err := Load()
+	if err != nil {
+		return err
+	}
+
+	state.Applications = nil
+
+	return Save(&state)
+}
+
 func DxvkInstalled() (bool, error) {
 	states, err := Load()
 	if err != nil {

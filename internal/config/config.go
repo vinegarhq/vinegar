@@ -18,12 +18,12 @@ var DefaultConfig string
 type Environment map[string]string
 
 type Application struct {
-	Channel      string        `toml:"channel"`
-	Renderer     string        `toml:"renderer"`
-	ForcedVerson string        `toml:"forced_version"`
-	Dxvk         bool          `toml:"dxvk"`
-	FFlags       roblox.FFlags `toml:"fflags"`
-	Env          Environment   `toml:"env"`
+	Channel       string        `toml:"channel"`
+	Renderer      string        `toml:"renderer"`
+	ForcedVersion string        `toml:"forced_version"`
+	Dxvk          bool          `toml:"dxvk"`
+	FFlags        roblox.FFlags `toml:"fflags"`
+	Env           Environment   `toml:"env"`
 }
 
 type Config struct {

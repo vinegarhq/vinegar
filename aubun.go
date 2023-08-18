@@ -15,6 +15,22 @@ import (
 	"github.com/vinegarhq/aubun/wine/dxvk"
 )
 
+func Uninstall() {
+	vers, err := state.Versions()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, ver := range vers {
+		log.Println("Removing version directory", ver)
+
+		err = os.RemoveAll(filepath.Join(dirs.Versions, ver))
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func SetupBinary(ver roblox.Version, dir string) {
 	if err := dirs.Mkdir(dir); err != nil {
 		log.Fatal(err)
@@ -137,6 +153,11 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		log.Fatal(err)
 	}
 
+	err = dirs.OverlayDir(verDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	log.Printf("Launching %s", name)
 
 	args = append([]string{filepath.Join(verDir, bt.Executable())}, args...)
@@ -168,5 +189,7 @@ func main() {
 		}
 	case "kill":
 		pfx.Kill()
+	case "uninstall":
+		Uninstall()
 	}
 }

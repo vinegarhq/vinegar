@@ -27,8 +27,8 @@ type Application struct {
 
 type Config struct {
 	WineRoot string
-	Player Application
-	Studio Application
+	Player   Application
+	Studio   Application
 	roblox.FFlags
 	Env Environment
 }

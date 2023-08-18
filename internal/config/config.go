@@ -18,19 +18,20 @@ var DefaultConfig string
 type Environment map[string]string
 
 type Application struct {
-	Channel  string
-	Renderer string
-	Dxvk     bool
-	roblox.FFlags
-	Env Environment
+	Channel      string        `toml:"channel"`
+	Renderer     string        `toml:"renderer"`
+	ForcedVerson string        `toml:"forced_version"`
+	Dxvk         bool          `toml:"dxvk"`
+	FFlags       roblox.FFlags `toml:"fflags"`
+	Env          Environment   `toml:"env"`
 }
 
 type Config struct {
-	WineRoot string
-	Player   Application
-	Studio   Application
-	roblox.FFlags
-	Env Environment
+	WineRoot string        `toml:"wineroot"`
+	Player   Application   `toml:"player"`
+	Studio   Application   `toml:"studio"`
+	FFlags   roblox.FFlags `toml:"fflags"`
+	Env      Environment   `toml:"env"`
 }
 
 func Load() Config {

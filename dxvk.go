@@ -139,7 +139,11 @@ func DxvkUninstall() {
 			log.Println("Removing DLL:", dllFile)
 
 			if err := os.Remove(dllFile); err != nil {
-				log.Fatal(err)
+				if os.IsNotExist(err) {
+					log.Print(err)
+				} else {
+					log.Fatal(err)
+				}
 			}
 		}
 	}

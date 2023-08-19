@@ -2,6 +2,7 @@ package util
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -16,9 +17,19 @@ func Extract(source string, destDir string) error {
 	defer zip.Close()
 
 	for _, file := range zip.File {
-		filePath := filepath.Join(destDir,
-			filepath.Clean(strings.ReplaceAll(file.Name, `\`, "/")),
-		)
+		// ignore the root directory, it is the destination directory
+		if file.Name == `\` {
+			continue
+		}
+
+		// Roblox zip format:
+		// dir:  \dir\
+		// file: [dir\]file
+		filePath := filepath.Join(destDir, strings.ReplaceAll(file.Name, `\`, "/"))
+
+		if !strings.HasPrefix(filePath, filepath.Clean(destDir)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", filePath)
+		}
 
 		if file.FileInfo().IsDir() {
 			if err := os.MkdirAll(filePath, file.Mode()); err != nil {

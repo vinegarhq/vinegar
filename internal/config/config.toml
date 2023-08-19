@@ -19,7 +19,7 @@ auto_kill_prefix = true
 DXVK_HUD = "fps"
 
 [player.fflags]
-DFIntTaskSchedulerTargetFps = 10000
+DFIntTaskSchedulerTargetFps = 640
 
 [studio]
 renderer = "D3D11"

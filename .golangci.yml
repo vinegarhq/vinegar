@@ -1,26 +1,16 @@
-output:
-  format: line-number
-  print-issued-lines: false
-  sort-results: true
+run:
+  tests: true
 linters:
-  presets:
-    - bugs
-    - comment
-    - complexity
-    - format
-    - import
-    - metalinter
-    - module
-    - performance
-    - unused
-  disable:
-    - gosec
-    - cyclop
-    - noctx
-    - godot
-    - depguard
-issues:
-  exclude-rules:
-  # https://github.com/polyfloyd/go-errorlint/issues/4
-    - linters: errorlint
-      source: "err == io.EOF"
+  enable:
+    - bodyclose
+    - exportloopref
+    - goimports
+    - nilerr
+    - predeclared
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - tparallel
+    - unconvert
+    - unparam
+    - whitespace

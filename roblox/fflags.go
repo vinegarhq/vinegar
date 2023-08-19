@@ -73,6 +73,8 @@ func (f *FFlags) SetRenderer(renderer string) error {
 		*f = make(FFlags)
 	}
 
+	log.Printf("Setting renderer: %s", renderer)
+
 	// Disable all other renderers except the given one.
 	for _, r := range Renderers {
 		isRenderer := r == renderer

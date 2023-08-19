@@ -2,9 +2,9 @@ package util
 
 import (
 	"archive/zip"
+	"fmt"
 	"io"
 	"os"
-	"fmt"
 	"path/filepath"
 	"strings"
 )

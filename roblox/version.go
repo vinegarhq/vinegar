@@ -21,9 +21,9 @@ var (
 	ErrNoVersion  = errors.New("no version found")
 	CDNURLs       = []string{
 		"https://setup.rbxcdn.com",
+		"https://s3.amazonaws.com/setup.roblox.com",
 		"https://setup-ak.rbxcdn.com",
 		"https://setup-cfly.rbxcdn.com",
-		"https://s3.amazonaws.com/setup.roblox.com",
 	}
 )
 

@@ -94,8 +94,6 @@ func Uninstall() {
 }
 
 func Delete() {
-	Uninstall()
-
 	log.Println("Deleting data directory")
 	if err := os.RemoveAll(dirs.Data); err != nil {
 		log.Fatal(err)

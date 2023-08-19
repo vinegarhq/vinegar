@@ -6,9 +6,6 @@
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]
 
-
-## WARNING: DUE TO BYFRON ANTI-CHEAT, ROBLOX PLAYER CANNOT BE RUN UNDER WINE AT ALL UNDER VINEGAR OR ANY OTHER WRAPPER AT THIS TIME
-
 An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
 
 [workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml
@@ -22,23 +19,22 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 [discord_img]: https://img.shields.io/discord/1069506340973707304
 
 # Features
-+ Automatic applying of [RCO](https://github.com/L8X/Roblox-Client-Optimizer) FFlags, when enabled in configuration 
-  + Includes a built in FPS unlocker
-  + Optimizes Roblox's performance
-  + Disables a large portion of client telemetry
 + Automatic DXVK Installer and uninstaller
 + Automatic Wineprefix killer when Roblox has quit
 + Automatic Wineprefix version setter upon Wineprefix initialization
++ Automatic removal of outdated cached packages and versions of Roblox
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix
-+ TOML Configuration file for setting environment variables (such as `DXVK_HUD`) and applying custom FFlags
-+ Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
-+ Custom Wine 'root'
-+ Custom Roblox Player & Studio launcher
-+ Select/Force Roblox release channels
-+ Faster Multi-threaded installation and execution of Roblox
-+ Multiple instances of Roblox open simultaneously
-+ Logging for both Vinegar and executions
++ TOML configuration file
+  + Force a specific version of Roblox
+  + Select/Force Roblox release channels, lets you opt into non-production Roblox release channels
+  + Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
+  + Wine Root, allows you to set a specific wine installation path
+  + Set different environment variables and FFlags for both Player and Studio
++ Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
++ Faster Multi-threaded installation and installation of Roblox
++ Multiple instances of Roblox open simultaneously via `robloxmutexer`
++ Logging for both Vinegar and Wine
 
 # See Also
 + [Discord Server](https://discord.gg/dzdzZ6Pps2)
@@ -47,7 +43,8 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + [Bloxstrap](https://github.com/pizzaboxer/bloxstrap)
 
 # Acknowledgements
-+ Big Thanks to [pizzaboxer](https://github.com/pizzaboxer)
-+ Credits to [MaximumADHD](https://github.com/MaximumADHD)
++ Credits to
+  + [pizzaboxer](https://github.com/pizzaboxer)
+  + [MaximumADHD](https://github.com/MaximumADHD)
 + Logo modified with Katie, made by the [Twemoji team](https://twemoji.twitter.com/), Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 + Katie usage authorized by [kitteh](https://ksiv.neocities.org)

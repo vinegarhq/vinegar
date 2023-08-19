@@ -1,9 +1,9 @@
 name: Generate Source Tarball
 on:
-  release:
-    types:
-      - created
-  VERSION: ${{github.event.release.tag_name}}
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 jobs:
   build:
     runs-on: ubuntu-latest

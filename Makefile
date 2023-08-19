@@ -18,4 +18,4 @@ tests:
 clean:
 	rm -f aubun
 
-.PHONY: all aubun install install-bin tests clean
+.PHONY: all install install-bin tests clean

@@ -75,11 +75,7 @@ func Uninstall() {
 }
 
 func SetupBinary(ver roblox.Version, dir string) {
-	if err := dirs.Mkdir(dir); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := dirs.Mkdir(dirs.Downloads); err != nil {
+	if err := dirs.Mkdirs(dir, dirs.Downloads); err != nil {
 		log.Fatal(err)
 	}
 
@@ -126,7 +122,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		log.Fatal(err)
 	}
 
-	if err := dirs.Mkdir(dirs.Cache); err != nil {
+	if err := dirs.Mkdirs(dirs.Cache); err != nil {
 		log.Fatal(err)
 	}
 

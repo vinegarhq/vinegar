@@ -27,10 +27,10 @@ type Application struct {
 }
 
 type Config struct {
-	WineRoot string        `toml:"wineroot"`
-	Player   Application   `toml:"player"`
-	Studio   Application   `toml:"studio"`
-	Env      Environment   `toml:"env"`
+	WineRoot string      `toml:"wineroot"`
+	Player   Application `toml:"player"`
+	Studio   Application `toml:"studio"`
+	Env      Environment `toml:"env"`
 }
 
 func Load() Config {

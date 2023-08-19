@@ -1,6 +1,7 @@
 package dirs
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 
@@ -18,6 +19,14 @@ var (
 	Versions  = filepath.Join(Data, "versions")
 )
 
-func Mkdir(dir string) error {
-	return os.MkdirAll(dir, 0o755)
+func Mkdirs(dirs ...string) error {
+	for _, dir := range dirs {
+		if err := os.MkdirAll(dir, 0o755); err != nil {
+			return err
+		}
+
+		log.Printf("Created directory: %s", dir)
+	}
+
+	return nil
 }

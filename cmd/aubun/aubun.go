@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"github.com/vinegarhq/aubun/internal/config"
 	"github.com/vinegarhq/aubun/internal/config/state"
 	"github.com/vinegarhq/aubun/internal/dirs"
+	"github.com/vinegarhq/aubun/internal/logs"
 	"github.com/vinegarhq/aubun/roblox"
 	"github.com/vinegarhq/aubun/roblox/bootstrapper"
 	"github.com/vinegarhq/aubun/wine"
@@ -29,15 +31,28 @@ func main() {
 
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
+	cmd := os.Args[1]
+	pfx := wine.New(dirs.Prefix, "")
+
+	switch cmd {
+	case "player", "studio":
+		logFile := logs.File(cmd)
+		logOutput := io.MultiWriter(logFile, os.Stderr)
+
+		pfx.Output = logOutput
+		log.SetOutput(logOutput)
+
+		defer logFile.Close()
+	}
+
 	cfg := config.Load()
 	cfg.Env.Setenv()
 
-	pfx := wine.New(dirs.Prefix, "")
 	if err := pfx.Setup(); err != nil {
 		log.Fatal(err)
 	}
 
-	switch os.Args[1] {
+	switch cmd {
 	case "player":
 		Binary(roblox.Player, &cfg, &pfx, os.Args[2:]...)
 	case "studio":

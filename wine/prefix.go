@@ -1,6 +1,7 @@
 package wine
 
 import (
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -9,6 +10,7 @@ import (
 
 type Prefix struct {
 	Dir     string
+	Output  io.Writer
 	Version string
 }
 
@@ -19,6 +21,7 @@ func New(dir string, ver string) Prefix {
 
 	return Prefix{
 		Dir:     dir,
+		Output:  os.Stderr,
 		Version: ver,
 	}
 }
@@ -27,8 +30,8 @@ func (p *Prefix) Exec(args ...string) error {
 	log.Printf("Executing wine: %s", args)
 
 	cmd := exec.Command("wine", args...)
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
+	cmd.Stderr = p.Output
+	cmd.Stdout = p.Output
 	cmd.Env = append(cmd.Environ(),
 		"WINEPREFIX="+p.Dir,
 	)

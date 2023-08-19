@@ -239,4 +239,8 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	if err := pfx.Exec(args...); err != nil {
 		log.Fatal(err)
 	}
+
+	if appCfg.AutoKillPrefix {
+		pfx.Kill()
+	}
 }

@@ -9,9 +9,10 @@ import (
 )
 
 type Prefix struct {
-	Dir     string
-	Output  io.Writer
-	Version string
+	Dir      string
+	Launcher string
+	Output   io.Writer
+	Version  string
 }
 
 func New(dir string, ver string) Prefix {
@@ -29,7 +30,14 @@ func New(dir string, ver string) Prefix {
 func (p *Prefix) Exec(args ...string) error {
 	log.Printf("Executing wine: %s", args)
 
-	cmd := exec.Command("wine", args...)
+	args = append([]string{"wine"}, args...)
+
+	if p.Launcher != "" {
+		log.Printf("Using launcher: %s", p.Launcher)
+		args = append([]string{p.Launcher}, args...)
+	}
+
+	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stderr = p.Output
 	cmd.Stdout = p.Output
 	cmd.Env = append(cmd.Environ(),

@@ -27,6 +27,7 @@ type Application struct {
 }
 
 type Config struct {
+	Launcher string      `toml:"launcher"`
 	WineRoot string      `toml:"wineroot"`
 	Player   Application `toml:"player"`
 	Studio   Application `toml:"studio"`

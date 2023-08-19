@@ -1,0 +1,29 @@
+name: Generate Source Tarball
+on:
+  release:
+    types:
+      - created
+  VERSION: ${{github.event.release.tag_name}}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: 'Checkout Repository'
+      uses: actions/checkout@v3
+    - name: 'Archive'
+      run: |
+        TARBALL=vinegar-${{github.event.release.tag_name}}.tar.xz
+        go mod vendor
+        cd ..        
+        tar -cJf --exclude .git $TARBALL vinegar
+        mv $TARBALL vinegar
+        echo "::set-output name=tarball::$TARBALL"
+    - name: 'Upload archive'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./${{ steps.archive.outputs.tarball }}
+        asset_name: ${{ steps.archive.outputs.tarball }}
+        asset_content_type: application/x-xz

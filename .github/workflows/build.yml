@@ -15,11 +15,18 @@ jobs:
       with:
         go-version: '^1.20'
     - name: 'Make the vendor directory'
-      run: go mod vendor && mkdir tmp_vendor && mv ./vendor ./tmp_vendor/vendor
+      run: go mod vendor
+    - name: 'Package the vendor directory'
+      uses: a7ul/tar-action@v1.1.3
+      id: compress
+      with:
+        command: c
+        files: ./vendor
+        outPath: vendor.tar.gz
     - name: Publish the vendor directory
       uses: actions/upload-artifact@v3
       with:
         name: go-vendor
-        path: ./tmp_vendor
+        path: ./vendor.tar.gz
     - name: 'Build Vinegar'
       run: make

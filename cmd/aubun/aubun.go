@@ -65,6 +65,9 @@ func main() {
 		pfx.Kill()
 	case "uninstall":
 		Uninstall()
+	case "delete":
+		pfx.Kill()
+		Delete()
 	}
 }
 
@@ -85,6 +88,15 @@ func Uninstall() {
 
 	err = state.ClearApplications()
 	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func Delete() {
+	Uninstall()
+
+	log.Println("Deleting data directory")
+	if err := os.RemoveAll(dirs.Data); err != nil {
 		log.Fatal(err)
 	}
 }

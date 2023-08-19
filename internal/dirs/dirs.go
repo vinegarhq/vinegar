@@ -1,7 +1,6 @@
 package dirs
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 
@@ -24,8 +23,6 @@ func Mkdirs(dirs ...string) error {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			return err
 		}
-
-		log.Printf("Created directory: %s", dir)
 	}
 
 	return nil

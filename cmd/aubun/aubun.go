@@ -183,8 +183,8 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		args, channel = bootstrapper.ParsePlayerURI(args[0])
 	}
 
-	if channel != appCfg.Channel {
-		log.Printf("WARNING: Launch URI has a different channel: %s, forcing user-specified channel", channel)
+	if channel != appCfg.Channel && channel != "" {
+		log.Printf("Roblox is attempting to set channel to %s from launch URI, ignoring", channel)
 		channel = appCfg.Channel
 	}
 

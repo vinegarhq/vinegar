@@ -12,7 +12,6 @@ var PlayerURIKeyFlags = map[string]string{
 	"browsertrackerid": "--browserTrackerId",
 	"robloxLocale":     "--rloc",
 	"gameLocale":       "--gloc",
-	"channel":          "-channel", // undocumented
 }
 
 func ParsePlayerURI(launchURI string) (args []string, channel string) {
@@ -26,13 +25,16 @@ func ParsePlayerURI(launchURI string) (args []string, channel string) {
 		}
 
 		key, val := pair[0], pair[1]
-		flag, ok := PlayerURIKeyFlags[key]
-		if !ok || val == "" {
-			continue
-		}
 
 		if key == "channel" {
 			channel = val
+
+			continue
+		}
+
+		flag, ok := PlayerURIKeyFlags[key]
+		if !ok || val == "" {
+			continue
 		}
 
 		if key == "placelauncherurl" {

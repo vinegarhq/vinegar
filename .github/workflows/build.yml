@@ -10,5 +10,16 @@ jobs:
     steps:
     - name: 'Checkout Repository'
       uses: actions/checkout@v3
+    - name: 'Setup Go'
+      uses: actions/setup-go@v4
+      with:
+        go-version: '^1.20'
+    - name: 'Make the vendor directory'
+      run: go mod vendor && mkdir tmp_vendor && mv ./vendor ./tmp_vendor/vendor
+    - name: Publish the vendor directory
+      uses: actions/upload-artifact@v3
+      with:
+        name: go-vendor
+        path: ./tmp_vendor
     - name: 'Build Vinegar'
       run: make

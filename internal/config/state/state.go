@@ -27,7 +27,7 @@ type State struct {
 }
 
 func Save(state *State) error {
-	err := dirs.Mkdirs(dirs.Config)
+	err := dirs.Mkdirs(dirs.PrefixData)
 	if err != nil {
 		return err
 	}

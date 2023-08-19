@@ -22,7 +22,7 @@ type Manifest struct {
 }
 
 func FetchManifest(ver roblox.Version, srcDir string) (Manifest, error) {
-	log.Printf("Fetching latest manifest for %s", ver.GUID)
+	log.Printf("Fetching latest manifest for %s (%s)", ver.GUID, ver.DeployURL)
 
 	manifest, err := util.Body(ver.DeployURL + ManifestSuffix)
 	if err != nil {

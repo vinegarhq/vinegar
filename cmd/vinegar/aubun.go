@@ -134,6 +134,7 @@ func SetupBinary(ver roblox.Version, dir string) {
 func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...string) {
 	var appCfg config.Application
 	var ver roblox.Version
+	var channelOverride string
 	name := bt.String()
 
 	switch bt {
@@ -180,12 +181,11 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 
 	channel := appCfg.Channel
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1") {
-		args, channel = bootstrapper.ParsePlayerURI(args[0])
-	}
+		args, channelOverride = bootstrapper.ParsePlayerURI(args[0])
 
-	if channel != appCfg.Channel && channel != "" {
-		log.Printf("Roblox is attempting to set channel to %s from launch URI, ignoring", channel)
-		channel = appCfg.Channel
+		if channelOverride != appCfg.Channel && channelOverride != "" {
+			log.Printf("Roblox is attempting to set channel to %s from launch URI, ignoring", channel)
+		}
 	}
 
 	if appCfg.ForcedVersion != "" {

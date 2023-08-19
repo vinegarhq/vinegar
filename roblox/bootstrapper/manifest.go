@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vinegarhq/aubun/roblox"
-	"github.com/vinegarhq/aubun/util"
+	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/util"
 )
 
 const ManifestSuffix = "-rbxPkgManifest.txt"
@@ -41,7 +41,7 @@ func FetchManifest(ver roblox.Version, srcDir string) (Manifest, error) {
 	}, nil
 }
 
-func (m Manifest) Download() error {
+func (m *Manifest) Download() error {
 	log.Printf("Downloading %d Packages", len(m.Packages))
 
 	return m.Packages.Perform(func(pkg Package) error {
@@ -68,7 +68,7 @@ func (m Manifest) Download() error {
 	})
 }
 
-func (m Manifest) Extract(dir string, dirs PackageDirectories) error {
+func (m *Manifest) Extract(dir string, dirs PackageDirectories) error {
 	log.Printf("Extracting %d Packages", len(m.Packages))
 
 	err := m.Packages.Perform(func(pkg Package) error {

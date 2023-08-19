@@ -56,10 +56,10 @@ func ParsePackages(manif []string) (Packages, error) {
 	return pkgs, nil
 }
 
-func (pkgs Packages) Perform(fn func(Package) error) error {
+func (pkgs *Packages) Perform(fn func(Package) error) error {
 	var eg errgroup.Group
 
-	for _, pkg := range pkgs {
+	for _, pkg := range *pkgs {
 		pkg := pkg
 
 		eg.Go(func() error {

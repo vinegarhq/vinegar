@@ -1,4 +1,4 @@
-module github.com/vinegarhq/aubun
+module github.com/vinegarhq/vinegar
 
 go 1.20
 

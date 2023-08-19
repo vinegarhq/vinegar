@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/vinegarhq/aubun/internal/dirs"
-	"github.com/vinegarhq/aubun/roblox"
+	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/roblox"
 )
 
 //go:embed config.toml

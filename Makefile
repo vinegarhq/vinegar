@@ -4,17 +4,17 @@ GO = go
 GO_LDFLAGS = -s -w
 WCC = x86_64-w64-mingw32-gcc
 
-all: aubun
-install: install-aubun
+all: vinegar
+install: install-vinegar
 
-aubun:
-	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/aubun
+vinegar:
+	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
 
 robloxmutexer: robloxmutexer.c
 	$(WCC) $< -o $@
 
-install-aubun: aubun
-	install -Dm755 aubun $(DESTDIR)$(PREFIX)/bin/aubun
+install-vinegar: vinegar
+	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 
 install-robloxmutexer: robloxmutexer
 	install -Dm755 robloxmutexer.exe $(DESTDIR)$(PREFIX)/bin/robloxmutexer
@@ -23,6 +23,6 @@ tests:
 	$(GO) test $(GOFLAGS) ./...
 
 clean:
-	rm -f aubun robloxmutexer.exe
+	rm -f vinegar robloxmutexer.exe
 
-.PHONY: all install install-aubun install-robloxmutexer tests clean
+.PHONY: all install install-vinegar install-robloxmutexer tests clean

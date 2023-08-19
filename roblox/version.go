@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/vinegarhq/aubun/util"
+	"github.com/vinegarhq/vinegar/util"
 )
 
 const (

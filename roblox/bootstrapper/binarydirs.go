@@ -1,7 +1,7 @@
 package bootstrapper
 
 import (
-	"github.com/vinegarhq/aubun/roblox"
+	"github.com/vinegarhq/vinegar/roblox"
 )
 
 type PackageDirectories map[string]string

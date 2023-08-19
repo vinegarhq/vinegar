@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/vinegarhq/aubun/internal/dirs"
-	"github.com/vinegarhq/aubun/roblox"
-	"github.com/vinegarhq/aubun/roblox/bootstrapper"
+	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 )
 
 var path = filepath.Join(dirs.PrefixData, "state.toml")
@@ -38,7 +38,7 @@ func Save(state *State) error {
 	}
 	defer file.Close()
 
-	_, err = file.WriteString("# State saved by aubun. DO NOT EDIT DIRECTLY.\n\n")
+	_, err = file.WriteString("# State saved by vinegar. DO NOT EDIT DIRECTLY.\n\n")
 	if err != nil {
 		return err
 	}

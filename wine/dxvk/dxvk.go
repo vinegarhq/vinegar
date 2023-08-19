@@ -11,8 +11,8 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/vinegarhq/aubun/util"
-	"github.com/vinegarhq/aubun/wine"
+	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
 const (

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/vinegarhq/aubun/roblox"
+	"github.com/vinegarhq/vinegar/roblox"
 )
 
 func TestProperBinaryDirectories(t *testing.T) {

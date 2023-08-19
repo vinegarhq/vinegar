@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/vinegarhq/aubun/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
 func File(name string) *os.File {

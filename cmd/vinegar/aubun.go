@@ -8,18 +8,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/vinegarhq/aubun/internal/config"
-	"github.com/vinegarhq/aubun/internal/config/state"
-	"github.com/vinegarhq/aubun/internal/dirs"
-	"github.com/vinegarhq/aubun/internal/logs"
-	"github.com/vinegarhq/aubun/roblox"
-	"github.com/vinegarhq/aubun/roblox/bootstrapper"
-	"github.com/vinegarhq/aubun/wine"
-	"github.com/vinegarhq/aubun/wine/dxvk"
+	"github.com/vinegarhq/vinegar/internal/config"
+	"github.com/vinegarhq/vinegar/internal/config/state"
+	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/logs"
+	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
+	"github.com/vinegarhq/vinegar/wine"
+	"github.com/vinegarhq/vinegar/wine/dxvk"
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: aubun kill|player|studio|exec [args...]")
+	fmt.Fprintln(os.Stderr, "usage: vinegar kill|player|studio|exec [args...]")
 
 	os.Exit(1)
 }

@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vinegarhq/aubun/internal/dirs"
-	"github.com/vinegarhq/aubun/util"
+	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/util"
 )
 
 func CleanPackages() error {

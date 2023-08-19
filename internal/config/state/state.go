@@ -12,7 +12,7 @@ import (
 	"github.com/vinegarhq/aubun/roblox/bootstrapper"
 )
 
-var path = filepath.Join(dirs.Prefix, "aubun-state.toml")
+var path = filepath.Join(dirs.PrefixData, "state.toml")
 
 type ApplicationState struct {
 	Version  string

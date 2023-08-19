@@ -11,12 +11,14 @@ MESA_GL_VERSION_OVERRIDE = "4.4"
 __GL_THREADED_OPTIMIZATIONS = "1"
 
 [player]
-channel = "LIVE"
 renderer = "D3D11"
 dxvk = true
 
 [player.env]
-DXVK_HUD = "1"
+DXVK_HUD = "fps"
 
 [player.fflags]
 DFIntTaskSchedulerTargetFps = 10000
+
+[studio]
+renderer = "D3D11"

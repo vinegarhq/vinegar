@@ -192,12 +192,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 
 	appCfg.Env.Setenv()
 
-	err = cfg.FFlags.SetRenderer(appCfg.Renderer)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = cfg.FFlags.Apply(verDir)
+	err = appCfg.FFlags.SetRenderer(appCfg.Renderer)
 	if err != nil {
 		log.Fatal(err)
 	}

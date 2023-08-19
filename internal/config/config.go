@@ -30,7 +30,6 @@ type Config struct {
 	WineRoot string        `toml:"wineroot"`
 	Player   Application   `toml:"player"`
 	Studio   Application   `toml:"studio"`
-	FFlags   roblox.FFlags `toml:"fflags"`
 	Env      Environment   `toml:"env"`
 }
 

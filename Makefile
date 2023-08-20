@@ -3,9 +3,10 @@ APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
 FLATPAK = io.github.vinegarhq.Vinegar
+VERSION = `git describe --tags --dirty`
 
 GO = go
-GO_LDFLAGS = -s -w
+GO_LDFLAGS = -s -w -X main.Version=$(VERSION)
 WCC = x86_64-w64-mingw32-gcc
 
 all: vinegar

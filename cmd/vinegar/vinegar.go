@@ -18,8 +18,11 @@ import (
 	"github.com/vinegarhq/vinegar/wine/dxvk"
 )
 
+var Version string
+
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar kill|player|studio|exec [args...]")
+	fmt.Fprintln(os.Stderr, "usage: vinegar player|studio|exec [args...]")
+	fmt.Fprintln(os.Stderr, "       vinegar kill|uninstall|delete|version")
 
 	os.Exit(1)
 }
@@ -69,6 +72,8 @@ func main() {
 	case "delete":
 		pfx.Kill()
 		Delete()
+	case "version":
+		fmt.Println(Version)
 	}
 }
 

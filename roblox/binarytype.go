@@ -12,7 +12,7 @@ func (bt BinaryType) String() string {
 	case Player:
 		return "WindowsPlayer"
 	case Studio:
-		return "WindowsStudio"
+		return "WindowsStudio64"
 	default:
 		return "unknown"
 	}

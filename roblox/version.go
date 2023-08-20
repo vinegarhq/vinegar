@@ -46,9 +46,12 @@ func FindCDN() (string, error) {
 
 	for _, cdn := range CDNURLs {
 		resp, err := http.Head(cdn + "/" + "version")
+		if err != nil {
+			continue
+		}
 		resp.Body.Close()
 
-		if err == nil && resp.StatusCode == 200 {
+		if resp.StatusCode == 200 {
 			log.Printf("Found deploy mirror: %s", cdn)
 
 			return cdn, nil
@@ -63,12 +66,11 @@ func ChannelPath(channel string) string {
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
 
-	channelPath := "/"
-	if channel != DefaultChannel {
-		channelPath += "channel/" + channel + "/"
+	if channel == DefaultChannel {
+		return "/"
 	}
 
-	return channelPath
+	return "/channel/" + channel + "/"
 }
 
 func ForceVersion(bt BinaryType, channel string, GUID string) (Version, error) {

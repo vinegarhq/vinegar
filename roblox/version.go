@@ -73,19 +73,21 @@ func ChannelPath(channel string) string {
 	return "/channel/" + channel + "/"
 }
 
-func ForceVersion(bt BinaryType, channel string, GUID string) (Version, error) {
-	if GUID == "" {
-		return Version{}, ErrNoVersion
-	}
-
+func NewVersion(bt BinaryType, channel string, GUID string) (Version, error) {
 	if channel == "" {
 		channel = DefaultChannel
+	}
+
+	if GUID == "" {
+		return Version{}, ErrNoVersion
 	}
 
 	cdn, err := FindCDN()
 	if err != nil {
 		return Version{}, fmt.Errorf("failed to find deploy mirror: %w", err)
 	}
+
+	log.Printf("Found %s version %s", bt.String(), GUID)
 
 	return Version{
 		Type:      bt,
@@ -101,11 +103,9 @@ func LatestVersion(bt BinaryType, channel string) (Version, error) {
 		channel = DefaultChannel
 	}
 
-	path := ChannelPath(channel)
-
 	log.Printf("Fetching latest version of %s for channel %s", bt.String(), channel)
 
-	resp, err := util.Body(VersionCheckURL + "/" + bt.String() + path)
+	resp, err := util.Body(VersionCheckURL + "/" + bt.String() + ChannelPath(channel))
 	if err != nil {
 		return Version{}, fmt.Errorf("failed to fetch version: %w", err)
 	}
@@ -119,16 +119,7 @@ func LatestVersion(bt BinaryType, channel string) (Version, error) {
 		return Version{}, ErrNoVersion
 	}
 
-	log.Printf("Fetched %s version: %s (%s)", bt.String(), cv.Version, cv.ClientVersionUpload)
+	log.Printf("Fetched %s canonical version %s", bt.String(), cv.Version)
 
-	cdn, err := FindCDN()
-	if err != nil {
-		return Version{}, fmt.Errorf("failed to find deploy mirror: %w", err)
-	}
-
-	return Version{
-		Type:      bt,
-		DeployURL: cdn + path + cv.ClientVersionUpload,
-		GUID:      cv.ClientVersionUpload,
-	}, nil
+	return NewVersion(bt, channel, cv.ClientVersionUpload)
 }

@@ -63,10 +63,6 @@ func ChannelPath(channel string) string {
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
 
-	if channel == "" {
-		channel = DefaultChannel
-	}
-
 	channelPath := "/"
 	if channel != DefaultChannel {
 		channelPath += "channel/" + channel + "/"
@@ -78,6 +74,10 @@ func ChannelPath(channel string) string {
 func ForceVersion(bt BinaryType, channel string, GUID string) (Version, error) {
 	if GUID == "" {
 		return Version{}, ErrNoVersion
+	}
+
+	if channel == "" {
+		channel = DefaultChannel
 	}
 
 	cdn, err := FindCDN()
@@ -94,6 +94,10 @@ func ForceVersion(bt BinaryType, channel string, GUID string) (Version, error) {
 
 func LatestVersion(bt BinaryType, channel string) (Version, error) {
 	var cv ClientVersion
+
+	if channel == "" {
+		channel = DefaultChannel
+	}
 
 	path := ChannelPath(channel)
 

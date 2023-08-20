@@ -97,15 +97,16 @@ func NewVersion(bt BinaryType, channel string, GUID string) (Version, error) {
 }
 
 func LatestVersion(bt BinaryType, channel string) (Version, error) {
+	url := VersionCheckURL + "/" + bt.String() + ChannelPath(channel)
 	var cv ClientVersion
 
 	if channel == "" {
 		channel = DefaultChannel
 	}
 
-	log.Printf("Fetching latest version of %s for channel %s", bt.String(), channel)
+	log.Printf("Fetching latest version of %s for channel %s (%s)", bt.String(), channel, url)
 
-	resp, err := util.Body(VersionCheckURL + "/" + bt.String() + ChannelPath(channel))
+	resp, err := util.Body(url)
 	if err != nil {
 		return Version{}, fmt.Errorf("failed to fetch version: %w", err)
 	}

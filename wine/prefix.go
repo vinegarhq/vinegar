@@ -29,9 +29,7 @@ func New(dir string, ver string) Prefix {
 	}
 }
 
-func (p *Prefix) Exec(args ...string) error {
-	log.Printf("Executing wine: %s", args)
-
+func (p *Prefix) ExecWine(args ...string) error {
 	args = append([]string{"wine"}, args...)
 
 	if p.Launcher != "" {
@@ -39,7 +37,13 @@ func (p *Prefix) Exec(args ...string) error {
 		args = append([]string{p.Launcher}, args...)
 	}
 
-	cmd := exec.Command(args[0], args[1:]...)
+	return p.Exec(args[0], args[1:]...)
+}
+
+func (p *Prefix) Exec(name string, args ...string) error {
+	log.Printf("Executing: %s %s", name, args)
+
+	cmd := exec.Command(name, args...)
 	cmd.Stderr = p.Output
 	cmd.Stdout = p.Output
 	cmd.Env = append(cmd.Environ(),
@@ -76,7 +80,7 @@ func (p *Prefix) Initialize() error {
 func (p *Prefix) Kill() {
 	log.Println("Killing wineprefix")
 
-	_ = p.Exec("wineboot", "-e")
+	_ = p.Exec("wineserver", "-k")
 }
 
 func (p *Prefix) Interrupt() {

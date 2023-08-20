@@ -59,7 +59,7 @@ func main() {
 	case "studio":
 		Binary(roblox.Studio, &cfg, &pfx, os.Args[2:]...)
 	case "exec":
-		if err := pfx.Exec(os.Args[2:]...); err != nil {
+		if err := pfx.ExecWine(os.Args[2:]...); err != nil {
 			log.Fatal(err)
 		}
 	case "kill":
@@ -94,8 +94,8 @@ func Uninstall() {
 }
 
 func Delete() {
-	log.Println("Deleting data directory")
-	if err := os.RemoveAll(dirs.Data); err != nil {
+	log.Println("Deleting Wineprefix")
+	if err := os.RemoveAll(dirs.Prefix); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -234,7 +234,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	pfx.Launcher = cfg.Launcher
 	args = append([]string{filepath.Join(verDir, bt.Executable())}, args...)
 
-	if err := pfx.Exec(args...); err != nil {
+	if err := pfx.ExecWine(args...); err != nil {
 		log.Fatal(err)
 	}
 

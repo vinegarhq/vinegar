@@ -74,6 +74,8 @@ func main() {
 		Delete()
 	case "version":
 		fmt.Println(Version)
+	default:
+		usage()
 	}
 }
 

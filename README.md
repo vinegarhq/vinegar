@@ -23,6 +23,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Automatic Wineprefix killer when Roblox has quit
 + Automatic Wineprefix version setter upon Wineprefix initialization
 + Automatic removal of outdated cached packages and versions of Roblox
++ FPS Unlocking for Player by default, without rbxfpsunlocker
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix
 + TOML configuration file
@@ -32,7 +33,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
   + Wine Root, allows you to set a specific wine installation path
   + Set different environment variables and FFlags for both Player and Studio
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
-+ Faster Multi-threaded installation and installation of Roblox
++ Faster Multi-threaded installation and extraction of Roblox
 + Multiple instances of Roblox open simultaneously via `robloxmutexer`
 + Logging for both Vinegar and Wine
 

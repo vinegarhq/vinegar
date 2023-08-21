@@ -10,3 +10,8 @@ require (
 )
 
 require golang.org/x/sys v0.11.0 // indirect
+
+retract (
+	[v1.0.0, v1.1.3]
+	v0.0.1
+)

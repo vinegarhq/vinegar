@@ -12,7 +12,7 @@ import (
 
 type Prefix struct {
 	Dir      string
-	Launcher string
+	Launcher []string
 	Output   io.Writer
 	Version  string
 }
@@ -32,9 +32,9 @@ func New(dir string, ver string) Prefix {
 func (p *Prefix) ExecWine(args ...string) error {
 	args = append([]string{"wine"}, args...)
 
-	if p.Launcher != "" {
+	if len(p.Launcher) > 0 {
 		log.Printf("Using launcher: %s", p.Launcher)
-		args = append([]string{p.Launcher}, args...)
+		args = append(p.Launcher, args...)
 	}
 
 	return p.Exec(args[0], args[1:]...)

@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/vinegarhq/vinegar/internal/config"
+	"github.com/vinegarhq/vinegar/internal/config/editor"
 	"github.com/vinegarhq/vinegar/internal/config/state"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
@@ -22,7 +23,7 @@ var Version string
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar player|studio|exec [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar kill|uninstall|delete|version")
+	fmt.Fprintln(os.Stderr, "       vinegar edit|kill|uninstall|delete|version")
 
 	os.Exit(1)
 }
@@ -61,6 +62,8 @@ func main() {
 		Binary(roblox.Player, &cfg, &pfx, os.Args[2:]...)
 	case "studio":
 		Binary(roblox.Studio, &cfg, &pfx, os.Args[2:]...)
+	case "edit":
+		editor.EditConfig()
 	case "exec":
 		if err := pfx.ExecWine(os.Args[2:]...); err != nil {
 			log.Fatal(err)

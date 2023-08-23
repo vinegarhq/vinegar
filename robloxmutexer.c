@@ -26,12 +26,11 @@ main() {
 
 	printf("roblox mutex locked\n");
 
-	for (;;) {
-		/*
-		 * you cannot do anything until you kill me;
-		 * by then, the mutex is yours.
-		 */
-	}
+	/*
+	 * you cannot do anything until you kill me;
+	 * by then, the mutex is yours.
+	 */
+	result = WaitForSingleObject(GetCurrentProcess(), INFINITE);
 
-    return 0;
+	return 0;
 }

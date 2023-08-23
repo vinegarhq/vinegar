@@ -13,6 +13,7 @@ __GL_THREADED_OPTIMIZATIONS = "1"
 [player]
 renderer = "D3D11"
 dxvk = true
+dxvk_version = "2.2"
 auto_kill_prefix = true
 
 [player.env]
@@ -23,3 +24,4 @@ DFIntTaskSchedulerTargetFps = 640
 
 [studio]
 renderer = "D3D11"
+dxvk_version = "2.2"

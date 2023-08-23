@@ -16,31 +16,31 @@ import (
 )
 
 const (
-	Repo        = "https://github.com/doitsujin/dxvk"
-	Version     = "2.2"
-	TarName     = "dxvk-" + Version + ".tar.gz"
-	WineVarName = "WINEDLLOVERRIDES"
+	Repo          = "https://github.com/doitsujin/dxvk"
+	TarNamePrefix = "dxvk-"
+	TarNameSuffix = ".tar.gz"
+	WineVarName   = "WINEDLLOVERRIDES"
 )
 
-var URL = Repo + "/releases/download/v" + Version + "/" + TarName
+var URLPrefix = Repo + "/releases/download/v"
 
-func Setenv() {
-	log.Printf("Using DXVK %s", Version)
+func Setenv(dxvkVersion string) {
+	log.Printf("Using DXVK %s", dxvkVersion)
 
 	os.Setenv(WineVarName, os.Getenv(WineVarName)+"d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
-func Fetch(dir string) error {
-	tarPath := filepath.Join(dir, TarName)
+func Fetch(dir string, dxvkVersion string) error {
+	tarPath := filepath.Join(dir, TarNamePrefix+dxvkVersion+TarNameSuffix)
 
 	if _, err := os.Stat(tarPath); errors.Is(err, os.ErrNotExist) {
-		log.Printf("Downloading DXVK %s", Version)
+		log.Printf("Downloading DXVK %s", dxvkVersion)
 
-		if err := util.Download(URL, tarPath); err != nil {
-			return fmt.Errorf("failed to download DXVK %s: %w", Version, err)
+		if err := util.Download(URLPrefix+dxvkVersion+"/"+TarNamePrefix+dxvkVersion+TarNameSuffix, tarPath); err != nil {
+			return fmt.Errorf("failed to download DXVK %s: %w", dxvkVersion, err)
 		}
 	} else if err == nil {
-		log.Printf("DXVK %s is already downloaded", Version)
+		log.Printf("DXVK %s is already downloaded", dxvkVersion)
 	} else {
 		return err
 	}
@@ -68,10 +68,10 @@ func Remove(pfx *wine.Prefix) error {
 	return pfx.Exec("wineboot", "-u")
 }
 
-func Extract(dir string, pfx *wine.Prefix) error {
-	tarPath := filepath.Join(dir, TarName)
+func Extract(dir string, pfx *wine.Prefix, dxvkVersion string) error {
+	tarPath := filepath.Join(dir, TarNamePrefix+dxvkVersion+TarNameSuffix)
 
-	log.Printf("Extracting DXVK %s", Version)
+	log.Printf("Extracting DXVK %s", dxvkVersion)
 
 	tarFile, err := os.Open(tarPath)
 	if err != nil {

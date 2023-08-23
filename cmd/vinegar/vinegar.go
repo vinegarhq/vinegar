@@ -159,17 +159,36 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		log.Fatal(err)
 	}
 
+	dxvkVersion, err := state.DxvkVersion()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	if err := dirs.Mkdirs(dirs.Cache); err != nil {
 		log.Fatal(err)
 	}
 
+	if !(dxvkVersion == appCfg.DxvkVersion) {
+		if err := dxvk.Remove(pfx); err != nil {
+			log.Fatal(err)
+		}
+
+		if err := state.SaveDxvk(false); err != nil {
+			log.Fatal(err)
+		}
+
+		if err := state.SaveDxvkVersion("2.2"); err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	if appCfg.Dxvk {
 		if !dxvkInstalled {
-			if err := dxvk.Fetch(dirs.Cache); err != nil {
+			if err := dxvk.Fetch(dirs.Cache, appCfg.DxvkVersion); err != nil {
 				log.Fatal(err)
 			}
 
-			if err := dxvk.Extract(dirs.Cache, pfx); err != nil {
+			if err := dxvk.Extract(dirs.Cache, pfx, appCfg.DxvkVersion); err != nil {
 				log.Fatal(err)
 			}
 
@@ -178,7 +197,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 			}
 		}
 
-		dxvk.Setenv()
+		dxvk.Setenv(dxvkVersion)
 	} else if dxvkInstalled && !cfg.Player.Dxvk && !cfg.Studio.Dxvk {
 		if err := dxvk.Remove(pfx); err != nil {
 			log.Fatal(err)

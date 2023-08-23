@@ -24,6 +24,7 @@ type Application struct {
 	ForcedVersion  string        `toml:"forced_version"`
 	AutoKillPrefix bool          `toml:"auto_kill_prefix"`
 	Dxvk           bool          `toml:"dxvk"`
+	DxvkVersion    string        `toml:"dxvk_version"`
 	FFlags         roblox.FFlags `toml:"fflags"`
 	Env            Environment   `toml:"env"`
 }

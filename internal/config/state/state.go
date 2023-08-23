@@ -23,6 +23,7 @@ type ApplicationStates map[string]ApplicationState
 
 type State struct {
 	DxvkInstalled bool
+	DxvkVersion   string
 	Applications  ApplicationStates
 }
 
@@ -101,6 +102,19 @@ func SaveDxvk(installed bool) error {
 	return Save(&state)
 }
 
+func SaveDxvkVersion(dxvkVersion string) error {
+	log.Printf("Saving installed DXVK version")
+
+	state, err := Load()
+	if err != nil {
+		return err
+	}
+
+	state.DxvkVersion = dxvkVersion
+
+	return Save(&state)
+}
+
 func Packages() ([]string, error) {
 	var packages []string
 
@@ -158,4 +172,13 @@ func DxvkInstalled() (bool, error) {
 	}
 
 	return states.DxvkInstalled, nil
+}
+
+func DxvkVersion() (string, error) {
+	states, err := Load()
+	if err != nil {
+		return "2.2", err
+	}
+
+	return states.DxvkVersion, nil
 }

@@ -168,7 +168,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		log.Fatal(err)
 	}
 
-	if !(dxvkVersion == appCfg.DxvkVersion) {
+	if dxvkVersion != appCfg.DxvkVersion {
 		if err := dxvk.Remove(pfx); err != nil {
 			log.Fatal(err)
 		}

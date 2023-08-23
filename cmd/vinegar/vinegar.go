@@ -154,26 +154,29 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		appCfg = cfg.Studio
 	}
 
-	dxvkInstalled, err := state.DxvkInstalled()
+	dxvkVersion, err := state.DxvkVersion()
 	if err != nil {
 		log.Fatal(err)
 	}
+	dxvkInstalled := dxvkVersion != ""
 
 	if err := dirs.Mkdirs(dirs.Cache); err != nil {
 		log.Fatal(err)
 	}
 
 	if appCfg.Dxvk {
-		if !dxvkInstalled {
-			if err := dxvk.Fetch(dirs.Cache); err != nil {
+		dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+cfg.DxvkVersion+".tar.gz")
+
+		if !dxvkInstalled || cfg.DxvkVersion != dxvkVersion {
+			if err := dxvk.Fetch(dxvkPath, cfg.DxvkVersion); err != nil {
 				log.Fatal(err)
 			}
 
-			if err := dxvk.Extract(dirs.Cache, pfx); err != nil {
+			if err := dxvk.Extract(dxvkPath, pfx); err != nil {
 				log.Fatal(err)
 			}
 
-			if err := state.SaveDxvk(true); err != nil {
+			if err := state.SaveDxvk(cfg.DxvkVersion); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -184,7 +187,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 			log.Fatal(err)
 		}
 
-		if err := state.SaveDxvk(false); err != nil {
+		if err := state.SaveDxvk(""); err != nil {
 			log.Fatal(err)
 		}
 	}

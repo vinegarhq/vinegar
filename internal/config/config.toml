@@ -1,3 +1,9 @@
+# This is the default configuration for Vinegar.
+# DO NOT EDIT; unless you know what you are doing,
+# use the existing configuration file.
+
+dxvk_version = "2.2"
+
 [env]
 WINEARCH = "win64"
 WINEDEBUG = "-all"

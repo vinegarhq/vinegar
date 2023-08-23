@@ -17,30 +17,26 @@ import (
 
 const (
 	Repo        = "https://github.com/doitsujin/dxvk"
-	Version     = "2.2"
-	TarName     = "dxvk-" + Version + ".tar.gz"
 	WineVarName = "WINEDLLOVERRIDES"
 )
 
-var URL = Repo + "/releases/download/v" + Version + "/" + TarName
-
 func Setenv() {
-	log.Printf("Using DXVK %s", Version)
+	log.Printf("Enabling DXVK DLL overrides")
 
 	os.Setenv(WineVarName, os.Getenv(WineVarName)+"d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
-func Fetch(dir string) error {
-	tarPath := filepath.Join(dir, TarName)
+func Fetch(name string, ver string) error {
+	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
 
-	if _, err := os.Stat(tarPath); errors.Is(err, os.ErrNotExist) {
-		log.Printf("Downloading DXVK %s", Version)
+	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
+		log.Printf("Downloading DXVK %s", ver)
 
-		if err := util.Download(URL, tarPath); err != nil {
-			return fmt.Errorf("failed to download DXVK %s: %w", Version, err)
+		if err := util.Download(url, name); err != nil {
+			return fmt.Errorf("failed to download DXVK: %w", err)
 		}
 	} else if err == nil {
-		log.Printf("DXVK %s is already downloaded", Version)
+		log.Printf("DXVK %s is already downloaded", ver)
 	} else {
 		return err
 	}
@@ -68,12 +64,10 @@ func Remove(pfx *wine.Prefix) error {
 	return pfx.Exec("wineboot", "-u")
 }
 
-func Extract(dir string, pfx *wine.Prefix) error {
-	tarPath := filepath.Join(dir, TarName)
+func Extract(name string, pfx *wine.Prefix) error {
+	log.Printf("Extracting DXVK")
 
-	log.Printf("Extracting DXVK %s", Version)
-
-	tarFile, err := os.Open(tarPath)
+	tarFile, err := os.Open(name)
 	if err != nil {
 		return err
 	}
@@ -102,10 +96,15 @@ func Extract(dir string, pfx *wine.Prefix) error {
 			continue
 		}
 
-		destDir := map[string]string{
+		destDir, ok := map[string]string{
 			"x64": filepath.Join(pfx.Dir, "drive_c", "windows", "system32"),
 			"x32": filepath.Join(pfx.Dir, "drive_c", "windows", "syswow64"),
 		}[filepath.Base(filepath.Dir(header.Name))]
+
+		if !ok {
+			log.Printf("Skipping DXVK unhandled file: %s", header.Name)
+			continue
+		}
 
 		if err := os.MkdirAll(destDir, 0o755); err != nil {
 			return err

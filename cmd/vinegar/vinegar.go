@@ -197,7 +197,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 			}
 		}
 
-		dxvk.Setenv(dxvkVersion)
+		dxvk.Setenv(appCfg.DxvkVersion)
 	} else if dxvkInstalled && !cfg.Player.Dxvk && !cfg.Studio.Dxvk {
 		if err := dxvk.Remove(pfx); err != nil {
 			log.Fatal(err)

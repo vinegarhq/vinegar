@@ -48,4 +48,4 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
   + [pizzaboxer](https://github.com/pizzaboxer)
   + [MaximumADHD](https://github.com/MaximumADHD)
 + Logo modified with Katie, made by the [Twemoji team](https://twemoji.twitter.com/), Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-+ Katie usage authorized by [kitteh](https://ksiv.neocities.org)
++ Katie usage authorized by [karliflux](https://karliflux.neocities.org)

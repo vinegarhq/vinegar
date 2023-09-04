@@ -1,4 +1,4 @@
-PREFIX     = /usr/local
+PREFIX     = /usr
 BINPREFIX  = $(PREFIX)/libexec/vinegar
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor

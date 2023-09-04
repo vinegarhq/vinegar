@@ -19,7 +19,10 @@ import (
 	"github.com/vinegarhq/vinegar/wine/dxvk"
 )
 
-var Version string
+var (
+	Version   string
+	BinPrefix string
+)
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar player|studio|exec [args...]")
@@ -240,6 +243,14 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	err = dirs.OverlayDir(verDir)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if cfg.MultipleInstances {
+		mutexer := pfx.Command("wine", filepath.Join(BinPrefix, "robloxmutexer.exe"))
+		err = mutexer.Start()
+		if err != nil {
+			log.Printf("Failed to launch robloxmutexer: %s", err)
+		}
 	}
 
 	log.Printf("Launching %s", name)

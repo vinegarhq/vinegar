@@ -29,12 +29,13 @@ type Application struct {
 }
 
 type Config struct {
-	Launcher    string      `toml:"launcher"`
-	WineRoot    string      `toml:"wineroot"`
-	DxvkVersion string      `toml:"dxvk_version"`
-	Player      Application `toml:"player"`
-	Studio      Application `toml:"studio"`
-	Env         Environment `toml:"env"`
+	Launcher          string      `toml:"launcher"`
+	WineRoot          string      `toml:"wineroot"`
+	DxvkVersion       string      `toml:"dxvk_version"`
+	MultipleInstances bool        `toml:"multiple_instances"`
+	Player            Application `toml:"player"`
+	Studio            Application `toml:"studio"`
+	Env               Environment `toml:"env"`
 }
 
 func Load() Config {

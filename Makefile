@@ -9,15 +9,15 @@ VERSION = `git describe --tags --dirty`
 GO = go
 GO_LDFLAGS = -s -w
 
-VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.Version=$(VERSION)
+VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
 
-all: vinegar
-install: install-vinegar install-desktop install-icons
+all: vinegar robloxmutexer.exe
+install: install-vinegar install-robloxmutexer install-desktop install-icons
 
 vinegar:
 	$(GO) build $(GOFLAGS) -ldflags="$(VINEGAR_LDFLAGS)" ./cmd/vinegar
 
-robloxmutexer:
+robloxmutexer.exe:
 	GOOS=windows $(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/robloxmutexer
 
 install-vinegar: vinegar
@@ -46,6 +46,7 @@ install-icons:
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar
+	rm -f $(DESTDIR)$(BINPREFIX)/robloxmutexer.exe
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).app.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).player.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).studio.desktop

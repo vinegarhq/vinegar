@@ -18,13 +18,18 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = windows.CreateMutex(nil, false, name)
+	handle, err := windows.CreateMutex(nil, false, name)
 	if err != nil {
 		if errors.Is(err, windows.ERROR_ALREADY_EXISTS) {
 			log.Fatal("Roblox's Mutex is already locked!")
 		} else {
 			log.Fatal(err)
 		}
+	}
+
+	_, err = windows.WaitForSingleObject(handle, 0)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	log.Println("Locked Roblox singleton Mutex")

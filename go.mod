@@ -9,7 +9,7 @@ require (
 	golang.org/x/sync v0.3.0
 )
 
-require golang.org/x/sys v0.11.0 // indirect
+require golang.org/x/sys v0.11.0
 
 retract (
 	[v1.0.0, v1.1.3]

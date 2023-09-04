@@ -1,4 +1,5 @@
 PREFIX     = /usr/local
+BINPREFIX  = $(PREFIX)/libexec/vinegar
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
@@ -6,23 +7,24 @@ FLATPAK = io.github.vinegarhq.Vinegar
 VERSION = `git describe --tags --dirty`
 
 GO = go
-GO_LDFLAGS = -s -w -X main.Version=$(VERSION)
-WCC = x86_64-w64-mingw32-gcc
+GO_LDFLAGS = -s -w
+
+VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.Version=$(VERSION)
 
 all: vinegar
 install: install-vinegar install-desktop install-icons
 
 vinegar:
-	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
+	$(GO) build $(GOFLAGS) -ldflags="$(VINEGAR_LDFLAGS)" ./cmd/vinegar
 
-robloxmutexer: robloxmutexer.c
-	$(WCC) $< -o $@
+robloxmutexer:
+	GOOS=windows $(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/robloxmutexer
 
 install-vinegar: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 
-install-robloxmutexer: robloxmutexer
-	install -Dm755 robloxmutexer.exe $(DESTDIR)$(PREFIX)/bin/robloxmutexer
+install-robloxmutexer: robloxmutexer.exe
+	install -Dm755 robloxmutexer.exe $(DESTDIR)$(BINPREFIX)/robloxmutexer.exe
 
 install-desktop:
 	mkdir -p $(DESTDIR)$(APPPREFIX)

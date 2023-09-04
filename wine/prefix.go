@@ -40,9 +40,7 @@ func (p *Prefix) ExecWine(args ...string) error {
 	return p.Exec(args[0], args[1:]...)
 }
 
-func (p *Prefix) Exec(name string, args ...string) error {
-	log.Printf("Executing: %s %s", name, args)
-
+func (p *Prefix) Command(name string, args ...string) *exec.Cmd {
 	cmd := exec.Command(name, args...)
 	cmd.Stderr = p.Output
 	cmd.Stdout = p.Output
@@ -50,7 +48,13 @@ func (p *Prefix) Exec(name string, args ...string) error {
 		"WINEPREFIX="+p.Dir,
 	)
 
-	return cmd.Run()
+	return cmd
+}
+
+func (p *Prefix) Exec(name string, args ...string) error {
+	log.Printf("Executing: %s %s", name, args)
+
+	return p.Command(name, args...).Run()
 }
 
 func (p *Prefix) Setup() error {

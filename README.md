@@ -34,7 +34,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
   + Set different environment variables and FFlags for both Player and Studio
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
 + Faster Multi-threaded installation and extraction of Roblox
-+ Multiple instances of Roblox open simultaneously via `robloxmutexer`
++ Multiple instances of Roblox open simultaneously
 + Logging for both Vinegar and Wine
 
 # See Also

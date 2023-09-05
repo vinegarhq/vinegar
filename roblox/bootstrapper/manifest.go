@@ -1,11 +1,8 @@
 package bootstrapper
 
 import (
-	"errors"
 	"fmt"
-	"io/fs"
 	"log"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -41,30 +38,36 @@ func FetchManifest(ver roblox.Version, srcDir string) (Manifest, error) {
 	}, nil
 }
 
+func (p *Package) Download(deployURL, dir string) error {
+	url := deployURL + "-" + p.Name
+	dest := filepath.Join(dir, p.Checksum)
+
+	if err := util.VerifyFileMD5(dest, p.Checksum); err == nil {
+		log.Printf("Package %s is already downloaded", p.Name)
+		return nil
+	}
+
+	log.Printf("Downloading Package %s", p.Name)
+	if err := util.Download(url, dest); err != nil {
+		return err
+	}
+
+	log.Printf("Verifying Package %s (%s)", p.Name, p.Checksum)
+	return util.VerifyFileMD5(dest, p.Checksum)
+}
+
 func (m *Manifest) Download() error {
 	log.Printf("Downloading %d Packages", len(m.Packages))
 
 	return m.Packages.Perform(func(pkg Package) error {
-		url := m.Version.DeployURL + "-" + pkg.Name
-		dest := filepath.Join(m.SourceDir, pkg.Checksum)
-
-		if _, err := os.Stat(dest); err == nil {
-			log.Printf("Package %s is already downloaded", pkg.Name)
-			return util.VerifyFileMD5(dest, pkg.Checksum)
-		} else if !errors.Is(err, fs.ErrNotExist) {
-			return err
+		err := pkg.Download(m.Version.DeployURL, m.SourceDir)
+		if err == nil {
+			return nil
 		}
 
-		if err := util.Download(url, dest); err != nil {
-			log.Printf("Unable to download package %s, retrying...", pkg.Name)
+		log.Printf("Failed to fetch package %s: %s, retrying...", pkg.Name, err)
 
-			if err := util.Download(url, dest); err != nil {
-				return fmt.Errorf("failed to download package %s: %w", pkg.Name, err)
-			}
-		}
-
-		log.Printf("Downloaded Package %s", pkg.Name)
-		return util.VerifyFileMD5(dest, pkg.Checksum)
+		return pkg.Download(m.Version.DeployURL, m.SourceDir)
 	})
 }
 

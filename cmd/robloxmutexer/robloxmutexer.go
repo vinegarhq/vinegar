@@ -1,10 +1,11 @@
+//go:build windows
 // +build windows
 
 package main
 
 import (
-	"log"
 	"errors"
+	"log"
 
 	"golang.org/x/sys/windows"
 )

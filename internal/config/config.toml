@@ -17,7 +17,6 @@ MESA_GL_VERSION_OVERRIDE = "4.4"
 __GL_THREADED_OPTIMIZATIONS = "1"
 
 [player]
-renderer = "D3D11"
 dxvk = true
 auto_kill_prefix = true
 
@@ -26,6 +25,3 @@ DXVK_HUD = "fps"
 
 [player.fflags]
 DFIntTaskSchedulerTargetFps = 640
-
-[studio]
-renderer = "D3D11"

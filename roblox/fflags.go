@@ -11,10 +11,11 @@ import (
 
 var (
 	ErrInvalidRenderer = errors.New("invalid renderer given")
+	DefaultRenderer    = "D3D11"
 	Renderers          = []string{
 		"OpenGL",
 		"D3D11FL10",
-		"D3D11",
+		DefaultRenderer,
 		"Vulkan",
 	}
 )
@@ -60,6 +61,10 @@ func (f *FFlags) Apply(versionDir string) error {
 
 func (f *FFlags) SetRenderer(renderer string) error {
 	valid := false
+
+	if renderer == "" {
+		renderer = DefaultRenderer
+	}
 
 	for _, r := range Renderers {
 		if renderer == r {

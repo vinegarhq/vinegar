@@ -2,7 +2,7 @@
 # DO NOT EDIT; unless you know what you are doing,
 # use the existing configuration file.
 
-dxvk_version = "2.2"
+dxvk_version = "2.3"
 
 [env]
 WINEARCH = "win64"

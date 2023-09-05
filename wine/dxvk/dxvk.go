@@ -15,15 +15,12 @@ import (
 	"github.com/vinegarhq/vinegar/wine"
 )
 
-const (
-	Repo        = "https://github.com/doitsujin/dxvk"
-	WineVarName = "WINEDLLOVERRIDES"
-)
+const Repo = "https://github.com/doitsujin/dxvk"
 
 func Setenv() {
 	log.Printf("Enabling DXVK DLL overrides")
 
-	os.Setenv(WineVarName, os.Getenv(WineVarName)+"d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
+	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+"d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
 func Fetch(name string, ver string) error {

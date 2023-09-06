@@ -1,7 +1,6 @@
 package editor
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -14,6 +13,16 @@ import (
 
 func EditConfig() {
 	var cfg config.Config
+
+	editor, err := Editor()
+	if err != nil {
+		log.Fatalf("failed to find editor: %s", err)
+	}
+
+	cmd := exec.Command(editor, config.Path)
+	cmd.Stdin = os.Stdin
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
 
 	if err := dirs.Mkdirs(dirs.Config); err != nil {
 		log.Fatal(err)
@@ -44,7 +53,7 @@ func EditConfig() {
 	file.Close()
 
 	for {
-		if err := Editor(config.Path); err != nil {
+		if err := cmd.Run(); err != nil {
 			log.Fatal(err)
 		}
 
@@ -60,18 +69,12 @@ func EditConfig() {
 	}
 }
 
-func Editor(path string) error {
-	editor, ok := os.LookupEnv("EDITOR")
-
-	if !ok {
-		return errors.New("no $EDITOR variable set")
+func Editor() (string, error) {
+	if editor := os.Getenv("EDITOR"); editor != "" {
+		return editor, nil
 	}
 
-	cmd := exec.Command(editor, path)
+	log.Println("no EDITOR set, falling back to nano")
 
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-
-	return cmd.Run()
+	return exec.LookPath("nano")
 }

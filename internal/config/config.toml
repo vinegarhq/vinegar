@@ -6,7 +6,7 @@ dxvk_version = "2.3"
 
 [env]
 WINEARCH = "win64"
-WINEDEBUG = "-all"
+WINEDEBUG = "err-kerberos,err-ntlm"
 WINEESYNC = "1"
 WINEDLLOVERRIDES = "dxdiagn=d;winemenubuilder.exe=d"
 

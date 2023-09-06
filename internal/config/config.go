@@ -33,6 +33,7 @@ type Config struct {
 	WineRoot          string      `toml:"wineroot"`
 	DxvkVersion       string      `toml:"dxvk_version"`
 	MultipleInstances bool        `toml:"multiple_instances"`
+	SanitizeEnv       bool        `toml:"sanitize_env"`
 	Player            Application `toml:"player"`
 	Studio            Application `toml:"studio"`
 	Env               Environment `toml:"env"`

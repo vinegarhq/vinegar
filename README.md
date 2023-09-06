@@ -31,6 +31,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
   + Select/Force Roblox release channels, lets you opt into non-production Roblox release channels
   + Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
   + Wine Root, allows you to set a specific wine installation path
+  + Sanitization of environment
   + Set different environment variables and FFlags for both Player and Studio
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
 + Faster Multi-threaded installation and extraction of Roblox

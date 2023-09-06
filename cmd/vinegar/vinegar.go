@@ -62,7 +62,7 @@ func main() {
 
 	cfg.Env.Setenv()
 
-	log.Println("Using environment: %s", os.Environ())
+	log.Printf("Using environment: %s", os.Environ())
 
 	if err := pfx.Setup(); err != nil {
 		log.Fatal(err)

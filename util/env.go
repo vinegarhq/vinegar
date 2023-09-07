@@ -11,6 +11,7 @@ var allowedEnv = []string{
 	"HOME", "USER", "LOGNAME",
 	"TZ",
 	"LANG", "LC_ALL",
+	"EDITOR",
 	"XDG_CACHE_HOME", "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_DATA_DIRS",
 	"XDG_RUNTIME_DIR", // Required by Wayland and Pipewire
 	"PULSE_SERVER", "PULSE_CLIENTCONFIG",

@@ -27,7 +27,7 @@ var (
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar player|studio|exec [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar edit|kill|uninstall|delete|version")
+	fmt.Fprintln(os.Stderr, "       vinegar edit|kill|uninstall|delete|version|install-webview2")
 
 	os.Exit(1)
 }
@@ -88,6 +88,10 @@ func main() {
 		Delete()
 	case "version":
 		fmt.Println(Version)
+	case "install-webview2":
+		if err := InstallWebview2(&pfx); err != nil {
+			log.Fatal(err)
+		}
 	default:
 		usage()
 	}

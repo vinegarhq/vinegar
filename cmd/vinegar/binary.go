@@ -49,7 +49,6 @@ func SetupBinary(ver roblox.Version, dir string) {
 func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...string) {
 	var appCfg config.Application
 	var ver roblox.Version
-	var channelOverride string
 	name := bt.String()
 
 	switch bt {
@@ -97,13 +96,9 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		}
 	}
 
-	channel := appCfg.Channel
-	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1") {
-		args, channelOverride = bootstrapper.ParsePlayerURI(args[0])
 
-		if channelOverride != appCfg.Channel && channelOverride != "" {
-			log.Printf("Roblox is attempting to set channel to %s from launch URI, ignoring", channel)
-		}
+	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1") {
+		args = bootstrapper.ParsePlayerURI(args[0])
 	} else if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = bootstrapper.ParseStudioURI(args[0])
 	}
@@ -111,12 +106,12 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	if appCfg.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", appCfg.ForcedVersion)
 
-		ver, err = roblox.NewVersion(bt, channel, appCfg.ForcedVersion)
+		ver, err = roblox.NewVersion(bt, appCfg.Channel, appCfg.ForcedVersion)
 		if err != nil {
 			log.Fatal(err)
 		}
 	} else {
-		ver, err = roblox.LatestVersion(bt, channel)
+		ver, err = roblox.LatestVersion(bt, appCfg.Channel)
 		if err != nil {
 			log.Fatal(err)
 		}

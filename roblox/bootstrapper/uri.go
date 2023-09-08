@@ -1,6 +1,7 @@
 package bootstrapper
 
 import (
+	"log"
 	"net/url"
 	"strings"
 )
@@ -14,7 +15,7 @@ var PlayerURIKeyFlags = map[string]string{
 	"gameLocale":       "--gloc",
 }
 
-func ParsePlayerURI(launchURI string) (args []string, channel string) {
+func ParsePlayerURI(launchURI string) (args []string) {
 	// Roblox Client forces usage of the desktop app
 	args = append(args, "--app")
 
@@ -27,7 +28,7 @@ func ParsePlayerURI(launchURI string) (args []string, channel string) {
 		key, val := pair[0], pair[1]
 
 		if key == "channel" {
-			channel = val
+			log.Println("Roblox is attempting to set channel to %s from launch URI, ignoring", val)
 
 			continue
 		}
@@ -59,6 +60,12 @@ func ParseStudioURI(launchURI string) (args []string) {
 		}
 
 		key, val := pair[0], pair[1]
+
+		if key == "channel" {
+			log.Println("Roblox is attempting to set channel to %s from launch URI, ignoring", val)
+
+			continue
+		}
 
 		if key == "gameinfo" {
 			args = append(args,

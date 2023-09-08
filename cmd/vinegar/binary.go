@@ -104,6 +104,8 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		if channelOverride != appCfg.Channel && channelOverride != "" {
 			log.Printf("Roblox is attempting to set channel to %s from launch URI, ignoring", channel)
 		}
+	} else if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
+		args = bootstrapper.ParseStudioURI(args[0])
 	}
 
 	if appCfg.ForcedVersion != "" {

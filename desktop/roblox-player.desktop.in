@@ -4,6 +4,6 @@ Name=Roblox Player (Vinegar)
 NoDisplay=true
 Icon=$FLATPAK.player
 Exec=vinegar player %u
-Terminal=false
+Terminal=true
 MimeType=x-scheme-handler/roblox;x-scheme-handler/roblox-player
 Categories=Game

@@ -3,5 +3,5 @@ Type=Application
 Name=Roblox App (Vinegar)
 Icon=$FLATPAK.player
 Exec=vinegar player -app
-Terminal=false
+Terminal=true
 Categories=Game

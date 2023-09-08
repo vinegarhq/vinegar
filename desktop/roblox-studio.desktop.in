@@ -3,6 +3,6 @@ Type=Application
 Name=Roblox Studio (Vinegar)
 Icon=$FLATPAK.studio
 Exec=vinegar studio %u
-Terminal=false
+Terminal=true
 MimeType=application/x-roblox-rbxl;application/x-roblox-rbxlx;x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth
 Categories=Game

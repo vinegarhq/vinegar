@@ -64,9 +64,9 @@ func ParseStudioURI(launchURI string) (args []string) {
 			args = append(args,
 				"-url", "https://www.roblox.com/Login/Negotiate.ashx", "-ticket", val,
 			)
-		} else {
+		} else if key != "roblox-studio" {
 			tempArgMap[key] = val
-			args = append(args, "-"+key, "val")
+			args = append(args, "-"+key, val)
 		}
 	}
 

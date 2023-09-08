@@ -96,10 +96,8 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		}
 	}
 
-	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1") {
-		args = bootstrapper.ParsePlayerURI(args[0])
-	} else if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
-		args = append([]string{"-protocolString"}, args[0])
+	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
+		args = []string{"-protocolString", args[0]}
 	}
 
 	if appCfg.ForcedVersion != "" {

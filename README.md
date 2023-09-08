@@ -21,7 +21,6 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 # Features
 + Automatic DXVK Installer and uninstaller
 + Automatic Wineprefix killer when Roblox has quit
-+ Automatic Wineprefix version setter upon Wineprefix initialization
 + Automatic removal of outdated cached packages and versions of Roblox
 + FPS Unlocking for Player by default, without rbxfpsunlocker
 + Browser launch via MIME

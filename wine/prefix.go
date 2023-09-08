@@ -11,18 +11,12 @@ type Prefix struct {
 	Dir      string
 	Launcher []string
 	Output   io.Writer
-	Version  string
 }
 
-func New(dir string, ver string) Prefix {
-	if ver == "" {
-		ver = "win10"
-	}
-
+func New(dir string) Prefix {
 	return Prefix{
-		Dir:     dir,
-		Output:  os.Stderr,
-		Version: ver,
+		Dir:    dir,
+		Output: os.Stderr,
 	}
 }
 

@@ -40,7 +40,7 @@ func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	cmd := os.Args[1]
-	pfx := wine.New(dirs.Prefix, "")
+	pfx := wine.New(dirs.Prefix)
 	pfx.Interrupt()
 
 	switch cmd {

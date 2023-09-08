@@ -32,11 +32,6 @@ func (p *Prefix) Initialize() error {
 		return err
 	}
 
-	log.Println("Setting wineprefix version to", p.Version)
-	if err := p.Exec("winecfg", "/v", p.Version); err != nil {
-		return err
-	}
-
 	log.Println("Disabling Crash dialogs")
 	return p.Regedit(noCrashDialogReg)
 }

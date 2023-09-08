@@ -19,11 +19,6 @@ func EditConfig() {
 		log.Fatalf("failed to find editor: %s", err)
 	}
 
-	cmd := exec.Command(editor, config.Path)
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	cmd.Stdout = os.Stdout
-
 	if err := dirs.Mkdirs(dirs.Config); err != nil {
 		log.Fatal(err)
 	}
@@ -53,6 +48,11 @@ func EditConfig() {
 	file.Close()
 
 	for {
+		cmd := exec.Command(editor, config.Path)
+		cmd.Stdin = os.Stdin
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+
 		if err := cmd.Run(); err != nil {
 			log.Fatal(err)
 		}

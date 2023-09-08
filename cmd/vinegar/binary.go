@@ -96,7 +96,6 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		}
 	}
 
-
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-player:1") {
 		args = bootstrapper.ParsePlayerURI(args[0])
 	} else if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {

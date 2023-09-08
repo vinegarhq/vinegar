@@ -28,7 +28,7 @@ func ParsePlayerURI(launchURI string) (args []string) {
 		key, val := pair[0], pair[1]
 
 		if key == "channel" {
-			log.Println("Roblox is attempting to set channel to %s from launch URI, ignoring", val)
+			log.Printf("Roblox is attempting to set channel to %s from launch URI, ignoring", val)
 
 			continue
 		}
@@ -62,7 +62,7 @@ func ParseStudioURI(launchURI string) (args []string) {
 		key, val := pair[0], pair[1]
 
 		if key == "channel" {
-			log.Println("Roblox is attempting to set channel to %s from launch URI, ignoring", val)
+			log.Printf("Roblox is attempting to set channel to %s from launch URI, ignoring", val)
 
 			continue
 		}

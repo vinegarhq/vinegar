@@ -25,23 +25,17 @@ func TestPlayerURIParsed(t *testing.T) {
 		"--gloc", "en_us",
 		"-channel", "Ganesh",
 	}
-	channelWant := "Ganesh"
-
-	args, channel := ParsePlayerURI(uri)
+	args := ParsePlayerURI(uri)
 
 	for i, val := range args {
 		if val != argsWant[i] {
 			t.Fatalf("launch player uri parsing failed, key %s, want key match for %s", val, argsWant[i])
 		}
 	}
-
-	if channel != channelWant {
-		t.Fatalf("launch player uri parsing failed, %v, want channel match for %s", channel, channelWant)
-	}
 }
 
 func TestPlayerURIInvalidKey(t *testing.T) {
-	args, _ := ParsePlayerURI("roblox-player:1+launchmode:play+channel")
+	args := ParsePlayerURI("roblox-player:1+launchmode:play+channel")
 
 	if len(args) == 1 && args[0] != "--app" {
 		t.Fail()

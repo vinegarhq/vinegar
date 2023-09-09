@@ -112,6 +112,10 @@ func (c *Config) Setup() error {
 		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
 
+	if !roblox.ValidRenderer(c.Player.Renderer) || !roblox.ValidRenderer(c.Studio.Renderer) {
+		return fmt.Errorf("invalid renderer given to either player or studio")
+	}
+
 	c.Env.Setenv()
 
 	return nil

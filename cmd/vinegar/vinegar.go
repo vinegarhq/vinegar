@@ -13,7 +13,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/roblox"
-	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -51,15 +50,10 @@ func main() {
 		defer logFile.Close()
 	}
 
-	cfg := config.Load()
-
-	if cfg.SanitizeEnv {
-		util.SanitizeEnv()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal(err)
 	}
-
-	cfg.Env.Setenv()
-
-	log.Printf("Using environment: %s", os.Environ())
 
 	if err := pfx.Setup(); err != nil {
 		log.Fatal(err)

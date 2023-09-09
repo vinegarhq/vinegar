@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/util"
 )
 
 var Path = filepath.Join(dirs.Config, "config.toml")
@@ -36,36 +38,24 @@ type Config struct {
 	Env               Environment `toml:"env"`
 }
 
-func Load() Config {
+func Load() (Config, error) {
 	cfg := Default()
 
 	if _, err := os.Stat(Path); errors.Is(err, os.ErrNotExist) {
 		log.Println("Using default configuration")
 
-		return cfg
+		return cfg, nil
 	}
 
 	if _, err := toml.DecodeFile(Path, &cfg); err != nil {
-		log.Printf("Failed to load configuration: %s, using default configuration", err)
+		return cfg, fmt.Errorf("failed to decode configuration file: %w", err)
 	}
 
-	if cfg.WineRoot != "" {
-		log.Printf("Using Wine Root: %s", cfg.WineRoot)
-		bin := filepath.Join(cfg.WineRoot, "bin")
-
-		if !filepath.IsAbs(cfg.WineRoot) {
-			log.Fatal("ensure that the wine root given is an absolute path")
-		}
-
-		_, err := os.Stat(filepath.Join(bin, "wine"))
-		if err != nil {
-			log.Fatalf("invalid wine root given: %s", err)
-		}
-
-		cfg.Env["PATH"] = bin + ":" + os.Getenv("PATH")
+	if err := cfg.Setup(); err != nil {
+		return cfg, fmt.Errorf("failed to setup configuration: %w", err)
 	}
 
-	return cfg
+	return cfg, nil
 }
 
 func Default() Config {
@@ -73,20 +63,20 @@ func Default() Config {
 		DxvkVersion: "2.3",
 
 		Env: Environment{
-			"WINEARCH": "win64",
-			"WINEDEBUG": "err-kerberos,err-ntlm",
-			"WINEESYNC": "1",
+			"WINEARCH":         "win64",
+			"WINEDEBUG":        "err-kerberos,err-ntlm",
+			"WINEESYNC":        "1",
 			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d",
 
 			"DXVK_LOG_LEVEL": "warn",
-			"DXVK_LOG_PATH": "none",
+			"DXVK_LOG_PATH":  "none",
 
-			"MESA_GL_VERSION_OVERRIDE": "4.4",
+			"MESA_GL_VERSION_OVERRIDE":    "4.4",
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
 
 		Player: Application{
-			Dxvk: true,
+			Dxvk:           true,
 			AutoKillPrefix: true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
@@ -101,6 +91,28 @@ func (e *Environment) Setenv() {
 	}
 }
 
-func (c *Config) Print() error {
-	return toml.NewEncoder(os.Stdout).Encode(c)
+func (c *Config) Setup() error {
+	if c.SanitizeEnv {
+		util.SanitizeEnv()
+	}
+
+	if c.WineRoot != "" {
+		bin := filepath.Join(c.WineRoot, "bin")
+
+		if !filepath.IsAbs(c.WineRoot) {
+			return errors.New("ensure that the wine root given is an absolute path")
+		}
+
+		_, err := os.Stat(filepath.Join(bin, "wine"))
+		if err != nil {
+			return fmt.Errorf("invalid wine root given: %s", err)
+		}
+
+		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
+		log.Printf("Using Wine Root: %s", c.WineRoot)
+	}
+
+	c.Env.Setenv()
+
+	return nil
 }

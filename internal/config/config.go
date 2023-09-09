@@ -1,7 +1,6 @@
 package config
 
 import (
-	_ "embed"
 	"errors"
 	"log"
 	"os"
@@ -12,8 +11,6 @@ import (
 	"github.com/vinegarhq/vinegar/roblox"
 )
 
-//go:embed config.toml
-var DefaultConfig string
 var Path = filepath.Join(dirs.Config, "config.toml")
 
 type Environment map[string]string
@@ -40,10 +37,7 @@ type Config struct {
 }
 
 func Load() Config {
-	var cfg Config
-
-	// This is a default hard-coded configuration. It should not fail.
-	_, _ = toml.Decode(DefaultConfig, &cfg)
+	cfg := Default()
 
 	if _, err := os.Stat(Path); errors.Is(err, os.ErrNotExist) {
 		log.Println("Using default configuration")
@@ -72,6 +66,33 @@ func Load() Config {
 	}
 
 	return cfg
+}
+
+func Default() Config {
+	return Config{
+		DxvkVersion: "2.3",
+
+		Env: Environment{
+			"WINEARCH": "win64",
+			"WINEDEBUG": "err-kerberos,err-ntlm",
+			"WINEESYNC": "1",
+			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d",
+
+			"DXVK_LOG_LEVEL": "warn",
+			"DXVK_LOG_PATH": "none",
+
+			"MESA_GL_VERSION_OVERRIDE": "4.4",
+			"__GL_THREADED_OPTIMIZATIONS": "1",
+		},
+
+		Player: Application{
+			Dxvk: true,
+			AutoKillPrefix: true,
+			FFlags: roblox.FFlags{
+				"DFIntTaskSchedulerTargetFps": 640,
+			},
+		},
+	}
 }
 
 func (e *Environment) Setenv() {

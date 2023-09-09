@@ -38,8 +38,10 @@ func main() {
 
 	switch cmd {
 	// These commands don't require a configuration
-	case "edit", "uninstall", "version":
+	case "delete", "edit", "uninstall", "version":
 		switch cmd {
+		case "delete":
+			Delete()
 		case "edit":
 			editor.EditConfig()
 		case "uninstall":
@@ -49,7 +51,7 @@ func main() {
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
-	case "player", "studio", "exec", "kill", "delete", "install-webview2":
+	case "player", "studio", "exec", "kill", "install-webview2":
 		cfg, err := config.Load()
 		if err != nil {
 			log.Fatal(err)
@@ -69,9 +71,6 @@ func main() {
 			}
 		case "kill":
 			pfx.Kill()
-		case "delete":
-			pfx.Kill()
-			Delete()
 		case "install-webview2":
 			if err := InstallWebview2(&pfx); err != nil {
 				log.Fatal(err)

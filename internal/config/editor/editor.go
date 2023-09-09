@@ -6,14 +6,11 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
 func EditConfig() {
-	var cfg config.Config
-
 	editor, err := Editor()
 	if err != nil {
 		log.Fatalf("failed to find editor: %s", err)
@@ -57,7 +54,7 @@ func EditConfig() {
 			log.Fatal(err)
 		}
 
-		if _, err := toml.DecodeFile(config.Path, &cfg); err != nil {
+		if _, err := config.Load(); err != nil {
 			log.Println(err)
 			log.Println("Press enter to re-edit configuration file")
 			fmt.Scanln()

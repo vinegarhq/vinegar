@@ -10,7 +10,6 @@ import (
 )
 
 var (
-	ErrInvalidRenderer = errors.New("invalid renderer given")
 	DefaultRenderer    = "D3D11"
 	Renderers          = []string{
 		"OpenGL",
@@ -59,9 +58,7 @@ func (f *FFlags) Apply(versionDir string) error {
 	return nil
 }
 
-func (f *FFlags) SetRenderer(renderer string) error {
-	valid := false
-
+func ValidRenderer(renderer string) (valid bool) {
 	if renderer == "" {
 		renderer = DefaultRenderer
 	}
@@ -72,15 +69,19 @@ func (f *FFlags) SetRenderer(renderer string) error {
 		}
 	}
 
-	if !valid {
-		return fmt.Errorf("%w: %s", ErrInvalidRenderer, renderer)
+	return
+}
+
+func (f *FFlags) SetRenderer(renderer string) error {
+	if !ValidRenderer(renderer) {
+		return fmt.Errorf("invalid renderer given: %s", renderer)
 	}
 
 	if len(*f) == 0 {
 		*f = make(FFlags)
 	}
 
-	log.Printf("Setting renderer: %s", renderer)
+	log.Printf("Using renderer: %s", renderer)
 
 	// Disable all other renderers except the given one.
 	for _, r := range Renderers {

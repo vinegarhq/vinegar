@@ -10,8 +10,8 @@ import (
 )
 
 var (
-	DefaultRenderer    = "D3D11"
-	Renderers          = []string{
+	DefaultRenderer = "D3D11"
+	Renderers       = []string{
 		"OpenGL",
 		"D3D11FL10",
 		DefaultRenderer,

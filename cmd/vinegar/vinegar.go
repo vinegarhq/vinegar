@@ -33,55 +33,65 @@ func main() {
 		usage()
 	}
 
+	cmd := os.Args[1]
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	cmd := os.Args[1]
-	pfx := wine.New(dirs.Prefix)
-	pfx.Interrupt()
-
 	switch cmd {
-	case "player", "studio":
-		logFile := logs.File(cmd)
-		logOutput := io.MultiWriter(logFile, os.Stderr)
-
-		pfx.Output = logOutput
-		log.SetOutput(logOutput)
-
-		defer logFile.Close()
-	}
-
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := pfx.Setup(); err != nil {
-		log.Fatal(err)
-	}
-
-	switch cmd {
-	case "player":
-		Binary(roblox.Player, &cfg, &pfx, os.Args[2:]...)
-	case "studio":
-		Binary(roblox.Studio, &cfg, &pfx, os.Args[2:]...)
-	case "edit":
-		editor.EditConfig()
-	case "exec":
-		if err := pfx.ExecWine(os.Args[2:]...); err != nil {
+	// These commands don't require a configuration
+	case "edit", "uninstall", "version":
+		switch cmd {
+		case "edit":
+			editor.EditConfig()
+		case "uninstall":
+			Uninstall()
+		case "version":
+			fmt.Println(Version)
+		}
+	// These commands (except player & studio) don't require a configuration,
+	// but they require a wineprefix, hence wineroot of configuration is required.
+	case "player", "studio", "exec", "kill", "delete", "install-webview2":
+		cfg, err := config.Load()
+		if err != nil {
 			log.Fatal(err)
 		}
-	case "kill":
-		pfx.Kill()
-	case "uninstall":
-		Uninstall()
-	case "delete":
-		pfx.Kill()
-		Delete()
-	case "version":
-		fmt.Println(Version)
-	case "install-webview2":
-		if err := InstallWebview2(&pfx); err != nil {
+
+		pfx := wine.New(dirs.Prefix)
+		pfx.Interrupt()
+
+		if err := pfx.Setup(); err != nil {
 			log.Fatal(err)
+		}
+
+		switch cmd {
+		case "exec":
+			if err := pfx.ExecWine(os.Args[2:]...); err != nil {
+				log.Fatal(err)
+			}
+		case "kill":
+			pfx.Kill()
+		case "delete":
+			pfx.Kill()
+			Delete()
+		case "install-webview2":
+			if err := InstallWebview2(&pfx); err != nil {
+				log.Fatal(err)
+			}
+
+		case "player", "studio":
+			logFile := logs.File(cmd)
+			logOutput := io.MultiWriter(logFile, os.Stderr)
+
+			pfx.Output = logOutput
+			log.SetOutput(logOutput)
+
+			defer logFile.Close()
+
+			switch cmd {
+			case "player":
+				Binary(roblox.Player, &cfg, &pfx, os.Args[2:]...)
+			case "studio":
+				Binary(roblox.Studio, &cfg, &pfx, os.Args[2:]...)
+			}
 		}
 	default:
 		usage()

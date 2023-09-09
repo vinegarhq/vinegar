@@ -109,6 +109,7 @@ func (c *Config) Setup() error {
 		}
 
 		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
+		os.Unsetenv("WINEDLLPATH")
 		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
 

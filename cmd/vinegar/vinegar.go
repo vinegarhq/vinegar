@@ -57,7 +57,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		pfx := wine.New(dirs.Prefix)
+		pfx := wine.New(dirs.GetPrefixPath(""))
 		pfx.Interrupt()
 
 		if err := pfx.Setup(); err != nil {
@@ -98,7 +98,9 @@ func main() {
 }
 
 func Uninstall() {
-	vers, err := state.Versions()
+	pfx := wine.New(dirs.GetPrefixPath(""))
+
+	vers, err := state.Versions(&pfx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -106,21 +108,23 @@ func Uninstall() {
 	for _, ver := range vers {
 		log.Println("Removing version directory", ver)
 
-		err = os.RemoveAll(filepath.Join(dirs.Versions, ver))
+		err = os.RemoveAll(filepath.Join(dirs.GetVersionsPath(&pfx), ver))
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	err = state.ClearApplications()
+	err = state.ClearApplications(&pfx)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 func Delete() {
+	var prefix = dirs.GetPrefixPath("")
+
 	log.Println("Deleting Wineprefix")
-	if err := os.RemoveAll(dirs.Prefix); err != nil {
+	if err := os.RemoveAll(prefix); err != nil {
 		log.Fatal(err)
 	}
 }

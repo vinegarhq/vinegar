@@ -10,9 +10,10 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
-var path = filepath.Join(dirs.PrefixData, "state.toml")
+var pathFilename = "state.toml"
 
 type ApplicationState struct {
 	Version  string
@@ -26,8 +27,17 @@ type State struct {
 	Applications ApplicationStates
 }
 
-func Save(state *State) error {
-	err := dirs.Mkdirs(dirs.PrefixData)
+func GetPaths(pfx *wine.Prefix) (string, string) {
+	var prefixDataPath = dirs.GetPrefixData(pfx)
+	var statePath = filepath.Join(prefixDataPath, pathFilename)
+
+	return prefixDataPath, statePath
+}
+
+func Save(pfx *wine.Prefix, state *State) error {
+	var prefixDataPath, path = GetPaths(pfx)
+
+	err := dirs.Mkdirs(prefixDataPath)
 	if err != nil {
 		return err
 	}
@@ -51,7 +61,8 @@ func Save(state *State) error {
 	return nil
 }
 
-func Load() (State, error) {
+func Load(pfx *wine.Prefix) (State, error) {
+	var _, path = GetPaths(pfx)
 	var state State
 
 	_, err := toml.DecodeFile(path, &state)
@@ -62,12 +73,12 @@ func Load() (State, error) {
 	return state, nil
 }
 
-func SaveManifest(manif *bootstrapper.Manifest) error {
+func SaveManifest(pfx *wine.Prefix, manif *bootstrapper.Manifest) error {
 	name := manif.Version.Type.String()
 
 	log.Printf("Saving Manifest State for %s", name)
 
-	state, err := Load()
+	state, err := Load(pfx)
 	if err != nil {
 		return err
 	}
@@ -85,26 +96,26 @@ func SaveManifest(manif *bootstrapper.Manifest) error {
 
 	state.Applications[name] = app
 
-	return Save(&state)
+	return Save(pfx, &state)
 }
 
-func SaveDxvk(ver string) error {
+func SaveDxvk(pfx *wine.Prefix, ver string) error {
 	log.Printf("Saving installed DXVK State")
 
-	state, err := Load()
+	state, err := Load(pfx)
 	if err != nil {
 		return err
 	}
 
 	state.DxvkVersion = ver
 
-	return Save(&state)
+	return Save(pfx, &state)
 }
 
-func Packages() ([]string, error) {
+func Packages(pfx *wine.Prefix) ([]string, error) {
 	var packages []string
 
-	states, err := Load()
+	states, err := Load(pfx)
 	if err != nil {
 		return []string{}, err
 	}
@@ -116,8 +127,8 @@ func Packages() ([]string, error) {
 	return packages, nil
 }
 
-func Version(bt roblox.BinaryType) (string, error) {
-	states, err := Load()
+func Version(pfx *wine.Prefix, bt roblox.BinaryType) (string, error) {
+	states, err := Load(pfx)
 	if err != nil {
 		return "", err
 	}
@@ -125,10 +136,10 @@ func Version(bt roblox.BinaryType) (string, error) {
 	return states.Applications[bt.String()].Version, nil
 }
 
-func Versions() ([]string, error) {
+func Versions(pfx *wine.Prefix) ([]string, error) {
 	var versions []string
 
-	states, err := Load()
+	states, err := Load(pfx)
 	if err != nil {
 		return []string{}, err
 	}
@@ -140,19 +151,19 @@ func Versions() ([]string, error) {
 	return versions, nil
 }
 
-func ClearApplications() error {
-	state, err := Load()
+func ClearApplications(pfx *wine.Prefix) error {
+	state, err := Load(pfx)
 	if err != nil {
 		return err
 	}
 
 	state.Applications = nil
 
-	return Save(&state)
+	return Save(pfx, &state)
 }
 
-func DxvkVersion() (string, error) {
-	states, err := Load()
+func DxvkVersion(pfx *wine.Prefix) (string, error) {
+	states, err := Load(pfx)
 	if err != nil {
 		return "", err
 	}

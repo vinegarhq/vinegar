@@ -7,10 +7,11 @@ import (
 
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
-func CleanPackages() error {
-	pkgs, err := Packages()
+func CleanPackages(pfx *wine.Prefix) error {
+	pkgs, err := Packages(pfx)
 	if err != nil {
 		return err
 	}
@@ -23,16 +24,18 @@ func CleanPackages() error {
 	})
 }
 
-func CleanVersions() error {
-	vers, err := Versions()
+func CleanVersions(pfx *wine.Prefix) error {
+	var versionsDir = dirs.GetVersionsPath(pfx)
+
+	vers, err := Versions(pfx)
 	if err != nil {
 		return err
 	}
 
 	log.Println("Checking for unused version directories")
 
-	return util.WalkDirExcluded(dirs.Versions, vers, func(path string) error {
+	return util.WalkDirExcluded(versionsDir, vers, func(path string) error {
 		log.Printf("Removing unused version directory %s", path)
-		return os.RemoveAll(filepath.Join(dirs.Versions, path))
+		return os.RemoveAll(filepath.Join(versionsDir, path))
 	})
 }

@@ -15,7 +15,7 @@ import (
 	"github.com/vinegarhq/vinegar/wine/dxvk"
 )
 
-func SetupBinary(ver roblox.Version, dir string) {
+func SetupBinary(pfx *wine.Prefix, ver roblox.Version, dir string) {
 	if err := dirs.Mkdirs(dir, dirs.Downloads); err != nil {
 		log.Fatal(err)
 	}
@@ -33,15 +33,15 @@ func SetupBinary(ver roblox.Version, dir string) {
 		log.Fatal(err)
 	}
 
-	if err := state.SaveManifest(&manifest); err != nil {
+	if err := state.SaveManifest(pfx, &manifest); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := state.CleanPackages(); err != nil {
+	if err := state.CleanPackages(pfx); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := state.CleanVersions(); err != nil {
+	if err := state.CleanVersions(pfx); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -58,7 +58,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		appCfg = cfg.Studio
 	}
 
-	dxvkVersion, err := state.DxvkVersion()
+	dxvkVersion, err := state.DxvkVersion(pfx)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -80,7 +80,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 				log.Fatal(err)
 			}
 
-			if err := state.SaveDxvk(cfg.DxvkVersion); err != nil {
+			if err := state.SaveDxvk(pfx, cfg.DxvkVersion); err != nil {
 				log.Fatal(err)
 			}
 		}
@@ -91,7 +91,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 			log.Fatal(err)
 		}
 
-		if err := state.SaveDxvk(""); err != nil {
+		if err := state.SaveDxvk(pfx, ""); err != nil {
 			log.Fatal(err)
 		}
 	}
@@ -114,12 +114,12 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 		}
 	}
 
-	verDir := filepath.Join(dirs.Versions, ver.GUID)
+	verDir := filepath.Join(dirs.GetVersionsPath(pfx), ver.GUID)
 
 	_, err = os.Stat(filepath.Join(verDir, "AppSettings.xml"))
 	if err != nil {
 		log.Printf("Updating/Installing %s", name)
-		SetupBinary(ver, verDir)
+		SetupBinary(pfx, ver, verDir)
 	} else {
 		log.Printf("%s is up to date (%s)", name, ver.GUID)
 	}

@@ -83,7 +83,7 @@ func Default() Config {
 			},
 		},
 		Studio: Application{
-			Dxvk:           true,
+			Dxvk: true,
 		},
 	}
 }

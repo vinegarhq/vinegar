@@ -28,14 +28,16 @@ type Application struct {
 }
 
 type Config struct {
-	Launcher          string      `toml:"launcher"`
-	WineRoot          string      `toml:"wineroot"`
-	DxvkVersion       string      `toml:"dxvk_version"`
-	MultipleInstances bool        `toml:"multiple_instances"`
-	SanitizeEnv       bool        `toml:"sanitize_env"`
-	Player            Application `toml:"player"`
-	Studio            Application `toml:"studio"`
-	Env               Environment `toml:"env"`
+	Launcher           string      `toml:"launcher"`
+	WineRoot           string      `toml:"wineroot"`
+	DxvkVersion        string      `toml:"dxvk_version"`
+	MultipleInstances  bool        `toml:"multiple_instances"`
+	SanitizeEnv        bool        `toml:"sanitize_env"`
+	Player             Application `toml:"player"`
+	Studio             Application `toml:"studio"`
+	Env                Environment `toml:"env"`
+	WineHQReportMode   bool        `toml:"winehq_report_mode"`
+	WineRootReportMode string      `toml:"wineroot_report_mode"`
 }
 
 func Load() (Config, error) {
@@ -60,7 +62,8 @@ func Load() (Config, error) {
 
 func Default() Config {
 	return Config{
-		DxvkVersion: "2.3",
+		DxvkVersion:      "2.3",
+		WineHQReportMode: false,
 
 		Env: Environment{
 			"WINEARCH":         "win64",
@@ -97,6 +100,20 @@ func (e *Environment) Setenv() {
 func (c *Config) Setup() error {
 	if c.SanitizeEnv {
 		util.SanitizeEnv()
+	}
+
+	if c.WineHQReportMode {
+		log.Printf("WARNING: WineHQReportMode is enabled. This is a development option; do not continue unless you know what you're doing.")
+
+		//Override the WineRoot with the one defined by WineRootReportMode. This root *must* point to a WineHQ (unpatched) wine version, otherwise reports will be invalid.
+		//Note for packagers: Feedback is needed here for those which are bundling their own wine build.
+		c.WineRoot = c.WineRootReportMode
+
+		if c.WineRoot == "" {
+			log.Printf("WineHQReportMode: Wine Root has been overriden; using system's wine.")
+		} else {
+			log.Printf("WineHQReportMode: Wine Root has been overriden to \"%s\".", c.WineRoot)
+		}
 	}
 
 	if c.WineRoot != "" {

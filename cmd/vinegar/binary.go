@@ -67,8 +67,9 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	if err := dirs.Mkdirs(dirs.Cache); err != nil {
 		log.Fatal(err)
 	}
-
-	if appCfg.Dxvk {
+	if cfg.WineHQReportMode {
+		log.Printf("WineHQReportMode: Skipping DXVK logic")
+	} else if appCfg.Dxvk {
 		dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+cfg.DxvkVersion+".tar.gz")
 
 		if !dxvkInstalled || cfg.DxvkVersion != dxvkVersion {

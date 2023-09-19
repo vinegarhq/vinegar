@@ -82,6 +82,9 @@ func Default() Config {
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
 		},
+		Studio: Application{
+			Dxvk:           true,
+		},
 	}
 }
 

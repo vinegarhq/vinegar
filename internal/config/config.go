@@ -106,9 +106,23 @@ func (c *Config) Setup() error {
 			return errors.New("ensure that the wine root given is an absolute path")
 		}
 
-		_, err := os.Stat(filepath.Join(bin, "wine"))
-		if err != nil {
-			return fmt.Errorf("invalid wine root given: %s", err)
+		wine_path := filepath.Join(bin, "wine")
+		wine64_path := filepath.Join(bin, "wine64")
+		_, err := os.Stat(wine_path)
+		_, err2 := os.Stat(wine64_path)
+
+		if err != nil && err2 == nil {
+			//Workaround for 64bit-only wine builds; they don't actually have a wine binary, so make a hard link to it instead.
+			//Technically we could just infer this during runtime, but making the hard link is the easiest solution.
+			//If we don't make a link, system 32bit binaries might be used along with WineRoot's 64bit binaries... (bad)
+			err := os.Symlink(wine64_path, wine_path)
+
+			if err != nil {
+				return fmt.Errorf(`error while creating the hard link "%s" to "%s": %s.
+				if vinegar has no permissions to create a link, try doing it manually`, wine_path, wine64_path, err)
+			}
+		} else {
+			return fmt.Errorf("invalid wine root given: %s | %s", err, err2)
 		}
 
 		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")

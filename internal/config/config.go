@@ -19,6 +19,7 @@ type Environment map[string]string
 
 type Application struct {
 	Channel        string        `toml:"channel"`
+	Launcher       string        `toml:"launcher"`
 	Renderer       string        `toml:"renderer"`
 	ForcedVersion  string        `toml:"forced_version"`
 	AutoKillPrefix bool          `toml:"auto_kill_prefix"`
@@ -28,7 +29,6 @@ type Application struct {
 }
 
 type Config struct {
-	Launcher          string      `toml:"launcher"`
 	WineRoot          string      `toml:"wineroot"`
 	DxvkVersion       string      `toml:"dxvk_version"`
 	MultipleInstances bool        `toml:"multiple_instances"`

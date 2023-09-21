@@ -151,7 +151,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 
 	log.Printf("Launching %s", name)
 
-	pfx.Launcher = strings.Fields(cfg.Launcher)
+	pfx.Launcher = strings.Fields(appCfg.Launcher)
 	args = append([]string{filepath.Join(verDir, bt.Executable())}, args...)
 
 	if err := pfx.ExecWine(args...); err != nil {

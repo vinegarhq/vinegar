@@ -5,6 +5,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"syscall"
+	"path/filepath"
+	"os/signal"
 )
 
 type Prefix struct {
@@ -54,12 +57,6 @@ func (p *Prefix) Setup() error {
 	}
 
 	return p.Initialize()
-}
-
-func (p *Prefix) DisableCrashDialogs() error {
-	log.Println("Disabling Crash dialogs")
-
-	return p.RegistryAdd("HKEY_CURRENT_USER\\Software\\Wine\\WineDbg", "ShowCrashDialog", REG_DWORD, "")
 }
 
 func (p *Prefix) Initialize() error {

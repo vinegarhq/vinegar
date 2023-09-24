@@ -15,13 +15,21 @@ const ManifestSuffix = "-rbxPkgManifest.txt"
 type Manifest struct {
 	roblox.Version
 	SourceDir string
+	DeployURL string
 	Packages
 }
 
-func FetchManifest(ver roblox.Version, srcDir string) (Manifest, error) {
-	log.Printf("Fetching latest manifest for %s (%s)", ver.GUID, ver.DeployURL)
+func Fetch(ver roblox.Version, srcDir string) (Manifest, error) {
+	cdn, err := CDN()
+	if err != nil {
+		return Manifest{}, err
+	}
 
-	manifest, err := util.Body(ver.DeployURL + ManifestSuffix)
+	deployURL := cdn + roblox.ChannelPath(ver.Channel) + ver.GUID
+
+	log.Printf("Fetching latest manifest for %s (%s)", ver.GUID, deployURL)
+
+	manifest, err := util.Body(deployURL + ManifestSuffix)
 	if err != nil {
 		return Manifest{}, fmt.Errorf("failed to fetch manifest: %w, is your channel valid?", err)
 	}
@@ -34,6 +42,7 @@ func FetchManifest(ver roblox.Version, srcDir string) (Manifest, error) {
 	return Manifest{
 		Version:   ver,
 		SourceDir: srcDir,
+		DeployURL: deployURL,
 		Packages:  pkgs,
 	}, nil
 }
@@ -60,14 +69,14 @@ func (m *Manifest) Download() error {
 	log.Printf("Downloading %d Packages", len(m.Packages))
 
 	return m.Packages.Perform(func(pkg Package) error {
-		err := pkg.Download(m.Version.DeployURL, m.SourceDir)
+		err := pkg.Download(m.DeployURL, m.SourceDir)
 		if err == nil {
 			return nil
 		}
 
 		log.Printf("Failed to fetch package %s: %s, retrying...", pkg.Name, err)
 
-		return pkg.Download(m.Version.DeployURL, m.SourceDir)
+		return pkg.Download(m.DeployURL, m.SourceDir)
 	})
 }
 

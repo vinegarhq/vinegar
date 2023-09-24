@@ -21,7 +21,7 @@ func SetupBinary(ver roblox.Version, dir string) {
 		log.Fatal(err)
 	}
 
-	manifest, err := bootstrapper.FetchManifest(ver, dirs.Downloads)
+	manifest, err := bootstrapper.Fetch(ver, dirs.Downloads)
 	if err != nil {
 		log.Fatal(err)
 	}

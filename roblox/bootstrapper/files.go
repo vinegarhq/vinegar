@@ -1,11 +1,14 @@
 package bootstrapper
 
 import (
+	"log"
 	"os"
 	"path/filepath"
 )
 
 func WriteAppSettings(dir string) error {
+	log.Printf("Writing AppSettings: %s", dir)
+
 	file, err := os.Create(filepath.Join(dir, "AppSettings.xml"))
 	if err != nil {
 		return err

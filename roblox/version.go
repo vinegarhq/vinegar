@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"strings"
 
 	"github.com/vinegarhq/vinegar/util"
@@ -16,16 +15,7 @@ const (
 	VersionCheckURL = "https://clientsettingscdn.roblox.com/v2/client-version"
 )
 
-var (
-	ErrNoCDNFound = errors.New("failed to find an accessible roblox deploy mirror")
-	ErrNoVersion  = errors.New("no version found")
-	CDNURLs       = []string{
-		"https://setup.rbxcdn.com",
-		"https://s3.amazonaws.com/setup.roblox.com",
-		"https://setup-ak.rbxcdn.com",
-		"https://setup-cfly.rbxcdn.com",
-	}
-)
+var ErrNoVersion = errors.New("no version found")
 
 type ClientVersion struct {
 	Version                 string `json:"version"`
@@ -36,29 +26,9 @@ type ClientVersion struct {
 }
 
 type Version struct {
-	Type      BinaryType
-	DeployURL string
-	GUID      string
-}
-
-func FindCDN() (string, error) {
-	log.Println("Finding an accessible Roblox deploy mirror")
-
-	for _, cdn := range CDNURLs {
-		resp, err := http.Head(cdn + "/" + "version")
-		if err != nil {
-			continue
-		}
-		resp.Body.Close()
-
-		if resp.StatusCode == 200 {
-			log.Printf("Found deploy mirror: %s", cdn)
-
-			return cdn, nil
-		}
-	}
-
-	return "", ErrNoCDNFound
+	Type    BinaryType
+	Channel string
+	GUID    string
 }
 
 func ChannelPath(channel string) string {
@@ -82,17 +52,12 @@ func NewVersion(bt BinaryType, channel string, GUID string) (Version, error) {
 		return Version{}, ErrNoVersion
 	}
 
-	cdn, err := FindCDN()
-	if err != nil {
-		return Version{}, fmt.Errorf("failed to find deploy mirror: %w", err)
-	}
-
 	log.Printf("Found %s version %s", bt.String(), GUID)
 
 	return Version{
-		Type:      bt,
-		DeployURL: cdn + ChannelPath(channel) + GUID,
-		GUID:      GUID,
+		Type:    bt,
+		Channel: channel,
+		GUID:    GUID,
 	}, nil
 }
 

@@ -21,5 +21,5 @@ func (p *Prefix) RegistryAdd(key, value string, kind, data string) error {
 		return errors.New("no registry key given")
 	}
 
-	return p.ExecWine("reg", "add", key, "/v", value, "/t", kind, "/d", data, "/f")
+	return p.Wine("reg", "add", key, "/v", value, "/t", kind, "/d", data, "/f").Run()
 }

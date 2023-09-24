@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -150,11 +151,22 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	}
 
 	log.Printf("Launching %s", name)
+	
+	cmd := pfx.Wine(filepath.Join(verDir, bt.Executable()), args...)
 
-	pfx.Launcher = strings.Fields(appCfg.Launcher)
-	args = append([]string{filepath.Join(verDir, bt.Executable())}, args...)
+	launcher := strings.Fields(appCfg.Launcher)
+	if len(launcher) >= 1 {
+		cmd.Args = append(launcher, cmd.Args...)
 
-	if err := pfx.ExecWine(args...); err != nil {
+		launcherPath, err := exec.LookPath(launcher[0])
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		cmd.Path = launcherPath
+	}
+
+	if err := cmd.Run(); err != nil {
 		log.Fatal(err)
 	}
 

@@ -58,7 +58,7 @@ func Remove(pfx *wine.Prefix) error {
 
 	log.Println("Restoring wineprefix DLLs")
 
-	return pfx.Exec("wineboot", "-u")
+	return pfx.Wine("wineboot", "-u").Run()
 }
 
 func Extract(name string, pfx *wine.Prefix) error {

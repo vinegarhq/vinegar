@@ -66,7 +66,7 @@ func main() {
 
 		switch cmd {
 		case "exec":
-			if err := pfx.ExecWine(os.Args[2:]...); err != nil {
+			if err := pfx.Wine(os.Args[2], os.Args[3:]...).Run(); err != nil {
 				log.Fatal(err)
 			}
 		case "kill":

@@ -24,5 +24,5 @@ func InstallWebview2(pfx *wine.Prefix) error {
 	}
 
 	log.Println("Launching Evergreen Bootstrapper")
-	return pfx.ExecWine(installer)
+	return pfx.Wine(installer).Run()
 }

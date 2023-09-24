@@ -22,12 +22,12 @@ func (p *Prefix) Command(name string, arg ...string) *Cmd {
 
 func (c *Cmd) Start() error {
 	log.Println("Starting command in background: %s", c.String())
-	
+
 	return c.Cmd.Start()
 }
 
 func (c *Cmd) Run() error {
 	log.Printf("Running command: %s", c.String())
-	
+
 	return c.Cmd.Run()
 }

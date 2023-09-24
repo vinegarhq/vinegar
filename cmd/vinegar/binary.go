@@ -151,7 +151,7 @@ func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...
 	}
 
 	log.Printf("Launching %s", name)
-	
+
 	cmd := pfx.Wine(filepath.Join(verDir, bt.Executable()), args...)
 
 	launcher := strings.Fields(appCfg.Launcher)

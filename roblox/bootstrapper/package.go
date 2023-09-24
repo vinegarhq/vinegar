@@ -117,8 +117,6 @@ func (p *Package) Fetch(dest, deployURL string) error {
 }
 
 func (p *Package) Extract(src, dest string) error {
-	log.Println(src, dest)
-
 	if err := util.Extract(src, dest); err != nil {
 		return fmt.Errorf("failed to extract package %s (%s): %w", p.Name, src, err)
 	}

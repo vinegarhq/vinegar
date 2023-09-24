@@ -10,15 +10,18 @@ import (
 	"syscall"
 )
 
-//go:embed nocrashdialog.reg
-var noCrashDialogReg []byte
-
 func (p *Prefix) Setup() error {
 	if _, err := os.Stat(filepath.Join(p.Dir, "drive_c", "windows")); err == nil {
 		return nil
 	}
 
 	return p.Initialize()
+}
+
+func (p *Prefix) DisableCrashDialogs() error {
+	log.Println("Disabling Crash dialogs")
+
+	return p.RegistryAdd("HKEY_CURRENT_USER\\Software\\Wine\\WineDbg", "ShowCrashDialog", REG_DWORD, "")
 }
 
 func (p *Prefix) Initialize() error {
@@ -32,8 +35,7 @@ func (p *Prefix) Initialize() error {
 		return err
 	}
 
-	log.Println("Disabling Crash dialogs")
-	return p.Regedit(noCrashDialogReg)
+	return p.DisableCrashDialogs()
 }
 
 func (p *Prefix) Kill() {

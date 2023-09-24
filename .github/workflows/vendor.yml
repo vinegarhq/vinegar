@@ -25,3 +25,4 @@ jobs:
           file: "/home/runner/work/vinegar/vinegar-${{ github.ref_name }}.tar.xz"
           tag: ${{ github.ref }}
           overwrite: true
+          make_latest: false

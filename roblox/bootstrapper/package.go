@@ -101,7 +101,7 @@ func (p *Package) Verify(src string) error {
 	}
 
 	if p.Checksum != hex.EncodeToString(hash.Sum(nil)) {
-		return fmt.Errorf("package %s is corrupted")
+		return fmt.Errorf("package %s is corrupted", p.Name)
 	}
 
 	return nil

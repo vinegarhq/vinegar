@@ -26,11 +26,7 @@ func SetupBinary(ver roblox.Version, dir string) {
 		log.Fatal(err)
 	}
 
-	if err := manifest.Download(); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := manifest.Extract(dir, bootstrapper.Directories(ver.Type)); err != nil {
+	if err := manifest.Setup(dir, bootstrapper.Directories(ver.Type)); err != nil {
 		log.Fatal(err)
 	}
 

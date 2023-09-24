@@ -1,11 +1,13 @@
 package bootstrapper
 
 import (
+	"log"
 	"errors"
 	"fmt"
 	"strconv"
 
 	"golang.org/x/sync/errgroup"
+	"github.com/vinegarhq/vinegar/util"
 )
 
 var (
@@ -78,4 +80,49 @@ func PackageExcluded(name string) bool {
 	}
 
 	return false
+}
+
+func (p *Package) Verify(src string) error {
+	log.Printf("Verifying Package %s (%s)", p.Name, p.Checksum)
+	if err := util.VerifyFileMD5(src, p.Checksum); err != nil {
+		return fmt.Errorf("package %s is corrupted: %w", p.Name, err)
+	}
+
+	return nil
+}
+
+func (p *Package) Download(dest, deployURL string) error {
+	if err := p.Verify(dest); err == nil {
+		log.Printf("Package %s is already downloaded", p.Name)
+		return nil
+	}
+
+	log.Printf("Downloading Package %s", p.Name)
+	if err := util.Download(deployURL + "-" + p.Name, dest); err != nil {
+		return fmt.Errorf("failed to download package %s: %w", p.Name, err)
+	}
+
+	return p.Verify(dest)
+}
+
+func (p *Package) Fetch(dest, deployURL string) error {
+	err := p.Download(dest, deployURL)
+	if err == nil {
+		return nil
+	}
+
+	log.Printf("Failed to fetch package %s: %s, retrying...", p.Name, err)
+
+	return p.Download(dest, deployURL)
+}
+
+func (p *Package) Extract(src, dest string) error {
+	log.Println(src, dest)
+
+	if err := util.Extract(src, dest); err != nil {
+		return fmt.Errorf("failed to extract package %s (%s): %w", p.Name, src, err)
+	}
+
+	log.Printf("Extracted Package %s (%s)", p.Name, p.Checksum)
+	return nil
 }

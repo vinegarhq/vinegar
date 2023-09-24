@@ -17,7 +17,7 @@ jobs:
       - name: 'Make the vendor directory'
         run: go mod vendor
       - name: 'Package the source directory'
-        run: "cd .. && XZ_OPT=-9 tar -Jcf vinegar-${{ github.ref_name }}.tar.xz -C ./vinegar ."
+        run: "rm -rf ./.git/ && cd .. && XZ_OPT=-9 tar -Jcf vinegar-${{ github.ref_name }}.tar.xz -C ./vinegar ."
       - name: Publish to release
         uses: svenstaro/upload-release-action@v2
         with:

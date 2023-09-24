@@ -3,7 +3,6 @@ package dxvk
 import (
 	"archive/tar"
 	"compress/gzip"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -26,16 +25,16 @@ func Setenv() {
 func Fetch(name string, ver string) error {
 	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
 
-	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
-		log.Printf("Downloading DXVK %s", ver)
-
-		if err := util.Download(url, name); err != nil {
-			return fmt.Errorf("failed to download DXVK: %w", err)
-		}
-	} else if err == nil {
+	if _, err := os.Stat(name); err == nil {
 		log.Printf("DXVK %s is already downloaded", ver)
-	} else {
-		return err
+
+		return nil
+	}
+
+	log.Printf("Downloading DXVK %s", ver)
+
+	if err := util.Download(url, name); err != nil {
+		return fmt.Errorf("failed to download DXVK: %w", err)
 	}
 
 	return nil

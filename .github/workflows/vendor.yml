@@ -1,0 +1,27 @@
+name: Source tarball with vendor
+on:
+  release:
+    types: [created]
+permissions:
+  contents: write
+jobs:
+  release_build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@v3
+      - name: 'Setup Go'
+        uses: actions/setup-go@v4
+        with:
+          go-version: '^1.20'
+      - name: 'Make the vendor directory'
+        run: go mod vendor
+      - name: 'Package the source directory'
+        run: "cd .. && XZ_OPT=-9 tar -Jcf vinegar-${{ github.ref_name }}.tar.xz -C ./vinegar ."
+      - name: Publish to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: "/home/runner/work/vinegar/vinegar-${{ github.ref_name }}.tar.xz"
+          tag: ${{ github.ref }}
+          overwrite: true

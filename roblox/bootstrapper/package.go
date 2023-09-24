@@ -1,9 +1,13 @@
 package bootstrapper
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/vinegarhq/vinegar/util"
@@ -84,8 +88,20 @@ func PackageExcluded(name string) bool {
 
 func (p *Package) Verify(src string) error {
 	log.Printf("Verifying Package %s (%s)", p.Name, p.Checksum)
-	if err := util.VerifyFileMD5(src, p.Checksum); err != nil {
-		return fmt.Errorf("package %s is corrupted: %w", p.Name, err)
+
+	pkgFile, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer pkgFile.Close()
+
+	hash := md5.New()
+	if _, err := io.Copy(hash, pkgFile); err != nil {
+		return err
+	}
+
+	if p.Checksum != hex.EncodeToString(hash.Sum(nil)) {
+		return fmt.Errorf("package %s is corrupted")
 	}
 
 	return nil

@@ -18,9 +18,11 @@ jobs:
         run: go mod vendor
       - name: 'Package the source directory'
         run: |
-          export RELEASE="vinegar-${{ github.ref_name }}"
+          RELEASE="vinegar-${{ github.ref_name }}"
+
           cd ..
           cp -r ./vinegar ./$RELEASE
+
           XZ_OPT=-9 tar -Jcf $RELEASE.tar.xz \
             --exclude .git \
             ./$RELEASE
@@ -28,6 +30,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: "/home/runner/work/vinegar/vinegar-${{ github.ref_name }}.tar.xz"
+          file: "../vinegar-${{ github.ref_name }}.tar.xz"
           overwrite: true
           make_latest: false

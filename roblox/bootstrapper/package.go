@@ -1,13 +1,13 @@
 package bootstrapper
 
 import (
-	"log"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 
-	"golang.org/x/sync/errgroup"
 	"github.com/vinegarhq/vinegar/util"
+	"golang.org/x/sync/errgroup"
 )
 
 var (
@@ -98,7 +98,7 @@ func (p *Package) Download(dest, deployURL string) error {
 	}
 
 	log.Printf("Downloading Package %s", p.Name)
-	if err := util.Download(deployURL + "-" + p.Name, dest); err != nil {
+	if err := util.Download(deployURL+"-"+p.Name, dest); err != nil {
 		return fmt.Errorf("failed to download package %s: %w", p.Name, err)
 	}
 

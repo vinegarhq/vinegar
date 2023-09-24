@@ -14,12 +14,12 @@ const ManifestSuffix = "-rbxPkgManifest.txt"
 
 type Manifest struct {
 	roblox.Version
-	SourceDir string
-	DeployURL string
+	DownloadDir string
+	DeployURL   string
 	Packages
 }
 
-func Fetch(ver roblox.Version, srcDir string) (Manifest, error) {
+func Fetch(ver roblox.Version, downloadDir string) (Manifest, error) {
 	cdn, err := CDN()
 	if err != nil {
 		return Manifest{}, err
@@ -40,10 +40,10 @@ func Fetch(ver roblox.Version, srcDir string) (Manifest, error) {
 	}
 
 	return Manifest{
-		Version:   ver,
-		SourceDir: srcDir,
-		DeployURL: deployURL,
-		Packages:  pkgs,
+		Version:     ver,
+		DownloadDir: downloadDir,
+		DeployURL:   deployURL,
+		Packages:    pkgs,
 	}, nil
 }
 
@@ -51,7 +51,7 @@ func (m *Manifest) Download() error {
 	log.Printf("Downloading %d Packages", len(m.Packages))
 
 	return m.Packages.Perform(func(pkg Package) error {
-		return pkg.Fetch(filepath.Join(m.SourceDir, pkg.Checksum), m.DeployURL)
+		return pkg.Fetch(filepath.Join(m.DownloadDir, pkg.Checksum), m.DeployURL)
 	})
 }
 
@@ -66,7 +66,7 @@ func (m *Manifest) Extract(dir string, dirs PackageDirectories) error {
 		}
 
 		return pkg.Extract(
-			filepath.Join(m.SourceDir, pkg.Checksum), 
+			filepath.Join(m.DownloadDir, pkg.Checksum),
 			filepath.Join(dir, dest),
 		)
 	})

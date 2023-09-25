@@ -1,4 +1,4 @@
-name: Source tarball with vendor
+name: Create release tarball with vendor
 on:
   release:
     types: [created]

@@ -67,6 +67,10 @@ func main() {
 
 		switch cmd {
 		case "exec":
+			if len(args) < 2 {
+				usage()
+			}
+
 			if err := pfx.Wine(args[1], args[2:]...).Run(); err != nil {
 				log.Fatal(err)
 			}

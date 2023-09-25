@@ -23,9 +23,8 @@ var (
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [flags...] player|studio|exec [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [flags...] edit|kill|uninstall|delete|version|install-webview2")
-	fmt.Fprintln(os.Stderr, "flags: -config")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio|exec [args...]")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|version|install-webview2")
 	os.Exit(1)
 }
 

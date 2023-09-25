@@ -36,7 +36,7 @@ func (p *Prefix) Setup() error {
 }
 
 func (p *Prefix) Initialize() error {
-	log.Println("Initializing wineprefix")
+	log.Printf("Initializing wineprefix at %s", p.Dir)
 
 	if err := os.MkdirAll(p.Dir, 0o755); err != nil {
 		return err

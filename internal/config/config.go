@@ -8,12 +8,9 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/util"
 )
-
-var Path = filepath.Join(dirs.Config, "config.toml")
 
 type Environment map[string]string
 
@@ -38,16 +35,16 @@ type Config struct {
 	Env               Environment `toml:"env"`
 }
 
-func Load() (Config, error) {
+func Load(path string) (Config, error) {
 	cfg := Default()
 
-	if _, err := os.Stat(Path); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
 		log.Println("Using default configuration")
 
 		return cfg, nil
 	}
 
-	if _, err := toml.DecodeFile(Path, &cfg); err != nil {
+	if _, err := toml.DecodeFile(path, &cfg); err != nil {
 		return cfg, fmt.Errorf("failed to decode configuration file: %w", err)
 	}
 

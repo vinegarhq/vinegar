@@ -10,7 +10,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
-func EditConfig() {
+func EditConfig(path string) {
 	editor, err := Editor()
 	if err != nil {
 		log.Fatalf("failed to find editor: %s", err)
@@ -20,7 +20,7 @@ func EditConfig() {
 		log.Fatal(err)
 	}
 
-	file, err := os.OpenFile(config.Path, os.O_WRONLY|os.O_CREATE, 0o644)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func EditConfig() {
 	file.Close()
 
 	for {
-		cmd := exec.Command(editor, config.Path)
+		cmd := exec.Command(editor, path)
 		cmd.Stdin = os.Stdin
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
@@ -54,7 +54,7 @@ func EditConfig() {
 			log.Fatal(err)
 		}
 
-		if _, err := config.Load(); err != nil {
+		if _, err := config.Load(path); err != nil {
 			log.Println(err)
 			log.Println("Press enter to re-edit configuration file")
 			fmt.Scanln()

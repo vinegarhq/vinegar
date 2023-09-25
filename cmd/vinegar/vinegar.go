@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -22,18 +23,18 @@ var (
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar player|studio|exec [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar edit|kill|uninstall|delete|version|install-webview2")
-
+	fmt.Fprintln(os.Stderr, "usage: vinegar [flags...] player|studio|exec [args...]")
+	fmt.Fprintln(os.Stderr, "       vinegar [flags...] edit|kill|uninstall|delete|version|install-webview2")
+	fmt.Fprintln(os.Stderr, "flags: -config")
 	os.Exit(1)
 }
 
 func main() {
-	if len(os.Args) < 2 {
-		usage()
-	}
+	configPath := flag.String("config", filepath.Join(dirs.Config, "vinegar.toml"), "config.toml file which should be used")
+	flag.Parse()
 
-	cmd := os.Args[1]
+	cmd := flag.Arg(0)
+	args := flag.Args()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	switch cmd {
@@ -43,7 +44,7 @@ func main() {
 		case "delete":
 			Delete()
 		case "edit":
-			editor.EditConfig()
+			editor.EditConfig(*configPath)
 		case "uninstall":
 			Uninstall()
 		case "version":
@@ -52,7 +53,7 @@ func main() {
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
 	case "player", "studio", "exec", "kill", "install-webview2":
-		cfg, err := config.Load()
+		cfg, err := config.Load(*configPath)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -66,7 +67,7 @@ func main() {
 
 		switch cmd {
 		case "exec":
-			if err := pfx.Wine(os.Args[2], os.Args[3:]...).Run(); err != nil {
+			if err := pfx.Wine(args[1], args[2:]...).Run(); err != nil {
 				log.Fatal(err)
 			}
 		case "kill":
@@ -87,9 +88,9 @@ func main() {
 
 			switch cmd {
 			case "player":
-				Binary(roblox.Player, &cfg, &pfx, os.Args[2:]...)
+				Binary(roblox.Player, &cfg, &pfx, args[1:]...)
 			case "studio":
-				Binary(roblox.Studio, &cfg, &pfx, os.Args[2:]...)
+				Binary(roblox.Studio, &cfg, &pfx, args[1:]...)
 			}
 		}
 	default:

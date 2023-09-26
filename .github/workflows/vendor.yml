@@ -23,9 +23,8 @@ jobs:
           cd ..
           cp -r ./vinegar ./$RELEASE
 
-          tar -cvzf $RELEASE.tar.gz \
-            --exclude .git \
-            ./$RELEASE
+          tar --exclude .git -cvf - ./$RELEASE \
+            | gzip --best - > $RELEASE.tar.gz
       - name: Publish to release
         uses: svenstaro/upload-release-action@v2
         with:

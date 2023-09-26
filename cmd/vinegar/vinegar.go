@@ -30,7 +30,7 @@ func usage() {
 }
 
 func main() {
-	configPath := flag.String("config", filepath.Join(dirs.Config, "vinegar.toml"), "config.toml file which should be used")
+	configPath := flag.String("config", filepath.Join(dirs.Config, "config.toml"), "config.toml file which should be used")
 	flag.Parse()
 
 	cmd := flag.Arg(0)

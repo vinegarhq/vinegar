@@ -23,13 +23,13 @@ jobs:
           cd ..
           cp -r ./vinegar ./$RELEASE
 
-          tar -cvzf $RELEASE.tar.xz \
+          tar -cvzf $RELEASE.tar.gz \
             --exclude .git \
             ./$RELEASE
       - name: Publish to release
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: "../vinegar-${{ github.ref_name }}.tar.xz"
+          file: "../vinegar-${{ github.ref_name }}.tar.gz"
           overwrite: true
           make_latest: false

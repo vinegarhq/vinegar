@@ -17,15 +17,12 @@ import (
 	"github.com/vinegarhq/vinegar/wine"
 )
 
-var (
-	Version   string
-	BinPrefix string
-)
+var BinPrefix string
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|version|install-webview2")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2")
 	os.Exit(1)
 }
 
@@ -39,7 +36,7 @@ func main() {
 
 	switch cmd {
 	// These commands don't require a configuration
-	case "delete", "edit", "uninstall", "version":
+	case "delete", "edit", "uninstall":
 		switch cmd {
 		case "delete":
 			Delete()
@@ -47,8 +44,6 @@ func main() {
 			editor.EditConfig(*configPath)
 		case "uninstall":
 			Uninstall()
-		case "version":
-			fmt.Println(Version)
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.

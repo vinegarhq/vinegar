@@ -8,7 +8,7 @@ FLATPAK = io.github.vinegarhq.Vinegar
 GO = go
 GO_LDFLAGS = -s -w
 
-VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
+VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX)
 
 all: vinegar robloxmutexer.exe
 install: install-vinegar install-robloxmutexer install-desktop install-icons

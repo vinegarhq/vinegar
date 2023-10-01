@@ -14,6 +14,15 @@ import (
 
 type Environment map[string]string
 
+type UI struct {
+	Enabled    bool
+	Background uint32 `toml:"background"`
+	Foreground uint32 `toml:"foreground"`
+	Accent     uint32 `toml:"accent"`
+	Gray1      uint32 `toml:"gray1"`
+	Gray2      uint32 `toml:"gray2"`
+}
+
 type Application struct {
 	Channel        string        `toml:"channel"`
 	Launcher       string        `toml:"launcher"`
@@ -33,6 +42,7 @@ type Config struct {
 	Player            Application `toml:"player"`
 	Studio            Application `toml:"studio"`
 	Env               Environment `toml:"env"`
+	UI                `toml:"ui"`
 }
 
 func Load(path string) (Config, error) {
@@ -81,6 +91,15 @@ func Default() Config {
 		},
 		Studio: Application{
 			Dxvk: true,
+		},
+
+		UI: UI{
+			Enabled:    true,
+			Background: 0x242424,
+			Foreground: 0xfafafa,
+			Gray1:      0x303030,
+			Gray2:      0x777777,
+			Accent:     0x8fbc5e,
 		},
 	}
 }

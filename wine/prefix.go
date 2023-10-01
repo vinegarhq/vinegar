@@ -4,9 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 )
 
 type Prefix struct {
@@ -53,14 +51,4 @@ func (p *Prefix) Kill() {
 	log.Println("Killing wineprefix")
 
 	_ = p.Command("wineserver", "-k").Run()
-}
-
-func (p *Prefix) Interrupt() {
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
-
-	go func() {
-		<-c
-		p.Kill()
-	}()
 }

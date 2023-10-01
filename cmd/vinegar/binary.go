@@ -1,16 +1,18 @@
 package main
 
 import (
-	"os"
+	"log"
+	"time"
 
 	"github.com/vinegarhq/vinegar/internal/config"
-	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
 type Binary struct {
-	name string
-	log <-chan string
+	name     string
+	log      chan string
+	progress chan float32
 
 	dir string
 	pfx *wine.Prefix
@@ -33,7 +35,10 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 	}
 
 	return Binary{
-		name:  bt.String(),
+		name:     bt.String(),
+		log:      make(chan string),
+		progress: make(chan float32),
+
 		btype: bt,
 		pfx:   pfx,
 		cfg:   cfg,
@@ -41,12 +46,38 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 	}
 }
 
-func (b *Binary) Run(args ...string) error {
+func (b *Binary) Run(args ...string) {
+	exitChan := make(chan bool)
+
+	go func() {
+		b.Glass(exitChan)
+	}()
+
 	if err := b.Setup(); err != nil {
-		return err
+		b.log <- err.Error()
+		select {}
 	}
 
-	os.Exit(0)
+	cmd, err := b.Command(args...)
+	if err != nil {
+		b.log <- err.Error()
+		select {}
+	}
 
-	return b.Execute(args...)
+	log.Printf("Launching %s", b.name)
+	b.log <- "Launching Roblox"
+
+	time.Sleep(time.Second * 2)
+
+	if err := cmd.Start(); err != nil {
+		b.log <- err.Error()
+		select {}
+	}
+
+	exitChan <- true
+	cmd.Wait()
+
+	if b.bcfg.AutoKillPrefix {
+		b.pfx.Kill()
+	}
 }

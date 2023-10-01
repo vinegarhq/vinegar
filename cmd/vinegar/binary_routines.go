@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os/exec"
 	"path/filepath"
@@ -10,10 +11,13 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
+	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
 )
 
 func (b *Binary) FetchVersion() (roblox.Version, error) {
+	b.log <- "Fetching Roblox"
+
 	if b.bcfg.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", b.bcfg.ForcedVersion)
 
@@ -37,8 +41,8 @@ func (b *Binary) Setup() error {
 	}
 
 	if stateVer != ver.GUID {
-		log.Printf("Updating/Installing %s (%s -> %s)", b.name, stateVer, ver)
-		
+		log.Printf("Installing %s (%s -> %s)", b.name, stateVer, ver)
+
 		if err := b.Install(); err != nil {
 			return err
 		}
@@ -60,16 +64,37 @@ func (b *Binary) Setup() error {
 		return err
 	}
 
-	return b.SetupDxvk()
+	if err := b.SetupDxvk(); err != nil {
+		return err
+	}
+
+	b.progress <- 1.0
+	return nil
 }
 
 func (b *Binary) Install() error {
+	b.log <- "Installing Roblox"
+
 	manifest, err := bootstrapper.Fetch(b.ver, dirs.Downloads)
 	if err != nil {
 		return err
 	}
 
-	if err := manifest.Setup(b.dir, bootstrapper.Directories(b.btype)); err != nil {
+	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
+		return err
+	}
+
+	b.log <- "Downloading Roblox"
+	if err := b.DownloadPackages(&manifest); err != nil {
+		return err
+	}
+
+	b.log <- "Extracting Roblox"
+	if err := b.ExtractPackages(&manifest); err != nil {
+		return err
+	}
+
+	if err := bootstrapper.WriteAppSettings(b.dir); err != nil {
 		return err
 	}
 
@@ -84,6 +109,53 @@ func (b *Binary) Install() error {
 	return state.CleanVersions()
 }
 
+func (b *Binary) DownloadPackages(m *bootstrapper.Manifest) error {
+	donePkgs := 0
+	pkgs := len(m.Packages)
+
+	log.Printf("Downloading %d Packages", pkgs)
+
+	return m.Packages.Perform(func(pkg bootstrapper.Package) error {
+		err := pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), m.DeployURL)
+		if err != nil {
+			return err
+		}
+
+		donePkgs++
+		b.progress <- float32(donePkgs) / float32(pkgs)
+		return nil
+	})
+}
+
+func (b *Binary) ExtractPackages(m *bootstrapper.Manifest) error {
+	donePkgs := 0
+	pkgs := len(m.Packages)
+	pkgDirs := bootstrapper.Directories(b.btype)
+
+	log.Printf("Extracting %d Packages", pkgs)
+
+	return m.Packages.Perform(func(pkg bootstrapper.Package) error {
+		dest, ok := pkgDirs[pkg.Name]
+
+		if !ok {
+			return fmt.Errorf("unhandled package: %s", pkg.Name)
+		}
+
+		err := pkg.Extract(
+			filepath.Join(dirs.Downloads, pkg.Checksum),
+			filepath.Join(b.dir, dest),
+		)
+		if err != nil {
+			return err
+		}
+
+		donePkgs++
+		b.progress <- float32(donePkgs) / float32(pkgs)
+
+		return nil
+	})
+}
+
 func (b *Binary) SetupDxvk() error {
 	ver, err := state.DxvkVersion()
 	if err != nil {
@@ -92,6 +164,7 @@ func (b *Binary) SetupDxvk() error {
 	installed := ver != ""
 
 	if installed && !b.cfg.Player.Dxvk && !b.cfg.Studio.Dxvk {
+		b.log <- "Uninstalling DXVK"
 		if err := dxvk.Remove(b.pfx); err != nil {
 			return err
 		}
@@ -103,6 +176,7 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
+	b.progress <- 0.0
 	dxvk.Setenv()
 
 	if installed || b.cfg.DxvkVersion == ver {
@@ -114,18 +188,23 @@ func (b *Binary) SetupDxvk() error {
 	}
 	path := filepath.Join(dirs.Cache, "dxvk-"+b.cfg.DxvkVersion+".tar.gz")
 
+	b.progress <- 0.3
+	b.log <- "Downloading DXVK"
 	if err := dxvk.Fetch(path, b.cfg.DxvkVersion); err != nil {
 		return err
 	}
 
+	b.progress <- 0.7
+	b.log <- "Extracting DXVK"
 	if err := dxvk.Extract(path, b.pfx); err != nil {
 		return err
 	}
+	b.progress <- 1.0
 
 	return state.SaveDxvk(b.cfg.DxvkVersion)
 }
 
-func (b *Binary) Execute(args ...string) error {
+func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = []string{"-protocolString", args[0]}
 	}
@@ -133,13 +212,10 @@ func (b *Binary) Execute(args ...string) error {
 	if b.cfg.MultipleInstances {
 		mutexer := b.pfx.Command("wine", filepath.Join(BinPrefix, "robloxmutexer.exe"))
 		err := mutexer.Start()
-
 		if err != nil {
-			log.Printf("Failed to launch robloxmutexer: %s", err)
+			return &wine.Cmd{}, err
 		}
 	}
-
-	log.Printf("Launching %s", b.name)
 
 	cmd := b.pfx.Wine(filepath.Join(b.dir, b.btype.Executable()), args...)
 
@@ -149,19 +225,11 @@ func (b *Binary) Execute(args ...string) error {
 
 		launcherPath, err := exec.LookPath(launcher[0])
 		if err != nil {
-			return err
+			return &wine.Cmd{}, err
 		}
 
 		cmd.Path = launcherPath
 	}
 
-	if err := cmd.Run(); err != nil {
-		return err
-	}
-
-	if b.bcfg.AutoKillPrefix {
-		b.pfx.Kill()
-	}
-
-	return nil
+	return cmd, nil
 }

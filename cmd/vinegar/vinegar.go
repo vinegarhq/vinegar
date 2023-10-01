@@ -6,7 +6,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/config/editor"
@@ -48,13 +50,26 @@ func main() {
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
 	case "player", "studio", "exec", "kill", "install-webview2":
+		pfxKilled := false
 		cfg, err := config.Load(*configPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 		pfx := wine.New(dirs.Prefix)
-		pfx.Interrupt()
+
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+
+		go func() {
+			<-c
+			pfxKilled = true
+			pfx.Kill()
+
+			if pfxKilled {
+				os.Exit(0)
+			}
+		}()
 
 		if err := pfx.Setup(); err != nil {
 			log.Fatal(err)

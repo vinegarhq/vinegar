@@ -21,7 +21,7 @@ func (p *Prefix) Command(name string, arg ...string) *Cmd {
 }
 
 func (c *Cmd) Start() error {
-	log.Printf("Starting command in background: %s", c.String())
+	log.Printf("Starting command: %s", c.String())
 
 	return c.Cmd.Start()
 }

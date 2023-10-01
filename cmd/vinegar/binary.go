@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"log"
 	"time"
 
@@ -50,28 +51,36 @@ func (b *Binary) Run(args ...string) {
 	exitChan := make(chan bool)
 
 	go func() {
-		b.Glass(exitChan)
+		if b.cfg.UI.Enabled	{
+			b.Glass(exitChan)
+		} else {
+			close(b.progress)
+			close(b.log)
+		}
 	}()
 
+	fatal := func(err error) {
+		log.Println(err)
+		b.SendLog(err.Error())
+		os.Exit(1)
+	}
+
 	if err := b.Setup(); err != nil {
-		b.log <- err.Error()
-		select {}
+		fatal(err)
 	}
 
 	cmd, err := b.Command(args...)
 	if err != nil {
-		b.log <- err.Error()
-		select {}
+		fatal(err)
 	}
 
 	log.Printf("Launching %s", b.name)
-	b.log <- "Launching Roblox"
+	b.SendLog("Launching Roblox")
 
 	time.Sleep(time.Second * 2)
 
 	if err := cmd.Start(); err != nil {
-		b.log <- err.Error()
-		select {}
+		fatal(err)
 	}
 
 	exitChan <- true
@@ -79,5 +88,18 @@ func (b *Binary) Run(args ...string) {
 
 	if b.bcfg.AutoKillPrefix {
 		b.pfx.Kill()
+	}
+}
+
+func (b *Binary) SendLog(msg string) {
+	if b.cfg.UI.Enabled	{
+		log.Println(b.cfg.UI.Enabled)
+		b.log <- msg
+	}
+}
+
+func (b *Binary) SendProgress(progress float32) {
+	if b.cfg.UI.Enabled	{
+		b.progress <- progress
 	}
 }

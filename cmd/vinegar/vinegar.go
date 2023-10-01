@@ -77,6 +77,8 @@ func main() {
 			}
 
 		case "player", "studio":
+			var b Binary
+
 			logFile := logs.File(cmd)
 			logOutput := io.MultiWriter(logFile, os.Stderr)
 
@@ -87,10 +89,12 @@ func main() {
 
 			switch cmd {
 			case "player":
-				Binary(roblox.Player, &cfg, &pfx, args[1:]...)
+				b = NewBinary(roblox.Player, &cfg, &pfx)
 			case "studio":
-				Binary(roblox.Studio, &cfg, &pfx, args[1:]...)
+				b = NewBinary(roblox.Studio, &cfg, &pfx)
 			}
+
+			b.Run(args[1:]...)
 		}
 	default:
 		usage()

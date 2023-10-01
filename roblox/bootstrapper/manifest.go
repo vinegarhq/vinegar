@@ -1,6 +1,7 @@
 package bootstrapper
 
 import (
+	"os"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -20,6 +21,10 @@ type Manifest struct {
 }
 
 func Fetch(ver roblox.Version, downloadDir string) (Manifest, error) {
+	if err := os.MkdirAll(downloadDir, 0o755); err != nil {
+		return Manifest{}, err
+	}
+
 	cdn, err := CDN()
 	if err != nil {
 		return Manifest{}, err

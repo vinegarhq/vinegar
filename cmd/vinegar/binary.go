@@ -1,172 +1,52 @@
 package main
 
 import (
-	"log"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"strings"
 
 	"github.com/vinegarhq/vinegar/internal/config"
-	"github.com/vinegarhq/vinegar/internal/config/state"
-	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/roblox"
-	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/wine"
-	"github.com/vinegarhq/vinegar/wine/dxvk"
+	"github.com/vinegarhq/vinegar/roblox"
 )
 
-func SetupBinary(ver roblox.Version, dir string) {
-	if err := dirs.Mkdirs(dir, dirs.Downloads); err != nil {
-		log.Fatal(err)
-	}
+type Binary struct {
+	name string
+	log <-chan string
 
-	manifest, err := bootstrapper.Fetch(ver, dirs.Downloads)
-	if err != nil {
-		log.Fatal(err)
-	}
+	dir string
+	pfx *wine.Prefix
 
-	if err := manifest.Setup(dir, bootstrapper.Directories(ver.Type)); err != nil {
-		log.Fatal(err)
-	}
+	cfg  *config.Config
+	bcfg *config.Application
 
-	if err := state.SaveManifest(&manifest); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := state.CleanPackages(); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := state.CleanVersions(); err != nil {
-		log.Fatal(err)
-	}
+	btype roblox.BinaryType
+	ver   roblox.Version
 }
 
-func Binary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix, args ...string) {
-	var appCfg config.Application
-	var ver roblox.Version
-	name := bt.String()
+func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binary {
+	var bcfg config.Application
 
 	switch bt {
 	case roblox.Player:
-		appCfg = cfg.Player
+		bcfg = cfg.Player
 	case roblox.Studio:
-		appCfg = cfg.Studio
+		bcfg = cfg.Studio
 	}
 
-	dxvkVersion, err := state.DxvkVersion()
-	if err != nil {
-		log.Fatal(err)
+	return Binary{
+		name:  bt.String(),
+		btype: bt,
+		pfx:   pfx,
+		cfg:   cfg,
+		bcfg:  &bcfg,
 	}
-	dxvkInstalled := dxvkVersion != ""
+}
 
-	if err := dirs.Mkdirs(dirs.Cache); err != nil {
-		log.Fatal(err)
-	}
-
-	if appCfg.Dxvk {
-		dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+cfg.DxvkVersion+".tar.gz")
-
-		if !dxvkInstalled || cfg.DxvkVersion != dxvkVersion {
-			if err := dxvk.Fetch(dxvkPath, cfg.DxvkVersion); err != nil {
-				log.Fatal(err)
-			}
-
-			if err := dxvk.Extract(dxvkPath, pfx); err != nil {
-				log.Fatal(err)
-			}
-
-			if err := state.SaveDxvk(cfg.DxvkVersion); err != nil {
-				log.Fatal(err)
-			}
-		}
-
-		dxvk.Setenv()
-	} else if dxvkInstalled && !cfg.Player.Dxvk && !cfg.Studio.Dxvk {
-		if err := dxvk.Remove(pfx); err != nil {
-			log.Fatal(err)
-		}
-
-		if err := state.SaveDxvk(""); err != nil {
-			log.Fatal(err)
-		}
+func (b *Binary) Run(args ...string) error {
+	if err := b.Setup(); err != nil {
+		return err
 	}
 
-	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
-		args = []string{"-protocolString", args[0]}
-	}
+	os.Exit(0)
 
-	if appCfg.ForcedVersion != "" {
-		log.Printf("WARNING: using forced version: %s", appCfg.ForcedVersion)
-
-		ver, err = roblox.NewVersion(bt, appCfg.Channel, appCfg.ForcedVersion)
-		if err != nil {
-			log.Fatal(err)
-		}
-	} else {
-		ver, err = roblox.LatestVersion(bt, appCfg.Channel)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	verDir := filepath.Join(dirs.Versions, ver.GUID)
-
-	_, err = os.Stat(filepath.Join(verDir, "AppSettings.xml"))
-	if err != nil {
-		log.Printf("Updating/Installing %s", name)
-		SetupBinary(ver, verDir)
-	} else {
-		log.Printf("%s is up to date (%s)", name, ver.GUID)
-	}
-
-	appCfg.Env.Setenv()
-
-	err = appCfg.FFlags.SetRenderer(appCfg.Renderer)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = appCfg.FFlags.Apply(verDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = dirs.OverlayDir(verDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if cfg.MultipleInstances {
-		mutexer := pfx.Command("wine", filepath.Join(BinPrefix, "robloxmutexer.exe"))
-		err = mutexer.Start()
-		if err != nil {
-			log.Printf("Failed to launch robloxmutexer: %s", err)
-		}
-	}
-
-	log.Printf("Launching %s", name)
-
-	cmd := pfx.Wine(filepath.Join(verDir, bt.Executable()), args...)
-
-	launcher := strings.Fields(appCfg.Launcher)
-	if len(launcher) >= 1 {
-		cmd.Args = append(launcher, cmd.Args...)
-
-		launcherPath, err := exec.LookPath(launcher[0])
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		cmd.Path = launcherPath
-	}
-
-	if err := cmd.Run(); err != nil {
-		log.Fatal(err)
-	}
-
-	if appCfg.AutoKillPrefix {
-		pfx.Kill()
-	}
+	return b.Execute(args...)
 }

@@ -73,6 +73,10 @@ func ValidRenderer(renderer string) (valid bool) {
 }
 
 func (f *FFlags) SetRenderer(renderer string) error {
+	if renderer == "" {
+		renderer = DefaultRenderer
+	}
+
 	if !ValidRenderer(renderer) {
 		return fmt.Errorf("invalid renderer given: %s", renderer)
 	}

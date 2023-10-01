@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"image"
 	"image/color"
 	_ "image/png"
@@ -24,8 +25,8 @@ type (
 	D = layout.Dimensions
 )
 
-func logoImage() (image.Image, error) {
-	f, err := os.Open("/home/meow/src/vinegar/icons/64/vinegar.png")
+func logoImage(path string) (image.Image, error) {
+	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +38,7 @@ func logoImage() (image.Image, error) {
 
 func (b *Binary) Glass(exit <-chan bool) {
 	var ops op.Ops
-	var log string
+	var logMsg string
 	var progress float32
 
 	width := unit.Dp(448)
@@ -50,9 +51,13 @@ func (b *Binary) Glass(exit <-chan bool) {
 		app.Title("Vinegar"),
 	)
 
-	logo, err := logoImage()
+	logo, err := logoImage(b.cfg.Logo)
 	if err != nil {
-		return
+		log.Printf("Failed to load logo: %s", err)
+
+		emptyImg := image.NewRGBA(image.Rect(0, 0, 1, 1))
+		emptyImg.Set(0, 0, color.NRGBA{0, 0, 0, 0})
+		logo = emptyImg
 	}
 
 	th := material.NewTheme()
@@ -66,7 +71,7 @@ func (b *Binary) Glass(exit <-chan bool) {
 
 	for {
 		select {
-		case log = <-b.log:
+		case logMsg = <-b.log:
 			w.Invalidate()
 		case progress = <-b.progress:
 			w.Invalidate()
@@ -83,10 +88,9 @@ func (b *Binary) Glass(exit <-chan bool) {
 						Axis:      layout.Vertical,
 						Alignment: layout.Middle,
 					}.Layout(gtx,
-						// layout.Rigid(layout.Spacer{Height: unit.Dp(12)}.Layout),
 						layout.Rigid(widget.Image{Src: paint.NewImageOp(logo)}.Layout),
 						layout.Rigid(layout.Spacer{Height: unit.Dp(12)}.Layout),
-						layout.Rigid(material.Label(th, unit.Sp(16), log).Layout),
+						layout.Rigid(material.Label(th, unit.Sp(16), logMsg).Layout),
 						layout.Rigid(func(gtx C) D {
 							return layout.Inset{
 								Top:    unit.Dp(16),

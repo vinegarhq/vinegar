@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"image"
 	"image/color"
 	_ "image/png"
+	"log"
 	"os"
 
 	"gioui.org/app"

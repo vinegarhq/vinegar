@@ -11,4 +11,4 @@ jobs:
     - name: 'Checkout Repository'
       uses: actions/checkout@v3
     - name: 'Build Vinegar'
-      run: make
+      run: make VINEGAR_GOFLAGS="--tags nox11,nowayland"

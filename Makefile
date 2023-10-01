@@ -17,7 +17,7 @@ all: vinegar robloxmutexer.exe
 install: install-vinegar install-robloxmutexer install-desktop install-icons
 
 vinegar:
-	$(GO) build $(GOFLAGS) -ldflags="$(VINEGAR_LDFLAGS)" ./cmd/vinegar
+	$(GO) build $(VINEGAR_GOFLAGS) $(GOFLAGS) -ldflags="$(VINEGAR_LDFLAGS)" ./cmd/vinegar
 
 robloxmutexer.exe:
 	GOOS=windows $(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/robloxmutexer

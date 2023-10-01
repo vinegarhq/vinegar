@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"log"
+	"os"
 	"time"
 
 	"github.com/vinegarhq/vinegar/internal/config"
@@ -51,7 +51,7 @@ func (b *Binary) Run(args ...string) {
 	exitChan := make(chan bool)
 
 	go func() {
-		if b.cfg.UI.Enabled	{
+		if b.cfg.UI.Enabled {
 			b.Glass(exitChan)
 		} else {
 			close(b.progress)
@@ -92,14 +92,14 @@ func (b *Binary) Run(args ...string) {
 }
 
 func (b *Binary) SendLog(msg string) {
-	if b.cfg.UI.Enabled	{
+	if b.cfg.UI.Enabled {
 		log.Println(b.cfg.UI.Enabled)
 		b.log <- msg
 	}
 }
 
 func (b *Binary) SendProgress(progress float32) {
-	if b.cfg.UI.Enabled	{
+	if b.cfg.UI.Enabled {
 		b.progress <- progress
 	}
 }

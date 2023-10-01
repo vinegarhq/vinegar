@@ -98,7 +98,6 @@ func (b *Binary) Glass(exit <-chan bool) {
 			case system.DestroyEvent:
 				return
 			case system.FrameEvent:
-				log.Println("FrameEvent")
 				gtx := layout.NewContext(&ops, e)
 
 				paint.Fill(gtx.Ops, th.Palette.Bg)

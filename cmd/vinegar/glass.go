@@ -1,3 +1,6 @@
+//go:build !nogui
+// +build !nogui
+
 package main
 
 import (
@@ -34,6 +37,18 @@ func logoImage(path string) (image.Image, error) {
 
 	img, _, err := image.Decode(f)
 	return img, err
+}
+
+func (b *Binary) SendLog(msg string) {
+	if b.cfg.UI.Enabled {
+		b.log <- msg
+	}
+}
+
+func (b *Binary) SendProgress(progress float32) {
+	if b.cfg.UI.Enabled {
+		b.progress <- progress
+	}
 }
 
 func (b *Binary) Glass(exit <-chan bool) {
@@ -77,9 +92,13 @@ func (b *Binary) Glass(exit <-chan bool) {
 			w.Invalidate()
 		case <-exit:
 			w.Perform(system.ActionClose)
+			return
 		case e := <-w.Events():
 			switch e := e.(type) {
+			case system.DestroyEvent:
+				return
 			case system.FrameEvent:
+				log.Println("FrameEvent")
 				gtx := layout.NewContext(&ops, e)
 
 				paint.Fill(gtx.Ops, th.Palette.Bg)

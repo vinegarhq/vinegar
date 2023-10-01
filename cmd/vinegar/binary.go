@@ -90,16 +90,3 @@ func (b *Binary) Run(args ...string) {
 		b.pfx.Kill()
 	}
 }
-
-func (b *Binary) SendLog(msg string) {
-	if b.cfg.UI.Enabled {
-		log.Println(b.cfg.UI.Enabled)
-		b.log <- msg
-	}
-}
-
-func (b *Binary) SendProgress(progress float32) {
-	if b.cfg.UI.Enabled {
-		b.progress <- progress
-	}
-}

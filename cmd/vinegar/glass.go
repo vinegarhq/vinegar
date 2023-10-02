@@ -39,18 +39,6 @@ func logoImage(path string) (image.Image, error) {
 	return img, err
 }
 
-func (b *Binary) SendLog(msg string) {
-	if b.cfg.UI.Enabled {
-		b.log <- msg
-	}
-}
-
-func (b *Binary) SendProgress(progress float32) {
-	if b.cfg.UI.Enabled {
-		b.progress <- progress
-	}
-}
-
 func (b *Binary) Glass(exit <-chan bool) {
 	var ops op.Ops
 	var logMsg string
@@ -92,7 +80,6 @@ func (b *Binary) Glass(exit <-chan bool) {
 			w.Invalidate()
 		case <-exit:
 			w.Perform(system.ActionClose)
-			return
 		case e := <-w.Events():
 			switch e := e.(type) {
 			case system.DestroyEvent:

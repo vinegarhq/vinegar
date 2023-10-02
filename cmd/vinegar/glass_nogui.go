@@ -6,16 +6,10 @@ package main
 func (b *Binary) Glass(exit <-chan bool) {
 	for {
 		select {
+		case <-b.log:
+		case <-progress:
 		case <-exit:
 			return
 		}
 	}
-}
-
-func (b *Binary) SendLog(msg string) {
-	return
-}
-
-func (b *Binary) SendProgress(progress float32) {
-	return
 }

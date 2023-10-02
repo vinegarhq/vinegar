@@ -51,17 +51,12 @@ func (b *Binary) Run(args ...string) {
 	exitChan := make(chan bool)
 
 	go func() {
-		if b.cfg.UI.Enabled {
-			b.Glass(exitChan)
-		} else {
-			close(b.progress)
-			close(b.log)
-		}
+		b.Glass(exitChan)
 	}()
 
 	fatal := func(err error) {
 		log.Println(err)
-		b.SendLog(err.Error())
+		b.log <- err.Error()
 		os.Exit(1)
 	}
 
@@ -75,7 +70,7 @@ func (b *Binary) Run(args ...string) {
 	}
 
 	log.Printf("Launching %s", b.name)
-	b.SendLog("Launching Roblox")
+	b.log <- "Launching Roblox"
 
 	time.Sleep(time.Second * 2)
 
@@ -83,6 +78,7 @@ func (b *Binary) Run(args ...string) {
 		fatal(err)
 	}
 
+	log.Println("Sending exit")
 	exitChan <- true
 	cmd.Wait()
 

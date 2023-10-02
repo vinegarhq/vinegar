@@ -16,7 +16,7 @@ import (
 )
 
 func (b *Binary) FetchVersion() (roblox.Version, error) {
-	b.SendLog("Fetching Roblox")
+	b.log <- "Fetching Roblox"
 
 	if b.bcfg.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", b.bcfg.ForcedVersion)
@@ -68,12 +68,12 @@ func (b *Binary) Setup() error {
 		return err
 	}
 
-	b.SendProgress(1.0)
+	b.progress <- 1.0
 	return nil
 }
 
 func (b *Binary) Install() error {
-	b.SendLog("Installing Roblox")
+	b.log <- "Installing Roblox"
 
 	manifest, err := bootstrapper.Fetch(b.ver, dirs.Downloads)
 	if err != nil {
@@ -84,12 +84,12 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	b.SendLog("Downloading Roblox")
+	b.log <- "Downloading Roblox"
 	if err := b.DownloadPackages(&manifest); err != nil {
 		return err
 	}
 
-	b.SendLog("Extracting Roblox")
+	b.log <- "Extracting Roblox"
 	if err := b.ExtractPackages(&manifest); err != nil {
 		return err
 	}
@@ -122,7 +122,7 @@ func (b *Binary) DownloadPackages(m *bootstrapper.Manifest) error {
 		}
 
 		donePkgs++
-		b.SendProgress(float32(donePkgs) / float32(pkgs))
+		b.progress <- float32(donePkgs) / float32(pkgs)
 
 		return nil
 	})
@@ -151,7 +151,7 @@ func (b *Binary) ExtractPackages(m *bootstrapper.Manifest) error {
 		}
 
 		donePkgs++
-		b.SendProgress(float32(donePkgs) / float32(pkgs))
+		b.progress <- float32(donePkgs) / float32(pkgs)
 
 		return nil
 	})
@@ -165,7 +165,7 @@ func (b *Binary) SetupDxvk() error {
 	installed := ver != ""
 
 	if installed && !b.cfg.Player.Dxvk && !b.cfg.Studio.Dxvk {
-		b.SendLog("Uninstalling DXVK")
+		b.log <- "Uninstalling DXVK"
 		if err := dxvk.Remove(b.pfx); err != nil {
 			return err
 		}
@@ -177,7 +177,7 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	b.SendProgress(0.0)
+	b.progress <- 0.0
 	dxvk.Setenv()
 
 	if installed || b.cfg.DxvkVersion == ver {
@@ -189,18 +189,18 @@ func (b *Binary) SetupDxvk() error {
 	}
 	path := filepath.Join(dirs.Cache, "dxvk-"+b.cfg.DxvkVersion+".tar.gz")
 
-	b.SendProgress(0.3)
-	b.SendLog("Downloading DXVK")
+	b.progress <- 0.3
+	b.log <- "Downloading DXVK"
 	if err := dxvk.Fetch(path, b.cfg.DxvkVersion); err != nil {
 		return err
 	}
 
-	b.SendProgress(0.7)
-	b.SendLog("Extracting DXVK")
+	b.progress <- 0.7
+	b.log <- "Extracting DXVK"
 	if err := dxvk.Extract(path, b.pfx); err != nil {
 		return err
 	}
-	b.SendProgress(1.0)
+	b.progress <- 1.0
 
 	return state.SaveDxvk(b.cfg.DxvkVersion)
 }

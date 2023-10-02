@@ -39,6 +39,17 @@ func logoImage(path string) (image.Image, error) {
 	return img, err
 }
 
+func (b *Binary) EmptyGlass(exit <-chan bool) {
+	for {
+		select {
+		case <-b.log:
+		case <-b.progress:
+		case <-exit:
+			return
+		}
+	}
+}
+
 func (b *Binary) Glass(exit <-chan bool) {
 	var ops op.Ops
 	var logMsg string

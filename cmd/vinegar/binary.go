@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
 	"time"
 
 	"github.com/vinegarhq/vinegar/internal/config"
@@ -51,13 +50,16 @@ func (b *Binary) Run(args ...string) {
 	exitChan := make(chan bool)
 
 	go func() {
-		b.Glass(exitChan)
+		if b.cfg.UI.Enabled {
+			b.Glass(exitChan)
+		} else {
+			b.EmptyGlass(exitChan)
+		}
 	}()
 
 	fatal := func(err error) {
-		log.Println(err)
 		b.log <- err.Error()
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	if err := b.Setup(); err != nil {
@@ -78,7 +80,6 @@ func (b *Binary) Run(args ...string) {
 		fatal(err)
 	}
 
-	log.Println("Sending exit")
 	exitChan <- true
 	cmd.Wait()
 

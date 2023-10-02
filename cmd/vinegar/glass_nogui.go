@@ -4,5 +4,5 @@
 package main
 
 func (b *Binary) Glass(exit <-chan bool) {
-	EmptyGlass(exit)
+	b.EmptyGlass(exit)
 }

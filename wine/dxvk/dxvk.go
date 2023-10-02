@@ -31,7 +31,14 @@ func Fetch(name string, ver string) error {
 		return nil
 	}
 
-	log.Printf("Downloading DXVK %s", ver)
+	log.Printf("Downloading DXVK %s (%s)", ver, name)
+
+	err := util.Download(name, url)
+	if err == nil {
+		return nil
+	}
+
+	log.Printf("Failed to download DVXK: %s, retrying...", err)
 
 	if err := util.Download(url, name); err != nil {
 		return fmt.Errorf("failed to download DXVK: %w", err)
@@ -61,7 +68,7 @@ func Remove(pfx *wine.Prefix) error {
 }
 
 func Extract(name string, pfx *wine.Prefix) error {
-	log.Printf("Extracting DXVK")
+	log.Printf("Extracting DXVK (%s)", name)
 
 	tarFile, err := os.Open(name)
 	if err != nil {

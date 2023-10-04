@@ -64,14 +64,12 @@ uninstall:
 	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/$(FLATPAK).player.png
 	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/$(FLATPAK).studio.png
 
-icons: icons/roblox-player.png icons/roblox-studio.png icons/vinegar.svg
-	rm -rf icons/16 icons/32 icons/48 icons/64 icons/128
-	mkdir  icons/16 icons/32 icons/48 icons/64 icons/128
-	convert -background none $^ -resize 16x16   -set filename:f '%w/%t' 'icons/%[filename:f].png'
-	convert -background none $^ -resize 32x32   -set filename:f '%w/%t' 'icons/%[filename:f].png'
-	convert -background none $^ -resize 48x48   -set filename:f '%w/%t' 'icons/%[filename:f].png'
-	convert -background none $^ -resize 64x64   -set filename:f '%w/%t' 'icons/%[filename:f].png'
-	convert -background none $^ -resize 128x128 -set filename:f '%w/%t' 'icons/%[filename:f].png'
+icons: icons/roblox-player.svg icons/roblox-studio.svg icons/vinegar.svg
+	convert -density 384 -background none $^ -resize 16x16   -set filename:f '%w/%t' 'icons/%[filename:f].png'
+	convert -density 384 -background none $^ -resize 32x32   -set filename:f '%w/%t' 'icons/%[filename:f].png'
+	convert -density 384 -background none $^ -resize 48x48   -set filename:f '%w/%t' 'icons/%[filename:f].png'
+	convert -density 384 -background none $^ -resize 64x64   -set filename:f '%w/%t' 'icons/%[filename:f].png'
+	convert -density 384 -background none $^ -resize 128x128 -set filename:f '%w/%t' 'icons/%[filename:f].png'
 
 mime:
 	xdg-mime default $(FLATPAK).player.desktop x-scheme-handler/roblox-player

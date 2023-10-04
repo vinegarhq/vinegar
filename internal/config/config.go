@@ -27,6 +27,7 @@ type UI struct {
 }
 
 type Application struct {
+	WineRootOverride       string        `toml:"wineroot"`
 	Channel        string        `toml:"channel"`
 	Launcher       string        `toml:"launcher"`
 	Renderer       string        `toml:"renderer"`
@@ -49,6 +50,14 @@ type Config struct {
 }
 
 func Load(path string) (Config, error) {
+	return _Load(path, "")
+}
+
+func LoadForTarget(path string, target string) (Config, error) {
+	return _Load(path, target)
+}
+
+func _Load(path string, target string) (Config, error) {
 	cfg := Default()
 
 	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
@@ -61,7 +70,7 @@ func Load(path string) (Config, error) {
 		return cfg, fmt.Errorf("failed to decode configuration file: %w", err)
 	}
 
-	if err := cfg.Setup(); err != nil {
+	if err := cfg.Setup(target); err != nil {
 		return cfg, fmt.Errorf("failed to setup configuration: %w", err)
 	}
 
@@ -114,13 +123,22 @@ func (e *Environment) Setenv() {
 	}
 }
 
-func (c *Config) Setup() error {
+func (c *Config) Setup(target string) error {
 	if c.SanitizeEnv {
 		util.SanitizeEnv()
 	}
 
-	if c.WineRoot != "" {
-		bin := filepath.Join(c.WineRoot, "bin")
+	selectedRoot := c.WineRoot
+
+	// Check if the target has its own wineroot specified
+	if target == "P" && c.Player.WineRootOverride != "" {
+		selectedRoot = c.Player.WineRootOverride
+	} else if target == "S" && c.Studio.WineRootOverride != "" {
+		selectedRoot = c.Studio.WineRootOverride
+	}
+
+	if selectedRoot != "" {
+		bin := filepath.Join(selectedRoot, "bin")
 
 		if !filepath.IsAbs(c.WineRoot) {
 			return errors.New("ensure that the wine root given is an absolute path")
@@ -133,7 +151,7 @@ func (c *Config) Setup() error {
 
 		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
 		os.Unsetenv("WINEDLLPATH")
-		log.Printf("Using Wine Root: %s", c.WineRoot)
+		log.Printf("Using Wine Root: %s", selectedRoot)
 	}
 
 	if !roblox.ValidRenderer(c.Player.Renderer) || !roblox.ValidRenderer(c.Studio.Renderer) {

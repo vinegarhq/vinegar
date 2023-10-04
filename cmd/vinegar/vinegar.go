@@ -51,7 +51,20 @@ func main() {
 	// but they require a wineprefix, hence wineroot of configuration is required.
 	case "player", "studio", "exec", "kill", "install-webview2":
 		pfxKilled := false
-		cfg, err := config.Load(*configPath)
+
+		var cfg config.Config
+		var err error
+
+		switch cmd {
+
+		case "player":
+			cfg, err = config.LoadForTarget(*configPath,"P")
+		case "studio":
+			cfg, err = config.LoadForTarget(*configPath,"S")
+		default:
+			cfg, err = config.Load(*configPath)
+		}
+
 		if err != nil {
 			log.Fatal(err)
 		}

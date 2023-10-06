@@ -33,7 +33,7 @@ func Fetch(name string, ver string) error {
 
 	log.Printf("Downloading DXVK %s (%s)", ver, name)
 
-	err := util.Download(name, url)
+	err := util.Download(url, name)
 	if err == nil {
 		return nil
 	}

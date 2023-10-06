@@ -173,7 +173,7 @@ func (ui *UI) Run() error {
 						return layout.Flex{}.Layout(gtx,
 							layout.Rigid(func(gtx C) D {
 								return inset.Layout(gtx, func(gtx C) D {
-									btn := material.Button(ui.Theme, &exitButton, "Quit")
+									btn := material.Button(ui.Theme, &exitButton, "Cancel")
 									btn.Background = rgb(ui.Config.Red)
 									btn.Color = ui.Theme.Palette.Fg
 									btn.CornerRadius = 16

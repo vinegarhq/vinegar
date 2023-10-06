@@ -91,7 +91,7 @@ func main() {
 				log.Fatal(err)
 			}
 		case "winetricks":
-			if err := LaunchWinetricks(&pfx, &cfg); err != nil {
+			if err := pfx.LaunchWinetricks(&cfg); err != nil {
 				log.Fatal(err)
 			}
 		case "player", "studio":

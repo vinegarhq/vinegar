@@ -24,7 +24,7 @@ var BinPrefix string
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks")
 	os.Exit(1)
 }
 
@@ -49,7 +49,7 @@ func main() {
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
-	case "player", "studio", "exec", "kill", "install-webview2":
+	case "player", "studio", "exec", "kill", "install-webview2", "winetricks":
 		pfxKilled := false
 		cfg, err := config.Load(*configPath)
 		if err != nil {
@@ -90,7 +90,10 @@ func main() {
 			if err := InstallWebview2(&pfx); err != nil {
 				log.Fatal(err)
 			}
-
+		case "winetricks":
+			if err := pfx.Winetricks(); err != nil {
+				log.Fatal(err)
+			}
 		case "player", "studio":
 			var b Binary
 

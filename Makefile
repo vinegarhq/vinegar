@@ -9,8 +9,7 @@ GO = go
 GO_LDFLAGS = -s -w
 
 VINEGAR_ICONPATH = $(ICONPREFIX)/64x64/apps/$(FLATPAK).png
-VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) \
-	-X github.com/vinegarhq/vinegar/internal/config.DefaultLogoPath=$(VINEGAR_ICONPATH)
+VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX)
 
 
 all: vinegar robloxmutexer.exe

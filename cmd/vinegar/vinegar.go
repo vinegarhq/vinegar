@@ -109,7 +109,17 @@ func main() {
 				b = NewBinary(roblox.Studio, &cfg, &pfx)
 			}
 
-			b.Run(args[1:]...)
+			go func() {
+				err := b.UI.Run()
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
+
+			err := b.Run(args[1:]...)
+			if err != nil {
+				b.UI.ShowLog(logFile.Name())
+			}
 		}
 	default:
 		usage()

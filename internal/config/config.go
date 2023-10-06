@@ -12,18 +12,16 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 )
 
-var DefaultLogoPath string
-
 type Environment map[string]string
 
 type UI struct {
-	Enabled    bool   `toml:"enabled"`
-	Logo       string `toml:"logo"`
-	Background uint32 `toml:"background"`
-	Foreground uint32 `toml:"foreground"`
-	Accent     uint32 `toml:"accent"`
-	Gray1      uint32 `toml:"gray1"`
-	Gray2      uint32 `toml:"gray2"`
+	Enabled bool   `toml:"enabled"`
+	Bg      uint32 `toml:"background"`
+	Fg      uint32 `toml:"foreground"`
+	Red     uint32 `toml:"red"`
+	Accent  uint32 `toml:"accent"`
+	Gray1   uint32 `toml:"gray1"`
+	Gray2   uint32 `toml:"gray2"`
 }
 
 type Application struct {
@@ -97,13 +95,13 @@ func Default() Config {
 		},
 
 		UI: UI{
-			Enabled:    true,
-			Logo:       DefaultLogoPath,
-			Background: 0x242424,
-			Foreground: 0xfafafa,
-			Gray1:      0x303030,
-			Gray2:      0x777777,
-			Accent:     0x8fbc5e,
+			Enabled: true,
+			Bg:      0x242424,
+			Fg:      0xfafafa,
+			Red:     0xcc241d,
+			Gray1:   0x303030,
+			Gray2:   0x777777,
+			Accent:  0x8fbc5e,
 		},
 	}
 }

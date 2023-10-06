@@ -63,7 +63,7 @@ func Load() (State, error) {
 }
 
 func SaveManifest(manif *bootstrapper.Manifest) error {
-	name := manif.Version.Type.String()
+	name := manif.Version.Type.BinaryName()
 
 	log.Printf("Saving Manifest State for %s", name)
 
@@ -122,7 +122,7 @@ func Version(bt roblox.BinaryType) (string, error) {
 		return "", err
 	}
 
-	return states.Applications[bt.String()].Version, nil
+	return states.Applications[bt.BinaryName()].Version, nil
 }
 
 func Versions() ([]string, error) {

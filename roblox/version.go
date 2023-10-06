@@ -52,7 +52,7 @@ func NewVersion(bt BinaryType, channel string, GUID string) (Version, error) {
 		return Version{}, ErrNoVersion
 	}
 
-	log.Printf("Found %s version %s", bt.String(), GUID)
+	log.Printf("Found %s version %s", bt.BinaryName(), GUID)
 
 	return Version{
 		Type:    bt,
@@ -68,9 +68,9 @@ func LatestVersion(bt BinaryType, channel string) (Version, error) {
 		channel = DefaultChannel
 	}
 
-	url := VersionCheckURL + "/" + bt.String() + ChannelPath(channel)
+	url := VersionCheckURL + "/" + bt.BinaryName() + ChannelPath(channel)
 
-	log.Printf("Fetching latest version of %s for channel %s (%s)", bt.String(), channel, url)
+	log.Printf("Fetching latest version of %s for channel %s (%s)", bt.BinaryName(), channel, url)
 
 	resp, err := util.Body(url)
 	if err != nil {
@@ -86,7 +86,7 @@ func LatestVersion(bt BinaryType, channel string) (Version, error) {
 		return Version{}, ErrNoVersion
 	}
 
-	log.Printf("Fetched %s canonical version %s", bt.String(), cv.Version)
+	log.Printf("Fetched %s canonical version %s", bt.BinaryName(), cv.Version)
 
 	return NewVersion(bt, channel, cv.ClientVersionUpload)
 }

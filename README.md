@@ -35,6 +35,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
 + Faster Multi-threaded installation and extraction of Roblox
 + Multiple instances of Roblox open simultaneously
++ Loading window during setup
 + Logging for both Vinegar and Wine
 
 # See Also

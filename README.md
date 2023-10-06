@@ -1,4 +1,4 @@
-# <img src="icons/48/vinegar.png"> Vinegar
+# <img src="internal/gui/vinegar.png"> Vinegar
 
 ![Workflow Status][workflow_img    ]
 [![Version        ][version_img     ]][version     ]

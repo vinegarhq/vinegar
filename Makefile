@@ -10,7 +10,7 @@ GO_LDFLAGS = -s -w
 
 VINEGAR_ICONPATH = $(ICONPREFIX)/64x64/apps/$(FLATPAK).png
 VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX)
-
+VINEGAR_GOFLAGS = --tags nowayland,novulkan
 
 all: vinegar robloxmutexer.exe
 install: install-vinegar install-robloxmutexer install-desktop install-icons

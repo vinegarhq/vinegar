@@ -76,10 +76,7 @@ func (b *Binary) Run(args ...string) error {
 
 	time.Sleep(1 * time.Second)
 	b.UI.Close()
-
-	if err := cmd.Wait(); err != nil {
-		return err
-	}
+	cmd.Wait()
 
 	if b.Config.AutoKillPrefix {
 		b.Prefix.Kill()

@@ -179,51 +179,43 @@ func (b *Binary) Install() error {
 	return state.CleanVersions()
 }
 
-func (b *Binary) DownloadPackages(m *bootstrapper.Manifest) error {
+func (b *Binary) PerformPackages(m *bootstrapper.Manifest, fn func(bootstrapper.Package) error) error {
 	donePkgs := 0
-	pkgs := len(m.Packages)
-
-	log.Printf("Downloading %d Packages", pkgs)
+	pkgsLen := len(m.Packages)
 
 	return m.Packages.Perform(func(pkg bootstrapper.Package) error {
-		err := pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), m.DeployURL)
+		err := fn(pkg)
 		if err != nil {
 			return err
 		}
 
 		donePkgs++
-		b.UI.Progress(float32(donePkgs) / float32(pkgs))
+		b.UI.Progress(float32(donePkgs) / float32(pkgsLen))
 
 		return nil
 	})
 }
 
+func (b *Binary) DownloadPackages(m *bootstrapper.Manifest) error {
+	log.Printf("Downloading %d Packages for %s", len(m.Packages), m.Version.GUID)
+
+	return b.PerformPackages(m, func(pkg bootstrapper.Package) error {
+		return pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), m.DeployURL)
+	})
+}
+
 func (b *Binary) ExtractPackages(m *bootstrapper.Manifest) error {
-	donePkgs := 0
-	pkgs := len(m.Packages)
+	log.Printf("Extracting %d Packages for %s", len(m.Packages), m.Version.GUID)
 	pkgDirs := bootstrapper.BinaryDirectories(b.Type)
 
-	log.Printf("Extracting %d Packages", pkgs)
-
-	return m.Packages.Perform(func(pkg bootstrapper.Package) error {
+	return b.PerformPackages(m, func(pkg bootstrapper.Package) error {
 		dest, ok := pkgDirs[pkg.Name]
 
 		if !ok {
 			return fmt.Errorf("unhandled package: %s", pkg.Name)
 		}
 
-		err := pkg.Extract(
-			filepath.Join(dirs.Downloads, pkg.Checksum),
-			filepath.Join(b.Dir, dest),
-		)
-		if err != nil {
-			return err
-		}
-
-		donePkgs++
-		b.UI.Progress(float32(donePkgs) / float32(pkgs))
-
-		return nil
+		return pkg.Extract(filepath.Join(dirs.Downloads, pkg.Checksum), filepath.Join(b.Dir, dest))
 	})
 }
 

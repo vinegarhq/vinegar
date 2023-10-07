@@ -1,9 +1,9 @@
 package util
 
 import (
+	"errors"
 	"fmt"
 	"io"
-	"errors"
 	"net/http"
 	"os"
 )

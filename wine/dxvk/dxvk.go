@@ -25,26 +25,9 @@ func Setenv() {
 func Fetch(name string, ver string) error {
 	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
 
-	if _, err := os.Stat(name); err == nil {
-		log.Printf("DXVK %s is already downloaded", ver)
-
-		return nil
-	}
-
 	log.Printf("Downloading DXVK %s (%s)", ver, name)
 
-	err := util.Download(url, name)
-	if err == nil {
-		return nil
-	}
-
-	log.Printf("Failed to download DVXK: %s, retrying...", err)
-
-	if err := util.Download(url, name); err != nil {
-		return fmt.Errorf("failed to download DXVK: %w", err)
-	}
-
-	return nil
+	return util.Download(url, name)
 }
 
 func Remove(pfx *wine.Prefix) error {
@@ -128,5 +111,6 @@ func Extract(name string, pfx *wine.Prefix) error {
 		file.Close()
 	}
 
-	return nil
+	log.Println("Removing DXVK tarball (%s)", name)
+	return os.RemoveAll(name)
 }

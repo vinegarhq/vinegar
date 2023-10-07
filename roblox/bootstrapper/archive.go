@@ -9,60 +9,60 @@ import (
 	"strings"
 )
 
-func extract(source string, dir string) error {
-	zip, err := zip.OpenReader(source)
+func extract(src string, dir string) error {
+	r, err := zip.OpenReader(src)
 	if err != nil {
 		return err
 	}
-	defer zip.Close()
+	defer r.Close()
 
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
 	}
 
-	for _, file := range zip.File {
-		filePath := filepath.Join(dir, strings.ReplaceAll(file.Name, `\`, "/"))
+	for _, f := range r.File {
+		path := filepath.Join(dir, strings.ReplaceAll(f.Name, `\`, "/"))
 
 		// ignore the destination directory, it was already created above
-		if filePath == dir {
+		if dir == path {
 			continue
 		}
 
-		if !strings.HasPrefix(filePath, filepath.Clean(dir)+string(os.PathSeparator)) {
-			return fmt.Errorf("illegal file path: %s", filePath)
+		if !strings.HasPrefix(path, filepath.Clean(dir)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", path)
 		}
 
-		if file.FileInfo().IsDir() {
-			if err := os.MkdirAll(filePath, file.Mode()); err != nil {
+		if f.FileInfo().IsDir() {
+			if err := os.MkdirAll(path, f.Mode()); err != nil {
 				return err
 			}
 
 			continue
 		}
 
-		err := func() error {
-			dest, err := os.OpenFile(dir, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, file.Mode())
-			if err != nil {
-				return err
-			}
-			defer dest.Close()
-		
-			zipped, err := file.Open()
-			if err != nil {
-				return err
-			}
-			defer zipped.Close()
-		
-			if _, err := io.Copy(dest, zipped); err != nil {
-				return err
-			}
-		
-			return nil
-		}()
-
-		if err != nil {
+		if err := extractFile(f, path); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func extractFile(src *zip.File, dest string) error {
+	f, err := os.OpenFile(dest, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, src.Mode())
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	z, err := src.Open()
+	if err != nil {
+		return err
+	}
+	defer z.Close()
+
+	if _, err := io.Copy(f, z); err != nil {
+		return err
 	}
 
 	return nil

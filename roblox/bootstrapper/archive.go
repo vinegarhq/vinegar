@@ -21,26 +21,26 @@ func extract(src string, dir string) error {
 	}
 
 	for _, f := range r.File {
-		path := filepath.Join(dir, strings.ReplaceAll(f.Name, `\`, "/"))
+		dest := filepath.Join(dir, strings.ReplaceAll(f.Name, `\`, "/"))
 
 		// ignore the destination directory, it was already created above
-		if dir == path {
+		if dir == dest {
 			continue
 		}
 
-		if !strings.HasPrefix(path, filepath.Clean(dir)+string(os.PathSeparator)) {
-			return fmt.Errorf("illegal file path: %s", path)
+		if !strings.HasPrefix(dest, filepath.Clean(dir)+string(os.PathSeparator)) {
+			return fmt.Errorf("illegal file path: %s", dest)
 		}
 
 		if f.FileInfo().IsDir() {
-			if err := os.MkdirAll(path, f.Mode()); err != nil {
+			if err := os.MkdirAll(dest, f.Mode()); err != nil {
 				return err
 			}
 
 			continue
 		}
 
-		if err := extractFile(f, path); err != nil {
+		if err := extractFile(f, dest); err != nil {
 			return err
 		}
 	}

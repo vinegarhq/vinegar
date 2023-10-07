@@ -3,26 +3,19 @@ package bootstrapper
 import (
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/util"
 )
 
-const ManifestSuffix = "-rbxPkgManifest.txt"
-
 type Manifest struct {
-	roblox.Version
+	*roblox.Version
 	DeployURL string
 	Packages
 }
 
-func Fetch(ver roblox.Version, downloadDir string) (Manifest, error) {
-	if err := os.MkdirAll(downloadDir, 0o755); err != nil {
-		return Manifest{}, err
-	}
-
+func FetchManifest(ver *roblox.Version) (Manifest, error) {
 	cdn, err := CDN()
 	if err != nil {
 		return Manifest{}, err
@@ -30,16 +23,16 @@ func Fetch(ver roblox.Version, downloadDir string) (Manifest, error) {
 
 	deployURL := cdn + roblox.ChannelPath(ver.Channel) + ver.GUID
 
-	log.Printf("Fetching latest manifest for %s (%s)", ver.GUID, deployURL)
+	log.Printf("Fetching manifest for %s (%s)", ver.GUID, deployURL)
 
-	manifest, err := util.Body(deployURL + ManifestSuffix)
+	manif, err := util.Body(deployURL + "-rbxPkgManifest.txt")
 	if err != nil {
-		return Manifest{}, fmt.Errorf("failed to fetch manifest: %w, is your channel valid?", err)
+		return Manifest{}, fmt.Errorf("fetch %s manifest: %w, is your channel valid?", ver.GUID, err)
 	}
 
-	pkgs, err := ParsePackages(strings.Split(manifest, "\r\n"))
+	pkgs, err := ParsePackages(strings.Split(manif, "\r\n"))
 	if err != nil {
-		return Manifest{}, fmt.Errorf("failed to parse manifest: %w", err)
+		return Manifest{}, err
 	}
 
 	return Manifest{

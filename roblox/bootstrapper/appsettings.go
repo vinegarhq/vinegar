@@ -9,11 +9,11 @@ import (
 func WriteAppSettings(dir string) error {
 	log.Printf("Writing AppSettings: %s", dir)
 
-	file, err := os.Create(filepath.Join(dir, "AppSettings.xml"))
+	f, err := os.Create(filepath.Join(dir, "AppSettings.xml"))
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer f.Close()
 
 	appSettings := "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
 		"<Settings>\r\n" +
@@ -21,7 +21,7 @@ func WriteAppSettings(dir string) error {
 		"        <BaseUrl>http://www.roblox.com</BaseUrl>\r\n" +
 		"</Settings>\r\n"
 
-	if _, err := file.WriteString(appSettings); err != nil {
+	if _, err := f.WriteString(appSettings); err != nil {
 		return err
 	}
 

@@ -6,8 +6,8 @@ import (
 
 type PackageDirectories map[string]string
 
-func Directories(bt roblox.BinaryType) PackageDirectories {
-	switch bt {
+func BinaryDirectories(t roblox.BinaryType) PackageDirectories {
+	switch t {
 	case roblox.Player:
 		return PlayerDirectories
 	case roblox.Studio:

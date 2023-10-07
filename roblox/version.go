@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	DefaultChannel  = "live"
-	VersionCheckURL = "https://clientsettingscdn.roblox.com/v2/client-version"
+	DefaultChannel    = "live"
+	ClientSettingsURL = "https://clientsettingscdn.roblox.com/v2/client-version"
 )
 
 var ErrNoVersion = errors.New("no version found")
@@ -62,24 +62,29 @@ func NewVersion(bt BinaryType, channel string, GUID string) (Version, error) {
 }
 
 func LatestVersion(bt BinaryType, channel string) (Version, error) {
+	name := bt.BinaryName()
 	var cv ClientVersion
 
 	if channel == "" {
 		channel = DefaultChannel
 	}
 
-	url := VersionCheckURL + "/" + bt.BinaryName() + ChannelPath(channel)
+	url := ClientSettingsURL + "/" + name + ChannelPath(channel)
 
-	log.Printf("Fetching latest version of %s for channel %s (%s)", bt.BinaryName(), channel, url)
+	log.Printf("Fetching latest version of %s for channel %s (%s)", name, channel, url)
 
 	resp, err := util.Body(url)
 	if err != nil {
-		return Version{}, fmt.Errorf("failed to fetch version: %w", err)
+		if errors.Is(err, util.ErrBadStatus) {
+			return Version{}, fmt.Errorf("invalid channel given for %s", name)
+		} else {
+			return Version{}, fmt.Errorf("fetch version for %s: %w", name, err)
+		}
 	}
 
 	err = json.Unmarshal([]byte(resp), &cv)
 	if err != nil {
-		return Version{}, fmt.Errorf("failed to unmarshal clientsettings: %w", err)
+		return Version{}, fmt.Errorf("version clientsettings unmarshal: %w", err)
 	}
 
 	if cv.ClientVersionUpload == "" {

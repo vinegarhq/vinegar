@@ -7,8 +7,8 @@ import (
 )
 
 var (
-	ErrNoCDNFound = errors.New("failed to find an accessible roblox deploy mirror")
-	CDNURLs       = []string{
+	ErrNoCDNFound = errors.New("no accessible Roblox deploy mirror or cdn found")
+	CDNs          = []string{
 		"https://setup.rbxcdn.com",
 		"https://s3.amazonaws.com/setup.roblox.com",
 		"https://setup-ak.rbxcdn.com",
@@ -21,9 +21,11 @@ var (
 func CDN() (string, error) {
 	log.Println("Finding an accessible Roblox deploy mirror")
 
-	for _, cdn := range CDNURLs {
+	for _, cdn := range CDNs {
 		resp, err := http.Head(cdn + "/" + "version")
 		if err != nil {
+			log.Printf("deploy mirror %s: %s", cdn, errors.Unwrap(err))
+
 			continue
 		}
 		resp.Body.Close()

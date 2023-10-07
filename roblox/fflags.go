@@ -58,18 +58,18 @@ func (f *FFlags) Apply(versionDir string) error {
 	return nil
 }
 
-func ValidRenderer(renderer string) (valid bool) {
+func ValidRenderer(renderer string) bool {
 	if renderer == "" {
 		renderer = DefaultRenderer
 	}
 
 	for _, r := range Renderers {
 		if renderer == r {
-			valid = true
+			return true
 		}
 	}
 
-	return
+	return false
 }
 
 func (f *FFlags) SetRenderer(renderer string) error {

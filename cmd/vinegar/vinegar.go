@@ -119,15 +119,26 @@ func main() {
 				}
 			}()
 
-			err := b.Run(args[1:]...)
-			if err != nil {
-				if cfg.UI.Enabled {
-					b.UI.Message("Error: " + err.Error())
-					b.UI.ShowLog(logFile.Name())
-					select {} // wait for window to close
-				} else {
+			b.UI.Desc(b.Config.Channel)
+
+			errHandler := func(err error) {
+				if !cfg.UI.Enabled {
 					log.Fatal(err)
 				}
+
+				log.Println(err)
+				b.UI.ShowLog(logFile.Name())
+				select {} // wait for window to close
+			}
+
+			if err := b.Setup(); err != nil {
+				b.UI.Message("Failed to setup Roblox")
+				errHandler(err)
+			}
+
+			if err := b.Run(args[1:]...); err != nil {
+				b.UI.Message("Failed to run Roblox")
+				errHandler(err)
 			}
 		}
 	default:

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"fmt"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -56,12 +56,6 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 }
 
 func (b *Binary) Run(args ...string) error {
-	b.UI.Desc(b.Config.Channel)
-
-	if err := b.Setup(); err != nil {
-		return err
-	}
-
 	cmd, err := b.Command(args...)
 	if err != nil {
 		return err
@@ -147,7 +141,11 @@ func (b *Binary) Setup() error {
 func (b *Binary) Install() error {
 	b.UI.Message("Installing " + b.Alias)
 
-	manifest, err := bootstrapper.Fetch(b.Version, dirs.Downloads)
+	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
+		return err
+	}
+
+	manifest, err := bootstrapper.FetchManifest(&b.Version)
 	if err != nil {
 		return err
 	}
@@ -203,7 +201,7 @@ func (b *Binary) DownloadPackages(m *bootstrapper.Manifest) error {
 func (b *Binary) ExtractPackages(m *bootstrapper.Manifest) error {
 	donePkgs := 0
 	pkgs := len(m.Packages)
-	pkgDirs := bootstrapper.Directories(b.Type)
+	pkgDirs := bootstrapper.BinaryDirectories(b.Type)
 
 	log.Printf("Extracting %d Packages", pkgs)
 

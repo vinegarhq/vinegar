@@ -121,7 +121,13 @@ func main() {
 
 			err := b.Run(args[1:]...)
 			if err != nil {
-				b.UI.ShowLog(logFile.Name())
+				if cfg.UI.Enabled {
+					b.UI.Message("Error: " + err.Error())
+					b.UI.ShowLog(logFile.Name())
+					select {} // wait for window to close
+				} else {
+					log.Fatal(err)
+				}
 			}
 		}
 	default:

@@ -7,12 +7,11 @@ import (
 	"os"
 	"path/filepath"
 
+	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/util"
 )
-
-type Environment map[string]string
 
 type UI struct {
 	Enabled bool   `toml:"enabled"`
@@ -40,6 +39,7 @@ type Config struct {
 	DxvkVersion       string      `toml:"dxvk_version"`
 	MultipleInstances bool        `toml:"multiple_instances"`
 	SanitizeEnv       bool        `toml:"sanitize_env"`
+	Global            Application `toml:"global"`
 	Player            Application `toml:"player"`
 	Studio            Application `toml:"studio"`
 	Env               Environment `toml:"env"`
@@ -56,19 +56,23 @@ func Load(path string) (Config, error) {
 	}
 
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
-		return cfg, fmt.Errorf("failed to decode configuration file: %w", err)
+		return cfg, err
 	}
 
-	if err := cfg.Setup(); err != nil {
-		return cfg, fmt.Errorf("failed to setup configuration: %w", err)
+	if err := mergo.Merge(&cfg.Player, cfg.Global, mergo.WithAppendSlice); err != nil {
+		return cfg, err
 	}
 
-	return cfg, nil
+	if err := mergo.Merge(&cfg.Studio, cfg.Global, mergo.WithAppendSlice); err != nil {
+		return cfg, err
+	}
+
+	return cfg, cfg.setup()
 }
 
 func Default() Config {
 	return Config{
-		DxvkVersion: "2.3",
+		DxvkVersion: "4.3",
 
 		Env: Environment{
 			"WINEARCH":         "win64",
@@ -106,13 +110,7 @@ func Default() Config {
 	}
 }
 
-func (e *Environment) Setenv() {
-	for name, value := range *e {
-		os.Setenv(name, value)
-	}
-}
-
-func (c *Config) Setup() error {
+func (c *Config) setup() error {
 	if c.SanitizeEnv {
 		util.SanitizeEnv()
 	}
@@ -129,7 +127,7 @@ func (c *Config) Setup() error {
 			return fmt.Errorf("invalid wine root given: %s", err)
 		}
 
-		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
+		c.Global.Env["PATH"] = bin + ":" + os.Getenv("PATH")
 		os.Unsetenv("WINEDLLPATH")
 		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
@@ -139,6 +137,7 @@ func (c *Config) Setup() error {
 	}
 
 	c.Env.Setenv()
+	c.Global.Env.Setenv()
 
 	return nil
 }

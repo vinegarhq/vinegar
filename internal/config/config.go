@@ -72,7 +72,7 @@ func Load(path string) (Config, error) {
 
 func Default() Config {
 	return Config{
-		DxvkVersion: "4.3",
+		DxvkVersion: "2.3",
 
 		Env: Environment{
 			"WINEARCH":         "win64",

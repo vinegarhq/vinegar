@@ -71,10 +71,6 @@ func main() {
 			}
 		}()
 
-		if err := pfx.Setup(); err != nil {
-			log.Fatal(err)
-		}
-
 		switch cmd {
 		case "exec":
 			if len(args) < 2 {
@@ -131,6 +127,16 @@ func main() {
 				select {} // wait for window to close
 			}
 
+			if _, err := os.Stat(filepath.Join(pfx.Dir, "drive_c", "windows")); err != nil {
+				log.Printf("Initializing wineprefix at %s", pfx.Dir)
+
+				b.Splash.Message("Initializing wineprefix")
+				if err := PrefixInit(&pfx); err != nil {
+					b.Splash.Message(err.Error())
+					errHandler(err)
+				}
+			}
+
 			if err := b.Setup(); err != nil {
 				b.Splash.Message("Failed to setup Roblox")
 				errHandler(err)
@@ -145,6 +151,19 @@ func main() {
 		usage()
 	}
 }
+
+func PrefixInit(pfx *wine.Prefix) error {
+	if err := pfx.Command("wineboot", "-i").Run(); err != nil {
+		return err
+	}
+
+	if err := pfx.DisableCrashDialogs(); err != nil {
+		return err
+	}
+
+	return pfx.RegistryAdd("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", wine.REG_DWORD, "100")
+}
+
 
 func Uninstall() {
 	vers, err := state.Versions()

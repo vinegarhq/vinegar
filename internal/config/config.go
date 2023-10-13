@@ -96,6 +96,7 @@ func Default() Config {
 		},
 		Studio: Binary{
 			Dxvk: true,
+			AutoKillPrefix: true,
 		},
 
 		Splash: Splash{

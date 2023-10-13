@@ -4,7 +4,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"path/filepath"
 )
 
 type Prefix struct {
@@ -23,28 +22,6 @@ func (p *Prefix) Wine(exe string, arg ...string) *Cmd {
 	arg = append([]string{exe}, arg...)
 
 	return p.Command("wine", arg...)
-}
-
-func (p *Prefix) Setup() error {
-	if _, err := os.Stat(filepath.Join(p.Dir, "drive_c", "windows")); err == nil {
-		return nil
-	}
-
-	return p.Initialize()
-}
-
-func (p *Prefix) Initialize() error {
-	log.Printf("Initializing wineprefix at %s", p.Dir)
-
-	if err := os.MkdirAll(p.Dir, 0o755); err != nil {
-		return err
-	}
-
-	if err := p.Command("wineboot", "-i").Run(); err != nil {
-		return err
-	}
-
-	return p.DisableCrashDialogs()
 }
 
 func (p *Prefix) Kill() {

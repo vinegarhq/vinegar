@@ -113,31 +113,31 @@ func main() {
 			}
 
 			go func() {
-				err := b.UI.Run()
+				err := b.Splash.Run()
 				if err != nil {
 					log.Fatal(err)
 				}
 			}()
 
-			b.UI.Desc(b.Config.Channel)
+			b.Splash.Desc(b.Config.Channel)
 
 			errHandler := func(err error) {
-				if !cfg.UI.Enabled {
+				if !cfg.Splash.Enabled {
 					log.Fatal(err)
 				}
 
 				log.Println(err)
-				b.UI.ShowLog(logFile.Name())
+				b.Splash.ShowLog(logFile.Name())
 				select {} // wait for window to close
 			}
 
 			if err := b.Setup(); err != nil {
-				b.UI.Message("Failed to setup Roblox")
+				b.Splash.Message("Failed to setup Roblox")
 				errHandler(err)
 			}
 
 			if err := b.Run(args[1:]...); err != nil {
-				b.UI.Message("Failed to run Roblox")
+				b.Splash.Message("Failed to run Roblox")
 				errHandler(err)
 			}
 		}

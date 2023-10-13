@@ -13,7 +13,7 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 )
 
-type UI struct {
+type Splash struct {
 	Enabled bool   `toml:"enabled"`
 	Bg      uint32 `toml:"background"`
 	Fg      uint32 `toml:"foreground"`
@@ -23,7 +23,7 @@ type UI struct {
 	Gray2   uint32 `toml:"gray2"`
 }
 
-type Application struct {
+type Binary struct {
 	Channel        string        `toml:"channel"`
 	Launcher       string        `toml:"launcher"`
 	Renderer       string        `toml:"renderer"`
@@ -39,11 +39,11 @@ type Config struct {
 	DxvkVersion       string      `toml:"dxvk_version"`
 	MultipleInstances bool        `toml:"multiple_instances"`
 	SanitizeEnv       bool        `toml:"sanitize_env"`
-	Global            Application `toml:"global"`
-	Player            Application `toml:"player"`
-	Studio            Application `toml:"studio"`
+	Global            Binary      `toml:"global"`
+	Player            Binary      `toml:"player"`
+	Studio            Binary      `toml:"studio"`
 	Env               Environment `toml:"env"`
-	UI                `toml:"ui"`
+	Splash            Splash      `toml:"splash"`
 }
 
 func Load(path string) (Config, error) {
@@ -87,18 +87,18 @@ func Default() Config {
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
 
-		Player: Application{
+		Player: Binary{
 			Dxvk:           true,
 			AutoKillPrefix: true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
 		},
-		Studio: Application{
+		Studio: Binary{
 			Dxvk: true,
 		},
 
-		UI: UI{
+		Splash: Splash{
 			Enabled: true,
 			Bg:      0x242424,
 			Fg:      0xfafafa,

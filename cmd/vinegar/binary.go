@@ -11,7 +11,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/config/state"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/gui"
+	"github.com/vinegarhq/vinegar/internal/splash"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/wine"
@@ -19,10 +19,10 @@ import (
 )
 
 type Binary struct {
-	UI *gui.UI
+	Splash *splash.Splash
 
 	GlobalConfig *config.Config
-	Config       *config.Application
+	Config       *config.Binary
 
 	Alias   string
 	Name    string
@@ -33,7 +33,7 @@ type Binary struct {
 }
 
 func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binary {
-	var bcfg config.Application
+	var bcfg config.Binary
 
 	switch bt {
 	case roblox.Player:
@@ -43,7 +43,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 	}
 
 	return Binary{
-		UI: gui.New(&cfg.UI),
+		Splash: splash.New(&cfg.Splash),
 
 		GlobalConfig: cfg,
 		Config:       &bcfg,
@@ -62,14 +62,14 @@ func (b *Binary) Run(args ...string) error {
 	}
 
 	log.Printf("Launching %s", b.Name)
-	b.UI.Message("Launching " + b.Alias)
+	b.Splash.Message("Launching " + b.Alias)
 
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 
 	time.Sleep(1 * time.Second)
-	b.UI.Close()
+	b.Splash.Close()
 	cmd.Wait()
 
 	if b.Config.AutoKillPrefix {
@@ -80,7 +80,7 @@ func (b *Binary) Run(args ...string) error {
 }
 
 func (b *Binary) FetchVersion() (roblox.Version, error) {
-	b.UI.Message("Fetching " + b.Alias)
+	b.Splash.Message("Fetching " + b.Alias)
 
 	if b.Config.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
@@ -97,7 +97,7 @@ func (b *Binary) Setup() error {
 		return err
 	}
 
-	b.UI.Desc(fmt.Sprintf("%s %s", ver.GUID, ver.Channel))
+	b.Splash.Desc(fmt.Sprintf("%s %s", ver.GUID, ver.Channel))
 	b.Version = ver
 	b.Dir = filepath.Join(dirs.Versions, ver.GUID)
 
@@ -134,12 +134,12 @@ func (b *Binary) Setup() error {
 		return err
 	}
 
-	b.UI.Progress(1.0)
+	b.Splash.Progress(1.0)
 	return nil
 }
 
 func (b *Binary) Install() error {
-	b.UI.Message("Installing " + b.Alias)
+	b.Splash.Message("Installing " + b.Alias)
 
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
@@ -154,12 +154,12 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	b.UI.Message("Downloading " + b.Alias)
+	b.Splash.Message("Downloading " + b.Alias)
 	if err := b.DownloadPackages(&manifest); err != nil {
 		return err
 	}
 
-	b.UI.Message("Extracting " + b.Alias)
+	b.Splash.Message("Extracting " + b.Alias)
 	if err := b.ExtractPackages(&manifest); err != nil {
 		return err
 	}
@@ -190,7 +190,7 @@ func (b *Binary) PerformPackages(m *bootstrapper.Manifest, fn func(bootstrapper.
 		}
 
 		donePkgs++
-		b.UI.Progress(float32(donePkgs) / float32(pkgsLen))
+		b.Splash.Progress(float32(donePkgs) / float32(pkgsLen))
 
 		return nil
 	})
@@ -227,7 +227,7 @@ func (b *Binary) SetupDxvk() error {
 	installed := ver != ""
 
 	if installed && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
-		b.UI.Message("Uninstalling DXVK")
+		b.Splash.Message("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return err
 		}
@@ -239,7 +239,7 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	b.UI.Progress(0.0)
+	b.Splash.Progress(0.0)
 	dxvk.Setenv()
 
 	if installed || b.GlobalConfig.DxvkVersion == ver {
@@ -251,18 +251,18 @@ func (b *Binary) SetupDxvk() error {
 	}
 	path := filepath.Join(dirs.Cache, "dxvk-"+b.GlobalConfig.DxvkVersion+".tar.gz")
 
-	b.UI.Progress(0.3)
-	b.UI.Message("Downloading DXVK")
+	b.Splash.Progress(0.3)
+	b.Splash.Message("Downloading DXVK")
 	if err := dxvk.Fetch(path, b.GlobalConfig.DxvkVersion); err != nil {
 		return err
 	}
 
-	b.UI.Progress(0.7)
-	b.UI.Message("Extracting DXVK")
+	b.Splash.Progress(0.7)
+	b.Splash.Message("Extracting DXVK")
 	if err := dxvk.Extract(path, b.Prefix); err != nil {
 		return err
 	}
-	b.UI.Progress(1.0)
+	b.Splash.Progress(1.0)
 
 	return state.SaveDxvk(b.GlobalConfig.DxvkVersion)
 }

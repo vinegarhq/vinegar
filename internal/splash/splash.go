@@ -1,6 +1,6 @@
-//go:build !nogui
+//go:build !nogui && !nosplash
 
-package gui
+package splash
 
 import (
 	"bytes"
@@ -29,11 +29,11 @@ type (
 
 var ErrClosed = errors.New("window closed")
 
-type UI struct {
+type Splash struct {
 	*app.Window
 
 	Theme  *material.Theme
-	Config *config.UI
+	Config *config.Splash
 
 	logo     image.Image
 	message  string
@@ -43,32 +43,32 @@ type UI struct {
 	closed   bool
 }
 
-func (ui *UI) Message(msg string) {
+func (ui *Splash) Message(msg string) {
 	ui.message = msg
 	ui.Invalidate()
 }
 
-func (ui *UI) Desc(desc string) {
+func (ui *Splash) Desc(desc string) {
 	ui.desc = desc
 	ui.Invalidate()
 }
 
-func (ui *UI) ShowLog(name string) {
+func (ui *Splash) ShowLog(name string) {
 	ui.showLog = name
 	ui.Invalidate()
 }
 
-func (ui *UI) Progress(progress float32) {
+func (ui *Splash) Progress(progress float32) {
 	ui.progress = progress
 	ui.Invalidate()
 }
 
-func (ui *UI) Close() {
+func (ui *Splash) Close() {
 	ui.closed = true
 	ui.Perform(system.ActionClose)
 }
 
-func New(cfg *config.UI) *UI {
+func New(cfg *config.Splash) *Splash {
 	width := unit.Dp(448)
 	height := unit.Dp(240)
 
@@ -83,7 +83,7 @@ func New(cfg *config.UI) *UI {
 
 	logo, _, _ := image.Decode(bytes.NewReader(vinegarlogo))
 
-	return &UI{
+	return &Splash{
 		logo:   logo,
 		Theme:  th,
 		Config: cfg,
@@ -97,7 +97,7 @@ func New(cfg *config.UI) *UI {
 	}
 }
 
-func (ui *UI) Run() error {
+func (ui *Splash) Run() error {
 	var ops op.Ops
 	var showLogButton widget.Clickable
 	var exitButton widget.Clickable

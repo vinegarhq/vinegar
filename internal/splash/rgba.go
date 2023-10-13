@@ -1,4 +1,4 @@
-package gui
+package splash
 
 import (
 	"image/color"

@@ -1,6 +1,6 @@
 //go:build !nogui
 
-package gui
+package splash
 
 import (
 	_ "embed"

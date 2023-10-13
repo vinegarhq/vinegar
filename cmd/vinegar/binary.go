@@ -14,6 +14,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/splash"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
+	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
 )
@@ -56,6 +57,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 }
 
 func (b *Binary) Run(args ...string) error {
+	exe := b.Type.Executable()
 	cmd, err := b.Command(args...)
 	if err != nil {
 		return err
@@ -64,15 +66,34 @@ func (b *Binary) Run(args ...string) error {
 	log.Printf("Launching %s", b.Name)
 	b.Splash.Message("Launching " + b.Alias)
 
+	kill := true
+
+	// If roblox is already running, don't kill wineprefix, even if
+	// auto kill prefix is enabled
+	if util.CommFound("Roblox") {
+		log.Println("Roblox is already running, not killing wineprefix after exit")
+		kill = false
+	}
+
+	// Launches into foreground
 	if err := cmd.Start(); err != nil {
 		return err
 	}
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(2500 * time.Millisecond)
 	b.Splash.Close()
-	cmd.Wait()
 
-	if b.Config.AutoKillPrefix {
+	if kill && b.Config.AutoKillPrefix {
+		log.Println("Waiting for Roblox's process to die :)")
+
+		for {
+			time.Sleep(1 * time.Second)
+
+			if !util.CommFound(exe[:15]) {
+				break
+			}
+		}
+
 		b.Prefix.Kill()
 	}
 

@@ -161,7 +161,7 @@ func PrefixInit(pfx *wine.Prefix) error {
 		return err
 	}
 
-	return pfx.RegistryAdd("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", wine.REG_DWORD, "100")
+	return pfx.RegistryAdd("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", wine.REG_DWORD, "97")
 }
 
 func Uninstall() {

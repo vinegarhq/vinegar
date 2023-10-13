@@ -263,7 +263,7 @@ func (b *Binary) SetupDxvk() error {
 	b.Splash.Progress(0.0)
 	dxvk.Setenv()
 
-	if installed || b.GlobalConfig.DxvkVersion == ver {
+	if b.GlobalConfig.DxvkVersion == ver {
 		return nil
 	}
 

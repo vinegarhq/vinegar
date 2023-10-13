@@ -25,7 +25,7 @@ func Setenv() {
 func Fetch(name string, ver string) error {
 	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
 
-	log.Printf("Downloading DXVK %s (%s)", ver, name)
+	log.Printf("Downloading DXVK %s (%s as %s)", ver, url, name)
 
 	return util.Download(url, name)
 }

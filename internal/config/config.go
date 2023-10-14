@@ -95,7 +95,7 @@ func Default() Config {
 			},
 		},
 		Studio: Binary{
-			Dxvk: true,
+			Dxvk:           true,
 			AutoKillPrefix: true,
 		},
 

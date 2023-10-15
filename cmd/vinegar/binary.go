@@ -160,7 +160,7 @@ func (b *Binary) TailLog() {
 	}
 
 	for line := range t.Lines {
-		fmt.Println(line.Text)
+		fmt.Fprintln(b.Prefix.Output, line.Text)
 
 		if b.Config.DiscordRPC {
 			if err := a.HandleLog(line.Text); err != nil {

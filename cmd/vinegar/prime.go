@@ -12,17 +12,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/config"
 )
 
-var knownVendors = map[string]string{
-	//Intel
-	"8086": "mesa",
-	//AMD
-	"1002": "mesa",
-	//NVIDIA
-	"10de": "nvidia-or-mesa",
-	//Fallback in case vendor is unknown
-	"default": "mesa",
-}
-
 type Card struct {
 	path string
 	eDP  bool
@@ -33,15 +22,6 @@ type Card struct {
 //As a result, no error handling when calling os IO operations is done.
 
 func ChooseCard(bcfg config.Binary, c Card) config.Binary {
-	vid := strings.Split(c.id, ":")[0]
-
-	vendor := knownVendors[vid]
-	if vendor == "" {
-		vendor = knownVendors["default"]
-		log.Printf("Warning: %s (%s) has an unknown vendor. Defaulting to %s.", c.path, c.id, vendor)
-		log.Printf("Please let Vinegar's maintainers know about this.")
-	}
-
 	setIfUndefined := func(k string, v string) {
 		log.Printf("bcfg.Env: %v", bcfg.Env)
 		if _, ok := bcfg.Env[k]; ok {
@@ -54,22 +34,16 @@ func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 	setIfUndefined("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
 	setIfUndefined("DRI_PRIME", c.id)
 
-	switch vendor {
-	case "mesa":
-		bcfg.Env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
-	case "nvidia-or-mesa":
-		driverPath, _ := filepath.EvalSymlinks(filepath.Join(c.path, "device/driver"))
+	driverPath, _ := filepath.EvalSymlinks(filepath.Join(c.path, "device/driver"))
 
-		//Nvidia proprietary driver is being used
-		if strings.HasSuffix(driverPath, "nvidia") {
-			setIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
-		} else { //Nouveau is being used
-			setIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "mesa")
-		}
-		bcfg.Env.Setenv()
+	//Nvidia proprietary driver is being used. Apply workaround.
+	if strings.HasSuffix(driverPath, "nvidia") {
+		setIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+	} else {
+		setIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "mesa")
 	}
 
-	log.Printf("Chose card %s (%s). Detected vendor: %s", c.path, c.id, vendor)
+	log.Printf("Chose card %s (%s).", c.path, c.id)
 	return bcfg
 }
 

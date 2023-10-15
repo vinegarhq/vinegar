@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path"
@@ -30,6 +29,9 @@ type Card struct {
 	id   string
 }
 
+//Note: sysfs is located entirely in memory, and as a result does not have IO errors.
+//As a result, no error handling when calling os IO operations is done.
+
 func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 	vid := strings.Split(c.id, ":")[0]
 
@@ -45,12 +47,7 @@ func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 	case "mesa":
 		bcfg.Env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
 	case "nvidia-or-mesa":
-		driverPath, err := filepath.EvalSymlinks(filepath.Join(c.path, "device/driver"))
-
-		if err != nil {
-			log.Printf("%s", err)
-			os.Exit(1)
-		}
+		driverPath, _ := filepath.EvalSymlinks(filepath.Join(c.path, "device/driver"))
 
 		//Nvidia proprietary driver is being used
 		if strings.HasSuffix(driverPath, "nvidia") {
@@ -60,8 +57,6 @@ func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 		}
 		bcfg.Env.Setenv()
 	}
-
-	log.Printf("bcfg.Env: %v\n", bcfg.Env)
 
 	return bcfg
 }
@@ -77,12 +72,7 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 	var cards = make([]*Card, 0)
 	idDict := make(map[string]*Card, 100)
 
-	dirEntries, err := os.ReadDir(drmPath)
-
-	if err != nil {
-		log.Printf("failed to probe /sys/class/drm")
-		return bcfg
-	}
+	dirEntries, _ := os.ReadDir(drmPath)
 
 	for _, v := range dirEntries {
 		name := v.Name()
@@ -90,8 +80,6 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 		eDPSubmatch := eDP.FindStringSubmatch(name)
 
 		if submatch != nil {
-			log.Printf(name, submatch[1])
-
 			i, _ := strconv.Atoi(submatch[1])
 
 			cardPath := path.Join(drmPath, name)
@@ -100,18 +88,10 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 			cards = append(cards, card)
 
 			cards[i].path = cardPath
-			vid, err := os.ReadFile(path.Join(cardPath, "device/vendor"))
-			if err != nil {
-				log.Printf("failed to probe /sys/class/%s/device/vendor", name)
-				return bcfg
-			}
-			did, err := os.ReadFile(path.Join(cardPath, "device/device"))
-			if err != nil {
-				log.Printf("failed to probe /sys/class/%s/device/device", name)
-				return bcfg
-			}
-			vidCut, _ := strings.CutPrefix(string(vid), "0x")
+			vid, _ := os.ReadFile(path.Join(cardPath, "device/vendor"))
+			did, _ := os.ReadFile(path.Join(cardPath, "device/device"))
 
+			vidCut, _ := strings.CutPrefix(string(vid), "0x")
 			didCut, _ := strings.CutPrefix(string(did), "0x")
 
 			id := strings.ReplaceAll(strings.ToLower(vidCut+":"+didCut), "\n", "")
@@ -119,8 +99,6 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 			idDict[id] = cards[i]
 
 		} else if eDPSubmatch != nil {
-			log.Printf(name, eDPSubmatch[0])
-
 			i, _ := strconv.Atoi(eDPSubmatch[0])
 			cards[i].eDP = true
 		}
@@ -171,9 +149,6 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 		log.Printf("System has %d cards. Skipping prime logic.", len(cards))
 		return bcfg
 	}
-
-	fmt.Printf("card0: %v\n", cards[0])
-	fmt.Printf("card1: %v\n", cards[1])
 
 	if bcfg.PrimeOffload {
 		return ChooseCard(bcfg, *cards[1])

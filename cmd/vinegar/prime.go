@@ -38,6 +38,8 @@ func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 	vendor := knownVendors[vid]
 	if vendor == "" {
 		vendor = knownVendors["default"]
+		log.Printf("Warning: %s (%s) has an unknown vendor. Defaulting to %s.", c.path, c.id, vendor)
+		log.Printf("Please let Vinegar's maintainers know about this.")
 	}
 
 	setIfUndefined := func(k string, v string) {
@@ -115,10 +117,23 @@ func GetSystemCards() ([]*Card, map[string]*Card) {
 }
 
 // Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
-func PrimeIsAllowed(cards []*Card) bool {
+func PrimeIsAllowed(cards []*Card, bcfg config.Binary) bool {
 	//There's no ambiguity when there's only one card.
 	if len(cards) <= 1 {
 		log.Printf("Number of cards is equal or below 1. Skipping prime logic.")
+		return false
+	}
+	//Handle exotic systems with three or more GPUs (Usually laptops with an epu connnected or workstation desktops)
+	if len(cards) > 2 {
+		//OpenGL cannot choose the right card properly. Prompt user the define it themselves
+		if !bcfg.Dxvk && bcfg.Renderer != "Vulkan" {
+			log.Printf("System has %d cards and OpenGL is not capable of choosing the right one.", len(cards))
+			log.Printf("To fix this, use the Vulkan renderer instead or choose the right GPU in Vinegar's configuration.")
+			log.Printf("Aborting...")
+			os.Exit(1)
+		} else { //Vulkan knows better than us. Let it do its thing.
+			log.Printf("System has %d cards. Skipping prime logic and leaving card selection up to Vulkan.", len(cards))
+		}
 		return false
 	}
 	//card0 is always an igpu if it exists. If it has no eDP, then Vinegar isn't running on a laptop.
@@ -127,11 +142,6 @@ func PrimeIsAllowed(cards []*Card) bool {
 		log.Printf("card0 has no eDP. This machine is not a laptop. Skipping prime logic.")
 		return false
 	}
-	if len(cards) > 2 {
-		log.Printf("System has %d cards. Skipping prime logic.", len(cards))
-		return false
-	}
-
 	return true
 }
 
@@ -146,12 +156,12 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 
 	switch bcfg.ForcedGpu {
 	case "integrated":
-		if !PrimeIsAllowed(cards) {
+		if !PrimeIsAllowed(cards, bcfg) {
 			return bcfg
 		}
 		return ChooseCard(bcfg, *cards[0])
 	case "prime-discrete":
-		if !PrimeIsAllowed(cards) {
+		if !PrimeIsAllowed(cards, bcfg) {
 			return bcfg
 		}
 		return ChooseCard(bcfg, *cards[1])

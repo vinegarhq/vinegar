@@ -57,6 +57,11 @@ func main() {
 		}
 
 		pfx := wine.New(dirs.Prefix)
+		// Always ensure its created, wine will complain if the root
+		// directory doesnt exist
+		if err := os.MkdirAll(dirs.Prefix, 0o755); err != nil {
+			log.Fatal(err)
+		}
 
 		c := make(chan os.Signal, 1)
 		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)

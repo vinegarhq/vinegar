@@ -40,8 +40,17 @@ func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 		vendor = knownVendors["default"]
 	}
 
-	bcfg.Env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
-	bcfg.Env["DRI_PRIME"] = c.id
+	setIfUndefined := func(k string, v string) {
+		log.Printf("bcfg.Env: %v", bcfg.Env)
+		if _, ok := bcfg.Env[k]; ok {
+			log.Printf("Warning: env var %s is already defined. Will not redefine it.", k)
+		} else {
+			bcfg.Env[k] = v
+		}
+	}
+
+	setIfUndefined("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
+	setIfUndefined("DRI_PRIME", c.id)
 
 	switch vendor {
 	case "mesa":
@@ -51,9 +60,9 @@ func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 
 		//Nvidia proprietary driver is being used
 		if strings.HasSuffix(driverPath, "nvidia") {
-			bcfg.Env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+			setIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 		} else { //Nouveau is being used
-			bcfg.Env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
+			setIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "mesa")
 		}
 		bcfg.Env.Setenv()
 	}
@@ -149,7 +158,7 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 
 	//Handle cases where the user explictly chooses a gpu to use
 	default:
-		if strings.Contains(bcfg.ForcedGpu, ":") { //This is a gpu ID
+		if strings.Contains(bcfg.ForcedGpu, ":") { //This is a card vid:nid
 			card := idDict[bcfg.ForcedGpu]
 			if card == nil {
 				log.Printf("No gpu with the vid:nid \"%s\". Aborting.", bcfg.ForcedGpu)

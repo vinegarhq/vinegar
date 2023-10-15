@@ -32,6 +32,8 @@ type Binary struct {
 	Dxvk           bool          `toml:"dxvk"`
 	FFlags         roblox.FFlags `toml:"fflags"`
 	Env            Environment   `toml:"env"`
+	PrimeOffload   bool          `toml:"prime"`
+	ForcedGpuId    string        `toml:"forced_gpu"`
 }
 
 type Config struct {
@@ -87,6 +89,9 @@ func Default() Config {
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
 
+		Global: Binary{
+			PrimeOffload: false,
+		},
 		Player: Binary{
 			Dxvk:           true,
 			AutoKillPrefix: true,

@@ -43,6 +43,8 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 		bcfg = cfg.Studio
 	}
 
+	bcfg = SetupPrimeOffload(bcfg)
+
 	return Binary{
 		Splash: splash.New(&cfg.Splash),
 

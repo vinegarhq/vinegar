@@ -58,13 +58,12 @@ func ChooseCard(bcfg config.Binary, c Card) config.Binary {
 		bcfg.Env.Setenv()
 	}
 
+	log.Printf("Chose card %s (%s). Detected vendor: %s", c.path, c.id, vendor)
 	return bcfg
 }
 
-func SetupPrimeOffload(bcfg config.Binary) config.Binary {
-	//Sanitize gpu ID
-	bcfg.ForcedGpuId = strings.ReplaceAll(strings.ToLower(bcfg.ForcedGpuId), "0x", "")
-
+// Probe cards of system and their properties via sysfs
+func GetSystemCards() ([]*Card, map[string]*Card) {
 	cardPattern := regexp.MustCompile("card([0-9]+)$")
 	eDP := regexp.MustCompile("card([0-9]+)-eDP-[0-9]+$")
 	drmPath := "/sys/class/drm"
@@ -103,56 +102,76 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 			cards[i].eDP = true
 		}
 	}
+	return cards, idDict
+}
 
-	//Handle cases where the user explictly chooses a gpu to use
-	if bcfg.ForcedGpuId != "" {
-		if strings.Contains(bcfg.ForcedGpuId, ":") { //This is a gpu ID
-			card := idDict[bcfg.ForcedGpuId]
-
-			if card == nil {
-				log.Printf("ForcedGpuId is not a valid index or ID. Aborting.")
-				os.Exit(1)
-			}
-
-			return ChooseCard(bcfg, *card)
-		} else { // This is an index
-			id, err := strconv.Atoi(bcfg.ForcedGpuId)
-			if err != nil {
-				log.Printf("ForcedGpuId is not a valid index or ID. Aborting.")
-				os.Exit(1)
-			}
-
-			card := cards[id]
-
-			if card.path != "" {
-				log.Printf("index %d of ForcedGpuId does not exist. Aborting.", id)
-				os.Exit(1)
-			}
-
-			return ChooseCard(bcfg, *card)
-		}
-
-	}
-
-	//There's no need to touch single-gpu systems.
+// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
+func PrimeIsAllowed(cards []*Card) bool {
+	//There's no ambiguity when there's only one card.
 	if len(cards) <= 1 {
 		log.Printf("Number of cards is equal or below 1. Skipping prime logic.")
-		return bcfg
+		return false
 	}
 	//card0 is always an igpu if it exists. If it has no eDP, then Vinegar isn't running on a laptop.
 	//As a result, prime doesn't exist and should be skipped.
 	if !cards[0].eDP {
 		log.Printf("card0 has no eDP. This machine is not a laptop. Skipping prime logic.")
-		return bcfg
+		return false
 	}
 	if len(cards) > 2 {
 		log.Printf("System has %d cards. Skipping prime logic.", len(cards))
+		return false
+	}
+
+	return true
+}
+
+func SetupPrimeOffload(bcfg config.Binary) config.Binary {
+	//Sanitize gpu ID
+	bcfg.ForcedGpu = strings.ReplaceAll(strings.ToLower(bcfg.ForcedGpu), "0x", "")
+
+	//This allows the user to skip PrimeOffload logic. Useful if they want to take care of it themselves.
+	if bcfg.ForcedGpu == "" {
+		log.Printf("ForcedGpu option is empty. Skipping prime logic...")
 		return bcfg
 	}
 
-	if bcfg.PrimeOffload {
-		return ChooseCard(bcfg, *cards[1])
-	} else {
+	cards, idDict := GetSystemCards()
+
+	switch bcfg.ForcedGpu {
+	case "integrated":
+		if !PrimeIsAllowed(cards) {
+			return bcfg
+		}
 		return ChooseCard(bcfg, *cards[0])
+	case "prime-discrete":
+		if !PrimeIsAllowed(cards) {
+			return bcfg
+		}
+		return ChooseCard(bcfg, *cards[1])
+
+	//Handle cases where the user explictly chooses a gpu to use
+	default:
+		if strings.Contains(bcfg.ForcedGpu, ":") { //This is a gpu ID
+			card := idDict[bcfg.ForcedGpu]
+			if card == nil {
+				log.Printf("ForcedGpu is not a valid index or ID. Aborting.")
+				os.Exit(1)
+			}
+			return ChooseCard(bcfg, *card)
+		} else { // This is an index
+			id, err := strconv.Atoi(bcfg.ForcedGpu)
+			if err != nil {
+				log.Printf("ForcedGpu is not a valid index or ID. Aborting.")
+				os.Exit(1)
+			}
+			card := cards[id]
+
+			if card == nil {
+				log.Printf("index %d of ForcedGpu does not exist. Aborting.", id)
+				os.Exit(1)
+			}
+			return ChooseCard(bcfg, *card)
+		}
 	}
 }

@@ -32,8 +32,7 @@ type Binary struct {
 	Dxvk           bool          `toml:"dxvk"`
 	FFlags         roblox.FFlags `toml:"fflags"`
 	Env            Environment   `toml:"env"`
-	PrimeOffload   bool          `toml:"prime"`
-	ForcedGpuId    string        `toml:"forced_gpu"`
+	ForcedGpu      string        `toml:"use_gpu"`
 }
 
 type Config struct {
@@ -90,7 +89,7 @@ func Default() Config {
 		},
 
 		Global: Binary{
-			PrimeOffload: true,
+			ForcedGpu: "prime-discrete",
 		},
 		Player: Binary{
 			Dxvk:           true,

@@ -34,6 +34,7 @@ type Binary struct {
 	Prefix  *wine.Prefix
 	Type    roblox.BinaryType
 	Version roblox.Version
+	Started time.Time
 }
 
 func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binary {
@@ -60,7 +61,6 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 }
 
 func (b *Binary) Run(args ...string) error {
-	then := time.Now()
 	exe := b.Type.Executable()
 
 	cmd, err := b.Command(args...)
@@ -80,9 +80,8 @@ func (b *Binary) Run(args ...string) error {
 		kill = false
 	}
 
-	log.Println(kill, exe)
-
 	// Launches into foreground
+	b.Started = time.Now()
 	if err := cmd.Start(); err != nil {
 		return err
 	}
@@ -93,16 +92,14 @@ func (b *Binary) Run(args ...string) error {
 	if b.Config.DiscordRPC {
 		err := bsrpc.Login()
 		if err != nil {
-			return err
+			log.Printf("Failed to authenticate Discord RPC: %s, disabling RPC", err)
+			b.Config.DiscordRPC = false
 		}
-
-		go func() {
-			time.Sleep(8 * time.Second)
-			if err := b.HandleRobloxLog(&then); err != nil {
-				log.Printf("Failed to handle Discord RPC: %s", err)
-			}
-		}()
 	}
+
+	go func() {
+		b.TailLog()
+	}()
 
 	if kill && b.Config.AutoKillPrefix {
 		log.Println("Waiting for Roblox's process to die :)")
@@ -125,35 +122,52 @@ func (b *Binary) Run(args ...string) error {
 	return nil
 }
 
-func (b *Binary) HandleRobloxLog(comparison *time.Time) error {
+func (b *Binary) FindLog() (string, error) {
 	appData, err := b.Prefix.AppDataDir()
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	fi, err := util.FindTimeFile(filepath.Join(appData, "Local", "Roblox", "logs"), comparison)
-	if err != nil {
-		return err
+	for i := 0; i < 10; i++ {
+		time.Sleep(1 * time.Second)
+		log.Println("Polling for Roblox log file")
+
+		name, err := util.FindTimeFile(filepath.Join(appData, "Local", "Roblox", "logs"), &b.Started)
+		if err != nil {
+			return "", err
+		}
+
+		log.Printf("Found Roblox log file: %s", name)
+		return name, nil
 	}
 
-	log.Printf("Found Roblox log file: %s", fi)
-	t, err := tail.TailFile(fi, tail.Config{Follow: true})
-	if err != nil {
-		return err
-	}
+	return "", os.ErrNotExist
+}
 
+func (b *Binary) TailLog() {
 	var a bsrpc.Activity
+
+	p, err := b.FindLog()
+	if err != nil {
+		log.Printf("Failed to find Roblox log file: %s", err)
+		return
+	}
+
+	t, err := tail.TailFile(p, tail.Config{Follow: true})
+	if err != nil {
+		log.Printf("Failed to tail Roblox log file: %s", err)
+		return
+	}
 
 	for line := range t.Lines {
 		fmt.Println(line.Text)
 
-		err = a.HandleLog(line.Text)
-		if err != nil {
-			log.Printf("epic fail: %s", err)
+		if b.Config.DiscordRPC {
+			if err := a.HandleLog(line.Text); err != nil {
+				log.Printf("Failed to handle Discord RPC: %s", err)
+			}
 		}
 	}
-
-	return nil
 }
 
 func (b *Binary) FetchVersion() (roblox.Version, error) {

@@ -38,7 +38,6 @@ func FindTimeFile(dir string, comparison *time.Time) (string, error) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return "", err
 	}

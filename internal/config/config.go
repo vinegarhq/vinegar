@@ -89,6 +89,7 @@ func Default() Config {
 		},
 
 		Player: Binary{
+			DiscordRPC:     true,
 			Dxvk:           true,
 			AutoKillPrefix: true,
 			FFlags: roblox.FFlags{

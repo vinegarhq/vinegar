@@ -97,9 +97,9 @@ func (b *Binary) Run(args ...string) error {
 		}
 
 		go func() {
-			time.Sleep(6 * time.Second)
-			if err := b.LogFile(&then); err != nil {
-				log.Printf("epic fail: %s", err)
+			time.Sleep(8 * time.Second)
+			if err := b.HandleRobloxLog(&then); err != nil {
+				log.Printf("Failed to handle Discord RPC: %s", err)
 			}
 		}()
 	}
@@ -125,7 +125,7 @@ func (b *Binary) Run(args ...string) error {
 	return nil
 }
 
-func (b *Binary) LogFile(comparison *time.Time) error {
+func (b *Binary) HandleRobloxLog(comparison *time.Time) error {
 	appData, err := b.Prefix.AppDataDir()
 	if err != nil {
 		return err

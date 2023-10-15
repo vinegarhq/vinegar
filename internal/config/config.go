@@ -90,7 +90,7 @@ func Default() Config {
 		},
 
 		Global: Binary{
-			PrimeOffload: false,
+			PrimeOffload: true,
 		},
 		Player: Binary{
 			Dxvk:           true,

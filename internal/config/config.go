@@ -27,6 +27,7 @@ type Binary struct {
 	Channel        string        `toml:"channel"`
 	Launcher       string        `toml:"launcher"`
 	Renderer       string        `toml:"renderer"`
+	DiscordRPC     bool          `toml:"discord_rpc"`
 	ForcedVersion  string        `toml:"forced_version"`
 	AutoKillPrefix bool          `toml:"auto_kill_prefix"`
 	Dxvk           bool          `toml:"dxvk"`
@@ -95,7 +96,7 @@ func Default() Config {
 			},
 		},
 		Studio: Binary{
-			Dxvk: true,
+			Dxvk:           true,
 			AutoKillPrefix: true,
 		},
 

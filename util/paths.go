@@ -1,7 +1,10 @@
 package util
 
 import (
+	"io/fs"
 	"os"
+	"path/filepath"
+	"time"
 )
 
 func WalkDirExcluded(dir string, included []string, onExcluded func(string) error) error {
@@ -24,4 +27,25 @@ find:
 	}
 
 	return nil
+}
+
+func FindTimeFile(dir string, comparison *time.Time) (string, error) {
+	var name string
+
+	err := filepath.Walk(dir, func(p string, i fs.FileInfo, err error) error {
+		if i.ModTime().After(*comparison) {
+			name = p
+		}
+		return nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if name == "" {
+		return "", os.ErrNotExist
+	}
+
+	return name, nil
 }

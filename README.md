@@ -22,6 +22,8 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Automatic DXVK Installer and uninstaller
 + Automatic Wineprefix killer when Roblox has quit
 + Automatic removal of outdated cached packages and versions of Roblox
++ Discord Rich Presence support
++ Roblox's logs appear within Vinegar
 + FPS Unlocking for Player by default, without rbxfpsunlocker
 + Browser launch via MIME
 + Custom execution of wine program within wineprefix

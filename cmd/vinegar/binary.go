@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/nxadm/tail"
+	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/config/state"
 	"github.com/vinegarhq/vinegar/internal/dirs"
@@ -58,7 +60,9 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 }
 
 func (b *Binary) Run(args ...string) error {
+	then := time.Now()
 	exe := b.Type.Executable()
+
 	cmd, err := b.Command(args...)
 	if err != nil {
 		return err
@@ -76,6 +80,8 @@ func (b *Binary) Run(args ...string) error {
 		kill = false
 	}
 
+	log.Println(kill, exe)
+
 	// Launches into foreground
 	if err := cmd.Start(); err != nil {
 		return err
@@ -83,6 +89,20 @@ func (b *Binary) Run(args ...string) error {
 
 	time.Sleep(2500 * time.Millisecond)
 	b.Splash.Close()
+
+	if b.Config.DiscordRPC {
+		err := bsrpc.Login()
+		if err != nil {
+			return err
+		}
+
+		go func() {
+			time.Sleep(6 * time.Second)
+			if err := b.LogFile(&then); err != nil {
+				log.Printf("epic fail: %s", err)
+			}
+		}()
+	}
 
 	if kill && b.Config.AutoKillPrefix {
 		log.Println("Waiting for Roblox's process to die :)")
@@ -96,6 +116,41 @@ func (b *Binary) Run(args ...string) error {
 		}
 
 		b.Prefix.Kill()
+	}
+
+	if b.Config.DiscordRPC {
+		bsrpc.Logout()
+	}
+
+	return nil
+}
+
+func (b *Binary) LogFile(comparison *time.Time) error {
+	appData, err := b.Prefix.AppDataDir()
+	if err != nil {
+		return err
+	}
+
+	fi, err := util.FindTimeFile(filepath.Join(appData, "Local", "Roblox", "logs"), comparison)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("Found Roblox log file: %s", fi)
+	t, err := tail.TailFile(fi, tail.Config{Follow: true})
+	if err != nil {
+		return err
+	}
+
+	var a bsrpc.Activity
+
+	for line := range t.Lines {
+		fmt.Println(line.Text)
+
+		err = a.HandleLog(line.Text)
+		if err != nil {
+			log.Printf("epic fail: %s", err)
+		}
 	}
 
 	return nil
@@ -191,7 +246,7 @@ func (b *Binary) Install() error {
 
 		log.Printf("Removing broken font %s", brokenFont)
 		if err := os.RemoveAll(brokenFont); err != nil {
-			log.Println("Failed to remove font: %s", err)
+			log.Printf("Failed to remove font: %s", err)
 		}
 	}
 

@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
@@ -32,7 +34,7 @@ type Binary struct {
 	Dxvk           bool          `toml:"dxvk"`
 	FFlags         roblox.FFlags `toml:"fflags"`
 	Env            Environment   `toml:"env"`
-	ForcedGpu      string        `toml:"use_gpu"`
+	ForcedGpu      string        `toml:"gpu"`
 }
 
 type Config struct {
@@ -115,6 +117,31 @@ func Default() Config {
 	}
 }
 
+func ParseBinary(b Binary, kind string) error {
+	if !roblox.ValidRenderer(b.Renderer) {
+		return fmt.Errorf("invalid renderer given to " + kind)
+	}
+
+	//Validate and sanitize ForcedGpu
+	switch b.ForcedGpu {
+	case "":
+	case "integrated":
+	case "prime-discrete":
+	default:
+		//Sanitize value so it's case insensitive and doesn't care about "0x".
+		b.ForcedGpu = strings.ReplaceAll(strings.ToLower(b.ForcedGpu), "0x", "")
+		if strings.Contains(b.ForcedGpu, ":") { //Interpret as card vid:nid; do nothing
+		} else { //Interpret as index.
+			_, err := strconv.Atoi(b.ForcedGpu)
+			if err != nil {
+				return errors.New("invalid gpu for " + kind + ", it must be \"integrated\", \"prime-discrete\", the card's vid:nid or its index")
+			}
+		}
+	}
+
+	return nil
+}
+
 func (c *Config) setup() error {
 	if c.SanitizeEnv {
 		util.SanitizeEnv()
@@ -137,8 +164,17 @@ func (c *Config) setup() error {
 		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
 
-	if !roblox.ValidRenderer(c.Player.Renderer) || !roblox.ValidRenderer(c.Studio.Renderer) {
-		return fmt.Errorf("invalid renderer given to either player or studio")
+	//Parse global first to avoid showing errors from settings which player and studio inherited from global.
+	err := ParseBinary(c.Global, "global")
+	if err != nil {
+		return err
+	}
+	err = errors.Join(
+		ParseBinary(c.Player, "player"),
+		ParseBinary(c.Studio, "studio"),
+	)
+	if err != nil {
+		return err
 	}
 
 	c.Env.Setenv()

@@ -127,9 +127,6 @@ func PrimeIsAllowed(cards []*Card) bool {
 }
 
 func SetupPrimeOffload(bcfg config.Binary) config.Binary {
-	//Sanitize gpu ID
-	bcfg.ForcedGpu = strings.ReplaceAll(strings.ToLower(bcfg.ForcedGpu), "0x", "")
-
 	//This allows the user to skip PrimeOffload logic. Useful if they want to take care of it themselves.
 	if bcfg.ForcedGpu == "" {
 		log.Printf("ForcedGpu option is empty. Skipping prime logic...")
@@ -155,18 +152,13 @@ func SetupPrimeOffload(bcfg config.Binary) config.Binary {
 		if strings.Contains(bcfg.ForcedGpu, ":") { //This is a gpu ID
 			card := idDict[bcfg.ForcedGpu]
 			if card == nil {
-				log.Printf("ForcedGpu is not a valid index or ID. Aborting.")
+				log.Printf("No gpu with the vid:nid \"%s\". Aborting.", bcfg.ForcedGpu)
 				os.Exit(1)
 			}
 			return ChooseCard(bcfg, *card)
 		} else { // This is an index
-			id, err := strconv.Atoi(bcfg.ForcedGpu)
-			if err != nil {
-				log.Printf("ForcedGpu is not a valid index or ID. Aborting.")
-				os.Exit(1)
-			}
+			id, _ := strconv.Atoi(bcfg.ForcedGpu)
 			card := cards[id]
-
 			if card == nil {
 				log.Printf("index %d of ForcedGpu does not exist. Aborting.", id)
 				os.Exit(1)

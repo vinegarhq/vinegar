@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -183,6 +184,15 @@ func (b *Binary) Install() error {
 	b.Splash.Message("Extracting " + b.Alias)
 	if err := b.ExtractPackages(&manifest); err != nil {
 		return err
+	}
+
+	if b.Type == roblox.Studio {
+		brokenFont := filepath.Join(b.Dir, "StudioFonts", "SourceSansPro-Black.ttf")
+
+		log.Printf("Removing broken font %s", brokenFont)
+		if err := os.RemoveAll(brokenFont); err != nil {
+			log.Println("Failed to remove font: %s", err)
+		}
 	}
 
 	if err := bootstrapper.WriteAppSettings(b.Dir); err != nil {

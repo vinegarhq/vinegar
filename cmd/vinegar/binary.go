@@ -85,9 +85,7 @@ func (b *Binary) Run(args ...string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-
-	time.Sleep(2500 * time.Millisecond)
-	b.Splash.Close()
+	defer cmd.Process.Kill()
 
 	if b.Config.DiscordRPC {
 		err := bsrpc.Login()
@@ -97,8 +95,16 @@ func (b *Binary) Run(args ...string) error {
 		}
 	}
 
+	p, err := b.FindLog()
+	if err != nil {
+		return fmt.Errorf("%w, has roblox successfully started?", err)
+	}
+	// after the log file has been found, we assume by then that
+	// roblox has successfully started, so we quit the splash screen
+	b.Splash.Close()
+
 	go func() {
-		b.TailLog()
+		b.TailLog(p)
 	}()
 
 	if kill && b.Config.AutoKillPrefix {
@@ -133,27 +139,19 @@ func (b *Binary) FindLog() (string, error) {
 		log.Println("Polling for Roblox log file")
 
 		name, err := util.FindTimeFile(filepath.Join(appData, "Local", "Roblox", "logs"), &b.Started)
-		if err != nil {
-			return "", err
+		if err == nil {
+			log.Printf("Found Roblox log file: %s", name)
+			return name, nil
 		}
-
-		log.Printf("Found Roblox log file: %s", name)
-		return name, nil
 	}
 
-	return "", os.ErrNotExist
+	return "", fmt.Errorf("could not roblox log file after time %s", b.Started)
 }
 
-func (b *Binary) TailLog() {
+func (b *Binary) TailLog(name string) {
 	var a bsrpc.Activity
 
-	p, err := b.FindLog()
-	if err != nil {
-		log.Printf("Failed to find Roblox log file: %s", err)
-		return
-	}
-
-	t, err := tail.TailFile(p, tail.Config{Follow: true})
+	t, err := tail.TailFile(name, tail.Config{Follow: true})
 	if err != nil {
 		log.Printf("Failed to tail Roblox log file: %s", err)
 		return

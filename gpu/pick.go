@@ -23,11 +23,11 @@ func HandleGpu(target target.TargetGPU, env map[string]string, isVulkan bool) (m
 		}
 	}
 
-	gpu := gpus[target.Id]
-
-	if gpu == nil {
+	if len(gpus) < target.Id+1 {
 		return env, errors.New("gpu not found")
 	}
+
+	gpu := gpus[target.Id]
 
 	env = gpu.ApplyEnv(env)
 

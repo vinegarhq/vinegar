@@ -134,11 +134,17 @@ func (b *Binary) FindLog() (string, error) {
 		return "", err
 	}
 
+	dir := filepath.Join(appData, "Local", "Roblox", "logs")
+	// May not exist if roblox has its first run
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", err
+	}
+
 	log.Println("Polling for Roblox log file, 10 retries")
 	for i := 0; i < 10; i++ {
 		time.Sleep(1 * time.Second)
 
-		name, err := util.FindTimeFile(filepath.Join(appData, "Local", "Roblox", "logs"), &b.Started)
+		name, err := util.FindTimeFile(dir, &b.Started)
 		if err == nil {
 			log.Printf("Found Roblox log file: %s", name)
 			return name, nil

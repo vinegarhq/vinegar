@@ -84,7 +84,7 @@ func (a *Activity) SetPresence() error {
 		Buttons: []*client.Button{
 			{
 				Label: "See game page",
-				Url:   "https://www.roblox.com/games/meh",
+				Url:   "https://www.roblox.com/games/" + a.PlaceID,
 			},
 		},
 	}

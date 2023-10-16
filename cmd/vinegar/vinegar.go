@@ -48,8 +48,11 @@ func main() {
 		case "uninstall":
 			Uninstall()
 		case "reportinfo":
+			if report, err := util.GenerateInfo(*configPath); err != nil {
+				log.Fatal(err) // you have REALLY screwed up now
+			}
 			fmt.Println("Please share the information below.")
-			fmt.Printf("%+v\n", util.GenerateInfo(*configPath))
+			fmt.Printf("%+v\n", report)
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.

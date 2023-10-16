@@ -6,11 +6,11 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
+	"github.com/vinegarhq/vinegar/gpu"
+	"github.com/vinegarhq/vinegar/gpu/target"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/util"
 )
@@ -122,22 +122,18 @@ func ParseBinary(b Binary, kind string) error {
 		return fmt.Errorf("invalid renderer given to " + kind)
 	}
 
-	//Validate and sanitize ForcedGpu
-	switch b.ForcedGpu {
-	case "":
-	case "integrated":
-	case "prime-discrete":
-	default:
-		//Sanitize value so it's case insensitive and doesn't care about "0x".
-		b.ForcedGpu = strings.ReplaceAll(strings.ToLower(b.ForcedGpu), "0x", "")
-		if strings.Contains(b.ForcedGpu, ":") { //Interpret as card vid:nid; do nothing
-		} else { //Interpret as index.
-			_, err := strconv.Atoi(b.ForcedGpu)
-			if err != nil {
-				return errors.New("invalid gpu for " + kind + ", it must be \"integrated\", \"prime-discrete\", the card's vid:nid or its index")
-			}
-		}
+	targetGpu := target.New()
+	err := targetGpu.SetTarget(b.ForcedGpu)
+	if err != nil {
+		return errors.New("invalid gpu given to " + kind)
 	}
+
+	nenv, err := gpu.HandleGpu(targetGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
+
+	if err != nil {
+		return err
+	}
+	b.Env = nenv
 
 	return nil
 }

@@ -17,6 +17,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/wine"
+	"github.com/vinegarhq/vinegar/util"
 )
 
 var BinPrefix string
@@ -24,7 +25,7 @@ var BinPrefix string
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks|reportinfo")
 	os.Exit(1)
 }
 
@@ -38,7 +39,7 @@ func main() {
 
 	switch cmd {
 	// These commands don't require a configuration
-	case "delete", "edit", "uninstall":
+	case "delete", "edit", "uninstall", "reportinfo":
 		switch cmd {
 		case "delete":
 			Delete()
@@ -46,6 +47,9 @@ func main() {
 			editor.EditConfig(*configPath)
 		case "uninstall":
 			Uninstall()
+		case "reportinfo":
+			fmt.Println("Please share the information below.")
+			fmt.Printf("%+v\n", util.GenerateInfo(*configPath))
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.

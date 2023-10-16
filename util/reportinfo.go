@@ -22,9 +22,7 @@ type SysInfo struct {
 	InFlatpak	bool
 	Config		config.Config
 }
-/*
-func GenerateDebug() (SysInfo){
+func GenerateInfo(currentConfigurationPath string) (SysInfo){
 	//TODO, returns struct Sysinfo.
-
+	return string
 }
-*/

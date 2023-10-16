@@ -15,16 +15,15 @@ var (
 	driverLinkPath = "device/driver"
 )
 
-var gpuCache *[]*GPU
+var gpus = make([]*GPU, 0)
 
 // Note: sysfs is located entirely in memory, and as a result does not have IO errors.
 // No error handling when calling IO operations is done.
 func GetSystemGPUs() []*GPU {
-	if gpuCache != nil {
-		return *gpuCache
+	if len(gpus) > 0 {
+		return gpus
 	}
 
-	var gpus = make([]*GPU, 0)
 	dirEntries, _ := os.ReadDir(drmPath)
 
 	for _, v := range dirEntries {
@@ -33,22 +32,21 @@ func GetSystemGPUs() []*GPU {
 		eDPSubmatch := edpPattern.FindStringSubmatch(name)
 
 		if eDPSubmatch != nil {
-			i, _ := strconv.Atoi(eDPSubmatch[0])
+			i, _ := strconv.Atoi(eDPSubmatch[1])
 			gpus[i].eDP = true
 		}
-		if submatch != nil {
+		if submatch == nil {
 			continue
 		}
 
 		i, _ := strconv.Atoi(submatch[1])
 
-		gpuPath := path.Join(drmPath, name)
-		gpu := new(GPU)
-		gpus = append(gpus, gpu)
-		gpus[i].path = gpuPath
-		driverPath, _ := filepath.EvalSymlinks(filepath.Join(gpu.path, driverLinkPath))
-		gpu.driver = driverPath
+		gpu := GPU{}
+		gpus = append(gpus, &gpu)
+		gpus[i].path = path.Join(drmPath, name)
+		driverPath, _ := filepath.EvalSymlinks(filepath.Join(gpus[i].path, driverLinkPath))
+		gpus[i].driver = driverPath
 	}
-	gpuCache = &gpus
+
 	return gpus
 }

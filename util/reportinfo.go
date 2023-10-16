@@ -5,6 +5,7 @@ This is only a prototype.
 We will collect CPU flags and check for AVX, distro, kernel, flatpak, and config.
 More features may be added at a later time...
 
+Wael, if you would like to combine the file reading into a single function, that would be cool.
  - lunarlattice 10/16/23
 */
 
@@ -19,8 +20,8 @@ import (
 type SysInfo struct {
 	CPUFlags	string
 	AVXAvailable    bool
-	Distro		string
-	Kernel		string
+	Distro		string //Done
+	Kernel		string // Done
 	InFlatpak	bool // Done
 	Config		string // Done
 }
@@ -28,9 +29,23 @@ func GenerateInfo(currentConfigurationPath string) (SysInfo, error){
 	//TODO, returns struct Sysinfo.
 	currentSystem := &SysInfo{}
 
+	// Get Distro
+	if distro, err := os.ReadFile("/etc/os-release"); err != nil {
+		return SysInfo{}, err
+	} else {
+		currentSystem.Distro = string(distro)
+	}
+
+	// Get kernel
+	if kernel, err := os.ReadFile("/proc/version"); err != nil {
+		return SysInfo{}, err
+	} else {
+		currentSystem.Kernel = string(kernel)
+	}
+
 	// Read the config and store
 	if config, err := os.ReadFile(currentConfigurationPath); err != nil {
-		return *currentSystem, err
+		return SysInfo, err
 	} else {
 		currentSystem.Config = string(config)
 	}

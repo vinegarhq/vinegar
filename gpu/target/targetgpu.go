@@ -2,7 +2,6 @@ package target
 
 import (
 	"strconv"
-	"strings"
 )
 
 type PrimeType int
@@ -14,10 +13,9 @@ const (
 	PrimeUnknown
 )
 
-type TargetGpu struct {
-	Id      string
-	Prime   bool
-	IsIndex bool
+type TargetGPU struct {
+	Id    int
+	Prime bool
 }
 
 func (pt PrimeType) String() string {
@@ -50,42 +48,30 @@ func GetPrimeType(s string) PrimeType {
 	}
 }
 
-func SanitizeGpuId(s string) string {
-	s = strings.ToLower(s)
-	s = strings.ReplaceAll(s, "0x", "")
-	return s
-}
-
 // Select a target GPU based on intended PRIME configuration
-func (t *TargetGpu) SetPrimeTarget(p PrimeType) {
+func (t *TargetGPU) SetPrimeTarget(p PrimeType) {
 	switch p {
 	case PrimeIntegrated:
-		t.Id = "0"
+		t.Id = 0
 	case PrimeDiscrete:
-		t.Id = "1"
+		t.Id = 1
 	case PrimeNone:
-		t.Id = "" //Ignore prime
+		t.Id = -1 //Ignore prime
 	}
 	t.Prime = true
-	t.IsIndex = true
 }
 
-// Select the target GPU with its index or VID:NID
-func (t *TargetGpu) SetDirectTarget(s string) error {
-	if strings.Contains(s, ":") { //vid:nid
-		t.Id = SanitizeGpuId(s)
-	} else { //index
-		_, err := strconv.Atoi(s)
-		if err != nil {
-			return err
-		}
-		t.Id = s
-		t.IsIndex = true
+// Select the target GPU with given index
+func (t *TargetGPU) SetDirectTarget(s string) error {
+	i, err := strconv.Atoi(s)
+	if err != nil {
+		return err
 	}
+	t.Id = i
 	return nil
 }
 
-func (t *TargetGpu) SetTarget(s string) error {
+func (t *TargetGPU) SetTarget(s string) error {
 	prime := GetPrimeType(s)
 
 	if prime != PrimeUnknown {
@@ -100,10 +86,6 @@ func (t *TargetGpu) SetTarget(s string) error {
 	return nil
 }
 
-func New() TargetGpu {
-	return TargetGpu{
-		Id:      "",
-		Prime:   false,
-		IsIndex: false,
-	}
+func New() TargetGPU {
+	return TargetGPU{}
 }

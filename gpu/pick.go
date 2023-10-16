@@ -1,17 +1,17 @@
 package gpu
 
 import (
-	"strconv"
+	"errors"
 
 	"github.com/vinegarhq/vinegar/gpu/target"
 )
 
-func HandleGpu(target target.TargetGpu, env map[string]string, isVulkan bool) (map[string]string, error) {
-	if target.Id == "" {
+func HandleGpu(target target.TargetGPU, env map[string]string, isVulkan bool) (map[string]string, error) {
+	if target.Id == -1 {
 		return env, nil
 	}
 
-	gpus, keyId := GetSystemGPUs()
+	gpus := GetSystemGPUs()
 
 	if target.Prime {
 		allowed, err := PrimeIsAllowed(gpus, isVulkan)
@@ -23,17 +23,10 @@ func HandleGpu(target target.TargetGpu, env map[string]string, isVulkan bool) (m
 		}
 	}
 
-	var gpu *GPU
+	gpu := gpus[target.Id]
 
-	if target.IsIndex {
-		i, err := strconv.Atoi(target.Id)
-		if err != nil {
-			return env, err
-		}
-
-		gpu = gpus[i]
-	} else {
-		gpu = keyId[target.Id]
+	if gpu == nil {
+		return env, errors.New("gpu not found")
 	}
 
 	env = gpu.ApplyEnv(env)

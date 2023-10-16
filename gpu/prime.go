@@ -16,7 +16,7 @@ func PrimeIsAllowed(gpus []*GPU, isVulkan bool) (bool, error) {
 	if len(gpus) > 2 {
 		//OpenGL cannot choose the right card properly. Prompt user the define it themselves
 		if !isVulkan {
-			return false, fmt.Errorf("System has %d cards and OpenGL is not capable of choosing the right one.", len(gpus))
+			return false, fmt.Errorf("opengl cannot select the right gpu. gpus detected: %d", len(gpus))
 		} else { //Vulkan knows better than us. Let it do its thing.
 			log.Printf("System has %d cards. Skipping prime logic and leaving card selection up to Vulkan.", len(gpus))
 		}

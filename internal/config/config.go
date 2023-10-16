@@ -131,7 +131,7 @@ func ParseBinary(b Binary, kind string) error {
 	nenv, err := gpu.HandleGpu(targetGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
 
 	if err != nil {
-		return err
+		return fmt.Errorf("%s: %v", kind, err)
 	}
 	b.Env = nenv
 

@@ -12,20 +12,21 @@ Wael, if you would like to combine the file reading into a single function, that
 package util
 
 import (
+	"errors"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"os"
-	"errors"
 	"regexp"
 )
 
 type SysInfo struct {
-	AVXAvailable    bool
-	Distro		string //Done
-	Kernel		string // Done
-	InFlatpak	bool // Done
-	Config		string // Done
+	AVXAvailable bool
+	Distro       string //Done
+	Kernel       string // Done
+	InFlatpak    bool   // Done
+	Config       string // Done
 }
-func GenerateInfo(currentConfigurationPath string) (SysInfo, error){
+
+func GenerateInfo(currentConfigurationPath string) (SysInfo, error) {
 	//TODO, returns struct Sysinfo.
 	currentSystem := &SysInfo{}
 
@@ -37,7 +38,6 @@ func GenerateInfo(currentConfigurationPath string) (SysInfo, error){
 		matches := exp.FindStringSubmatch(string(cpufile))
 		currentSystem.AVXAvailable = (len(matches) > 0)
 	}
-
 
 	// Get Distro
 	if distro, err := os.ReadFile("/etc/os-release"); err != nil {

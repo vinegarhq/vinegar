@@ -13,7 +13,7 @@ package util
 
 import (
 	"errors"
-	"github.com/vinegarhq/vinegar/internal/config"
+	//"github.com/vinegarhq/vinegar/internal/config"
 	"os"
 	"strings"
 )
@@ -23,7 +23,7 @@ type SysInfo struct {
 	Distro       string        //Done
 	Kernel       string        // Done
 	InFlatpak    bool          // Done
-	Config       config.Config // Done
+	//Config       config.Config // Done
 }
 
 func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
@@ -51,11 +51,11 @@ func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
 	}
 
 	// Read the config and store
-	currentSystem.Config = currentConfiguration
+	//currentSystem.Config = currentConfiguration
 
 	// Check if in flatpak
 	if _, err := os.Stat("/.flatpak-info"); err == nil {
 		currentSystem.InFlatpak = true
 	}
-	return *currentSystem, nil
+	return (currentSystem, nil)
 }

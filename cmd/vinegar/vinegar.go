@@ -17,6 +17,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/wine"
+	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/extra"
 )
 
 var BinPrefix string

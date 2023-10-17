@@ -32,7 +32,7 @@ func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
 	if cpufile, err := os.ReadFile("/proc/cpuinfo"); err != nil {
 		return SysInfo{}, err
 	} else {
-		currentSystem.AVXAvailable = strings.Contains(cpufile, "avx")
+		currentSystem.AVXAvailable = strings.Contains(string(cpufile), "avx")
 	}
 
 	// Get Distro

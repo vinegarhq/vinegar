@@ -47,13 +47,6 @@ func main() {
 			editor.EditConfig(*configPath)
 		case "uninstall":
 			Uninstall()
-		case "reportinfo":
-			if report, err := util.GenerateInfo(*configPath); err != nil {
-				log.Fatal(err) // you have REALLY screwed up now
-			}
-			fmt.Println("Please share the information below.")
-			fmt.Printf("%+v\n", report)
-		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
 	case "player", "studio", "exec", "kill", "install-webview2", "winetricks":
@@ -94,6 +87,15 @@ func main() {
 			}
 		case "kill":
 			pfx.Kill()
+
+		case "reportinfo":
+			if report, err := util.GenerateInfo(*configPath); err != nil {
+				log.Fatal(err) // you have REALLY screwed up now
+			}
+			fmt.Println("Please share the information below.")
+			fmt.Printf("%+v\n", report)
+		}
+
 		case "install-webview2":
 			if err := InstallWebview2(&pfx); err != nil {
 				log.Fatal(err)

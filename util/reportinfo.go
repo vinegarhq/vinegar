@@ -15,10 +15,10 @@ import (
 	"github.com/vinegarhq/vinegar/internal/config"
 	"os"
 	"errors"
+	"regexp"
 )
 
 type SysInfo struct {
-	CPUFlags	string
 	AVXAvailable    bool
 	Distro		string //Done
 	Kernel		string // Done
@@ -28,6 +28,16 @@ type SysInfo struct {
 func GenerateInfo(currentConfigurationPath string) (SysInfo, error){
 	//TODO, returns struct Sysinfo.
 	currentSystem := &SysInfo{}
+
+	// Check for AVX
+	if cpufile, err := os.ReadFile("/proc/cpuinfo"); err != nil {
+		return SysInfo{}, err
+	} else {
+		exp := regexp.MustCompile(`avx`)
+		matches := exp.FindStringSubmatch(string(cpufile))
+		currentSystem.AVXAvailable = (len(matches) > 0)
+	}
+
 
 	// Get Distro
 	if distro, err := os.ReadFile("/etc/os-release"); err != nil {

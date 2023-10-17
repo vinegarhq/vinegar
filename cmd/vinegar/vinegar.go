@@ -93,7 +93,8 @@ func main() {
 				log.Fatal(err)
 			}
 		case "reportinfo":
-			if report, err := util.GenerateInfo(*configPath); err != nil {
+			report, err := util.GenerateInfo(*configPath)
+			if err != nil {
 				log.Fatal(err)
 			}
 			fmt.Println("Please share the information below.")

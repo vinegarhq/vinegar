@@ -12,7 +12,6 @@ Wael, if you would like to combine the file reading into a single function, that
 package extra
 
 import (
-	"errors"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"os"
 	"strings"
@@ -26,7 +25,7 @@ type SysInfo struct {
 	Config       config.Config // Done
 }
 
-func GenerateInfo(currentConfiguration config.Config) (*SysInfo, error) {
+func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
 	var currentSystem SysInfo
 
 	// Check for AVX
@@ -57,5 +56,5 @@ func GenerateInfo(currentConfiguration config.Config) (*SysInfo, error) {
 	if _, err := os.Stat("/.flatpak-info"); err == nil {
 		currentSystem.InFlatpak = true
 	}
-	return &currentSystem, nil
+	return currentSystem, nil
 }

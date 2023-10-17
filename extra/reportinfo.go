@@ -25,7 +25,7 @@ type SysInfo struct {
 	Config       config.Config // Done
 }
 
-func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
+func GenerateInfo(currentConfiguration *config.Config) (SysInfo, error) {
 	var currentSystem SysInfo
 
 	// Check for AVX

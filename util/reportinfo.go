@@ -13,7 +13,6 @@ package util
 
 import (
 	"errors"
-	"github.com/vinegarhq/vinegar/internal/config"
 	"os"
 	"regexp"
 )
@@ -55,7 +54,7 @@ func GenerateInfo(currentConfigurationPath string) (SysInfo, error) {
 
 	// Read the config and store
 	if config, err := os.ReadFile(currentConfigurationPath); err != nil {
-		return SysInfo, err
+		return SysInfo{}, err
 	} else {
 		currentSystem.Config = string(config)
 	}

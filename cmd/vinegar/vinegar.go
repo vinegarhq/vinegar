@@ -16,8 +16,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/roblox"
-	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
 var BinPrefix string
@@ -47,54 +47,54 @@ func main() {
 			editor.EditConfig(*configPath)
 		case "uninstall":
 			Uninstall()
-	// These commands (except player & studio) don't require a configuration,
-	// but they require a wineprefix, hence wineroot of configuration is required.
-	case "player", "studio", "exec", "kill", "install-webview2", "winetricks":
-		pfxKilled := false
-		cfg, err := config.Load(*configPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		pfx := wine.New(dirs.Prefix)
-		// Always ensure its created, wine will complain if the root
-		// directory doesnt exist
-		if err := os.MkdirAll(dirs.Prefix, 0o755); err != nil {
-			log.Fatal(err)
-		}
-
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
-
-		go func() {
-			<-c
-			pfxKilled = true
-			pfx.Kill()
-
-			if pfxKilled {
-				os.Exit(0)
-			}
-		}()
-
-		switch cmd {
-		case "exec":
-			if len(args) < 2 {
-				usage()
-			}
-
-			if err := pfx.Wine(args[1], args[2:]...).Run(); err != nil {
+		// These commands (except player & studio) don't require a configuration,
+		// but they require a wineprefix, hence wineroot of configuration is required.
+		case "player", "studio", "exec", "kill", "install-webview2", "winetricks":
+			pfxKilled := false
+			cfg, err := config.Load(*configPath)
+			if err != nil {
 				log.Fatal(err)
 			}
-		case "kill":
-			pfx.Kill()
 
-		case "reportinfo":
-			if report, err := util.GenerateInfo(*configPath); err != nil {
-				log.Fatal(err) // you have REALLY screwed up now
+			pfx := wine.New(dirs.Prefix)
+			// Always ensure its created, wine will complain if the root
+			// directory doesnt exist
+			if err := os.MkdirAll(dirs.Prefix, 0o755); err != nil {
+				log.Fatal(err)
 			}
-			fmt.Println("Please share the information below.")
-			fmt.Printf("%+v\n", report)
-		}
+
+			c := make(chan os.Signal, 1)
+			signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+
+			go func() {
+				<-c
+				pfxKilled = true
+				pfx.Kill()
+
+				if pfxKilled {
+					os.Exit(0)
+				}
+			}()
+
+			switch cmd {
+			case "exec":
+				if len(args) < 2 {
+					usage()
+				}
+
+				if err := pfx.Wine(args[1], args[2:]...).Run(); err != nil {
+					log.Fatal(err)
+				}
+			case "kill":
+				pfx.Kill()
+
+			case "reportinfo":
+				if report, err := util.GenerateInfo(*configPath); err != nil {
+					log.Fatal(err) // you have REALLY screwed up now
+				}
+				fmt.Println("Please share the information below.")
+				fmt.Printf("%+v\n", report)
+			}
 
 		case "install-webview2":
 			if err := InstallWebview2(&pfx); err != nil {

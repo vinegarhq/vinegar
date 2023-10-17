@@ -33,7 +33,7 @@ func (pt PrimeType) String() string {
 
 func GetPrimeType(s string) PrimeType {
 	if s == "" {
-		s = "none"
+		s = PrimeNone.String()
 	}
 
 	switch s {

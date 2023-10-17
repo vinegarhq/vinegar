@@ -13,28 +13,27 @@ package util
 
 import (
 	"errors"
+	"github.com/vinegarhq/vinegar/internal/config"
 	"os"
 	"strings"
-	"github.com/vinegarhq/vinegar/internal/config"
 )
 
 type SysInfo struct {
 	AVXAvailable bool
-	Distro       string //Done
-	Kernel       string // Done
-	InFlatpak    bool   // Done
+	Distro       string        //Done
+	Kernel       string        // Done
+	InFlatpak    bool          // Done
 	Config       config.Config // Done
 }
 
 func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
-
 	var currentSystem SysInfo
 
 	// Check for AVX
 	if cpufile, err := os.ReadFile("/proc/cpuinfo"); err != nil {
 		return SysInfo{}, err
 	} else {
-		currentSystem.AVXAvailable = strings.Contains(cpufile, "avx")) > 0
+		currentSystem.AVXAvailable = strings.Contains(cpufile, "avx")
 	}
 
 	// Get Distro
@@ -57,6 +56,6 @@ func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
 	// Check if in flatpak
 	if _, err := os.Stat("/.flatpak-info"); err == nil {
 		currentSystem.InFlatpak = true
-
+	}
 	return *currentSystem, nil
 }

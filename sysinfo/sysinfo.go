@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"strings"
 	"path/filepath"
+	"slices"
 )
 
 type Kernel struct {
@@ -19,6 +20,7 @@ type Kernel struct {
 type CPU struct {
 	Model string
 	Flags []string
+	AVX   bool
 }
 
 type GPU struct {
@@ -77,6 +79,9 @@ func NewCPU() (cpu CPU) {
 			cpu.Flags = strings.Split(sl[1], " ")
 		}
 	}
+
+	cpu.AVX = slices.Contains(cpu.Flags, "avx")
+
 	if s.Err() != nil {
 		return
 	}
@@ -108,4 +113,11 @@ func NewGPUs() (gpus GPUs) {
 	})
 
 	return
+}
+
+func InFlatpak() bool {
+	if _, err := os.Stat("/.flatpak-info"); err == nil {
+		return true
+	}
+	return false
 }

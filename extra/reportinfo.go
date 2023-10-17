@@ -50,7 +50,7 @@ func GenerateInfo(currentConfiguration *config.Config) (SysInfo, error) {
 	}
 
 	// Read the config and store
-	currentSystem.Config = currentConfiguration
+	currentSystem.Config = *currentConfiguration
 
 	// Check if in flatpak
 	if _, err := os.Stat("/.flatpak-info"); err == nil {

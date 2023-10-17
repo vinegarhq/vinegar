@@ -94,7 +94,7 @@ func main() {
 				log.Fatal(err)
 			}
 		case "reportinfo":
-			report, err := util.GenerateInfo(cfg)
+			report, err := extra.GenerateInfo(cfg)
 			if err != nil {
 				log.Fatal(err)
 			}

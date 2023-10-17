@@ -14,7 +14,8 @@ package util
 import (
 	"errors"
 	"os"
-	"regexp"
+	"strings"
+	"github.com/vinegarhq/vinegar/internal/config"
 )
 
 type SysInfo struct {
@@ -22,20 +23,18 @@ type SysInfo struct {
 	Distro       string //Done
 	Kernel       string // Done
 	InFlatpak    bool   // Done
-	Config       string // Done
+	Config       config.Config // Done
 }
 
-func GenerateInfo(currentConfigurationPath string) (SysInfo, error) {
-	//TODO, returns struct Sysinfo.
-	currentSystem := &SysInfo{}
+func GenerateInfo(currentConfiguration config.Config) (SysInfo, error) {
+
+	var currentSystem SysInfo
 
 	// Check for AVX
 	if cpufile, err := os.ReadFile("/proc/cpuinfo"); err != nil {
 		return SysInfo{}, err
 	} else {
-		exp := regexp.MustCompile(`avx`)
-		matches := exp.FindStringSubmatch(string(cpufile))
-		currentSystem.AVXAvailable = (len(matches) > 0)
+		currentSystem.AVXAvailable = strings.Contains(cpufile, "avx")) > 0
 	}
 
 	// Get Distro
@@ -53,18 +52,11 @@ func GenerateInfo(currentConfigurationPath string) (SysInfo, error) {
 	}
 
 	// Read the config and store
-	if config, err := os.ReadFile(currentConfigurationPath); err != nil {
-		return SysInfo{}, err
-	} else {
-		currentSystem.Config = string(config)
-	}
+	currentSystem.Config = currentConfiguration
 
 	// Check if in flatpak
 	if _, err := os.Stat("/.flatpak-info"); err == nil {
 		currentSystem.InFlatpak = true
-	} else if errors.Is(err, os.ErrNotExist) {
-		currentSystem.InFlatpak = false
-	}
 
 	return *currentSystem, nil
 }

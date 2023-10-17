@@ -93,11 +93,10 @@ func main() {
 				log.Fatal(err)
 			}
 		case "reportinfo":
-			report, err := util.GenerateInfo(*configPath)
+			report, err := util.GenerateInfo(cfg)
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Println("Please share the information below.")
 			fmt.Printf("%+v\n", report)
 		case "winetricks":
 			if err := pfx.Winetricks(); err != nil {

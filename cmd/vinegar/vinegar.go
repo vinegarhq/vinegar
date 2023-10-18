@@ -22,7 +22,7 @@ var BinPrefix string
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks|reportinfo")
 	os.Exit(1)
 }
 
@@ -61,6 +61,8 @@ func main() {
 		}
 
 		switch cmd {
+		case "reportinfo":
+			// TODO: implement this function
 		case "exec":
 			if len(args) < 2 {
 				usage()

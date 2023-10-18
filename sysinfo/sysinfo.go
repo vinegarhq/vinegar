@@ -116,8 +116,6 @@ func NewGPUs() (gpus GPUs) {
 }
 
 func InFlatpak() bool {
-	if _, err := os.Stat("/.flatpak-info"); err == nil {
-		return true
-	}
-	return false
+	_, err := os.Stat("/.flatpak-info")
+	return err == nil
 }

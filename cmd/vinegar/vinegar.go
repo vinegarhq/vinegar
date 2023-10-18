@@ -7,12 +7,14 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/config/editor"
 	"github.com/vinegarhq/vinegar/internal/config/state"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
+	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/wine"
 )
@@ -22,7 +24,7 @@ var BinPrefix string
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks|reportinfo")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks|sysinfo")
 	os.Exit(1)
 }
 
@@ -47,7 +49,7 @@ func main() {
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
-	case "player", "studio", "exec", "kill", "install-webview2", "winetricks":
+	case "sysinfo", "player", "studio", "exec", "kill", "install-webview2", "winetricks":
 		cfg, err := config.Load(*configPath)
 		if err != nil {
 			log.Fatal(err)
@@ -61,14 +63,17 @@ func main() {
 		}
 
 		switch cmd {
-		case "reportinfo":
-			// TODO: implement this function
+		case "sysinfo":
+			Sysinfo(&pfx)
 		case "exec":
 			if len(args) < 2 {
 				usage()
 			}
 
-			if err := pfx.Wine(args[1], args[2:]...).Run(); err != nil {
+			cmd := pfx.Wine(args[1], args[2:]...)
+			cmd.Stderr = os.Stderr
+			cmd.Stdout = os.Stdout
+			if err := cmd.Run(); err != nil {
 				log.Fatal(err)
 			}
 		case "kill":
@@ -182,4 +187,29 @@ func Delete() {
 	if err := os.RemoveAll(dirs.Prefix); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func Sysinfo(pfx *wine.Prefix) {
+	cpu := sysinfo.GetCPU()
+	avx := slices.Contains(cpu.Flags, "avx")
+	k := sysinfo.GetKernel()
+	d, err := sysinfo.GetDistro()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ver, err := pfx.Wine("--version").Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	info := `## System information
+* Distro: %s
+* Processor: %s
+  * Supports AVX: %t
+* Kernel: %s
+* Wine: %s
+`
+
+	fmt.Printf(info, d, cpu.Model, avx, k, ver)
 }

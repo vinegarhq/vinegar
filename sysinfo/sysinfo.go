@@ -9,7 +9,6 @@ import (
 	"syscall"
 	"strings"
 	"path/filepath"
-	"slices"
 )
 
 type Kernel struct {
@@ -20,7 +19,6 @@ type Kernel struct {
 type CPU struct {
 	Model string
 	Flags []string
-	AVX   bool
 }
 
 type GPU struct {
@@ -32,7 +30,7 @@ type GPU struct {
 
 type GPUs []GPU
 
-func NewKernel() Kernel {
+func GetKernel() Kernel {
 	var un syscall.Utsname
 	_ = syscall.Uname(&un)
 
@@ -53,7 +51,11 @@ func NewKernel() Kernel {
 	}
 }
 
-func NewCPU() (cpu CPU) {
+func (k Kernel) String() string {
+	return k.Release + " " + k.Version
+}
+
+func GetCPU() (cpu CPU) {
 	column := regexp.MustCompile("\t+: ")
 
 	f, _ := os.Open("/proc/cpuinfo")
@@ -80,8 +82,6 @@ func NewCPU() (cpu CPU) {
 		}
 	}
 
-	cpu.AVX = slices.Contains(cpu.Flags, "avx")
-
 	if s.Err() != nil {
 		return
 	}
@@ -89,7 +89,11 @@ func NewCPU() (cpu CPU) {
 	return
 }
 
-func NewGPUs() (gpus GPUs) {
+func (cpu *CPU) String() string {
+	return cpu.Model
+}
+
+func GetGPUs() (gpus GPUs) {
 	card := regexp.MustCompile(`card([0-9]+)(?:-eDP-\d+)?$`)
 
 	filepath.Walk("/sys/class/drm", func(p string, i fs.FileInfo, err error) error {

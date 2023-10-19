@@ -9,7 +9,8 @@ import (
 	"github.com/vinegarhq/vinegar/roblox/api"
 )
 
-const RPCAppID = "1159891020956323923"
+// This is Bloxstrap's Discord RPC application ID.
+const RPCAppID = "1005469189907173486"
 
 func Login() error {
 	log.Println("Authenticating Discord RPC")

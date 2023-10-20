@@ -232,7 +232,7 @@ func (b *Binary) Setup() error {
 	}
 
 	if stateVer != ver.GUID {
-		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, ver)
+		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, ver.GUID)
 
 		if err := b.Install(); err != nil {
 			return err

@@ -111,12 +111,14 @@ func (b *Binary) Run(args ...string) error {
 		b.Splash.Close()
 	}
 
+	defer func() {
+		if kill && b.Config.AutoKillPrefix {
+			b.Prefix.Kill()
+		}
+	}()
+
 	if err := cmd.Wait(); err != nil {
 		return err
-	}
-
-	if kill && b.Config.AutoKillPrefix {
-		b.Prefix.Kill()
 	}
 
 	return nil

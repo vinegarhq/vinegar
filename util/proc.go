@@ -23,8 +23,8 @@ func CommFound(query string) bool {
 		// On Linux, the 'comm' file contains a newline, we remove it, as it
 		// will mess up the query. Hence 'minus'ing the length by 1 removes
 		// the newline.
-		if err == nil && strings.Contains(string(c)[:len(c)-1], query) &&
-		runtime.GOOS == "linux" {
+		if runtime.GOOS == "linux" && err == nil &&
+		strings.Contains(string(c)[:len(c)-1], query) {
 			return true
 		// On FreeBSD and NetBSD, this issue doesn't exist. Subtracting length
 		// by one doesn't work as 'cmdline' doesn't end in a newline character.

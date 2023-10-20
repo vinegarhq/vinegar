@@ -38,7 +38,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Faster Multi-threaded installation and extraction of Roblox
 + Multiple instances of Roblox open simultaneously
 + Loading window during setup
-+ Logging for both Vinegar and Wine
++ Logging for both Vinegar, Wine and Roblox
 
 # See Also
 + [Discord Server](https://discord.gg/dzdzZ6Pps2)

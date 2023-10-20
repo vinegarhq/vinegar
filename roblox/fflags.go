@@ -48,8 +48,6 @@ func (f *FFlags) Apply(versionDir string) error {
 		return err
 	}
 
-	log.Printf("FFlags used: %s", string(fflags))
-
 	_, err = file.Write(fflags)
 	if err != nil {
 		return err

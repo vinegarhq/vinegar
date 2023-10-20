@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-	_ "syscall"
+	"os/signal"
+	"syscall"
 
 	"github.com/nxadm/tail"
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
@@ -84,6 +85,20 @@ func (b *Binary) Run(args ...string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+
+	// act as the signal holder, as roblox/wine will not do anything
+	// with the INT signal.
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
+
+	go func() {
+		<-c
+		// This way, cmd.Wait() will return and the wineprefix killer
+		// will be ran.
+		log.Println("Killing Roblox")
+		cmd.Process.Kill()
+		signal.Stop(c)
+	}()
 
 	if b.Config.DiscordRPC {
 		err := bsrpc.Login()

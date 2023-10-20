@@ -107,7 +107,7 @@ func main() {
 			b.Splash.Desc(b.Config.Channel)
 
 			errHandler := func(err error) {
-				if !cfg.Splash.Enabled {
+				if !cfg.Splash.Enabled || b.Splash.IsClosed() {
 					log.Fatal(err)
 				}
 

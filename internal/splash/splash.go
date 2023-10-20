@@ -68,6 +68,10 @@ func (ui *Splash) Close() {
 	ui.Perform(system.ActionClose)
 }
 
+func (ui *Splash) IsClosed() bool {
+	return ui.closed
+}
+
 func window(width, height unit.Dp) *app.Window {
 	return app.NewWindow(
 		app.Decorated(false),
@@ -155,6 +159,7 @@ func (ui *Splash) Run() error {
 	var exitButton widget.Clickable
 
 	if !ui.Config.Enabled {
+		ui.closed = true
 		return nil
 	}
 
@@ -243,6 +248,7 @@ func (ui *Splash) Run() error {
 		}
 	}
 
+	ui.closed = true
 	return nil
 }
 

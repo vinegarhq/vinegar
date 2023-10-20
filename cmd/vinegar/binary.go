@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+	_ "syscall"
 
 	"github.com/nxadm/tail"
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
@@ -83,7 +84,6 @@ func (b *Binary) Run(args ...string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	defer cmd.Process.Kill()
 
 	if b.Config.DiscordRPC {
 		err := bsrpc.Login()
@@ -91,24 +91,34 @@ func (b *Binary) Run(args ...string) error {
 			log.Printf("Failed to authenticate Discord RPC: %s, disabling RPC", err)
 			b.Config.DiscordRPC = false
 		}
-		// this will fucking panic if it fails smh
+		// NOTE: This will panic if logout fails
 		defer bsrpc.Logout()
 	}
 
+	// after FindLog() fails to find a log, assume Roblox hasn't started.
+	// early. if it did, assume failure and jump to cmd.Wait(), which will give the
+	// returned error to the splash screen and output if wine returns one.
 	p, err := b.FindLog()
 	if err != nil {
-		log.Printf("%s, has roblox successfully started?", err)
+		log.Printf("%s, assuming roblox failure", err)
 	} else {
-		go func() {
-			b.TailLog(p)
-		}()
-	}
-
-	// after the FindLog function fails or found a log, we check if the
-	// command process pid exists, we know by then if roblox had started
-	// correctly, and to close the splash screen with the appropiate error.
-	if cmd.Process.Pid != 0 {
 		b.Splash.Close()
+
+		go func() {
+			rblxExited, err := b.TailLog(p)
+			if err != nil {
+				log.Printf("tail roblox log file: %s", err)
+				return
+			}
+	
+			if rblxExited {
+				log.Println("Got Roblox shutdown")
+				// give roblox two seconds to cleanup its garbage
+				time.Sleep(2 * time.Second)
+				// force kill the process, causing cmd.Wait() to immediately return.
+				cmd.Process.Kill()
+			}
+		}()
 	}
 
 	defer func() {
@@ -118,7 +128,7 @@ func (b *Binary) Run(args ...string) error {
 	}()
 
 	if err := cmd.Wait(); err != nil {
-		return err
+		return fmt.Errorf("roblox process: %w", err)
 	}
 
 	return nil
@@ -147,18 +157,18 @@ func (b *Binary) FindLog() (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("could not roblox log file after time %s", b.Started)
+	return "", fmt.Errorf("could not find roblox log file after time %s", b.Started)
 }
 
-func (b *Binary) TailLog(name string) {
+// Boolean returned is if Roblox had exited, detecting via logs
+func (b *Binary) TailLog(name string) (bool, error) {
 	var a bsrpc.Activity
 	const title = "WebView/InternalBrowser is broken"
 	auth := false
 
-	t, err := tail.TailFile(name, tail.Config{Follow: true})
+	t, err := tail.TailFile(name, tail.Config{Follow: true, MustExist: true})
 	if err != nil {
-		log.Printf("Failed to tail Roblox log file: %s", err)
-		return
+		return false, err
 	}
 
 	for line := range t.Lines {
@@ -178,12 +188,20 @@ func (b *Binary) TailLog(name string) {
 			}
 		}
 
+		// Best we've got to know if roblox had actually quit
+		if strings.Contains(line.Text, "[FLog::SingleSurfaceApp] shutDown:") {
+			return true, nil
+		}
+
 		if b.Config.DiscordRPC {
 			if err := a.HandleLog(line.Text); err != nil {
 				log.Printf("Failed to handle Discord RPC: %s", err)
 			}
 		}
 	}
+
+	// this is should be unreachable
+	return false, nil
 }
 
 func (b *Binary) FetchVersion() (roblox.Version, error) {

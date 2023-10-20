@@ -147,8 +147,6 @@ func (ui *Splash) Dialog(title, msg string) {
 			e.Frame(gtx.Ops)
 		}
 	}
-
-	return
 }
 
 func (ui *Splash) Run() error {

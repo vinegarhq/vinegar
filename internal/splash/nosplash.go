@@ -3,6 +3,7 @@
 package splash
 
 import (
+	"log"
 	"errors"
 
 	"github.com/vinegarhq/vinegar/internal/config"
@@ -25,6 +26,10 @@ func (ui *Splash) Progress(progress float32) {
 }
 
 func (ui *Splash) Close() {
+}
+
+func (ui *Splash) Dialog(title, msg string) {
+	log.Printf("Dialog: %s %s", title, msg)
 }
 
 func New(cfg *config.Splash) *Splash {

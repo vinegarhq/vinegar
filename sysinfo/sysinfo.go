@@ -2,13 +2,10 @@ package sysinfo
 
 import (
 	"os"
-	"io/fs"
-	"strconv"
 	"bufio"
 	"regexp"
 	"syscall"
 	"strings"
-	"path/filepath"
 )
 
 type Kernel struct {
@@ -20,15 +17,6 @@ type CPU struct {
 	Model string
 	Flags []string
 }
-
-type GPU struct {
-	Path       string
-	Integrated bool
-	Index      int
-	Driver     string
-}
-
-type GPUs []GPU
 
 func GetKernel() Kernel {
 	var un syscall.Utsname
@@ -91,32 +79,6 @@ func GetCPU() (cpu CPU) {
 
 func (cpu *CPU) String() string {
 	return cpu.Model
-}
-
-func GetGPUs() (gpus GPUs) {
-	card := regexp.MustCompile(`card([0-9]+)(?:-eDP-\d+)?$`)
-
-	filepath.Walk("/sys/class/drm", func(p string, i fs.FileInfo, err error) error {
-		var gpu GPU
-
-		match := card.FindStringSubmatch(p)
-		if match == nil {
-			return nil
-		}
-
-		if len(match) == 2 {
-			gpu.Integrated = true
-		}
-
-		gpu.Index, _ = strconv.Atoi(match[1])
-		gpu.Driver, _ = filepath.EvalSymlinks(filepath.Join(p, "device/driver"))
-		gpu.Path = p
-
-		gpus = append(gpus, gpu)
-		return nil
-	})
-
-	return
 }
 
 func InFlatpak() bool {

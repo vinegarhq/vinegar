@@ -61,8 +61,6 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 }
 
 func (b *Binary) Run(args ...string) error {
-	exe := b.Type.Executable()
-
 	cmd, err := b.Command(args...)
 	if err != nil {
 		return err
@@ -93,36 +91,32 @@ func (b *Binary) Run(args ...string) error {
 			log.Printf("Failed to authenticate Discord RPC: %s, disabling RPC", err)
 			b.Config.DiscordRPC = false
 		}
+		// this will fucking panic if it fails smh
+		defer bsrpc.Logout()
 	}
 
 	p, err := b.FindLog()
 	if err != nil {
-		return fmt.Errorf("%w, has roblox successfully started?", err)
+		log.Printf("%s, has roblox successfully started?", err)
+	} else {
+		go func() {
+			b.TailLog(p)
+		}()
 	}
-	// after the log file has been found, we assume by then that
-	// roblox has successfully started, so we quit the splash screen
-	b.Splash.Close()
 
-	go func() {
-		b.TailLog(p)
-	}()
+	// after the FindLog function fails or found a log, we check if the
+	// command process pid exists, we know by then if roblox had started
+	// correctly, and to close the splash screen with the appropiate error.
+	if cmd.Process.Pid != 0 {
+		b.Splash.Close()
+	}
+
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
 
 	if kill && b.Config.AutoKillPrefix {
-		log.Println("Waiting for Roblox's process to die :)")
-
-		for {
-			time.Sleep(1 * time.Second)
-
-			if !util.CommFound(exe[:15]) {
-				break
-			}
-		}
-
 		b.Prefix.Kill()
-	}
-
-	if b.Config.DiscordRPC {
-		bsrpc.Logout()
 	}
 
 	return nil

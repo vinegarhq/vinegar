@@ -28,6 +28,10 @@ func (ui *Splash) Progress(progress float32) {
 func (ui *Splash) Close() {
 }
 
+func (ui *Splash) IsClosed() {
+	return true
+}
+
 func (ui *Splash) Dialog(title, msg string) {
 	log.Printf("Dialog: %s %s", title, msg)
 }

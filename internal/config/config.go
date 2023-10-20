@@ -79,7 +79,7 @@ func Default() Config {
 			"WINEARCH":         "win64",
 			"WINEDEBUG":        "err-kerberos,err-ntlm",
 			"WINEESYNC":        "1",
-			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d",
+			"WINEDLLOVERRIDES": "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
 
 			"DXVK_LOG_LEVEL": "warn",
 			"DXVK_LOG_PATH":  "none",

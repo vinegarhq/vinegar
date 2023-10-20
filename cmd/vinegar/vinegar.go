@@ -6,9 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/config/editor"
@@ -50,7 +48,6 @@ func main() {
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
 	case "player", "studio", "exec", "kill", "install-webview2", "winetricks":
-		pfxKilled := false
 		cfg, err := config.Load(*configPath)
 		if err != nil {
 			log.Fatal(err)
@@ -62,19 +59,6 @@ func main() {
 		if err := os.MkdirAll(dirs.Prefix, 0o755); err != nil {
 			log.Fatal(err)
 		}
-
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
-
-		go func() {
-			<-c
-			pfxKilled = true
-			pfx.Kill()
-
-			if pfxKilled {
-				os.Exit(0)
-			}
-		}()
 
 		switch cmd {
 		case "exec":
@@ -123,7 +107,7 @@ func main() {
 			b.Splash.Desc(b.Config.Channel)
 
 			errHandler := func(err error) {
-				if !cfg.Splash.Enabled {
+				if !cfg.Splash.Enabled || b.Splash.IsClosed() {
 					log.Fatal(err)
 				}
 

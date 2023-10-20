@@ -152,6 +152,8 @@ func (b *Binary) FindLog() (string, error) {
 
 func (b *Binary) TailLog(name string) {
 	var a bsrpc.Activity
+	const title = "WebView/InternalBrowser is broken"
+	auth := false
 
 	t, err := tail.TailFile(name, tail.Config{Follow: true})
 	if err != nil {
@@ -161,6 +163,20 @@ func (b *Binary) TailLog(name string) {
 
 	for line := range t.Lines {
 		fmt.Fprintln(b.Prefix.Output, line.Text)
+
+		// Easy way to figure out we are authenticated, to make a more
+		// babysit message to tell the user to use quick login
+		if strings.Contains(line.Text, "DID_LOG_IN") {
+			auth = true
+		}
+
+		if strings.Contains(line.Text, "the local did not install any WebView2 runtime") {
+			if auth {
+				b.Splash.Dialog(title, "use the browser for whatever you were doing just now.")
+			} else {
+				b.Splash.Dialog(title, "Use Quick Log In to authenticate ('Log In With Another Device' button)")
+			}
+		}
 
 		if b.Config.DiscordRPC {
 			if err := a.HandleLog(line.Text); err != nil {

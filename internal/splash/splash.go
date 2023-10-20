@@ -68,11 +68,18 @@ func (ui *Splash) Close() {
 	ui.Perform(system.ActionClose)
 }
 
-func New(cfg *config.Splash) *Splash {
-	width := unit.Dp(448)
-	height := unit.Dp(240)
+func window(width, height unit.Dp) *app.Window {
+	return app.NewWindow(
+		app.Decorated(false),
+		app.Size(width, height),
+		app.MinSize(width, height),
+		app.MaxSize(width, height),
+		app.Title("Vinegar"),
+	)
+}
 
-	th := material.NewTheme()
+func theme(cfg *config.Splash) (th *material.Theme) {
+	th = material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	th.Palette = material.Palette{
 		Bg:         rgb(cfg.Bg),
@@ -81,20 +88,67 @@ func New(cfg *config.Splash) *Splash {
 		ContrastFg: rgb(cfg.Gray2),
 	}
 
+	return
+}
+
+func New(cfg *config.Splash) *Splash {
+	width := unit.Dp(448)
+	height := unit.Dp(240)
+
 	logo, _, _ := image.Decode(bytes.NewReader(vinegarlogo))
 
 	return &Splash{
 		logo:   logo,
-		Theme:  th,
+		Theme:  theme(cfg),
 		Config: cfg,
-		Window: app.NewWindow(
-			app.Decorated(false),
-			app.Size(width, height),
-			app.MinSize(width, height),
-			app.MaxSize(width, height),
-			app.Title("Vinegar"),
-		),
+		Window: window(width, height),
 	}
+}
+
+// Make a new application window using vinegar's existing properties to
+// simulate a dialog.
+func (ui *Splash) Dialog(title, msg string) {
+	var ops op.Ops
+	var okButton widget.Clickable
+	width := unit.Dp(480)
+	height := unit.Dp(144)
+	w := window(width, height)
+
+	if !ui.Config.Enabled || ui.Theme == nil {
+		return
+	}
+
+	for e := range w.Events() {
+		switch e := e.(type) {
+		case system.DestroyEvent:
+			// no real care for errors, this is a dialog
+			return
+		case system.FrameEvent:
+			gtx := layout.NewContext(&ops, e)
+			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
+
+			if okButton.Clicked() {
+				w.Perform(system.ActionClose)
+			}
+
+			layout.Center.Layout(gtx, func(gtx C) D {
+				return layout.Flex{
+					Axis:      layout.Vertical,
+					Alignment: layout.Middle,
+				}.Layout(gtx,
+					layout.Rigid(material.H6(ui.Theme, title).Layout),
+					layout.Rigid(layout.Spacer{Height: unit.Dp(10)}.Layout),
+					layout.Rigid(material.Body2(ui.Theme, msg).Layout),
+					layout.Rigid(layout.Spacer{Height: unit.Dp(16)}.Layout),
+					layout.Rigid(button(ui.Theme, &okButton, "Ok").Layout),
+				)
+			})
+
+			e.Frame(gtx.Ops)
+		}
+	}
+
+	return
 }
 
 func (ui *Splash) Run() error {
@@ -164,19 +218,12 @@ func (ui *Splash) Run() error {
 					}),
 
 					layout.Rigid(func(gtx C) D {
-						inset := layout.Inset{
-							Top:   unit.Dp(16),
-							Right: unit.Dp(6),
-							Left:  unit.Dp(6),
-						}
-
+						inset := buttonInset()
 						return layout.Flex{}.Layout(gtx,
 							layout.Rigid(func(gtx C) D {
 								return inset.Layout(gtx, func(gtx C) D {
-									btn := material.Button(ui.Theme, &exitButton, "Cancel")
+									btn := button(ui.Theme, &exitButton, "Cancel")
 									btn.Background = rgb(ui.Config.Red)
-									btn.Color = ui.Theme.Palette.Fg
-									btn.CornerRadius = 16
 									return btn.Layout(gtx)
 								})
 							}),
@@ -186,10 +233,7 @@ func (ui *Splash) Run() error {
 								}
 
 								return inset.Layout(gtx, func(gtx C) D {
-									btn := material.Button(ui.Theme, &showLogButton, "Show Log")
-									btn.Color = ui.Theme.Palette.Fg
-									btn.CornerRadius = 16
-									return btn.Layout(gtx)
+									return button(ui.Theme, &showLogButton, "Show Log").Layout(gtx)
 								})
 							}),
 						)
@@ -202,4 +246,20 @@ func (ui *Splash) Run() error {
 	}
 
 	return nil
+}
+
+
+func buttonInset() layout.Inset {
+	return layout.Inset{
+		Top:   unit.Dp(16),
+		Right: unit.Dp(6),
+		Left:  unit.Dp(6),
+	}
+}
+
+func button(th *material.Theme, button *widget.Clickable, txt string) (bs material.ButtonStyle) {
+	bs = material.Button(th, button, txt)
+	bs.Color = th.Palette.Fg
+	bs.CornerRadius = 16
+	return
 }

@@ -28,7 +28,7 @@ func (ui *Splash) Progress(progress float32) {
 func (ui *Splash) Close() {
 }
 
-func (ui *Splash) IsClosed() {
+func (ui *Splash) IsClosed() bool {
 	return true
 }
 

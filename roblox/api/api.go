@@ -36,13 +36,14 @@ func Request(method, service, endpoint string, v interface{}) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
+	if resp.StatusCode != http.StatusOK {
+		// Return the given API error only if the decoder succeeded
 		errsResp := new(errorsResponse)
-		if err := json.NewDecoder(resp.Body).Decode(errsResp); err != nil {
-			return err
+		if err := json.NewDecoder(resp.Body).Decode(errsResp); err == nil {
+			return errsResp
 		}
 
-		return errsResp
+		return fmt.Errorf("%w: %s", ErrBadStatus, resp.Status)
 	}
 
 	if v != nil {

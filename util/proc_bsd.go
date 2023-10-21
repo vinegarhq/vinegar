@@ -1,4 +1,4 @@
-// go:build dragonfly || freebsd || netbsd
+//go:build dragonfly || freebsd || netbsd
 
 package util
 

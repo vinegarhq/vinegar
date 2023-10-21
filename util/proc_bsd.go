@@ -17,7 +17,7 @@ func CommFound(query string) bool {
 	for _, comm := range comms {
 		c, err := os.ReadFile(comm)
 
-		if err == nil && strings.Contains(c, query) {
+		if err == nil && strings.Contains(string(c), query) {
 			return true
 		}
 	}

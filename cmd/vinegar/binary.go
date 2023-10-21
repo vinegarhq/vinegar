@@ -72,14 +72,6 @@ func (b *Binary) Run(args ...string) error {
 	log.Printf("Launching %s", b.Name)
 	b.Splash.Message("Launching " + b.Alias)
 
-	kill := true
-
-	// If roblox is already running, don't kill wineprefix, even if
-	// auto kill prefix is enabled
-	if util.CommFound("Roblox") {
-		log.Println("Roblox is already running, not killing wineprefix after exit")
-		kill = false
-	}
 
 	// Launches into foreground
 	b.Started = time.Now()
@@ -132,13 +124,27 @@ func (b *Binary) Run(args ...string) error {
 				// give roblox two seconds to cleanup its garbage
 				time.Sleep(2 * time.Second)
 				// force kill the process, causing cmd.Wait() to immediately return.
+				log.Println("Killing Roblox")
+				cmd.Process.Kill()
+				cmd.Process.Kill()
+				cmd.Process.Kill()
+				cmd.Process.Kill()
+				cmd.Process.Kill()
+				cmd.Process.Kill()
 				cmd.Process.Kill()
 			}
 		}()
 	}
 
 	defer func() {
-		if kill && b.Config.AutoKillPrefix {
+		// If roblox is already running, don't kill wineprefix, even if
+		// auto kill prefix is enabled
+		if util.CommFound("Roblox") {
+			log.Println("Roblox is already running, not killing wineprefix after exit")
+			return
+		}
+
+		if b.Config.AutoKillPrefix {
 			b.Prefix.Kill()
 		}
 	}()

@@ -3,8 +3,8 @@
 package splash
 
 import (
-	"log"
 	"errors"
+	"log"
 
 	"github.com/vinegarhq/vinegar/internal/config"
 )

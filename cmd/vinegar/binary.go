@@ -5,11 +5,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
 	"strings"
-	"time"
-	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/nxadm/tail"
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
@@ -19,6 +19,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/splash"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
+	"github.com/vinegarhq/vinegar/roblox/version"
 	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
@@ -35,7 +36,7 @@ type Binary struct {
 	Dir     string
 	Prefix  *wine.Prefix
 	Type    roblox.BinaryType
-	Version roblox.Version
+	Version version.Version
 	Started time.Time
 }
 
@@ -125,7 +126,7 @@ func (b *Binary) Run(args ...string) error {
 				log.Printf("tail roblox log file: %s", err)
 				return
 			}
-	
+
 			if rblxExited {
 				log.Println("Got Roblox shutdown")
 				// give roblox two seconds to cleanup its garbage
@@ -219,16 +220,16 @@ func (b *Binary) TailLog(name string) (bool, error) {
 	return false, nil
 }
 
-func (b *Binary) FetchVersion() (roblox.Version, error) {
+func (b *Binary) FetchVersion() (version.Version, error) {
 	b.Splash.Message("Fetching " + b.Alias)
 
 	if b.Config.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
 
-		return roblox.NewVersion(b.Type, b.Config.Channel, b.Config.ForcedVersion)
+		return version.New(b.Type, b.Config.Channel, b.Config.ForcedVersion), nil
 	}
 
-	return roblox.LatestVersion(b.Type, b.Config.Channel)
+	return version.Fetch(b.Type, b.Config.Channel)
 }
 
 func (b *Binary) Setup() error {

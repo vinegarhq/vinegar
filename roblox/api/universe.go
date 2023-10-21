@@ -11,7 +11,8 @@ type UniverseIdResponse struct {
 func GetUniverseID(placeID string) (string, error) {
 	var uidr UniverseIdResponse
 
-	err := UnmarshalBody("https://apis.roblox.com/universes/v1/places/"+placeID+"/universe", &uidr)
+	// This API is undocumented.
+	err := Request("GET", "apis", "universes/v1/places/"+placeID+"/universe", &uidr)
 	if err != nil {
 		return "", err
 	}

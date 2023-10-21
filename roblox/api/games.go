@@ -35,14 +35,15 @@ type GameDetail struct {
 	FavoritedCount            int64    `json:"favoritedCount"`
 }
 
-type GameDetailResponse struct {
+type GameDetailsResponse struct {
 	Data []GameDetail `json:"data"`
 }
 
 func GetGameDetails(universeID string) (GameDetail, error) {
-	var gdr GameDetailResponse
+	var gdr GameDetailsResponse
 
-	err := UnmarshalBody("https://games.roblox.com/v1/games?universeIds="+universeID, &gdr)
+	// uids := strings.Join(universeIDs, ",")
+	err := Request("GET", "games", "v1/games?universeIds="+universeID, &gdr)
 	if err != nil {
 		return GameDetail{}, err
 	}

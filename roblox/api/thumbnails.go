@@ -11,14 +11,15 @@ type Thumbnail struct {
 	Version  string `json:"version"`
 }
 
-type ThumbnailResponse struct {
+type thumbnailResponse struct {
 	Data []Thumbnail `json:"data"`
 }
 
 func GetGameIcon(universeID, returnPolicy, size, format string, isCircular bool) (Thumbnail, error) {
-	var tnr ThumbnailResponse
-	err := UnmarshalBody(
-		fmt.Sprintf("https://thumbnails.roblox.com/v1/games/icons?universeIds=%s&returnPolicy=%s&size=%s&format=%s&isCircular=%t",
+	var tnr thumbnailResponse
+
+	err := Request("GET", "thumbnails",
+		fmt.Sprintf("v1/games/icons?universeIds=%s&returnPolicy=%s&size=%s&format=%s&isCircular=%t",
 			universeID, returnPolicy, size, format, isCircular), &tnr,
 	)
 	if err != nil {

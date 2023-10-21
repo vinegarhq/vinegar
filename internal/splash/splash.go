@@ -252,7 +252,6 @@ func (ui *Splash) Run() error {
 	return nil
 }
 
-
 func buttonInset() layout.Inset {
 	return layout.Inset{
 		Top:   unit.Dp(16),

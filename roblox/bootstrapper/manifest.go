@@ -5,29 +5,40 @@ import (
 	"log"
 	"strings"
 
-	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/roblox/version"
 	"github.com/vinegarhq/vinegar/util"
 )
 
 type Manifest struct {
-	*roblox.Version
+	*version.Version
 	DeployURL string
 	Packages
 }
 
-func FetchManifest(ver *roblox.Version) (Manifest, error) {
+func channelPath(channel string) string {
+	// Ensure that the channel is lowercased, since internally in
+	// ClientSettings it will be lowercased, but not on the deploy mirror.
+	channel = strings.ToLower(channel)
+
+	if channel == "" {
+		return "/"
+	}
+
+	return "/channel/" + channel + "/"
+}
+
+func FetchManifest(ver *version.Version) (Manifest, error) {
 	cdn, err := CDN()
 	if err != nil {
 		return Manifest{}, err
 	}
+	durl := cdn + channelPath(ver.Channel) + ver.GUID
 
-	deployURL := cdn + roblox.ChannelPath(ver.Channel) + ver.GUID
+	log.Printf("Fetching manifest for %s (%s)", ver.GUID, durl)
 
-	log.Printf("Fetching manifest for %s (%s)", ver.GUID, deployURL)
-
-	manif, err := util.Body(deployURL + "-rbxPkgManifest.txt")
+	manif, err := util.Body(durl + "-rbxPkgManifest.txt")
 	if err != nil {
-		return Manifest{}, fmt.Errorf("fetch %s manifest: %w, is your channel valid?", ver.GUID, err)
+		return Manifest{}, fmt.Errorf("fetch %s manifest: %w", ver.GUID, err)
 	}
 
 	pkgs, err := ParsePackages(strings.Split(manif, "\r\n"))
@@ -37,7 +48,7 @@ func FetchManifest(ver *roblox.Version) (Manifest, error) {
 
 	return Manifest{
 		Version:   ver,
-		DeployURL: deployURL,
+		DeployURL: durl,
 		Packages:  pkgs,
 	}, nil
 }

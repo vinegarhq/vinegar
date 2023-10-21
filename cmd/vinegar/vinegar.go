@@ -146,10 +146,6 @@ func PrefixInit(pfx *wine.Prefix) error {
 		return err
 	}
 
-	if err := pfx.DisableCrashDialogs(); err != nil {
-		return err
-	}
-
 	return pfx.RegistryAdd("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", wine.REG_DWORD, "97")
 }
 

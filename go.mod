@@ -13,21 +13,18 @@ require (
 	dario.cat/mergo v1.0.0
 	gioui.org v0.3.0
 	github.com/hugolgst/rich-go v0.0.0-20230917173849-4a4fb1d3c362
-	github.com/nxadm/tail v1.4.11
 	golang.org/x/sys v0.11.0
 )
 
 require (
 	gioui.org/cpu v0.0.0-20210817075930-8d6a761490d2 // indirect
 	gioui.org/shader v1.0.6 // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-text/typesetting v0.0.0-20230803102845-24e03d8b5372 // indirect
 	golang.org/x/exp v0.0.0-20221012211006-4de253d81b95 // indirect
 	golang.org/x/exp/shiny v0.0.0-20220827204233-334a2380cb91 // indirect
 	golang.org/x/image v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
-	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 )
 
 retract (

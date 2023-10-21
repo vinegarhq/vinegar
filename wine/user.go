@@ -11,5 +11,5 @@ func (p *Prefix) AppDataDir() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(p.Dir, "drive_c", "users", user.Username, "AppData"), nil
+	return filepath.Join(p.dir, "drive_c", "users", user.Username, "AppData"), nil
 }

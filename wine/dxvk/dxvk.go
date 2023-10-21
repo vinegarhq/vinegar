@@ -39,7 +39,7 @@ func Remove(pfx *wine.Prefix) error {
 
 			log.Println("Removing DLL:", dllPath)
 
-			if err := os.Remove(filepath.Join(pfx.Dir, dllPath)); err != nil {
+			if err := os.Remove(filepath.Join(pfx.Dir(), dllPath)); err != nil {
 				return err
 			}
 		}
@@ -83,8 +83,8 @@ func Extract(name string, pfx *wine.Prefix) error {
 		}
 
 		destDir, ok := map[string]string{
-			"x64": filepath.Join(pfx.Dir, "drive_c", "windows", "system32"),
-			"x32": filepath.Join(pfx.Dir, "drive_c", "windows", "syswow64"),
+			"x64": filepath.Join(pfx.Dir(), "drive_c", "windows", "system32"),
+			"x32": filepath.Join(pfx.Dir(), "drive_c", "windows", "syswow64"),
 		}[filepath.Base(filepath.Dir(header.Name))]
 
 		if !ok {

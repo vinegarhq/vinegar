@@ -1,6 +1,8 @@
 package wine
 
 import (
+	"errors"
+	"io"
 	"log"
 	"os/exec"
 )
@@ -11,13 +13,38 @@ type Cmd struct {
 
 func (p *Prefix) Command(name string, arg ...string) *Cmd {
 	cmd := exec.Command(name, arg...)
-	cmd.Stderr = p.Output
-	cmd.Stdout = p.Output
 	cmd.Env = append(cmd.Environ(),
-		"WINEPREFIX="+p.Dir,
+		"WINEPREFIX="+p.dir,
 	)
 
 	return &Cmd{cmd}
+}
+
+func (c *Cmd) SetOutput(w io.Writer) error {
+	if c.Process != nil {
+		return errors.New("SetOutput after process started")
+	}
+	c.Stderr = w
+	c.Stdout = w
+	return nil
+}
+
+func (c *Cmd) OutputPipe() (io.Reader, error) {
+	if err := c.SetOutput(nil); err != nil {
+		return nil, err
+	}
+
+	e, err := c.StderrPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	o, err := c.StdoutPipe()
+	if err != nil {
+		return nil, err
+	}
+
+	return io.MultiReader(e, o), nil
 }
 
 func (c *Cmd) Start() error {

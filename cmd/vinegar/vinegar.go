@@ -84,17 +84,16 @@ func main() {
 
 			logFile := logs.File(cmd)
 			logOutput := io.MultiWriter(logFile, os.Stderr)
-
-			pfx.Output = logOutput
+			b.Output = logOutput
 			log.SetOutput(logOutput)
 
 			defer logFile.Close()
 
 			switch cmd {
 			case "player":
-				b = NewBinary(roblox.Player, &cfg, &pfx)
+				b = NewBinary(roblox.Player, logOutput, &cfg, &pfx)
 			case "studio":
-				b = NewBinary(roblox.Studio, &cfg, &pfx)
+				b = NewBinary(roblox.Studio, logOutput, &cfg, &pfx)
 			}
 
 			go func() {
@@ -116,8 +115,8 @@ func main() {
 				select {} // wait for window to close
 			}
 
-			if _, err := os.Stat(filepath.Join(pfx.Dir, "drive_c", "windows")); err != nil {
-				log.Printf("Initializing wineprefix at %s", pfx.Dir)
+			if _, err := os.Stat(filepath.Join(pfx.Dir(), "drive_c", "windows")); err != nil {
+				log.Printf("Initializing wineprefix at %s", pfx.Dir())
 
 				b.Splash.Message("Initializing wineprefix")
 				if err := PrefixInit(&pfx); err != nil {

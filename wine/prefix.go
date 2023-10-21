@@ -1,21 +1,21 @@
 package wine
 
 import (
-	"io"
 	"log"
-	"os"
 )
 
 type Prefix struct {
-	Dir    string
-	Output io.Writer
+	dir string
 }
 
 func New(dir string) Prefix {
 	return Prefix{
-		Dir:    dir,
-		Output: os.Stderr,
+		dir: dir,
 	}
+}
+
+func (p *Prefix) Dir() string {
+	return p.dir
 }
 
 func (p *Prefix) Wine(exe string, arg ...string) *Cmd {

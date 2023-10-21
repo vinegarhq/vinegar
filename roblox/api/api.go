@@ -19,7 +19,7 @@ func SetClient(client *http.Client) {
 }
 
 func Request(method, service, endpoint string, v interface{}) error {
-	log.Printf("Performing %s request on %s/%s", method, service, endpoint)
+	log.Printf("Performing Roblox API %s %s request on %s", method, service, endpoint)
 
 	url := fmt.Sprintf(APIURL, service, endpoint)
 

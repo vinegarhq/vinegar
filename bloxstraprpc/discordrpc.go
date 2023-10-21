@@ -23,7 +23,7 @@ func Logout() {
 }
 
 func (a *Activity) SetCurrentGame() error {
-	if !a.InGame {
+	if !a.ingame {
 		log.Println("Not in game, clearing presence")
 		a.presence = client.Activity{}
 	} else {
@@ -37,15 +37,15 @@ func (a *Activity) SetCurrentGame() error {
 
 func (a *Activity) SetPresence() error {
 	var status string
-	log.Printf("Setting presence for Place ID %s", a.PlaceID)
+	log.Printf("Setting presence for Place ID %s", a.placeID)
 
-	uid, err := api.GetUniverseID(a.PlaceID)
+	uid, err := api.GetUniverseID(a.placeID)
 	if err != nil {
 		return err
 	}
 	log.Printf("Got Universe ID as %s", uid)
 
-	if !a.IsTeleport || uid != a.currentUniverseID {
+	if !a.teleported || uid != a.currentUniverseID {
 		a.timeStartedUniverse = time.Now()
 	}
 
@@ -63,7 +63,7 @@ func (a *Activity) SetPresence() error {
 	}
 	log.Printf("Got Universe thumbnail as %s", tn.ImageURL)
 
-	switch a.ServerType {
+	switch a.server {
 	case Public:
 		status = "by " + gd.Creator.Name
 	case Private:
@@ -85,7 +85,7 @@ func (a *Activity) SetPresence() error {
 		Buttons: []*client.Button{
 			{
 				Label: "See game page",
-				Url:   "https://www.roblox.com/games/" + a.PlaceID,
+				Url:   "https://www.roblox.com/games/" + a.placeID,
 			},
 		},
 	}

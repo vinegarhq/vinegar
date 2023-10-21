@@ -31,10 +31,6 @@ type Message struct {
 func ParseMessage(line string) (Message, error) {
 	var m Message
 
-	if !strings.Contains(line, GameMessageEntry) {
-		return m, nil
-	}
-
 	msg := line[strings.Index(line, GameMessageEntry)+len(GameMessageEntry)+1:]
 
 	if err := json.Unmarshal([]byte(msg), &m); err != nil {
@@ -42,15 +38,12 @@ func ParseMessage(line string) (Message, error) {
 	}
 
 	if m.Command == "" {
-		return m, errors.New("command is empty")
+		return Message{}, errors.New("command is empty")
 	}
 
-	if len(m.Data.Details) > 128 {
-		return m, errors.New("details cannot be longer than 128 characters")
-	}
-
-	if len(m.Data.State) > 128 {
-		return m, errors.New("details cannot be longer than 128 characters")
+	// discord RPC implementation requires a limit of 128 characters
+	if len(m.Data.Details) > 128 || len(m.Data.State) > 128 {
+		return Message{}, errors.New("details or state cannot be longer than 128 characters")
 	}
 
 	log.Printf("Received message: %+v", m)

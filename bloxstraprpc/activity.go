@@ -39,21 +39,21 @@ type Activity struct {
 	timeStartedUniverse time.Time
 	currentUniverseID   string
 
-	InGame     bool
-	IsTeleport bool
-	ServerType
-	PlaceID string
-	JobID   string
-	MAC     string
+	ingame     bool
+	teleported bool
+	server     ServerType
+	placeID    string
+	jobID      string
+	mac        string
 
 	teleport         bool
 	reservedteleport bool
 }
 
-func (a *Activity) HandleLog(line string) error {
-	if !a.InGame && a.PlaceID == "" {
+func (a *Activity) HandleRobloxLog(line string) error {
+	if !a.ingame && a.placeID == "" {
 		if strings.Contains(line, GameJoiningPrivateServerEntry) {
-			a.ServerType = Private
+			a.server = Private
 			return nil
 		}
 
@@ -63,7 +63,7 @@ func (a *Activity) HandleLog(line string) error {
 		}
 	}
 
-	if !a.InGame && a.PlaceID != "" {
+	if !a.ingame && a.placeID != "" {
 		if strings.Contains(line, GameJoiningUDMUXEntry) {
 			a.handleUDMUX(line)
 			return nil
@@ -71,20 +71,19 @@ func (a *Activity) HandleLog(line string) error {
 
 		if strings.Contains(line, GameJoinedEntry) {
 			a.handleGameJoined(line)
-
 			return a.SetCurrentGame()
 		}
 	}
 
-	if a.InGame && a.PlaceID != "" {
+	if a.ingame && a.placeID != "" {
 		if strings.Contains(line, GameDisconnectedEntry) {
-			log.Printf("Disconnected From Game (%s/%s/%s)", a.PlaceID, a.JobID, a.MAC)
+			log.Printf("Disconnected From Game (%s/%s/%s)", a.placeID, a.jobID, a.mac)
 			a.Clear()
 			return a.SetCurrentGame()
 		}
 
 		if strings.Contains(line, GameTeleportingEntry) {
-			log.Printf("Teleporting to server (%s/%s/%s)", a.PlaceID, a.JobID, a.MAC)
+			log.Printf("Teleporting to server (%s/%s/%s)", a.placeID, a.jobID, a.mac)
 			a.teleport = true
 			return nil
 		}
@@ -111,12 +110,12 @@ func (a *Activity) HandleLog(line string) error {
 
 func (a *Activity) handleUDMUX(line string) {
 	m := GameJoiningUDMUXPattern.FindStringSubmatch(line)
-	if len(m) != 3 || m[2] != a.MAC {
+	if len(m) != 3 || m[2] != a.mac {
 		return
 	}
 
-	a.MAC = m[1]
-	log.Printf("Got game join UDMUX: %s", a.MAC)
+	a.mac = m[1]
+	log.Printf("Got game join UDMUX: %s", a.mac)
 }
 
 func (a *Activity) handleGameJoining(line string) {
@@ -125,41 +124,41 @@ func (a *Activity) handleGameJoining(line string) {
 		return
 	}
 
-	a.InGame = false
-	a.JobID = m[1]
-	a.PlaceID = m[2]
-	a.MAC = m[3]
+	a.ingame = false
+	a.jobID = m[1]
+	a.placeID = m[2]
+	a.mac = m[3]
 
 	if a.teleport {
-		a.IsTeleport = true
+		a.teleported = true
 		a.teleport = false
 	}
 
 	if a.reservedteleport {
-		a.ServerType = Reserved
+		a.server = Reserved
 		a.reservedteleport = false
 	}
 
-	log.Printf("Joining Game (%s/%s/%s)", a.JobID, a.PlaceID, a.MAC)
+	log.Printf("Joining Game (%s/%s/%s)", a.jobID, a.placeID, a.mac)
 }
 
 func (a *Activity) handleGameJoined(line string) {
 	m := GameJoinedEntryPattern.FindStringSubmatch(line)
-	if len(m) != 2 || m[1] != a.MAC {
+	if len(m) != 2 || m[1] != a.mac {
 		return
 	}
 
-	a.InGame = true
-	log.Printf("Joined Game (%s/%s/%s)", a.PlaceID, a.JobID, a.MAC)
+	a.ingame = true
+	log.Printf("Joined Game (%s/%s/%s)", a.placeID, a.jobID, a.mac)
 	// handle rpc
 }
 
 func (a *Activity) Clear() {
-	a.InGame = false
-	a.PlaceID = ""
-	a.JobID = ""
-	a.MAC = ""
-	a.ServerType = Public
-	a.IsTeleport = false
+	a.teleported = false
+	a.ingame = false
+	a.placeID = ""
+	a.jobID = ""
+	a.mac = ""
+	a.server = Public
 	a.presence = client.Activity{}
 }

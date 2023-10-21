@@ -219,7 +219,7 @@ func (b *Binary) HandleRobloxLog(line string) {
 	}
 
 	if b.Config.DiscordRPC {
-		if err := b.Activity.HandleLog(line); err != nil {
+		if err := b.Activity.HandleRobloxLog(line); err != nil {
 			log.Printf("Failed to handle Discord RPC: %s", err)
 		}
 	}

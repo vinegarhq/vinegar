@@ -10,15 +10,19 @@ import (
 
 type Cmd struct {
 	*exec.Cmd
+
+	// in-order to ensure that the WINEPREFIX environment
+	// variable cannot be tampered with.
+	prefixDir string
 }
 
 // Command returns a passthrough Cmd struct to execute the named
 // program with the given arguments.
+//
 // The command's Stderr and Stdout will be set to their os counterparts
 // if the prefix's Output is nil.
 func (p *Prefix) Command(name string, arg ...string) *Cmd {
 	cmd := exec.Command(name, arg...)
-
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if p.Output != nil {
@@ -26,11 +30,17 @@ func (p *Prefix) Command(name string, arg ...string) *Cmd {
 		cmd.Stderr = p.Output
 	}
 
-	cmd.Env = append(cmd.Environ(),
-		"WINEPREFIX="+p.dir,
-	)
+	return &Cmd{
+		Cmd: cmd,
+		prefixDir: p.dir,
+	}
+}
 
-	return &Cmd{cmd}
+// SetOutput set's the command's standard output and error to
+// the given io.Writer.
+func (c *Cmd) SetOutput(o io.Writer) {
+	c.Stdout = o
+	c.Stderr = o
 }
 
 // OutputPipe erturns a pipe that will be a MultiReader
@@ -41,8 +51,7 @@ func (c *Cmd) OutputPipe() (io.Reader, error) {
 		return nil, errors.New("OutputPipe after process started")
 	}
 	
-	c.Stdout = nil
-	c.Stderr = nil
+	c.SetOutput(nil)
 
 	e, err := c.StderrPipe()
 	if err != nil {
@@ -58,13 +67,18 @@ func (c *Cmd) OutputPipe() (io.Reader, error) {
 }
 
 func (c *Cmd) Start() error {
+	c.Env = append(c.Environ(),
+		"WINEPREFIX="+c.prefixDir,
+	)
+
 	log.Printf("Starting command: %s", c.String())
 
 	return c.Cmd.Start()
 }
 
 func (c *Cmd) Run() error {
-	log.Printf("Running command: %s", c.String())
-
-	return c.Cmd.Run()
+	if err := c.Start(); err != nil {
+		return err
+	}
+	return c.Wait()
 }

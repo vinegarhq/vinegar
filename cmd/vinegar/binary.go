@@ -115,17 +115,18 @@ func (b *Binary) Run(args ...string) error {
 	log.Printf("Launching %s", b.Name)
 	b.Splash.Message("Launching " + b.Alias)
 
+	defer func() {
+		if util.CommFound("Roblox") {
+			log.Println("Another Roblox instance is already running, not killing wineprefix")
+		}
+	
+		if b.Config.AutoKillPrefix {
+			b.Prefix.Kill()
+		}
+	}()
+
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("roblox process: %w", err)
-	}
-
-	if util.CommFound("Roblox") {
-		log.Println("Another Roblox instance is already running, not killing wineprefix")
-		return nil
-	}
-
-	if b.Config.AutoKillPrefix {
-		b.Prefix.Kill()
 	}
 
 	return nil

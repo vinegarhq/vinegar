@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/vinegarhq/vinegar/internal/config"
@@ -22,7 +23,7 @@ var BinPrefix string
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks|mime")
 	os.Exit(1)
 }
 
@@ -134,6 +135,45 @@ func main() {
 				b.Splash.Message("Failed to run Roblox")
 				errHandler(err)
 			}
+		}
+	// Generates the default mimetypes for Roblox
+	// Functionally the same as running `make mime` from vinegar source
+	case "mime":
+		const xdgPlayer = "io.github.vinegarhq.Vinegar.player.desktop"
+		const xdgStudio = "io.github.vinegarhq.Vinegar.studio.desktop"
+		errRobloxPlayer := exec.Command("xdg-mime", "default", xdgPlayer, "x-scheme-handler/roblox-player").Run()
+		if errRobloxPlayer != nil {
+			log.Fatal(errRobloxPlayer)
+		}
+		fmt.Println("xdg-mime default", xdgPlayer, "x-scheme-handler/roblox-player")
+		errRoblox := exec.Command("xdg-mime", "default", xdgPlayer, "x-scheme-handler/roblox").Run()
+		if errRoblox != nil {
+			log.Fatal(errRoblox)
+		}
+		fmt.Println("xdg-mime default", xdgPlayer, "x-scheme-handler/roblox")
+		errRobloxStudio := exec.Command("xdg-mime", "default", xdgStudio, "x-scheme-handler/roblox-studio").Run()
+		if errRobloxStudio != nil {
+			log.Fatal(errRobloxStudio)
+		}
+		fmt.Println("xdg-mime default", xdgStudio, "x-scheme-handler/roblox-studio")
+		errRobloxStudioAuth := exec.Command("xdg-mime", "default", xdgStudio, "x-scheme-handler/roblox-studio-auth").Run()
+		if errRobloxStudioAuth != nil {
+			log.Fatal(errRobloxStudioAuth)
+		}
+		fmt.Println("xdg-mime default", xdgStudio, "x-scheme-handler/roblox-studio-auth")
+		errRobloxRbxl := exec.Command("xdg-mime", "default", xdgStudio, "application/x-roblox-rbxl").Run()
+		if errRobloxRbxl != nil {
+			log.Fatal(errRobloxRbxl)
+		}
+		fmt.Println("xdg-mime default", xdgStudio, "application/x-roblox-rbxl")
+		errRobloxRbxlx := exec.Command("xdg-mime", "default", xdgStudio, "application/x-roblox-rbxlx").Run()
+		if errRobloxRbxlx != nil {
+			log.Fatal(errRobloxRbxlx)
+		}
+		fmt.Println("xdg-mime default", xdgStudio, "application/x-roblox-rbxlx")
+		if(errRobloxPlayer == nil && errRoblox == nil && errRobloxStudio == nil &&
+		errRobloxStudioAuth == nil && errRobloxRbxl == nil && errRobloxRbxlx == nil) {
+			fmt.Println("\nmimetypes set successfully!")
 		}
 	default:
 		usage()

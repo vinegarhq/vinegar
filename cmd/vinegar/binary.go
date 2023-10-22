@@ -11,7 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-	"time"
 
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/internal/config"
@@ -30,8 +29,6 @@ const (
 	DialogInternalBrowserBrokenTitle = "WebView/InternalBrowser is broken"
 	DialogUseBrowserMsg              = "Use the browser for whatever you were doing just now."
 	DialogQuickLoginMsg              = "Use Quick Log In to authenticate ('Log In With Another Device' button)"
-	RobloxLogShutdownEntry           = "[FLog::SingleSurfaceApp] shutDown:"
-	RobloxLogAbsoluteExitEntry       = "[FLog::SingleSurfaceApp] unregisterMemoryPrioritizationCallback"
 )
 
 type Binary struct {
@@ -49,12 +46,10 @@ type Binary struct {
 
 	// Logging
 	Auth     bool
-	Exited   chan bool
 	Activity bsrpc.Activity
-	Output   io.Writer
 }
 
-func NewBinary(bt roblox.BinaryType, out io.Writer, cfg *config.Config, pfx *wine.Prefix) Binary {
+func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binary {
 	var bcfg config.Binary
 
 	switch bt {
@@ -74,13 +69,20 @@ func NewBinary(bt roblox.BinaryType, out io.Writer, cfg *config.Config, pfx *win
 		Name:   bt.BinaryName(),
 		Type:   bt,
 		Prefix: pfx,
-
-		Output: out,
-		Exited: make(chan bool, 1),
 	}
 }
 
 func (b *Binary) Run(args ...string) error {
+	if b.Config.DiscordRPC {
+		if err := bsrpc.Login(); err != nil {
+			log.Printf("Failed to authenticate Discord RPC: %s, disabling RPC", err)
+			b.Config.DiscordRPC = false
+		}
+
+		// NOTE: This will panic if logout fails
+		defer bsrpc.Logout()
+	}
+
 	// REQUIRED for HandleRobloxLog to function.
 	os.Setenv("WINEDEBUG", os.Getenv("WINEDEBUG")+",warn+debugstr")
 
@@ -93,68 +95,27 @@ func (b *Binary) Run(args ...string) error {
 		return err
 	}
 
-	log.Printf("Launching %s", b.Name)
-	b.Splash.Message("Launching " + b.Alias)
-
-	// Launches into foreground
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
 	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
 	// Additionally, if Vinegar got TERM, it will also immediately exit, but roblox
 	// continues running.
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-
 	go func() {
 		<-c
 		log.Println("Killing Roblox")
-		// This way, cmd.Wait() will return and the wineprefix killer will be ran.
+		// This way, cmd.Run() will return and the wineprefix killer will be ran.
 		cmd.Process.Kill()
 		// Don't handle INT after it was recieved, this way if another signal was sent,
 		// Vinegar will immediately exit.
 		signal.Stop(c)
 	}()
 
-	// This is for cases where Roblox itself does not exit by itself, which
-	// happens sometimes (#173).
-	go func() {
-		// Gets sent by the log handler
-		<-b.Exited
-		log.Println("Got Roblox shutdown")
-		// Give roblox two seconds to cleanup its garbage
-		time.Sleep(2 * time.Second)
-		// Send a signal to the signal holder to kill the wine process
-		c <- syscall.SIGINT
-	}()
+	go b.HandleOutput(o)
 
-	if b.Config.DiscordRPC {
-		if err := bsrpc.Login(); err != nil {
-			log.Printf("Failed to authenticate Discord RPC: %s, disabling RPC", err)
-			b.Config.DiscordRPC = false
-		}
+	log.Printf("Launching %s", b.Name)
+	b.Splash.Message("Launching " + b.Alias)
 
-		// NOTE: This will panic if logout fails
-		defer bsrpc.Logout()
-	}
-
-	// Log handler, this *should* return once the output reader of the
-	// Wine/Roblox process is closed, indicating that it has exited.
-	// r := io.TeeReader(o, b.Output)
-	// This ^ can alternatively be used to achieve both parsing of Wine+Roblox logs
-	// while also sending it to the log output, but debugstr from Wine
-	// should be ignored for a cleaner log output, which by itself should only
-	// be used for HandleRobloxLog(), which is also sent to the log output...
-	// Although, there may be some wine logs AFTER wine exits, which is why
-	// this function only returns once there is nothing to read. Only downside
-	// to that is this the command will take some time to flush and close the
-	// output pipes.
-	if err := b.HandleWineLog(o); err != nil {
-		return err
-	}
-
-	if err := cmd.Wait(); err != nil {
+	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("roblox process: %w", err)
 	}
 
@@ -170,7 +131,7 @@ func (b *Binary) Run(args ...string) error {
 	return nil
 }
 
-func (b *Binary) HandleWineLog(wr io.Reader) error {
+func (b *Binary) HandleOutput(wr io.Reader) {
 	s := bufio.NewScanner(wr)
 	for s.Scan() {
 		txt := s.Text()
@@ -184,10 +145,8 @@ func (b *Binary) HandleWineLog(wr io.Reader) error {
 			continue
 		}
 
-		fmt.Fprintln(b.Output, txt)
+		fmt.Fprintln(b.Prefix.Output, txt)
 	}
-
-	return s.Err()
 }
 
 func (b *Binary) HandleRobloxLog(line string) {
@@ -196,7 +155,7 @@ func (b *Binary) HandleRobloxLog(line string) {
 		b.Splash.Close()
 	}
 
-	fmt.Fprintln(b.Output, line)
+	fmt.Fprintln(b.Prefix.Output, line)
 
 	if strings.Contains(line, "DID_LOG_IN") {
 		b.Auth = true
@@ -210,11 +169,6 @@ func (b *Binary) HandleRobloxLog(line string) {
 		}
 
 		b.Splash.Dialog(DialogInternalBrowserBrokenTitle, msg)
-		return
-	}
-
-	if strings.Contains(line, RobloxLogShutdownEntry) {
-		b.Exited <- true
 		return
 	}
 
@@ -431,7 +385,7 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 		mutexer := b.Prefix.Command("wine", filepath.Join(BinPrefix, "robloxmutexer.exe"))
 		err := mutexer.Start()
 		if err != nil {
-			return &wine.Cmd{}, err
+			return &wine.Cmd{}, fmt.Errorf("robloxmutexer: %w")
 		}
 	}
 
@@ -441,6 +395,7 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 	if len(launcher) >= 1 {
 		cmd.Args = append(launcher, cmd.Args...)
 
+		// For safety, ensure that the launcher is in PATH
 		launcherPath, err := exec.LookPath(launcher[0])
 		if err != nil {
 			return &wine.Cmd{}, err

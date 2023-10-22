@@ -53,7 +53,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		pfx := wine.New(dirs.Prefix)
+		pfx := wine.New(dirs.Prefix, os.Stderr)
 		// Always ensure its created, wine will complain if the root
 		// directory doesnt exist
 		if err := os.MkdirAll(dirs.Prefix, 0o755); err != nil {
@@ -84,16 +84,16 @@ func main() {
 
 			logFile := logs.File(cmd)
 			logOutput := io.MultiWriter(logFile, os.Stderr)
-			b.Output = logOutput
+			pfx.Output = logOutput
 			log.SetOutput(logOutput)
 
 			defer logFile.Close()
 
 			switch cmd {
 			case "player":
-				b = NewBinary(roblox.Player, logOutput, &cfg, &pfx)
+				b = NewBinary(roblox.Player, &cfg, &pfx)
 			case "studio":
-				b = NewBinary(roblox.Studio, logOutput, &cfg, &pfx)
+				b = NewBinary(roblox.Studio, &cfg, &pfx)
 			}
 
 			go func() {
@@ -145,7 +145,7 @@ func PrefixInit(pfx *wine.Prefix) error {
 		return err
 	}
 
-	return pfx.RegistryAdd("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", wine.REG_DWORD, "97")
+	return pfx.SetDPI(97)
 }
 
 func Uninstall() {

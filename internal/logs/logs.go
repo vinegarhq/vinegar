@@ -20,8 +20,8 @@ func File(name string) *os.File {
 
 	file, err := os.Create(path)
 	if err != nil {
-		log.Printf("Failed to create %s log file: %s", name, err)
-		return nil
+		log.Printf("Failed to create %s log file: %s, using Stderr", name, err)
+		return os.Stderr
 	}
 
 	log.Printf("Logging to file: %s", path)

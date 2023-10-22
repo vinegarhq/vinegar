@@ -118,6 +118,7 @@ func (b *Binary) Run(args ...string) error {
 	defer func() {
 		if util.CommFound("Roblox") {
 			log.Println("Another Roblox instance is already running, not killing wineprefix")
+			return
 		}
 	
 		if b.Config.AutoKillPrefix {

@@ -3,7 +3,6 @@ package state
 import (
 	"log"
 	"os"
-	"path/filepath"
 
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/util"
@@ -19,7 +18,7 @@ func CleanPackages() error {
 
 	return util.WalkDirExcluded(dirs.Downloads, pkgs, func(path string) error {
 		log.Printf("Removing unused package %s", path)
-		return os.Remove(filepath.Join(dirs.Downloads, path))
+		return os.Remove(path)
 	})
 }
 
@@ -33,6 +32,6 @@ func CleanVersions() error {
 
 	return util.WalkDirExcluded(dirs.Versions, vers, func(path string) error {
 		log.Printf("Removing unused version directory %s", path)
-		return os.RemoveAll(filepath.Join(dirs.Versions, path))
+		return os.RemoveAll(path)
 	})
 }

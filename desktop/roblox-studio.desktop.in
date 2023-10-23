@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Roblox Studio (Vinegar)
+Name=Roblox Studio
 Icon=$FLATPAK.studio
 Exec=vinegar studio %u
 Terminal=false

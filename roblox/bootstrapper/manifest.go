@@ -20,8 +20,8 @@ func channelPath(channel string) string {
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
 
-	// Roblox CDN only accepts no channel if its live
-	if channel == "" || channel == "live" {
+	// Roblox CDN only accepts no channel if its the default channel
+	if channel == "" || channel == version.DefaultChannel {
 		return "/"
 	}
 

@@ -2,7 +2,6 @@ package version
 
 import (
 	"log"
-	"strings"
 
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/api"
@@ -24,20 +23,12 @@ type Version struct {
 	GUID    string
 }
 
-func ChannelPath(channel string) string {
-	// Ensure that the channel is lowercased, since internally in
-	// ClientSettings it will be lowercased, but not on the deploy mirror.
-	channel = strings.ToLower(channel)
-
-	if channel == DefaultChannel {
-		return "/"
+func New(bt roblox.BinaryType, channel string, GUID string) Version {
+	if channel == "" {
+		channel = DefaultChannel
 	}
 
-	return "/channel/" + channel + "/"
-}
-
-func New(bt roblox.BinaryType, channel string, GUID string) Version {
-	log.Printf("Got %s version %s", bt.BinaryName(), GUID)
+	log.Printf("Got %s version %s with channel %s", bt.BinaryName(), GUID, channel)
 
 	return Version{
 		Type:    bt,
@@ -47,11 +38,11 @@ func New(bt roblox.BinaryType, channel string, GUID string) Version {
 }
 
 func Fetch(bt roblox.BinaryType, channel string) (Version, error) {
-	c := ""
-	if c != "" {
-		c = "for channel " + channel
+	if channel == "" {
+		channel = DefaultChannel
 	}
-	log.Printf("Fetching latest version of %s %s", bt.BinaryName(), c)
+
+	log.Printf("Fetching latest version of %s for channel %s", bt.BinaryName(), channel)
 
 	cv, err := api.GetClientVersion(bt, channel)
 	if err != nil {

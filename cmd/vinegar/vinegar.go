@@ -97,9 +97,15 @@ func main() {
 			}
 
 			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						log.Println("WARNING: Recovered from splash panic", r)
+					}
+				}()
+
 				err := b.Splash.Run()
 				if err != nil {
-					log.Fatal(err)
+					log.Printf("WARNING: Failed to run splash window: %s", err)
 				}
 			}()
 

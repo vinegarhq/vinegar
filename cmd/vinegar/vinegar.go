@@ -70,10 +70,7 @@ func main() {
 				usage()
 			}
 
-			cmd := pfx.Wine(args[1], args[2:]...)
-			cmd.Stderr = os.Stderr
-			cmd.Stdout = os.Stdout
-			if err := cmd.Run(); err != nil {
+			if err := pfx.Wine(args[1], args[2:]...).Run(); err != nil {
 				log.Fatal(err)
 			}
 		case "kill":

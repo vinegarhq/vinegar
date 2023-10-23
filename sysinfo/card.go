@@ -1,16 +1,15 @@
+//go:build linux && amd64
+
 package sysinfo
 
 import (
 	"os"
-	"strings"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
-// ANY error here will be ignored. All of the filepath querying
-// and such is done within /sys/, which is stored in memory.
-
-type Card struct {
+type card struct {
 	Path     string
 	Driver   string
 	Index    int
@@ -18,16 +17,17 @@ type Card struct {
 }
 
 const drmPath = "/sys/class/drm"
+
 var embeddedDisplays = []string{"eDP", "LVDS", "DP-2"}
 
-func Cards() (cards []Card) {
+func getCards() (cs []card) {
 	drmCards, _ := filepath.Glob(path.Join(drmPath, "card[0-9]"))
 
 	for i, c := range drmCards {
 		d, _ := filepath.EvalSymlinks(path.Join(c, "device/driver"))
 		d = path.Base(d)
 
-		cards = append(cards, Card{
+		cs = append(cs, card{
 			Path:     c,
 			Driver:   d,
 			Index:    i,

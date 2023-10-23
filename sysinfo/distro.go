@@ -1,27 +1,32 @@
+//go:build linux
+
 package sysinfo
 
 import (
-	"os"
 	"bufio"
+	"os"
 	"strings"
 )
 
-type Distro struct {
-	Name string
+type distro struct {
+	Name    string
 	Version string
 }
 
-func GetDistro() (Distro, error) {
-	var d Distro
+func getDistro() (d distro) {
+	d = distro{
+		Name:    "unknown distro name",
+		Version: "unknown distro version",
+	}
 
 	f, err := os.Open("/etc/os-release")
 	if err != nil {
-		return Distro{}, err
+		return
 	}
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-	
+
 	for s.Scan() {
 		m := strings.SplitN(s.Text(), "=", 2)
 		if len(m) != 2 {
@@ -29,7 +34,7 @@ func GetDistro() (Distro, error) {
 		}
 
 		val := strings.Trim(m[1], "\"")
-	
+
 		switch m[0] {
 		case "PRETTY_NAME":
 			d.Name = val
@@ -37,14 +42,11 @@ func GetDistro() (Distro, error) {
 			d.Version = val
 		}
 	}
-	if err := s.Err(); err != nil {
-		return Distro{}, err
-	}
-	
-	return d, nil
+
+	return
 }
 
-func (d Distro) String() string {
+func (d distro) String() string {
 	if d.Name == "" {
 		d.Name = "Linux"
 	}

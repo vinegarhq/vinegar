@@ -63,9 +63,19 @@ func (a *Activity) SetPresence() error {
 	}
 	log.Printf("Got Universe thumbnail as %s", tn.ImageURL)
 
+	buttons := []*client.Button{{
+		Label: "See game page",
+		Url:   "https://www.roblox.com/games/" + a.placeID,
+	}}
+
+	joinurl := "roblox://experiences/start?placeId="+a.placeID+"&gameInstanceId="+a.jobID
 	switch a.server {
 	case Public:
 		status = "by " + gd.Creator.Name
+		buttons = append(buttons, &client.Button{
+			Label: "Join server",
+			Url: joinurl,
+		})
 	case Private:
 		status = "In a private server"
 	case Reserved:
@@ -82,12 +92,7 @@ func (a *Activity) SetPresence() error {
 		Timestamps: &client.Timestamps{
 			Start: &a.timeStartedUniverse,
 		},
-		Buttons: []*client.Button{
-			{
-				Label: "See game page",
-				Url:   "https://www.roblox.com/games/" + a.placeID,
-			},
-		},
+		Buttons: buttons,
 	}
 
 	return nil

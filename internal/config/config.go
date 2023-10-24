@@ -117,15 +117,15 @@ func Default() Config {
 	}
 }
 
-func ParseBinary(b Binary, kind string) error {
+func (b *Binary) setup() error {
 	if !roblox.ValidRenderer(b.Renderer) {
-		return fmt.Errorf("invalid renderer given to " + kind)
+		return errors.New("invalid renderer given")
 	}
 
 	err := pickCard(b.ForcedGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
 
 	if err != nil {
-		return fmt.Errorf("%s: %v", kind, err)
+		return err
 	}
 
 	return nil
@@ -153,17 +153,12 @@ func (c *Config) setup() error {
 		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
 
-	//Parse global first to avoid showing errors from settings which player and studio inherited from global.
-	err := ParseBinary(c.Global, "global")
-	if err != nil {
-		return err
+	if err := c.Player.setup(); err != nil {
+		return fmt.Errorf("player: %w", err)
 	}
-	err = errors.Join(
-		ParseBinary(c.Player, "player"),
-		ParseBinary(c.Studio, "studio"),
-	)
-	if err != nil {
-		return err
+
+	if err := c.Studio.setup(); err != nil {
+		return fmt.Errorf("studio: %w", err)
 	}
 
 	c.Env.Setenv()

@@ -122,13 +122,11 @@ func ParseBinary(b Binary, kind string) error {
 		return fmt.Errorf("invalid renderer given to " + kind)
 	}
 
-	nenv, err := pickCard(b.ForcedGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
+	err := pickCard(b.ForcedGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
 
 	if err != nil {
 		return fmt.Errorf("%s: %v", kind, err)
 	}
-
-	b.Env = nenv
 
 	return nil
 }

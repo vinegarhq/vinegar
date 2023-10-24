@@ -9,7 +9,7 @@ import (
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-func pickCard(opt string, env Environment, isVulkan bool) (Environment, error) {
+func pickCard(opt string, env Environment, isVulkan bool) error {
 	var i int
 	var iStr string
 
@@ -30,7 +30,7 @@ func pickCard(opt string, env Environment, isVulkan bool) (Environment, error) {
 		iStr = opt
 	}
 	if err != nil {
-		return env, err
+		return err
 	}
 	if isP {
 		iStr = strconv.Itoa(i)
@@ -38,22 +38,22 @@ func pickCard(opt string, env Environment, isVulkan bool) (Environment, error) {
 
 	//Treat negative values as an "ignore" condition.
 	if i < 0 {
-		return env, nil
+		return nil
 	}
 
 	//PRIME Validation
 	if isP {
 		allowed, err := primeIsAllowed(isVulkan)
 		if err != nil {
-			return env, err
+			return err
 		}
 		if !allowed {
-			return env, nil
+			return nil
 		}
 	}
 
 	if len(sysinfo.Cards) < i+1 {
-		return env, errors.New("gpu not found")
+		return errors.New("gpu not found")
 	}
 
 	c := sysinfo.Cards[i]
@@ -79,5 +79,5 @@ func pickCard(opt string, env Environment, isVulkan bool) (Environment, error) {
 
 	env.Setenv()
 
-	return env, nil
+	return nil
 }

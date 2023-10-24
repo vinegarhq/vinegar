@@ -1,9 +1,10 @@
 //go:build amd64
+
 package sysinfo
 
 import (
 	"os"
-	
+
 	"golang.org/x/sys/cpu"
 )
 

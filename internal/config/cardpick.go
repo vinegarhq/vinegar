@@ -14,8 +14,6 @@ import (
 // integer - GPU index
 // empty   - Skips logic and does nothing.
 func (b *Binary) pickCard() error {
-	opt := b.ForcedGpu
-
 	aliases := map[string]string{
 		"integrated":     "0",
 		"prime-discrete": "1",
@@ -27,8 +25,8 @@ func (b *Binary) pickCard() error {
 		prime bool
 	)
 
-	aIdx = opt
-	if a, ok := aliases[opt]; ok {
+	aIdx = b.ForcedGpu
+	if a, ok := aliases[b.ForcedGpu]; ok {
 		aIdx = a
 		prime = true
 	}
@@ -56,7 +54,7 @@ func (b *Binary) pickCard() error {
 		}
 	}
 
-	idx, err := strconv.Atoi(opt)
+	idx, err := strconv.Atoi(aIdx)
 	if err != nil {
 		return err
 	}

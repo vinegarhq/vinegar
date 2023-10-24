@@ -208,4 +208,9 @@ func Sysinfo(pfx *wine.Prefix) {
 	if sysinfo.InFlatpak {
 		fmt.Println("* Flatpak: [x]")
 	}
+
+	fmt.Println("* Cards:")
+	for _, c := range sysinfo.Cards {
+		fmt.Printf("  * Card %d: %s %s\n", c.Index, c.Driver, c.Path)
+	}
 }

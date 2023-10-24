@@ -12,26 +12,17 @@ import (
 
 // Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
 func prime(vk bool) (bool, error) {
-	//There's no ambiguity when there's only one card.
-	if len(sysinfo.Cards) <= 1 {
-		log.Printf("Number of cards is equal or below 1. Skipping prime logic.")
+	n := len(sysinfo.Cards)
+
+	if n != 2 {
 		return false, nil
 	}
-	//Check if the main card has an embedded display.
-	if !sysinfo.Cards[0].Embedded {
-		log.Printf("card0 is not embedded. This machine is not a laptop. Skipping prime logic.")
-		return false, nil
+
+	if n != 2 && (!vk && n != 1) {
+		return false, fmt.Errorf("opengl is not capable of choosing the right gpu, it must be explicitly defined")
 	}
-	//Don't mess with devices that have more than two cards.
-	if len(sysinfo.Cards) > 2 {
-		//OpenGL cannot choose the right card properly. Prompt user to define it themselves
-		if !vk {
-			return false, fmt.Errorf("opengl cannot select the right gpu. gpus detected: %d", len(sysinfo.Cards))
-		}
-		log.Printf("System has %d cards. Skipping prime logic and leaving card selection up to Vulkan.", len(sysinfo.Cards))
-		return false, nil
-	}
-	return true, nil
+
+	return sysinfo.Cards[0].Embedded, nil
 }
 
 func pickCard(opt string, env Environment, isVulkan bool) error {

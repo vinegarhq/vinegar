@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"os"
 )
 
@@ -9,11 +8,13 @@ type Environment map[string]string
 
 // Set will only set the given environment key and value if it isn't already set
 // within the Environment.
-func (e *Environment) Set(k string, v string) {
-	if _, ok := e[k]; ok {
+func (e *Environment) Set(key, value string) {
+	env := *e
+
+	if _, ok := env[key]; ok {
 		return
 	}
-	e[k] = v
+	env[key] = value
 }
 
 func (e *Environment) Setenv() {

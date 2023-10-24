@@ -25,7 +25,7 @@ func prime(vk bool) (bool, error) {
 	//Don't mess with devices that have more than two cards.
 	if len(sysinfo.Cards) > 2 {
 		//OpenGL cannot choose the right card properly. Prompt user to define it themselves
-		if !isVulkan {
+		if !vk {
 			return false, fmt.Errorf("opengl cannot select the right gpu. gpus detected: %d", len(sysinfo.Cards))
 		}
 		log.Printf("System has %d cards. Skipping prime logic and leaving card selection up to Vulkan.", len(sysinfo.Cards))
@@ -42,16 +42,16 @@ func pickCard(opt string, env Environment, isVulkan bool) error {
 	var cIndex int
 	var indexStr string
 
-	prime := false
+	usePrime := false
 
 	switch opt {
 	//Handle PRIME options
 	case "integrated":
 		cIndex = 0
-		prime = true
+		usePrime = true
 	case "prime-discrete":
 		cIndex = 1
-		prime = true
+		usePrime = true
 	//Skip pickCard logic option
 	case "none":
 		return nil
@@ -71,8 +71,8 @@ func pickCard(opt string, env Environment, isVulkan bool) error {
 	indexStr = strconv.Itoa(cIndex)
 
 	//PRIME Validation
-	if prime {
-		allowed, err := primeIsAllowed(isVulkan)
+	if usePrime {
+		allowed, err := prime(isVulkan)
 		if err != nil {
 			return err
 		}
@@ -87,13 +87,13 @@ func pickCard(opt string, env Environment, isVulkan bool) error {
 
 	c := sysinfo.Cards[cIndex]
 
-	env.SetIfUndefined("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
-	env.SetIfUndefined("DRI_PRIME", indexStr)
+	env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
+	env.Set("DRI_PRIME", indexStr)
 
 	if strings.HasSuffix(c.Driver, "nvidia") { //Workaround for OpenGL in nvidia GPUs
-		env.SetIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+		env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	} else {
-		env.SetIfUndefined("__GLX_VENDOR_LIBRARY_NAME", "mesa")
+		env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")
 	}
 
 	log.Printf("Chose card %s (%s).", c.Path, indexStr)

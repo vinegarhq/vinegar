@@ -9,8 +9,6 @@ import (
 
 	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
-	"github.com/vinegarhq/vinegar/gpu"
-	"github.com/vinegarhq/vinegar/gpu/target"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/util"
 )
@@ -124,17 +122,12 @@ func ParseBinary(b Binary, kind string) error {
 		return fmt.Errorf("invalid renderer given to " + kind)
 	}
 
-	targetGpu := target.New()
-	err := targetGpu.SetTarget(b.ForcedGpu)
-	if err != nil {
-		return errors.New("invalid gpu given to " + kind)
-	}
-
-	nenv, err := gpu.HandleGpu(targetGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
+	nenv, err := pickCard(b.ForcedGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
 
 	if err != nil {
 		return fmt.Errorf("%s: %v", kind, err)
 	}
+
 	b.Env = nenv
 
 	return nil

@@ -35,8 +35,8 @@ func prime(vk bool) (bool, error) {
 }
 
 func pickCard(opt string, env Environment, isVulkan bool) error {
-	if opt == "" { //Default value for opt
-		opt = "none"
+	if opt == "" {
+		return nil
 	}
 
 	var cIndex int

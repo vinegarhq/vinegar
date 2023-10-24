@@ -18,7 +18,7 @@ type card struct {
 
 const drmPath = "/sys/class/drm"
 
-var embeddedDisplays = []string{"eDP", "LVDS", "DP-2"}
+var embeddedDisplays = []string{"eDP", "LVDS"}
 
 func getCards() (cs []card) {
 	drmCards, _ := filepath.Glob(path.Join(drmPath, "card[0-9]"))

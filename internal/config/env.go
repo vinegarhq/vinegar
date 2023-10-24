@@ -7,7 +7,9 @@ import (
 
 type Environment map[string]string
 
-func (e Environment) SetIfUndefined(k string, v string) {
+// Set will only set the given environment key and value if it isn't already set
+// within the Environment.
+func (e *Environment) Set(k string, v string) {
 	if _, ok := e[k]; ok {
 		log.Printf("Warning: env var %s is already defined. Will not redefine it.", k)
 		return

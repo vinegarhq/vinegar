@@ -22,9 +22,10 @@ func (b *Binary) pickCard() error {
 		"none":           "",
 	}
 
-	var aIdx string
-
-	prime := false
+	var (
+		aIdx  string
+		prime bool
+	)
 
 	aIdx = opt
 	if a, ok := aliases[opt]; ok {

@@ -11,7 +11,7 @@ import (
 )
 
 // Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
-func primeIsAllowed(isVulkan bool) (bool, error) {
+func prime(vk bool) (bool, error) {
 	//There's no ambiguity when there's only one card.
 	if len(sysinfo.Cards) <= 1 {
 		log.Printf("Number of cards is equal or below 1. Skipping prime logic.")

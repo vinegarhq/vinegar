@@ -122,7 +122,7 @@ func (b *Binary) setup() error {
 		return errors.New("invalid renderer given")
 	}
 
-	err := pickCard(b.ForcedGpu, b.Env, b.Dxvk && b.Renderer != "Vulkan")
+	err := b.pickCard()
 
 	if err != nil {
 		return err

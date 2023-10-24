@@ -3,91 +3,75 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
-func prime(vk bool) (bool, error) {
+// opt accepts the following values:
+// aliases - "integrated", "prime-discrete" and "none": Equivalent to "0", "1" or empty. Enables an extra "prime" check.
+// integer - GPU index
+// empty   - Skips logic and does nothing.
+func pickCard(opt string, env Environment, vk bool) error {
+	aliases := map[string]string{
+		"integrated":     "0",
+		"prime-discrete": "1",
+		"none":           "",
+	}
+
+	var aIdx string
+
+	prime := false
+
+	aIdx = opt
+	if a, ok := aliases[opt]; ok {
+		aIdx = a
+		prime = true
+	}
+
+	if aIdx == "" {
+		return nil
+	}
+
 	n := len(sysinfo.Cards)
 
-	if n != 2 {
-		return false, nil
-	}
-
-	if n != 2 && (!vk && n != 1) {
-		return false, fmt.Errorf("opengl is not capable of choosing the right gpu, it must be explicitly defined")
-	}
-
-	return sysinfo.Cards[0].Embedded, nil
-}
-
-func pickCard(opt string, env Environment, isVulkan bool) error {
-	if opt == "" {
-		return nil
-	}
-
-	var cIndex int
-	var indexStr string
-
-	usePrime := false
-
-	switch opt {
-	//Handle PRIME options
-	case "integrated":
-		cIndex = 0
-		usePrime = true
-	case "prime-discrete":
-		cIndex = 1
-		usePrime = true
-	//Skip pickCard logic option
-	case "none":
-		return nil
-	//Otherwise, interpret opt as a card index
-	default:
-		var err error
-		cIndex, err = strconv.Atoi(opt)
-		if err != nil {
-			return err
+	// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
+	if prime {
+		if n != 2 && (!vk && n != 1) {
+			return fmt.Errorf("opengl is not capable of choosing the right gpu, it must be explicitly defined")
 		}
-	}
 
-	if cIndex < 0 {
-		return errors.New("card index cannot be negative")
-	}
-
-	indexStr = strconv.Itoa(cIndex)
-
-	//PRIME Validation
-	if usePrime {
-		allowed, err := prime(isVulkan)
-		if err != nil {
-			return err
+		if n != 2 {
+			return nil
 		}
-		if !allowed {
+
+		if !sysinfo.Cards[0].Embedded {
 			return nil
 		}
 	}
 
-	if len(sysinfo.Cards) < cIndex+1 {
-		return errors.New("gpu not found")
+	idx, err := strconv.Atoi(opt)
+	if err != nil {
+		return err
 	}
 
-	c := sysinfo.Cards[cIndex]
+	if idx < 0 {
+		return errors.New("gpu index cannot be negative")
+	}
+	if n < idx+1 {
+		return errors.New("gpu not found")
+	}
+	c := sysinfo.Cards[idx]
 
 	env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
-	env.Set("DRI_PRIME", indexStr)
+	env.Set("DRI_PRIME", aIdx)
 
 	if strings.HasSuffix(c.Driver, "nvidia") { //Workaround for OpenGL in nvidia GPUs
 		env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	} else {
 		env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")
 	}
-
-	log.Printf("Chose card %s (%s).", c.Path, indexStr)
 
 	env.Setenv()
 

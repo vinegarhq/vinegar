@@ -198,8 +198,10 @@ func Sysinfo(pfx *wine.Prefix) {
 * Processor: %s
   * Supports AVX: %t
 * Kernel: %s
-* Wine: %s
-`
+* Wine: %s`
 
 	fmt.Printf(info, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
+	if sysinfo.InFlatpak {
+		fmt.Println("* Flatpak: [x]")
+	}
 }

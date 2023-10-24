@@ -104,9 +104,14 @@ func (b *Binary) Run(args ...string) error {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		log.Println("Killing Roblox")
-		// This way, cmd.Run() will return and the wineprefix killer will be ran.
-		cmd.Process.Kill()
+
+		// Only kill the process if it even had a PID
+		if cmd.Process != nil {
+			log.Println("Killing Roblox")
+			// This way, cmd.Run() will return and the wineprefix killer will be ran.
+			cmd.Process.Kill()
+		}
+
 		// Don't handle INT after it was recieved, this way if another signal was sent,
 		// Vinegar will immediately exit.
 		signal.Stop(c)
@@ -118,6 +123,11 @@ func (b *Binary) Run(args ...string) error {
 	b.Splash.Message("Launching " + b.Alias)
 
 	defer func() {
+		// Don't do anything if the process even ran correctly.
+		if cmd.Process == nil {
+			return
+		}
+
 		for {
 			time.Sleep(100 * time.Millisecond)
 

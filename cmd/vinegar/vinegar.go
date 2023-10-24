@@ -7,15 +7,14 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
 
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/config/editor"
 	"github.com/vinegarhq/vinegar/internal/config/state"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
-	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -187,15 +186,9 @@ func Delete() {
 }
 
 func Sysinfo(pfx *wine.Prefix) {
-	cpu := sysinfo.GetCPU()
-	avx := slices.Contains(cpu.Flags, "avx")
-	k := sysinfo.GetKernel()
-	d, err := sysinfo.GetDistro()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ver, err := pfx.Wine("--version").Output()
+	cmd := pfx.Wine("--version")
+	cmd.Stdout = nil // required for Output()
+	ver, err := cmd.Output()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -208,5 +201,5 @@ func Sysinfo(pfx *wine.Prefix) {
 * Wine: %s
 `
 
-	fmt.Printf(info, d, cpu.Model, avx, k, ver)
+	fmt.Printf(info, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
 }

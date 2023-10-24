@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"strconv"
 	"os"
-	"time"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/internal/config"
@@ -135,7 +135,7 @@ func (b *Binary) Run(args ...string) error {
 			log.Println("Another Roblox instance is already running, not killing wineprefix")
 			return
 		}
-	
+
 		if b.Config.AutoKillPrefix {
 			b.Prefix.Kill()
 		}

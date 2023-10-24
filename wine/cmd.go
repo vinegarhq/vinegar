@@ -2,9 +2,9 @@ package wine
 
 import (
 	"errors"
-	"os"
 	"io"
 	"log"
+	"os"
 	"os/exec"
 )
 
@@ -31,7 +31,7 @@ func (p *Prefix) Command(name string, arg ...string) *Cmd {
 	}
 
 	return &Cmd{
-		Cmd: cmd,
+		Cmd:       cmd,
 		prefixDir: p.dir,
 	}
 }
@@ -50,7 +50,7 @@ func (c *Cmd) OutputPipe() (io.Reader, error) {
 	if c.Process != nil {
 		return nil, errors.New("OutputPipe after process started")
 	}
-	
+
 	c.SetOutput(nil)
 
 	e, err := c.StderrPipe()

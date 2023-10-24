@@ -13,11 +13,10 @@ type Prefix struct {
 	dir string
 }
 
-
 func New(dir string, out io.Writer) Prefix {
 	return Prefix{
 		Output: out,
-		dir: dir,
+		dir:    dir,
 	}
 }
 

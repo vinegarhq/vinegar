@@ -1,7 +1,10 @@
+//go:build amd64
 package sysinfo
 
 import (
 	"os"
+	
+	"golang.org/x/sys/cpu"
 )
 
 var (
@@ -9,6 +12,7 @@ var (
 	CPU       string
 	Cards     []card
 	Distro    distro
+	HasAVX    = cpu.X86.HasAVX
 	InFlatpak bool
 )
 

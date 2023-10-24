@@ -29,6 +29,7 @@ type Binary struct {
 	Channel        string        `toml:"channel"`
 	Launcher       string        `toml:"launcher"`
 	Renderer       string        `toml:"renderer"`
+	DiscordRPC     bool          `toml:"discord_rpc"`
 	ForcedVersion  string        `toml:"forced_version"`
 	AutoKillPrefix bool          `toml:"auto_kill_prefix"`
 	Dxvk           bool          `toml:"dxvk"`
@@ -81,7 +82,7 @@ func Default() Config {
 			"WINEARCH":         "win64",
 			"WINEDEBUG":        "err-kerberos,err-ntlm",
 			"WINEESYNC":        "1",
-			"WINEDLLOVERRIDES": "dxdiagn=d;winemenubuilder.exe=d",
+			"WINEDLLOVERRIDES": "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
 
 			"DXVK_LOG_LEVEL": "warn",
 			"DXVK_LOG_PATH":  "none",
@@ -94,6 +95,7 @@ func Default() Config {
 			ForcedGpu: "prime-discrete",
 		},
 		Player: Binary{
+			DiscordRPC:     true,
 			Dxvk:           true,
 			AutoKillPrefix: true,
 			FFlags: roblox.FFlags{

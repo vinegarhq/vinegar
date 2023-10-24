@@ -9,15 +9,12 @@ import (
 	"path/filepath"
 )
 
-var (
-	DefaultRenderer = "D3D11"
-	Renderers       = []string{
-		"OpenGL",
-		"D3D11FL10",
-		DefaultRenderer,
-		"Vulkan",
-	}
-)
+var renderers = []string{
+	"OpenGL",
+	"D3D11FL10",
+	"D3D11",
+	"Vulkan",
+}
 
 type FFlags map[string]interface{}
 
@@ -48,8 +45,6 @@ func (f *FFlags) Apply(versionDir string) error {
 		return err
 	}
 
-	log.Printf("FFlags used: %s", string(fflags))
-
 	_, err = file.Write(fflags)
 	if err != nil {
 		return err
@@ -59,11 +54,12 @@ func (f *FFlags) Apply(versionDir string) error {
 }
 
 func ValidRenderer(renderer string) bool {
+	// Assume Roblox's internal default renderer
 	if renderer == "" {
-		renderer = DefaultRenderer
+		return true
 	}
 
-	for _, r := range Renderers {
+	for _, r := range renderers {
 		if renderer == r {
 			return true
 		}
@@ -73,8 +69,9 @@ func ValidRenderer(renderer string) bool {
 }
 
 func (f *FFlags) SetRenderer(renderer string) error {
+	// Assume Roblox's internal default renderer
 	if renderer == "" {
-		renderer = DefaultRenderer
+		return nil
 	}
 
 	if !ValidRenderer(renderer) {
@@ -88,7 +85,7 @@ func (f *FFlags) SetRenderer(renderer string) error {
 	log.Printf("Using renderer: %s", renderer)
 
 	// Disable all other renderers except the given one.
-	for _, r := range Renderers {
+	for _, r := range renderers {
 		isRenderer := r == renderer
 
 		(*f)["FFlagDebugGraphicsPrefer"+r] = isRenderer

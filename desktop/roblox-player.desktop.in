@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Roblox Player (Vinegar)
+Name=Roblox Player
 NoDisplay=true
 Icon=$FLATPAK.player
 Exec=vinegar player %u

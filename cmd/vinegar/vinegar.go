@@ -6,9 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/config/editor"
@@ -16,6 +14,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -24,7 +23,7 @@ var BinPrefix string
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks|sysinfo")
 	os.Exit(1)
 }
 
@@ -49,29 +48,22 @@ func main() {
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
-	case "player", "studio", "exec", "kill", "install-webview2", "winetricks":
-		pfxKilled := false
+	case "sysinfo", "player", "studio", "exec", "kill", "install-webview2", "winetricks":
 		cfg, err := config.Load(*configPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		pfx := wine.New(dirs.Prefix)
-
-		c := make(chan os.Signal, 1)
-		signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
-
-		go func() {
-			<-c
-			pfxKilled = true
-			pfx.Kill()
-
-			if pfxKilled {
-				os.Exit(0)
-			}
-		}()
+		pfx := wine.New(dirs.Prefix, os.Stderr)
+		// Always ensure its created, wine will complain if the root
+		// directory doesnt exist
+		if err := os.MkdirAll(dirs.Prefix, 0o755); err != nil {
+			log.Fatal(err)
+		}
 
 		switch cmd {
+		case "sysinfo":
+			Sysinfo(&pfx)
 		case "exec":
 			if len(args) < 2 {
 				usage()
@@ -95,7 +87,6 @@ func main() {
 
 			logFile := logs.File(cmd)
 			logOutput := io.MultiWriter(logFile, os.Stderr)
-
 			pfx.Output = logOutput
 			log.SetOutput(logOutput)
 
@@ -109,16 +100,22 @@ func main() {
 			}
 
 			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						log.Println("WARNING: Recovered from splash panic", r)
+					}
+				}()
+
 				err := b.Splash.Run()
 				if err != nil {
-					log.Fatal(err)
+					log.Printf("WARNING: Failed to run splash window: %s", err)
 				}
 			}()
 
 			b.Splash.Desc(b.Config.Channel)
 
 			errHandler := func(err error) {
-				if !cfg.Splash.Enabled {
+				if !cfg.Splash.Enabled || b.Splash.IsClosed() {
 					log.Fatal(err)
 				}
 
@@ -127,8 +124,8 @@ func main() {
 				select {} // wait for window to close
 			}
 
-			if _, err := os.Stat(filepath.Join(pfx.Dir, "drive_c", "windows")); err != nil {
-				log.Printf("Initializing wineprefix at %s", pfx.Dir)
+			if _, err := os.Stat(filepath.Join(pfx.Dir(), "drive_c", "windows")); err != nil {
+				log.Printf("Initializing wineprefix at %s", pfx.Dir())
 
 				b.Splash.Message("Initializing wineprefix")
 				if err := PrefixInit(&pfx); err != nil {
@@ -157,11 +154,7 @@ func PrefixInit(pfx *wine.Prefix) error {
 		return err
 	}
 
-	if err := pfx.DisableCrashDialogs(); err != nil {
-		return err
-	}
-
-	return pfx.RegistryAdd("HKEY_CURRENT_USER\\Control Panel\\Desktop", "LogPixels", wine.REG_DWORD, "97")
+	return pfx.SetDPI(97)
 }
 
 func Uninstall() {
@@ -189,5 +182,26 @@ func Delete() {
 	log.Println("Deleting Wineprefix")
 	if err := os.RemoveAll(dirs.Prefix); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func Sysinfo(pfx *wine.Prefix) {
+	cmd := pfx.Wine("--version")
+	cmd.Stdout = nil // required for Output()
+	ver, err := cmd.Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	info := `## System information
+* Distro: %s
+* Processor: %s
+  * Supports AVX: %t
+* Kernel: %s
+* Wine: %s`
+
+	fmt.Printf(info, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
+	if sysinfo.InFlatpak {
+		fmt.Println("* Flatpak: [x]")
 	}
 }

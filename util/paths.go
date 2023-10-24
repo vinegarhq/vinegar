@@ -2,23 +2,24 @@ package util
 
 import (
 	"os"
+	"path/filepath"
+	"slices"
 )
 
+// WalkDirExcluded will walk the file tree located at dir, calling
+// onExcluded for every file or directory that does not have a name in included.
 func WalkDirExcluded(dir string, included []string, onExcluded func(string) error) error {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return err
 	}
 
-find:
 	for _, file := range files {
-		for _, inc := range included {
-			if file.Name() == inc {
-				continue find
-			}
+		if slices.Contains(included, file.Name()) {
+			continue
 		}
 
-		if err := onExcluded(file.Name()); err != nil {
+		if err := onExcluded(filepath.Join(dir, file.Name())); err != nil {
 			return err
 		}
 	}

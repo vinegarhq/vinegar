@@ -1,6 +1,6 @@
 module github.com/vinegarhq/vinegar
 
-go 1.20
+go 1.21
 
 require (
 	github.com/BurntSushi/toml v1.3.2
@@ -12,6 +12,7 @@ require (
 require (
 	dario.cat/mergo v1.0.0
 	gioui.org v0.3.0
+	github.com/hugolgst/rich-go v0.0.0-20230917173849-4a4fb1d3c362
 	golang.org/x/sys v0.11.0
 )
 
@@ -23,6 +24,7 @@ require (
 	golang.org/x/exp/shiny v0.0.0-20220827204233-334a2380cb91 // indirect
 	golang.org/x/image v0.5.0 // indirect
 	golang.org/x/text v0.7.0 // indirect
+	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
 
 retract (

@@ -3,19 +3,25 @@ package wine
 import (
 	"io"
 	"log"
-	"os"
 )
 
 type Prefix struct {
-	Dir    string
+	// Output specifies the descendant prefix commmand's
+	// Stderr and Stdout together.
 	Output io.Writer
+
+	dir string
 }
 
-func New(dir string) Prefix {
+func New(dir string, out io.Writer) Prefix {
 	return Prefix{
-		Dir:    dir,
-		Output: os.Stderr,
+		Output: out,
+		dir:    dir,
 	}
+}
+
+func (p *Prefix) Dir() string {
+	return p.dir
 }
 
 func (p *Prefix) Wine(exe string, arg ...string) *Cmd {

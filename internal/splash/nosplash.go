@@ -9,6 +9,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/config"
 )
 
+var ErrClosed = errors.New("window closed")
+
 type Splash struct {
 	Config *config.Splash
 }

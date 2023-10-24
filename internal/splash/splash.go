@@ -166,7 +166,7 @@ func (ui *Splash) Run() error {
 	for e := range ui.Events() {
 		switch e := e.(type) {
 		case system.DestroyEvent:
-			if ui.closed {
+			if ui.closed && e.Err == nil {
 				return nil
 			} else if e.Err == nil {
 				return ErrClosed

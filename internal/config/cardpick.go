@@ -39,7 +39,7 @@ func (b *Binary) pickCard() error {
 
 	// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
 	if prime {
-		vk := b.Dxvk && b.Renderer == "D3D11" || b.Renderer == "Vulkan"
+		vk := (b.Dxvk && b.Renderer == "D3D11") || b.Renderer == "Vulkan"
 
 		if n != 2 && (!vk && n != 1) {
 			return fmt.Errorf("opengl is not capable of choosing the right gpu, it must be explicitly defined")

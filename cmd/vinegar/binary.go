@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strconv"
 	"os"
+	"time"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
@@ -116,6 +118,19 @@ func (b *Binary) Run(args ...string) error {
 	b.Splash.Message("Launching " + b.Alias)
 
 	defer func() {
+		for {
+			time.Sleep(100 * time.Millisecond)
+
+			// This is because there may be a race condition between the process
+			// procfs depletion and the proccess getting killed.
+			// CommFound walks over procfs, so here ensure that the process no longer
+			// exists in procfs.
+			_, err := os.Stat(filepath.Join("/proc", strconv.Itoa(cmd.Process.Pid)))
+			if err != nil {
+				break
+			}
+		}
+
 		if util.CommFound("Roblox") {
 			log.Println("Another Roblox instance is already running, not killing wineprefix")
 			return

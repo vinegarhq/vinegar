@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -13,6 +14,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/config/state"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
+	"github.com/vinegarhq/vinegar/internal/splash"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
@@ -107,7 +109,9 @@ func main() {
 				}()
 
 				err := b.Splash.Run()
-				if err != nil {
+				if err != nil && errors.Is(err, splash.ErrClosed) {
+					log.Fatal(err)
+				} else if err != nil {
 					log.Printf("WARNING: Failed to run splash window: %s", err)
 				}
 			}()

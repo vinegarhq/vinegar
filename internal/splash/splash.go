@@ -3,6 +3,7 @@
 package splash
 
 import (
+	"log"
 	"bytes"
 	"errors"
 	"image"
@@ -178,6 +179,7 @@ func (ui *Splash) Run() error {
 			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
 
 			if showLogButton.Clicked() {
+				log.Printf("Opening log file: %s", ui.showLog)
 				err := util.XDGOpen(ui.showLog).Start()
 				if err != nil {
 					return err

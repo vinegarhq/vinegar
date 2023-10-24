@@ -75,8 +75,5 @@ func (b *Binary) pickCard() error {
 	} else {
 		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")
 	}
-
-	b.Env.Setenv()
-
 	return nil
 }

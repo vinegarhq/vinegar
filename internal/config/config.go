@@ -122,13 +122,7 @@ func (b *Binary) setup() error {
 		return errors.New("invalid renderer given")
 	}
 
-	err := b.pickCard()
-
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return b.pickCard()
 }
 
 func (c *Config) setup() error {

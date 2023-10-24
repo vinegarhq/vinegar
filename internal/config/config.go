@@ -33,6 +33,7 @@ type Binary struct {
 	Dxvk           bool          `toml:"dxvk"`
 	FFlags         roblox.FFlags `toml:"fflags"`
 	Env            Environment   `toml:"env"`
+	ForcedGpu      string        `toml:"gpu"`
 }
 
 type Config struct {
@@ -88,6 +89,9 @@ func Default() Config {
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
 
+		Global: Binary{
+			ForcedGpu: "prime-discrete",
+		},
 		Player: Binary{
 			DiscordRPC:     true,
 			Dxvk:           true,
@@ -113,6 +117,19 @@ func Default() Config {
 	}
 }
 
+func (b *Binary) setup() error {
+	if !roblox.ValidRenderer(b.Renderer) {
+		return errors.New("invalid renderer given")
+	}
+
+	if err := b.pickCard(); err != nil {
+		return err
+	}
+
+	b.Env.Setenv()
+	return nil
+}
+
 func (c *Config) setup() error {
 	if c.SanitizeEnv {
 		util.SanitizeEnv()
@@ -135,8 +152,12 @@ func (c *Config) setup() error {
 		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
 
-	if !roblox.ValidRenderer(c.Player.Renderer) || !roblox.ValidRenderer(c.Studio.Renderer) {
-		return fmt.Errorf("invalid renderer given to either player or studio")
+	if err := c.Player.setup(); err != nil {
+		return fmt.Errorf("player: %w", err)
+	}
+
+	if err := c.Studio.setup(); err != nil {
+		return fmt.Errorf("studio: %w", err)
 	}
 
 	c.Env.Setenv()

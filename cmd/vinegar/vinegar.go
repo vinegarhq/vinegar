@@ -9,12 +9,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/vinegarhq/vinegar/internal/config"
-	"github.com/vinegarhq/vinegar/internal/config/editor"
-	"github.com/vinegarhq/vinegar/internal/config/state"
+	"github.com/vinegarhq/vinegar/config"
+	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/internal/splash"
+	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
@@ -44,7 +44,9 @@ func main() {
 		case "delete":
 			Delete()
 		case "edit":
-			editor.EditConfig(*configPath)
+			if err := editor.Edit(*configPath); err != nil {
+				log.Fatal(err)
+			}
 		case "uninstall":
 			Uninstall()
 		}

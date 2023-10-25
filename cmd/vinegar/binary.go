@@ -15,10 +15,10 @@ import (
 	"time"
 
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
-	"github.com/vinegarhq/vinegar/internal/config"
-	"github.com/vinegarhq/vinegar/internal/config/state"
+	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/splash"
+	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/roblox/version"

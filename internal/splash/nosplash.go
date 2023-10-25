@@ -6,7 +6,7 @@ import (
 	"errors"
 	"log"
 
-	"github.com/vinegarhq/vinegar/internal/config"
+	"github.com/vinegarhq/vinegar/config"
 )
 
 var ErrClosed = errors.New("window closed")

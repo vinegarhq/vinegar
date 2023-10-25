@@ -70,7 +70,7 @@ func (b *Binary) pickCard() error {
 	b.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
 	b.Env.Set("DRI_PRIME", aIdx)
 
-	if strings.HasSuffix(c.Driver, "nvidia") { //Workaround for OpenGL in nvidia GPUs
+	if strings.HasSuffix(c.Driver, "nvidia") { // Workaround for OpenGL in nvidia GPUs
 		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	} else {
 		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")

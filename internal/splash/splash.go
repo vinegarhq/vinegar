@@ -3,11 +3,11 @@
 package splash
 
 import (
-	"log"
 	"bytes"
 	"errors"
 	"image"
 	_ "image/png"
+	"log"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -19,7 +19,7 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/vinegarhq/vinegar/internal/config"
+	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/util"
 )
 

@@ -68,13 +68,13 @@ func (a *Activity) SetPresence() error {
 		Url:   "https://www.roblox.com/games/" + a.placeID,
 	}}
 
-	joinurl := "roblox://experiences/start?placeId="+a.placeID+"&gameInstanceId="+a.jobID
+	joinurl := "roblox://experiences/start?placeId=" + a.placeID + "&gameInstanceId=" + a.jobID
 	switch a.server {
 	case Public:
 		status = "by " + gd.Creator.Name
 		buttons = append(buttons, &client.Button{
 			Label: "Join server",
-			Url: joinurl,
+			Url:   joinurl,
 		})
 	case Private:
 		status = "In a private server"

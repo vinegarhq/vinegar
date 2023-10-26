@@ -70,7 +70,7 @@ icons: icons/roblox-player.svg icons/roblox-studio.svg
 	convert -density 384 -background none $^ -resize 48x48   -set filename:f '%w/%t' 'icons/%[filename:f].png'
 	convert -density 384 -background none $^ -resize 64x64   -set filename:f '%w/%t' 'icons/%[filename:f].png'
 	convert -density 384 -background none $^ -resize 128x128 -set filename:f '%w/%t' 'icons/%[filename:f].png'
-	convert -density 384 -background none icons/vinegar.svg -resize 64x64 internal/ui/vinegar.png
+	convert -density 384 -background none icons/vinegar.svg -resize 48x48 internal/splash/vinegar.png
 
 mime:
 	xdg-mime default $(FLATPAK).player.desktop x-scheme-handler/roblox-player

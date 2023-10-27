@@ -109,7 +109,7 @@ func Default() Config {
 			Enabled: true,
 			Bg:      0x242424,
 			Fg:      0xfafafa,
-			Red:     0xcc241d,
+			Red:     0xbc3c3c,
 			Gray1:   0x303030,
 			Gray2:   0x777777,
 			Accent:  0x8fbc5e,

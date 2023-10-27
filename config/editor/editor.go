@@ -16,7 +16,7 @@ func Edit(name string) error {
 		return fmt.Errorf("editor: %w", err)
 	}
 
-	if err := os.MkdirAll(filepath.Base(name), 0o755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(name), 0o755); err != nil {
 		return err
 	}
 

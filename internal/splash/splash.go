@@ -101,12 +101,14 @@ func New(cfg *config.Splash) *Splash {
 	height := unit.Dp(240)
 
 	logo, _, _ := image.Decode(bytes.NewReader(vinegarlogo))
+	w := window(width, height)
+	w.Perform(system.ActionCenter)
 
 	return &Splash{
 		logo:   logo,
 		Theme:  theme(cfg),
 		Config: cfg,
-		Window: window(width, height),
+		Window: w,
 	}
 }
 

@@ -1,9 +1,5 @@
 package api
 
-import (
-	"github.com/vinegarhq/vinegar/roblox"
-)
-
 type ClientVersion struct {
 	Version                 string `json:"version"`
 	ClientVersionUpload     string `json:"clientVersionUpload"`
@@ -12,10 +8,10 @@ type ClientVersion struct {
 	NextClientVersion       string `json:"nextClientVersion,omitempty"`
 }
 
-func GetClientVersion(bt roblox.BinaryType, channel string) (ClientVersion, error) {
+func GetClientVersion(binaryType string, channel string) (ClientVersion, error) {
 	var cv ClientVersion
 
-	ep := "v2/client-version/" + bt.BinaryName()
+	ep := "v2/client-version/" + binaryType
 	if channel != "" {
 		ep += "/channel/" + channel
 	}

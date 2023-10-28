@@ -44,7 +44,7 @@ func Fetch(bt roblox.BinaryType, channel string) (Version, error) {
 
 	log.Printf("Fetching latest version of %s for channel %s", bt.BinaryName(), channel)
 
-	cv, err := api.GetClientVersion(bt, channel)
+	cv, err := api.GetClientVersion(bt.BinaryName(), channel)
 	if err != nil {
 		return Version{}, err
 	}

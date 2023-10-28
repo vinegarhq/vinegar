@@ -77,12 +77,12 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 func (b *Binary) Run(args ...string) error {
 	if b.Config.DiscordRPC {
 		if err := bsrpc.Login(); err != nil {
-			log.Printf("Failed to authenticate Discord RPC: %s, disabling RPC", err)
+			log.Printf("WARNING: Could not initialize Discord RPC: %s, disabling...", err)
 			b.Config.DiscordRPC = false
+		} else {
+			// NOTE: This will panic if logout fails
+			defer bsrpc.Logout()
 		}
-
-		// NOTE: This will panic if logout fails
-		defer bsrpc.Logout()
 	}
 
 	// REQUIRED for HandleRobloxLog to function.

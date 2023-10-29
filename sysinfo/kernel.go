@@ -7,28 +7,12 @@ import (
 	"syscall"
 )
 
-type kernel struct {
-	Release string
-	Version string
-}
-
-func getKernel() kernel {
+func getKernel() string {
 	var un syscall.Utsname
 	_ = syscall.Uname(&un)
 
-	return kernel{
-		Release: unameString(un.Release),
-		Version: unameString(un.Version),
-	}
-}
-
-func (k kernel) String() string {
-	return k.Release + " " + k.Version
-}
-
-func unameString(unarr [65]int8) string {
 	var sb strings.Builder
-	for _, b := range unarr[:] {
+	for _, b := range un.Release[:] {
 		if b == 0 {
 			break
 		}

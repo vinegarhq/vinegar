@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	Kernel    kernel
+	Kernel    string
 	CPU       string
 	Cards     []card
 	Distro    distro

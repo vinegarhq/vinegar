@@ -98,7 +98,7 @@ func theme(cfg *config.Splash) (th *material.Theme) {
 
 func New(cfg *config.Splash) *Splash {
 	width := unit.Dp(448)
-	height := unit.Dp(240)
+	height := unit.Dp(176)
 
 	logo, _, _ := image.Decode(bytes.NewReader(vinegarlogo))
 	w := window(width, height)
@@ -192,61 +192,69 @@ func (ui *Splash) Run() error {
 				ui.Perform(system.ActionClose)
 			}
 
-			layout.Center.Layout(gtx, func(gtx C) D {
-				return layout.Flex{
-					Axis:      layout.Vertical,
-					Alignment: layout.Middle,
-				}.Layout(gtx,
-					layout.Rigid(widget.Image{Src: paint.NewImageOp(ui.logo)}.Layout),
-					layout.Rigid(layout.Spacer{Height: unit.Dp(12)}.Layout),
-					layout.Rigid(material.Label(ui.Theme, unit.Sp(16), ui.message).Layout),
-
-					layout.Rigid(func(gtx C) D {
-						return layout.Inset{
-							Top:    unit.Dp(14),
-							Bottom: unit.Dp(20),
-							Right:  unit.Dp(25),
-							Left:   unit.Dp(25),
-						}.Layout(gtx, func(gtx C) D {
-							pb := ProgressBar(ui.Theme, ui.progress)
-							pb.TrackColor = rgb(ui.Config.Gray1)
-							return pb.Layout(gtx)
-						})
-					}),
-
-					layout.Rigid(func(gtx C) D {
-						if ui.desc == "" {
-							return D{}
-						}
-
-						info := material.Body2(ui.Theme, ui.desc)
-						info.Color = ui.Theme.Palette.ContrastFg
-						return info.Layout(gtx)
-					}),
-
-					layout.Rigid(func(gtx C) D {
-						inset := buttonInset()
-						return layout.Flex{}.Layout(gtx,
+			layout.Flex{
+				Axis: layout.Vertical,
+			}.Layout(gtx,
+				layout.Rigid(func(gtx C) D {
+					return layout.Inset{
+						Top: unit.Dp(20),
+						Bottom: unit.Dp(16),
+						Left: unit.Dp(16),
+						Right: unit.Dp(16),
+					}.Layout(gtx, func(gtx C) D {
+						return layout.Flex{
+							Axis: layout.Horizontal,
+							Alignment: layout.Start,
+						}.Layout(gtx, 
+							layout.Rigid(widget.Image{Src: paint.NewImageOp(ui.logo)}.Layout),
 							layout.Rigid(func(gtx C) D {
-								return inset.Layout(gtx, func(gtx C) D {
-									btn := button(ui.Theme, &exitButton, "Cancel")
-									btn.Background = rgb(ui.Config.Red)
-									return btn.Layout(gtx)
-								})
-							}),
-							layout.Rigid(func(gtx C) D {
-								if ui.showLog == "" {
-									return D{}
-								}
-
-								return inset.Layout(gtx, func(gtx C) D {
-									return button(ui.Theme, &showLogButton, "Show Log").Layout(gtx)
-								})
+								return layout.Flex{
+									Axis: layout.Vertical,
+									Alignment: layout.Start,
+								}.Layout(gtx, 
+									layout.Rigid(layout.Spacer{Height: unit.Dp(16)}.Layout),
+									layout.Rigid(material.Label(ui.Theme, unit.Sp(16), ui.message).Layout),
+									layout.Rigid(func(gtx C) D {
+										d := material.Body2(ui.Theme, ui.desc)
+										d.Color = ui.Theme.Palette.ContrastFg
+										return d.Layout(gtx)
+									}),
+									layout.Rigid(layout.Spacer{Height: unit.Dp(10)}.Layout),
+								)
 							}),
 						)
-					}),
-				)
-			})
+					})
+				}),
+				layout.Rigid(func(gtx C) D {
+					return layout.Inset{
+						Bottom: unit.Dp(0),
+						Left: unit.Dp(20),
+						Right: unit.Dp(20),
+					}.Layout(gtx, func(gtx C) D {
+						pb := ProgressBar(ui.Theme, ui.progress)
+						pb.TrackColor = rgb(ui.Config.Gray1)
+						return pb.Layout(gtx)
+					})
+				}),
+				layout.Flexed(1, func(gtx C) D {
+					return layout.Inset{
+						Top: unit.Dp(16),
+						Bottom: unit.Dp(16),
+						Left: unit.Dp(20),
+						Right: unit.Dp(20),
+					}.Layout(gtx, func(gtx C) D {
+						return layout.Flex{
+							Axis: layout.Horizontal,
+							Spacing: layout.SpaceStart,
+						}.Layout(gtx,
+							layout.Rigid(func (gtx C) D {
+								btn := button(ui.Theme, &exitButton, "Cancel")
+								return btn.Layout(gtx)
+							}),
+						)
+					})
+				}),
+			)
 
 			e.Frame(gtx.Ops)
 		}
@@ -256,17 +264,13 @@ func (ui *Splash) Run() error {
 	return nil
 }
 
-func buttonInset() layout.Inset {
-	return layout.Inset{
-		Top:   unit.Dp(16),
-		Right: unit.Dp(6),
-		Left:  unit.Dp(6),
-	}
-}
-
 func button(th *material.Theme, button *widget.Clickable, txt string) (bs material.ButtonStyle) {
 	bs = material.Button(th, button, txt)
+	bs.Inset = layout.Inset{
+		Top:    unit.Dp(0),  Bottom: unit.Dp(0),
+		Left:   unit.Dp(16), Right:  unit.Dp(16),
+	}
 	bs.Color = th.Palette.Fg
-	bs.CornerRadius = 16
+	bs.CornerRadius = 12
 	return
 }

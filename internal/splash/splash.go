@@ -214,8 +214,10 @@ func (ui *Splash) Run() error {
 								}.Layout(gtx, 
 									layout.Rigid(layout.Spacer{Height: unit.Dp(16)}.Layout),
 									layout.Rigid(material.Label(ui.Theme, unit.Sp(16), ui.message).Layout),
+									layout.Rigid(layout.Spacer{Height: unit.Dp(2)}.Layout),
 									layout.Rigid(func(gtx C) D {
-										d := material.Body2(ui.Theme, ui.desc)
+										d := material.Caption(ui.Theme, ui.desc)
+										d.Font.Typeface = "go mono, monospace"
 										d.Color = ui.Theme.Palette.ContrastFg
 										return d.Layout(gtx)
 									}),
@@ -236,7 +238,7 @@ func (ui *Splash) Run() error {
 						return pb.Layout(gtx)
 					})
 				}),
-				layout.Flexed(1, func(gtx C) D {
+				layout.Rigid(func(gtx C) D {
 					return layout.Inset{
 						Top: unit.Dp(16),
 						Bottom: unit.Dp(16),
@@ -249,6 +251,7 @@ func (ui *Splash) Run() error {
 						}.Layout(gtx,
 							layout.Rigid(func (gtx C) D {
 								btn := button(ui.Theme, &exitButton, "Cancel")
+								btn.Background = rgb(ui.Config.Red)
 								return btn.Layout(gtx)
 							}),
 						)
@@ -267,10 +270,10 @@ func (ui *Splash) Run() error {
 func button(th *material.Theme, button *widget.Clickable, txt string) (bs material.ButtonStyle) {
 	bs = material.Button(th, button, txt)
 	bs.Inset = layout.Inset{
-		Top:    unit.Dp(0),  Bottom: unit.Dp(0),
+		Top:    unit.Dp(10), Bottom: unit.Dp(10),
 		Left:   unit.Dp(16), Right:  unit.Dp(16),
 	}
 	bs.Color = th.Palette.Fg
-	bs.CornerRadius = 12
+	bs.CornerRadius = 6
 	return
 }

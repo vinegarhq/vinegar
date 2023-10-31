@@ -13,18 +13,17 @@ var ErrClosed = errors.New("window closed")
 
 type Splash struct {
 	Config *config.Splash
+
+	LogPath string // unused
 }
 
-func (ui *Splash) Message(msg string) {
+func (ui *Splash) SetMessage(msg string) {
 }
 
-func (ui *Splash) Desc(desc string) {
+func (ui *Splash) SetDesc(desc string) {
 }
 
-func (ui *Splash) ShowLog(name string) {
-}
-
-func (ui *Splash) Progress(progress float32) {
+func (ui *Splash) SetProgress(progress float32) {
 }
 
 func (ui *Splash) Close() {

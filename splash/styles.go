@@ -23,7 +23,7 @@ func (s Style) Size() (w, h unit.Dp) {
 	switch s {
 	case Compact:
 		w = unit.Dp(448)
-		h = unit.Dp(150)
+		h = unit.Dp(156) // 118, 0
 	case Familiar:
 		w = unit.Dp(480)
 		h = unit.Dp(246) // 198
@@ -33,7 +33,12 @@ func (s Style) Size() (w, h unit.Dp) {
 }
 
 func (ui *Splash) drawCompact(gtx C) D {
-	return layout.UniformInset(16).Layout(gtx, func(gtx C) D {
+	return layout.Inset{
+		Top:    unit.Dp(18),
+		Bottom: unit.Dp(18),
+		Left:   unit.Dp(12),
+		Right:  unit.Dp(18),
+	}.Layout(gtx, func(gtx C) D {
 		return layout.Flex{
 			Axis:      layout.Vertical,
 		}.Layout(gtx,
@@ -63,7 +68,7 @@ func (ui *Splash) drawCompact(gtx C) D {
 					}),
 				)
 			}),
-			layout.Rigid(layout.Spacer{Height: unit.Dp(16)}.Layout),
+			layout.Rigid(layout.Spacer{Height: unit.Dp(18)}.Layout),
 			layout.Rigid(func(gtx C) D {
 				return ui.buttons(gtx, layout.SpaceStart)
 			}),

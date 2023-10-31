@@ -32,14 +32,15 @@ func (s Style) Size() (w, h unit.Dp) {
 }
 
 func (ui *Splash) drawCompact(gtx C) D {
-	return layout.Flex{
-		Axis: layout.Vertical,
-	}.Layout(gtx,
-		layout.Rigid(func(gtx C) D {
-			return layout.Inset{
-				Top:  unit.Dp(20),
-				Left: unit.Dp(16),
-			}.Layout(gtx, func(gtx C) D {
+	return layout.Inset{
+		Top:   unit.Dp(20),
+		Left:  unit.Dp(16),
+		Right: unit.Dp(16),
+	}.Layout(gtx, func(gtx C) D {
+		return layout.Flex{
+			Axis:      layout.Vertical,
+		}.Layout(gtx,
+			layout.Rigid(func(gtx C) D {
 				return layout.Flex{
 					Axis:      layout.Horizontal,
 					Alignment: layout.Start,
@@ -56,25 +57,21 @@ func (ui *Splash) drawCompact(gtx C) D {
 							layout.Rigid(func(gtx C) D {
 								return ui.drawDesc(gtx)
 							}),
+							layout.Rigid(layout.Spacer{Height: unit.Dp(10)}.Layout),
 							layout.Rigid(func(gtx C) D {
-								return layout.Inset{
-									Top:   unit.Dp(10),
-									Right: unit.Dp(20),
-								}.Layout(gtx, func(gtx C) D {
-									pb := ProgressBar(ui.Theme, ui.progress)
-									pb.TrackColor = rgb(ui.Config.Gray1)
-									return pb.Layout(gtx)
-								})
+								pb := ProgressBar(ui.Theme, ui.progress)
+								pb.TrackColor = rgb(ui.Config.Gray1)
+								return pb.Layout(gtx)
 							}),
 						)
 					}),
 				)
-			})
-		}),
-		layout.Rigid(func(gtx C) D {
-			return ui.buttons(gtx, layout.SpaceStart)
-		}),
-	)
+			}),
+			layout.Rigid(func(gtx C) D {
+				return ui.buttons(gtx, layout.SpaceStart)
+			}),
+		)
+	})
 }
 
 func (ui *Splash) drawFamiliar(gtx C) D {

@@ -17,31 +17,32 @@ type (
 )
 
 func (ui *Splash) buttons(gtx C, s layout.Spacing) D {
-	return layout.Inset{
-		Top:   unit.Dp(16),
-		Left:  unit.Dp(20),
-		Right: unit.Dp(20),
-	}.Layout(gtx, func(gtx C) D {
-		return layout.Flex{
-			Axis:    layout.Horizontal,
-			Spacing: s,
-		}.Layout(gtx,
-			layout.Rigid(func(gtx C) D {
-				if ui.LogPath == "" {
-					return D{}
-				}
+	inset := layout.Inset{
+		Top:   unit.Dp(10),
+		Left:  unit.Dp(10),
+	}
 
-				btn := button(ui.Theme, &ui.openLogButton, "Show logs")
+	return layout.Flex{
+		Axis:    layout.Horizontal,
+		Spacing: s,
+	}.Layout(gtx,
+		layout.Rigid(func(gtx C) D {
+			if ui.LogPath == "" {
+				return D{}
+			}
+			btn := button(ui.Theme, &ui.openLogButton, "Show logs")
+			return inset.Layout(gtx, func(gtx C) D {
 				return btn.Layout(gtx)
-			}),
-			layout.Rigid(layout.Spacer{Width: unit.Dp(14)}.Layout),
-			layout.Rigid(func(gtx C) D {
-				btn := button(ui.Theme, &ui.exitButton, "Cancel")
-				btn.Background = rgb(ui.Config.Red)
+			})
+		}),
+		layout.Rigid(func(gtx C) D {
+			btn := button(ui.Theme, &ui.exitButton, "Cancel")
+			btn.Background = rgb(ui.Config.Red)
+			return inset.Layout(gtx, func(gtx C) D {
 				return btn.Layout(gtx)
-			}),
-		)
-	})
+			})
+		}),
+	)
 }
 
 func (ui *Splash) drawDesc(gtx C) D {

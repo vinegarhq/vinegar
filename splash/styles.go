@@ -26,8 +26,9 @@ func (s Style) Size() (w, h unit.Dp) {
 		h = unit.Dp(150)
 	case Familiar:
 		w = unit.Dp(480)
-		h = unit.Dp(240)
+		h = unit.Dp(246) // 198
 	}
+
 	return
 }
 
@@ -86,10 +87,10 @@ func (ui *Splash) drawFamiliar(gtx C) D {
 					layout.Rigid(material.Label(ui.Theme, unit.Sp(16), ui.message).Layout),
 					layout.Rigid(func(gtx C) D {
 						return layout.Inset{
-							Top:    unit.Dp(14),
-							Bottom: unit.Dp(14),
-							Left:   unit.Dp(40),
-							Right:  unit.Dp(40),
+							Top:    unit.Dp(16),
+							Bottom: unit.Dp(16),
+							Left:   unit.Dp(32),
+							Right:  unit.Dp(32),
 						}.Layout(gtx, func(gtx C) D {
 							pb := ProgressBar(ui.Theme, ui.progress)
 							pb.TrackColor = rgb(ui.Config.Gray1)
@@ -99,6 +100,7 @@ func (ui *Splash) drawFamiliar(gtx C) D {
 					layout.Rigid(func(gtx C) D {
 						return ui.drawDesc(gtx)
 					}),
+					layout.Rigid(layout.Spacer{Height: unit.Dp(16)}.Layout),
 				)
 			}),
 			layout.Rigid(func(gtx C) D {

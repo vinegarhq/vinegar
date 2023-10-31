@@ -13,8 +13,8 @@ import (
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
-	"github.com/vinegarhq/vinegar/internal/splash"
 	"github.com/vinegarhq/vinegar/internal/state"
+	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
@@ -118,7 +118,7 @@ func main() {
 				}
 			}()
 
-			b.Splash.Desc(b.Config.Channel)
+			b.Splash.SetDesc(b.Config.Channel)
 
 			errHandler := func(err error) {
 				if !cfg.Splash.Enabled || b.Splash.IsClosed() {
@@ -126,27 +126,28 @@ func main() {
 				}
 
 				log.Println(err)
-				b.Splash.ShowLog(logFile.Name())
+				b.Splash.LogPath = (logFile.Name())
+				b.Splash.Invalidate()
 				select {} // wait for window to close
 			}
 
 			if _, err := os.Stat(filepath.Join(pfx.Dir(), "drive_c", "windows")); err != nil {
 				log.Printf("Initializing wineprefix at %s", pfx.Dir())
 
-				b.Splash.Message("Initializing wineprefix")
+				b.Splash.SetMessage("Initializing wineprefix")
 				if err := PrefixInit(&pfx); err != nil {
-					b.Splash.Message(err.Error())
+					b.Splash.SetMessage(err.Error())
 					errHandler(err)
 				}
 			}
 
 			if err := b.Setup(); err != nil {
-				b.Splash.Message("Failed to setup Roblox")
+				b.Splash.SetMessage("Failed to setup Roblox")
 				errHandler(err)
 			}
 
 			if err := b.Run(args[1:]...); err != nil {
-				b.Splash.Message("Failed to run Roblox")
+				b.Splash.SetMessage("Failed to run Roblox")
 				errHandler(err)
 			}
 		}

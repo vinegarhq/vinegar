@@ -17,8 +17,8 @@ import (
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/splash"
 	"github.com/vinegarhq/vinegar/internal/state"
+	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/roblox/version"
@@ -120,7 +120,7 @@ func (b *Binary) Run(args ...string) error {
 	go b.HandleOutput(o)
 
 	log.Printf("Launching %s", b.Name)
-	b.Splash.Message("Launching " + b.Alias)
+	b.Splash.SetMessage("Launching " + b.Alias)
 
 	defer func() {
 		// Don't do anything if the process even ran correctly.
@@ -207,7 +207,7 @@ func (b *Binary) HandleRobloxLog(line string) {
 }
 
 func (b *Binary) FetchVersion() (version.Version, error) {
-	b.Splash.Message("Fetching " + b.Alias)
+	b.Splash.SetMessage("Fetching " + b.Alias)
 
 	if b.Config.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
@@ -224,7 +224,7 @@ func (b *Binary) Setup() error {
 		return err
 	}
 
-	b.Splash.Desc(fmt.Sprintf("%s %s", ver.GUID, ver.Channel))
+	b.Splash.SetDesc(fmt.Sprintf("%s %s", ver.GUID, ver.Channel))
 	b.Version = ver
 	b.Dir = filepath.Join(dirs.Versions, ver.GUID)
 
@@ -261,12 +261,12 @@ func (b *Binary) Setup() error {
 		return err
 	}
 
-	b.Splash.Progress(1.0)
+	b.Splash.SetProgress(1.0)
 	return nil
 }
 
 func (b *Binary) Install() error {
-	b.Splash.Message("Installing " + b.Alias)
+	b.Splash.SetMessage("Installing " + b.Alias)
 
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
@@ -281,12 +281,12 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	b.Splash.Message("Downloading " + b.Alias)
+	b.Splash.SetMessage("Downloading " + b.Alias)
 	if err := b.DownloadPackages(&manifest); err != nil {
 		return err
 	}
 
-	b.Splash.Message("Extracting " + b.Alias)
+	b.Splash.SetMessage("Extracting " + b.Alias)
 	if err := b.ExtractPackages(&manifest); err != nil {
 		return err
 	}
@@ -326,7 +326,7 @@ func (b *Binary) PerformPackages(m *bootstrapper.Manifest, fn func(bootstrapper.
 		}
 
 		donePkgs++
-		b.Splash.Progress(float32(donePkgs) / float32(pkgsLen))
+		b.Splash.SetProgress(float32(donePkgs) / float32(pkgsLen))
 
 		return nil
 	})
@@ -363,7 +363,7 @@ func (b *Binary) SetupDxvk() error {
 	installed := ver != ""
 
 	if installed && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
-		b.Splash.Message("Uninstalling DXVK")
+		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return err
 		}
@@ -375,7 +375,7 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	b.Splash.Progress(0.0)
+	b.Splash.SetProgress(0.0)
 	dxvk.Setenv()
 
 	if b.GlobalConfig.DxvkVersion == ver {
@@ -387,18 +387,18 @@ func (b *Binary) SetupDxvk() error {
 	}
 	path := filepath.Join(dirs.Cache, "dxvk-"+b.GlobalConfig.DxvkVersion+".tar.gz")
 
-	b.Splash.Progress(0.3)
-	b.Splash.Message("Downloading DXVK")
+	b.Splash.SetProgress(0.3)
+	b.Splash.SetMessage("Downloading DXVK")
 	if err := dxvk.Fetch(path, b.GlobalConfig.DxvkVersion); err != nil {
 		return err
 	}
 
-	b.Splash.Progress(0.7)
-	b.Splash.Message("Extracting DXVK")
+	b.Splash.SetProgress(0.7)
+	b.Splash.SetMessage("Extracting DXVK")
 	if err := dxvk.Extract(path, b.Prefix); err != nil {
 		return err
 	}
-	b.Splash.Progress(1.0)
+	b.Splash.SetProgress(1.0)
 
 	return state.SaveDxvk(b.GlobalConfig.DxvkVersion)
 }
@@ -412,7 +412,7 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 		mutexer := b.Prefix.Command("wine", filepath.Join(BinPrefix, "robloxmutexer.exe"))
 		err := mutexer.Start()
 		if err != nil {
-			return &wine.Cmd{}, fmt.Errorf("robloxmutexer: %w")
+			return &wine.Cmd{}, fmt.Errorf("robloxmutexer: %w", err)
 		}
 	}
 

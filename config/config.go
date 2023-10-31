@@ -15,6 +15,7 @@ import (
 
 type Splash struct {
 	Enabled bool   `toml:"enabled"`
+	Style   string `toml:"style"`
 	Bg      uint32 `toml:"background"`
 	Fg      uint32 `toml:"foreground"`
 	Red     uint32 `toml:"red"`

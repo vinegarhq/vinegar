@@ -23,7 +23,7 @@ func (s Style) Size() (w, h unit.Dp) {
 	switch s {
 	case Compact:
 		w = unit.Dp(448)
-		h = unit.Dp(152)
+		h = unit.Dp(148)
 	case Familiar:
 		w = unit.Dp(480)
 		h = unit.Dp(240)

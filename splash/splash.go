@@ -28,14 +28,14 @@ var ErrClosed = errors.New("window closed")
 type Splash struct {
 	*app.Window
 
-	Theme    *material.Theme
-	Config   *config.Splash
+	Theme  *material.Theme
+	Config *config.Splash
 	Style
-	LogPath  string 
+	LogPath string
 
-	logo     image.Image
-	message  string
-	desc     string
+	logo    image.Image
+	message string
+	desc    string
 
 	progress float32
 	closed   bool

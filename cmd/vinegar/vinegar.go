@@ -104,12 +104,6 @@ func main() {
 			}
 
 			go func() {
-				defer func() {
-					if r := recover(); r != nil {
-						log.Println("WARNING: Recovered from splash panic", r)
-					}
-				}()
-
 				err := b.Splash.Run()
 				if err != nil && errors.Is(err, splash.ErrClosed) {
 					log.Fatal(err)

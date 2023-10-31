@@ -111,8 +111,11 @@ func (ui *Splash) Run() error {
 	var ops op.Ops
 	drawfn := ui.drawCompact
 
-	if !ui.Config.Enabled {
+	defer func() {
 		ui.closed = true
+	}()
+
+	if !ui.Config.Enabled {
 		return nil
 	}
 

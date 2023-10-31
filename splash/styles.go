@@ -23,7 +23,7 @@ func (s Style) Size() (w, h unit.Dp) {
 	switch s {
 	case Compact:
 		w = unit.Dp(448)
-		h = unit.Dp(148)
+		h = unit.Dp(150)
 	case Familiar:
 		w = unit.Dp(480)
 		h = unit.Dp(240)
@@ -32,11 +32,7 @@ func (s Style) Size() (w, h unit.Dp) {
 }
 
 func (ui *Splash) drawCompact(gtx C) D {
-	return layout.Inset{
-		Top:   unit.Dp(20),
-		Left:  unit.Dp(16),
-		Right: unit.Dp(16),
-	}.Layout(gtx, func(gtx C) D {
+	return layout.UniformInset(16).Layout(gtx, func(gtx C) D {
 		return layout.Flex{
 			Axis:      layout.Vertical,
 		}.Layout(gtx,
@@ -51,13 +47,12 @@ func (ui *Splash) drawCompact(gtx C) D {
 							Axis:      layout.Vertical,
 							Alignment: layout.Start,
 						}.Layout(gtx,
-							layout.Rigid(layout.Spacer{Height: unit.Dp(6)}.Layout),
 							layout.Rigid(material.Label(ui.Theme, unit.Sp(16), ui.message).Layout),
 							layout.Rigid(layout.Spacer{Height: unit.Dp(2)}.Layout),
 							layout.Rigid(func(gtx C) D {
 								return ui.drawDesc(gtx)
 							}),
-							layout.Rigid(layout.Spacer{Height: unit.Dp(10)}.Layout),
+							layout.Rigid(layout.Spacer{Height: unit.Dp(20)}.Layout),
 							layout.Rigid(func(gtx C) D {
 								pb := ProgressBar(ui.Theme, ui.progress)
 								pb.TrackColor = rgb(ui.Config.Gray1)
@@ -67,6 +62,7 @@ func (ui *Splash) drawCompact(gtx C) D {
 					}),
 				)
 			}),
+			layout.Rigid(layout.Spacer{Height: unit.Dp(16)}.Layout),
 			layout.Rigid(func(gtx C) D {
 				return ui.buttons(gtx, layout.SpaceStart)
 			}),

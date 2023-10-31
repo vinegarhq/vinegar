@@ -17,11 +17,6 @@ type (
 )
 
 func (ui *Splash) buttons(gtx C, s layout.Spacing) D {
-	inset := layout.Inset{
-		Top:   unit.Dp(10),
-		Left:  unit.Dp(10),
-	}
-
 	return layout.Flex{
 		Axis:    layout.Horizontal,
 		Spacing: s,
@@ -30,17 +25,16 @@ func (ui *Splash) buttons(gtx C, s layout.Spacing) D {
 			if ui.LogPath == "" {
 				return D{}
 			}
+
 			btn := button(ui.Theme, &ui.openLogButton, "Show logs")
-			return inset.Layout(gtx, func(gtx C) D {
+			return layout.Inset{Right: unit.Dp(16)}.Layout(gtx, func(gtx C) D {
 				return btn.Layout(gtx)
 			})
 		}),
 		layout.Rigid(func(gtx C) D {
 			btn := button(ui.Theme, &ui.exitButton, "Cancel")
 			btn.Background = rgb(ui.Config.Red)
-			return inset.Layout(gtx, func(gtx C) D {
-				return btn.Layout(gtx)
-			})
+			return btn.Layout(gtx)
 		}),
 	)
 }

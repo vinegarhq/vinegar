@@ -27,7 +27,11 @@ func (ui *Splash) buttons(gtx C, s layout.Spacing) D {
 			Spacing: s,
 		}.Layout(gtx,
 			layout.Rigid(func(gtx C) D {
-				btn := button(ui.Theme, &ui.openLogButton, "Open Log file")
+				if ui.LogPath == "" {
+					return D{}
+				}
+
+				btn := button(ui.Theme, &ui.openLogButton, "Show logs")
 				return btn.Layout(gtx)
 			}),
 			layout.Rigid(layout.Spacer{Width: unit.Dp(14)}.Layout),

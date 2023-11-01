@@ -42,7 +42,7 @@ func (p *Package) Download(dest, deployURL string) error {
 	log.Printf("Downloading Package %s (%s)", p.Name, dest)
 
 	if err := util.Download(deployURL+"-"+p.Name, dest); err != nil {
-		return fmt.Errorf("download package %s: %w", p.Name, dest, err)
+		return fmt.Errorf("download package %s (%s): %w", p.Name, dest, err)
 	}
 
 	return p.Verify(dest)

@@ -1,13 +1,13 @@
 package main
 
 import (
-	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"syscall"
 
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
@@ -15,7 +15,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
-	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
 )
@@ -104,12 +103,13 @@ func main() {
 			}
 
 			go func() {
-				err := b.Splash.Run()
-				if err != nil && errors.Is(err, splash.ErrClosed) {
-					log.Fatal(err)
-				} else if err != nil {
-					log.Printf("WARNING: Failed to run splash window: %s", err)
+				if err := b.Splash.Run(); err != nil {
+					log.Printf("splash: %s", err)
 				}
+
+				// Will tell Run() to immediately kill Roblox, as it handles INT/TERM.
+				// Otherwise, it will just with the same appropiate signal.
+				syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 			}()
 
 			b.Splash.SetDesc(b.Config.Channel)

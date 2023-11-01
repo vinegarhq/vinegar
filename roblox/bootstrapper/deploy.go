@@ -27,7 +27,7 @@ func (p *Package) Verify(src string) error {
 	}
 
 	if p.Checksum != hex.EncodeToString(hash.Sum(nil)) {
-		return fmt.Errorf("package %s is corrupted", p.Name)
+		return fmt.Errorf("package %s (%s) is corrupted", p.Name, src)
 	}
 
 	return nil
@@ -39,10 +39,10 @@ func (p *Package) Download(dest, deployURL string) error {
 		return nil
 	}
 
-	log.Printf("Downloading Package %s", p.Name)
+	log.Printf("Downloading Package %s (%s)", p.Name, dest)
 
 	if err := util.Download(deployURL+"-"+p.Name, dest); err != nil {
-		return fmt.Errorf("download package %s: %w", p.Name, err)
+		return fmt.Errorf("download package %s: %w", p.Name, dest, err)
 	}
 
 	return p.Verify(dest)

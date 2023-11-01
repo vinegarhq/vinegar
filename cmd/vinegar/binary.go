@@ -51,7 +51,7 @@ type Binary struct {
 	Activity bsrpc.Activity
 }
 
-func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binary {
+func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Binary {
 	var bcfg config.Binary
 
 	switch bt {
@@ -61,7 +61,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) Binar
 		bcfg = cfg.Studio
 	}
 
-	return Binary{
+	return &Binary{
 		Splash: splash.New(&cfg.Splash),
 
 		GlobalConfig: cfg,

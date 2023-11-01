@@ -85,77 +85,14 @@ func main() {
 			if err := pfx.Winetricks(); err != nil {
 				log.Fatal(err)
 			}
-		case "player", "studio":
-			var b Binary
-
-			logFile := logs.File(cmd)
-			logOutput := io.MultiWriter(logFile, os.Stderr)
-			pfx.Output = logOutput
-			log.SetOutput(logOutput)
-
-			defer logFile.Close()
-
-			switch cmd {
-			case "player":
-				b = NewBinary(roblox.Player, &cfg, &pfx)
-			case "studio":
-				b = NewBinary(roblox.Studio, &cfg, &pfx)
-			}
-
-			go func() {
-				if err := b.Splash.Run(); err != nil {
-					log.Printf("splash: %s", err)
-				}
-
-				// Will tell Run() to immediately kill Roblox, as it handles INT/TERM.
-				// Otherwise, it will just with the same appropiate signal.
-				syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-			}()
-
-			b.Splash.SetDesc(b.Config.Channel)
-
-			errHandler := func(err error) {
-				if !cfg.Splash.Enabled || b.Splash.IsClosed() {
-					log.Fatal(err)
-				}
-
-				log.Println(err)
-				b.Splash.LogPath = (logFile.Name())
-				b.Splash.Invalidate()
-				select {} // wait for window to close
-			}
-
-			if _, err := os.Stat(filepath.Join(pfx.Dir(), "drive_c", "windows")); err != nil {
-				log.Printf("Initializing wineprefix at %s", pfx.Dir())
-
-				b.Splash.SetMessage("Initializing wineprefix")
-				if err := PrefixInit(&pfx); err != nil {
-					b.Splash.SetMessage(err.Error())
-					errHandler(err)
-				}
-			}
-
-			if err := b.Setup(); err != nil {
-				b.Splash.SetMessage("Failed to setup Roblox")
-				errHandler(err)
-			}
-
-			if err := b.Run(args[1:]...); err != nil {
-				b.Splash.SetMessage("Failed to run Roblox")
-				errHandler(err)
-			}
+		case "player":
+			NewBinary(roblox.Player, &cfg, &pfx).Main(args[1:]...)
+		case "studio":
+			NewBinary(roblox.Studio, &cfg, &pfx).Main(args[1:]...)
 		}
 	default:
 		usage()
 	}
-}
-
-func PrefixInit(pfx *wine.Prefix) error {
-	if err := pfx.Command("wineboot", "-i").Run(); err != nil {
-		return err
-	}
-
-	return pfx.SetDPI(97)
 }
 
 func Uninstall() {
@@ -209,5 +146,59 @@ func Sysinfo(pfx *wine.Prefix) {
 	fmt.Println("* Cards:")
 	for _, c := range sysinfo.Cards {
 		fmt.Printf("  * Card %d: %s %s\n", c.Index, c.Driver, c.Path)
+	}
+}
+
+func (b *Binary) Main(args ...string) {
+	logFile := logs.File(b.Type.String())
+	defer logFile.Close()
+
+	logOutput := io.MultiWriter(logFile, os.Stderr)
+	b.Prefix.Output = logOutput
+	log.SetOutput(logOutput)
+
+	go func() {
+		if err := b.Splash.Run(); err != nil {
+			log.Printf("splash: %s", err)
+
+			// Will tell Run() to immediately kill Roblox, as it handles INT/TERM.
+			// Otherwise, it will just with the same appropiate signal.
+			syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+		}
+	}()
+
+	b.Splash.SetDesc(b.Config.Channel)
+
+	errHandler := func(err error) {
+		if !b.GlobalConfig.Splash.Enabled || b.Splash.IsClosed() {
+			log.Fatal(err)
+		}
+
+		log.Println(err)
+		b.Splash.LogPath = (logFile.Name())
+		b.Splash.Invalidate()
+		select {} // wait for window to close
+	}
+
+	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which 
+	// automatically create the Wineprefix.
+	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
+		log.Printf("Initializing wineprefix at %s", b.Prefix.Dir())
+		b.Splash.SetMessage("Initializing wineprefix")
+
+		if err := b.Prefix.SetDPI(97); err != nil {
+			b.Splash.SetMessage(err.Error())
+			errHandler(err)
+		}
+	}
+
+	if err := b.Setup(); err != nil {
+		b.Splash.SetMessage("Failed to setup Roblox")
+		errHandler(err)
+	}
+
+	if err := b.Run(args...); err != nil {
+		b.Splash.SetMessage("Failed to run Roblox")
+		errHandler(err)
 	}
 }

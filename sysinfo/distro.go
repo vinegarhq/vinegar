@@ -14,11 +14,6 @@ type distro struct {
 }
 
 func getDistro() (d distro) {
-	d = distro{
-		Name:    "unknown distro name",
-		Version: "unknown distro version",
-	}
-
 	f, err := os.Open("/etc/os-release")
 	if err != nil {
 		return
@@ -49,10 +44,6 @@ func getDistro() (d distro) {
 func (d distro) String() string {
 	if d.Name == "" {
 		d.Name = "Linux"
-	}
-
-	if d.Version == "" {
-		d.Version = "Linux"
 	}
 
 	return d.Name + " " + d.Version

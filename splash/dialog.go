@@ -9,7 +9,6 @@ import (
 	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
-	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
@@ -19,7 +18,7 @@ import (
 func (ui *Splash) Dialog(title, msg string) {
 	var ops op.Ops
 	var okButton widget.Clickable
-	w := window(unit.Dp(480), unit.Dp(144))
+	w := window(384, 120)
 
 	if !ui.Config.Enabled || ui.Theme == nil {
 		log.Printf("Dialog: %s %s", title, msg)
@@ -39,16 +38,18 @@ func (ui *Splash) Dialog(title, msg string) {
 				w.Perform(system.ActionClose)
 			}
 
-			layout.Center.Layout(gtx, func(gtx C) D {
+			layout.UniformInset(18).Layout(gtx, func(gtx C) D {
 				return layout.Flex{
 					Axis:      layout.Vertical,
-					Alignment: layout.Middle,
+					Spacing:   layout.SpaceBetween,
 				}.Layout(gtx,
-					layout.Rigid(material.H6(ui.Theme, title).Layout),
-					layout.Rigid(layout.Spacer{Height: unit.Dp(10)}.Layout),
+					layout.Rigid(material.Body2(ui.Theme, title).Layout),
 					layout.Rigid(material.Body2(ui.Theme, msg).Layout),
-					layout.Rigid(layout.Spacer{Height: unit.Dp(16)}.Layout),
-					layout.Rigid(button(ui.Theme, &okButton, "Ok").Layout),
+					layout.Rigid(func(gtx C) D {
+						return layout.Flex{Spacing: layout.SpaceStart}.Layout(gtx,
+							layout.Rigid(button(ui.Theme, &okButton, "Ok").Layout),
+						)
+					}),
 				)
 			})
 

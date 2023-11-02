@@ -45,7 +45,7 @@ type Config struct {
 	Global            Binary      `toml:"global"`
 	Player            Binary      `toml:"player"`
 	Studio            Binary      `toml:"studio"`
-	Env               Environment `toml:"env"`
+	Env               Environment `toml:"env"` // kept for compatibilty
 	Splash            Splash      `toml:"splash"`
 }
 
@@ -59,6 +59,11 @@ func Load(path string) (Config, error) {
 	}
 
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
+		return cfg, err
+	}
+
+	// Compatibility
+	if err := mergo.Merge(&cfg.Global.Env, cfg.Env, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
 		return cfg, err
 	}
 
@@ -77,33 +82,28 @@ func Default() Config {
 	return Config{
 		DxvkVersion: "2.3",
 
-		Env: Environment{
-			"WINEARCH":         "win64",
-			"WINEDEBUG":        "err-kerberos,err-ntlm",
-			"WINEESYNC":        "1",
-			"WINEDLLOVERRIDES": "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
-
-			"DXVK_LOG_LEVEL": "warn",
-			"DXVK_LOG_PATH":  "none",
-
-			"MESA_GL_VERSION_OVERRIDE":    "4.4",
-			"__GL_THREADED_OPTIMIZATIONS": "1",
-		},
-
 		Global: Binary{
 			ForcedGpu: "prime-discrete",
+			Dxvk:           true,
+			AutoKillPrefix: true,
+			Env: Environment{
+				"WINEARCH":         "win64",
+				"WINEDEBUG":        "err-kerberos,err-ntlm",
+				"WINEESYNC":        "1",
+				"WINEDLLOVERRIDES": "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
+	
+				"DXVK_LOG_LEVEL": "warn",
+				"DXVK_LOG_PATH":  "none",
+	
+				"MESA_GL_VERSION_OVERRIDE":    "4.4",
+				"__GL_THREADED_OPTIMIZATIONS": "1",
+			},
 		},
 		Player: Binary{
 			DiscordRPC:     true,
-			Dxvk:           true,
-			AutoKillPrefix: true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
-		},
-		Studio: Binary{
-			Dxvk:           true,
-			AutoKillPrefix: true,
 		},
 
 		Splash: Splash{

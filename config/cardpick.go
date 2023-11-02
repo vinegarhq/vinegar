@@ -30,15 +30,8 @@ func (b *Binary) pickCard() error {
 		if err != nil {
 			return err
 		}
+
 		idx = i
-	}
-
-	if idx < 0 {
-		return errors.New("gpu index cannot be negative")
-	}
-
-	if n < idx+1 {
-		return errors.New("gpu not found")
 	}
 
 	// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
@@ -56,6 +49,14 @@ func (b *Binary) pickCard() error {
 		if !sysinfo.Cards[0].Embedded {
 			return nil
 		}
+	}
+
+	if idx < 0 {
+		return errors.New("gpu index cannot be negative")
+	}
+
+	if n < idx+1 {
+		return errors.New("gpu not found")
 	}
 
 	log.Printf("Using Card index: %d", idx)

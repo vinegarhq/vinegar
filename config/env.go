@@ -6,17 +6,19 @@ import (
 
 type Environment map[string]string
 
-// Set will only set the given environment key and value if it isn't already set
-// within the Environment.
-func (e *Environment) Set(key, value string) {
-	if _, ok := (*e)[key]; ok {
+// Set will only set the given environment key and value 
+// if it isn't already set within Environment.
+func (e Environment) Set(key, value string) {
+	if _, ok := e[key]; ok {
 		return
 	}
-	(*e)[key] = value
+	e[key] = value
 }
 
-func (e *Environment) Setenv() {
-	for name, value := range *e {
+// Setenv will apply the environment's variables onto the 
+// global environment using os.Setenv.
+func (e Environment) Setenv() {
+	for name, value := range e {
 		os.Setenv(name, value)
 	}
 }

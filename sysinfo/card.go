@@ -12,7 +12,6 @@ import (
 type card struct {
 	Path     string
 	Driver   string
-	Index    int
 	Embedded bool
 }
 
@@ -23,14 +22,13 @@ var embeddedDisplays = []string{"eDP", "LVDS"}
 func getCards() (cs []card) {
 	drmCards, _ := filepath.Glob(path.Join(drmPath, "card[0-9]"))
 
-	for i, c := range drmCards {
+	for _, c := range drmCards {
 		d, _ := filepath.EvalSymlinks(path.Join(c, "device/driver"))
 		d = path.Base(d)
 
 		cs = append(cs, card{
 			Path:     c,
 			Driver:   d,
-			Index:    i,
 			Embedded: embedded(c),
 		})
 	}

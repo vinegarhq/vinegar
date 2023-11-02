@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
@@ -83,7 +84,7 @@ func Default() Config {
 		DxvkVersion: "2.3",
 
 		Global: Binary{
-			ForcedGpu: "prime-discrete",
+			ForcedGpu:      "prime-discrete",
 			Dxvk:           true,
 			AutoKillPrefix: true,
 			Env: Environment{
@@ -91,16 +92,16 @@ func Default() Config {
 				"WINEDEBUG":        "err-kerberos,err-ntlm",
 				"WINEESYNC":        "1",
 				"WINEDLLOVERRIDES": "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
-	
+
 				"DXVK_LOG_LEVEL": "warn",
 				"DXVK_LOG_PATH":  "none",
-	
+
 				"MESA_GL_VERSION_OVERRIDE":    "4.4",
 				"__GL_THREADED_OPTIMIZATIONS": "1",
 			},
 		},
 		Player: Binary{
-			DiscordRPC:     true,
+			DiscordRPC: true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
@@ -125,6 +126,10 @@ func (b *Binary) setup() error {
 
 	if err := b.pickCard(); err != nil {
 		return err
+	}
+
+	if !strings.HasPrefix(b.Renderer, "D3D11") && b.Dxvk {
+		return errors.New("dxvk is only valid with d3d renderers")
 	}
 
 	b.Env.Setenv()

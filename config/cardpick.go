@@ -3,7 +3,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 	"strconv"
 
 	"github.com/vinegarhq/vinegar/sysinfo"
@@ -36,7 +35,7 @@ func (b *Binary) pickCard() error {
 
 	// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
 	if prime {
-		vk := (b.Dxvk && b.Renderer == "D3D11") || b.Renderer == "Vulkan"
+		vk := b.Dxvk || b.Renderer == "Vulkan"
 
 		if n != 2 && (!vk && n != 1) {
 			return fmt.Errorf("opengl is not capable of choosing the right gpu, it must be explicitly defined")
@@ -58,8 +57,6 @@ func (b *Binary) pickCard() error {
 	if n < idx+1 {
 		return errors.New("gpu not found")
 	}
-
-	log.Printf("Using Card index: %d", idx)
 
 	b.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
 	b.Env.Set("DRI_PRIME", strconv.Itoa(idx))

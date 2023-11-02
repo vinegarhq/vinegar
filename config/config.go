@@ -148,7 +148,7 @@ func (c *Config) setup() error {
 			return fmt.Errorf("invalid wine root given: %s", err)
 		}
 
-		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
+		c.Global.Env["PATH"] = bin + ":" + os.Getenv("PATH")
 		os.Unsetenv("WINEDLLPATH")
 		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
@@ -161,7 +161,7 @@ func (c *Config) setup() error {
 		return fmt.Errorf("studio: %w", err)
 	}
 
-	c.Env.Setenv()
+	c.Global.Env.Setenv()
 
 	return nil
 }

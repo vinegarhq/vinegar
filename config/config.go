@@ -46,7 +46,7 @@ type Config struct {
 	Global            Binary      `toml:"global"`
 	Player            Binary      `toml:"player"`
 	Studio            Binary      `toml:"studio"`
-	Env               Environment `toml:"env"` // kept for compatibilty
+	env               Environment `toml:"env"` // kept for compatibilty
 	Splash            Splash      `toml:"splash"`
 }
 
@@ -63,30 +63,37 @@ func Load(path string) (Config, error) {
 		return cfg, err
 	}
 
-	// Compatibility
-	if err := mergo.Merge(&cfg.Global.Env, cfg.Env, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
-		return cfg, err
-	}
-
-	if err := mergo.Merge(&cfg.Player, cfg.Global, mergo.WithAppendSlice); err != nil {
-		return cfg, err
-	}
-
-	if err := mergo.Merge(&cfg.Studio, cfg.Global, mergo.WithAppendSlice); err != nil {
+	if err := cfg.globalize(); err != nil {
 		return cfg, err
 	}
 
 	return cfg, cfg.setup()
 }
 
+func (c *Config) globalize() error {
+	// for compatibility
+	if err := mergo.Merge(&c.Global.Env, c.env, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
+		return err
+	}
+
+	if err := mergo.Merge(&c.Player, c.Global, mergo.WithAppendSlice); err != nil {
+		return err
+	}
+
+	if err := mergo.Merge(&c.Studio, c.Global, mergo.WithAppendSlice); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func Default() Config {
 	return Config{
 		DxvkVersion: "2.3",
 
+		// Global should only be used to set strings here.
 		Global: Binary{
-			ForcedGpu:      "prime-discrete",
-			Dxvk:           true,
-			AutoKillPrefix: true,
+			ForcedGpu: "prime-discrete",
 			Env: Environment{
 				"WINEARCH":         "win64",
 				"WINEDEBUG":        "err-kerberos,err-ntlm",
@@ -101,10 +108,16 @@ func Default() Config {
 			},
 		},
 		Player: Binary{
-			DiscordRPC: true,
+			DiscordRPC:     true,
+			Dxvk:           true,
+			AutoKillPrefix: true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
+		},
+		Studio: Binary{
+			Dxvk:           true,
+			AutoKillPrefix: true,
 		},
 
 		Splash: Splash{
@@ -133,10 +146,15 @@ func (b *Binary) setup() error {
 	}
 
 	b.Env.Setenv()
+
 	return nil
 }
 
 func (c *Config) setup() error {
+	if err := c.globalize(); err != nil {
+		return err
+	}
+
 	if c.SanitizeEnv {
 		util.SanitizeEnv()
 	}

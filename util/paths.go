@@ -3,8 +3,17 @@ package util
 import (
 	"os"
 	"path/filepath"
-	"slices"
 )
+
+// Possibly slower but will restore compatability
+func slice_contains(included []string, file_name string) bool {
+	for _, name := range included {
+		if name == file_name {
+			return true
+		}
+	}
+	return false
+}
 
 // WalkDirExcluded will walk the file tree located at dir, calling
 // onExcluded for every file or directory that does not have a name in included.
@@ -15,7 +24,7 @@ func WalkDirExcluded(dir string, included []string, onExcluded func(string) erro
 	}
 
 	for _, file := range files {
-		if slices.Contains(included, file.Name()) {
+		if slice_contains(included, file.Name()) {
 			continue
 		}
 

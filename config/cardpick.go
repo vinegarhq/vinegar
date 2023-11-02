@@ -3,39 +3,43 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
-	"strings"
 
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-// opt accepts the following values:
-// aliases - "integrated", "prime-discrete" and "none": Equivalent to "0", "1" or empty. Enables an extra "prime" check.
-// integer - GPU index
-// empty   - Skips logic and does nothing.
 func (b *Binary) pickCard() error {
-	aliases := map[string]string{
-		"integrated":     "0",
-		"prime-discrete": "1",
-		"none":           "",
-	}
-
-	var (
-		aIdx  string
-		prime bool
-	)
-
-	aIdx = b.ForcedGpu
-	if a, ok := aliases[b.ForcedGpu]; ok {
-		aIdx = a
-		prime = true
-	}
-
-	if aIdx == "" {
+	if b.ForcedGpu == "" {
 		return nil
 	}
 
 	n := len(sysinfo.Cards)
+	idx := -1
+	prime := false
+	aliases := map[string]int{
+		"integrated":     0,
+		"prime-discrete": 1,
+	}
+
+	if i, ok := aliases[b.ForcedGpu]; ok {
+		idx = i
+		prime = true
+	} else {
+		i, err := strconv.Atoi(b.ForcedGpu)
+		if err != nil {
+			return err
+		}
+		idx = i
+	}
+
+	if idx < 0 {
+		return errors.New("gpu index cannot be negative")
+	}
+
+	if n < idx+1 {
+		return errors.New("gpu not found")
+	}
 
 	// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
 	if prime {
@@ -54,26 +58,16 @@ func (b *Binary) pickCard() error {
 		}
 	}
 
-	idx, err := strconv.Atoi(aIdx)
-	if err != nil {
-		return err
-	}
-
-	if idx < 0 {
-		return errors.New("gpu index cannot be negative")
-	}
-	if n < idx+1 {
-		return errors.New("gpu not found")
-	}
-	c := sysinfo.Cards[idx]
+	log.Printf("Using Card index: %d", idx)
 
 	b.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
-	b.Env.Set("DRI_PRIME", aIdx)
+	b.Env.Set("DRI_PRIME", strconv.Itoa(idx))
 
-	if strings.HasSuffix(c.Driver, "nvidia") { // Workaround for OpenGL in nvidia GPUs
+	if sysinfo.Cards[idx].Driver == "nvidia" { // Workaround for OpenGL in nvidia GPUs
 		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	} else {
 		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")
 	}
+
 	return nil
 }

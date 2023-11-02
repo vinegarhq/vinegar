@@ -144,8 +144,8 @@ func Sysinfo(pfx *wine.Prefix) {
 	}
 
 	fmt.Println("* Cards:")
-	for _, c := range sysinfo.Cards {
-		fmt.Printf("  * Card %d: %s %s\n", c.Index, c.Driver, c.Path)
+	for i, c := range sysinfo.Cards {
+		fmt.Printf("  * Card %d: %s %s\n", i, c.Driver, c.Path)
 	}
 }
 
@@ -180,7 +180,7 @@ func (b *Binary) Main(args ...string) {
 		select {} // wait for window to close
 	}
 
-	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which 
+	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
 	// automatically create the Wineprefix.
 	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
 		log.Printf("Initializing wineprefix at %s", b.Prefix.Dir())

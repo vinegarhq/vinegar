@@ -40,7 +40,7 @@ func (ui *Splash) drawCompact(gtx C) D {
 		Right:  unit.Dp(18),
 	}.Layout(gtx, func(gtx C) D {
 		return layout.Flex{
-			Axis:      layout.Vertical,
+			Axis: layout.Vertical,
 		}.Layout(gtx,
 			layout.Rigid(func(gtx C) D {
 				return layout.Flex{

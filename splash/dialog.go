@@ -40,8 +40,8 @@ func (ui *Splash) Dialog(title, msg string) {
 
 			layout.UniformInset(18).Layout(gtx, func(gtx C) D {
 				return layout.Flex{
-					Axis:      layout.Vertical,
-					Spacing:   layout.SpaceBetween,
+					Axis:    layout.Vertical,
+					Spacing: layout.SpaceBetween,
 				}.Layout(gtx,
 					layout.Rigid(material.Body2(ui.Theme, title).Layout),
 					layout.Rigid(material.Body2(ui.Theme, msg).Layout),

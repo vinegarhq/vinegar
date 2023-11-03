@@ -38,16 +38,15 @@ func (b *Binary) pickCard() error {
 		idx = i
 	}
 
-	// Check if the system actually has PRIME offload and there's no ambiguity with the GPUs.
 	if prime {
 		vk := b.Dxvk || b.Renderer == "Vulkan"
 
-		if n != 2 && (!vk && n != 1) {
-			return ErrOpenGLBlind
+		if n <= 1 {
+			return nil
 		}
 
-		if n != 2 {
-			return nil
+		if n > 2 && !vk {
+			return ErrOpenGLBlind
 		}
 
 		if !sysinfo.Cards[0].Embedded {

@@ -2,10 +2,15 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 
 	"github.com/vinegarhq/vinegar/sysinfo"
+)
+
+var (
+	ErrOpenGLBlind = errors.New("opengl is not capable of choosing the right gpu, it must be explicitly defined")
+	ErrNoCardFound = errors.New("gpu not found")
+	ErrBadGpuIndex = errors.New("gpu index cannot be negative")
 )
 
 func (b *Binary) pickCard() error {
@@ -38,7 +43,7 @@ func (b *Binary) pickCard() error {
 		vk := b.Dxvk || b.Renderer == "Vulkan"
 
 		if n != 2 && (!vk && n != 1) {
-			return fmt.Errorf("opengl is not capable of choosing the right gpu, it must be explicitly defined")
+			return ErrOpenGLBlind
 		}
 
 		if n != 2 {
@@ -51,11 +56,11 @@ func (b *Binary) pickCard() error {
 	}
 
 	if idx < 0 {
-		return errors.New("gpu index cannot be negative")
+		return ErrBadGpuIndex
 	}
 
 	if n < idx+1 {
-		return errors.New("gpu not found")
+		return ErrNoCardFound
 	}
 
 	b.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")

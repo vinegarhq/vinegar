@@ -4,13 +4,14 @@ import (
 	"errors"
 	"strconv"
 	"testing"
+
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 func TestCard(t *testing.T) {
 	b := Binary{
 		ForcedGpu: "meow",
-		Env: Environment{},
+		Env:       Environment{},
 	}
 	sysinfo.Cards = []sysinfo.Card{}
 
@@ -32,15 +33,15 @@ func TestCard(t *testing.T) {
 func TestIntegratedCard(t *testing.T) {
 	b := Binary{
 		ForcedGpu: "integrated",
-		Env: Environment{},
+		Env:       Environment{},
 	}
 	sysinfo.Cards = []sysinfo.Card{
 		{
-			Driver: "i915",
+			Driver:   "i915",
 			Embedded: true,
 		},
 		{
-			Driver: "nvidia",
+			Driver:   "nvidia",
 			Embedded: false,
 		},
 	}
@@ -61,15 +62,15 @@ func TestIntegratedCard(t *testing.T) {
 func TestDiscreteCard(t *testing.T) {
 	b := Binary{
 		ForcedGpu: "prime-discrete",
-		Env: Environment{},
+		Env:       Environment{},
 	}
 	sysinfo.Cards = []sysinfo.Card{
 		{
-			Driver: "i915",
+			Driver:   "i915",
 			Embedded: true,
 		},
 		{
-			Driver: "nvidia",
+			Driver:   "nvidia",
 			Embedded: false,
 		},
 	}
@@ -90,20 +91,20 @@ func TestDiscreteCard(t *testing.T) {
 func TestVulkanCard(t *testing.T) {
 	b := Binary{
 		ForcedGpu: "prime-discrete",
-		Renderer: "OpenGL",
-		Env: Environment{},
+		Renderer:  "OpenGL",
+		Env:       Environment{},
 	}
 	sysinfo.Cards = []sysinfo.Card{
 		{
-			Driver: "i915",
+			Driver:   "i915",
 			Embedded: true,
 		},
 		{
-			Driver: "nvidia",
+			Driver:   "nvidia",
 			Embedded: false,
 		},
 		{
-			Driver: "radeon",
+			Driver:   "radeon",
 			Embedded: false,
 		},
 	}

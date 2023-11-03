@@ -1,13 +1,9 @@
 package bootstrapper
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"io"
 	"log"
-	"os"
 
 	"github.com/vinegarhq/vinegar/util"
 )
@@ -15,19 +11,8 @@ import (
 func (p *Package) Verify(src string) error {
 	log.Printf("Verifying Package %s (%s)", p.Name, p.Checksum)
 
-	pkgFile, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer pkgFile.Close()
-
-	hash := md5.New()
-	if _, err := io.Copy(hash, pkgFile); err != nil {
-		return err
-	}
-
-	if p.Checksum != hex.EncodeToString(hash.Sum(nil)) {
-		return fmt.Errorf("package %s (%s) is corrupted", p.Name, src)
+	if err := util.VerifyFileMD5(src, p.Checksum); err != nil {
+		return fmt.Errorf("verify package %s: %w", p.Name, err)
 	}
 
 	return nil

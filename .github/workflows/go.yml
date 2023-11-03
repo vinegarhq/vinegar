@@ -9,6 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: 'Install Gio dependencies'
+      run: sudo apt install gcc pkg-config libwayland-dev libx11-dev libx11-xcb-dev libxkbcommon-x11-dev libgles2-mesa-dev libegl1-mesa-dev libffi-dev libxcursor-dev libvulkan-dev
     - name: 'Setup Go'
       uses: actions/setup-go@v4
       with:
@@ -18,4 +20,6 @@ jobs:
     - name: 'Run tests'
       run: make tests
     - name: 'Build Vinegar'
-      run: make VINEGAR_GOFLAGS="--tags nogui"
+      run: make
+    - name: 'Build Vinegar with nosplash'
+      run: make VINEGAR_GOFLAGS=--tags=nogui

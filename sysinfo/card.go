@@ -9,17 +9,19 @@ import (
 	"strings"
 )
 
-type card struct {
+type Card struct {
 	Path     string
 	Driver   string
 	Embedded bool
 }
 
-const drmPath = "/sys/class/drm"
-
+// Determines if a Card is 'embedded' or not, by checking
+// if one of these displays belong to the card.
 var embeddedDisplays = []string{"eDP", "LVDS"}
 
 func getCards() (cs []card) {
+	const drmPath = "/sys/class/drm"
+
 	drmCards, _ := filepath.Glob(path.Join(drmPath, "card[0-9]"))
 
 	for _, c := range drmCards {

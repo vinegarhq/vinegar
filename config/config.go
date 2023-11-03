@@ -96,6 +96,7 @@ func Default() Config {
 		// Global should only be used to set strings here.
 		Global: Binary{
 			ForcedGpu: "prime-discrete",
+			Renderer:  "D3D11",
 			Env: Environment{
 				"WINEARCH":         "win64",
 				"WINEDEBUG":        "err-kerberos,err-ntlm",

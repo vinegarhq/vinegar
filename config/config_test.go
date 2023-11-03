@@ -62,6 +62,11 @@ func TestBinarySetup(t *testing.T) {
 	if err := b.setup(); !errors.Is(err, ErrNeedDXVKRenderer) {
 		t.Error("expected dxvk appropiate renderer check")
 	}
+
+	b.Renderer = "D3D11FL10"
+	if err := b.setup(); errors.Is(err, ErrNeedDXVKRenderer) {
+		t.Error("expected not dxvk appropiate renderer check")
+	}
 }
 
 func TestSetup(t *testing.T) {

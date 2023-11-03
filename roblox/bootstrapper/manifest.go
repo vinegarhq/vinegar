@@ -50,15 +50,22 @@ func FetchManifest(ver *version.Version) (Manifest, error) {
 		return Manifest{}, err
 	}
 	durl := cdn + channelPath(ver.Channel) + ver.GUID
+	url := durl + "-rbxPkgManifest.txt"
 
-	log.Printf("Fetching manifest for %s (%s)", ver.GUID, durl)
+	log.Printf("Fetching manifest for %s (%s)", ver.GUID, url)
 
-	manif, err := util.Body(durl + "-rbxPkgManifest.txt")
+	smanif, err := util.Body(url)
 	if err != nil {
 		return Manifest{}, fmt.Errorf("fetch %s manifest: %w", ver.GUID, err)
 	}
 
-	pkgs, err := ParsePackages(strings.Split(manif, "\r\n"))
+	// Because the manifest ends with also a newline, it has to be removed.
+	manif := strings.Split(smanif, "\r\n")
+	if len(manif) > 0 && manif[len(manif)-1] == "" {
+		manif = manif[:len(manif)-1]
+	}
+
+	pkgs, err := ParsePackages(manif)
 	if err != nil {
 		return Manifest{}, err
 	}

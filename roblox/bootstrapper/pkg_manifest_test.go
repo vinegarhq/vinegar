@@ -49,7 +49,7 @@ func TestParsePackages(t *testing.T) {
 	}
 }
 
-func TestInvalidPackageManifest(t *testing.T) {
+func TestInvalidPackagePackageManifest(t *testing.T) {
 	manifest := []string{
 		"v0",
 		"foo.zip",
@@ -58,7 +58,7 @@ func TestInvalidPackageManifest(t *testing.T) {
 	}
 
 	_, err := ParsePackages(manifest)
-	if !errors.Is(err, ErrInvalidManifest) {
+	if !errors.Is(err, ErrInvalidPkgManifest) {
 		t.Fail()
 	}
 
@@ -70,7 +70,7 @@ func TestInvalidPackageManifest(t *testing.T) {
 	}
 }
 
-func TestUnhandledPackageManifest(t *testing.T) {
+func TestUnhandledPackagePackageManifest(t *testing.T) {
 	manifest := []string{
 		"v1",
 		"foo.zip",
@@ -80,7 +80,7 @@ func TestUnhandledPackageManifest(t *testing.T) {
 	}
 
 	_, err := ParsePackages(manifest)
-	if !errors.Is(err, ErrUnhandledManifestVersion) {
+	if !errors.Is(err, ErrUnhandledPkgManifestVer) {
 		t.Fail()
 	}
 }

@@ -62,8 +62,8 @@ func Load() (State, error) {
 	return state, nil
 }
 
-func SaveManifest(manif *bootstrapper.Manifest) error {
-	name := manif.Version.Type.BinaryName()
+func SavePackageManifest(pm *bootstrapper.PackageManifest) error {
+	name := pm.Version.Type.BinaryName()
 
 	log.Printf("Saving Manifest State for %s", name)
 
@@ -73,9 +73,9 @@ func SaveManifest(manif *bootstrapper.Manifest) error {
 	}
 
 	app := ApplicationState{
-		Version: manif.Version.GUID,
+		Version: pm.Version.GUID,
 	}
-	for _, pkg := range manif.Packages {
+	for _, pkg := range pm.Packages {
 		app.Packages = append(app.Packages, pkg.Checksum)
 	}
 

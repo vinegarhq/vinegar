@@ -270,7 +270,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	manifest, err := bootstrapper.FetchManifest(&b.Version)
+	manifest, err := bootstrapper.FetchPackageManifest(&b.Version)
 	if err != nil {
 		return err
 	}
@@ -302,7 +302,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	if err := state.SaveManifest(&manifest); err != nil {
+	if err := state.SavePackageManifest(&manifest); err != nil {
 		return err
 	}
 
@@ -313,11 +313,11 @@ func (b *Binary) Install() error {
 	return state.CleanVersions()
 }
 
-func (b *Binary) PerformPackages(m *bootstrapper.Manifest, fn func(bootstrapper.Package) error) error {
+func (b *Binary) PerformPackages(pm *bootstrapper.PackageManifest, fn func(bootstrapper.Package) error) error {
 	donePkgs := 0
-	pkgsLen := len(m.Packages)
+	pkgsLen := len(pm.Packages)
 
-	return m.Packages.Perform(func(pkg bootstrapper.Package) error {
+	return pm.Packages.Perform(func(pkg bootstrapper.Package) error {
 		err := fn(pkg)
 		if err != nil {
 			return err
@@ -330,19 +330,19 @@ func (b *Binary) PerformPackages(m *bootstrapper.Manifest, fn func(bootstrapper.
 	})
 }
 
-func (b *Binary) DownloadPackages(m *bootstrapper.Manifest) error {
-	log.Printf("Downloading %d Packages for %s", len(m.Packages), m.Version.GUID)
+func (b *Binary) DownloadPackages(pm *bootstrapper.PackageManifest) error {
+	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Version.GUID)
 
-	return b.PerformPackages(m, func(pkg bootstrapper.Package) error {
-		return pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), m.DeployURL)
+	return b.PerformPackages(pm, func(pkg bootstrapper.Package) error {
+		return pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
 	})
 }
 
-func (b *Binary) ExtractPackages(m *bootstrapper.Manifest) error {
-	log.Printf("Extracting %d Packages for %s", len(m.Packages), m.Version.GUID)
+func (b *Binary) ExtractPackages(pm *bootstrapper.PackageManifest) error {
+	log.Printf("Extracting %d Packages for %s", len(pm.Packages), pm.Version.GUID)
 	pkgDirs := bootstrapper.BinaryDirectories(b.Type)
 
-	return b.PerformPackages(m, func(pkg bootstrapper.Package) error {
+	return b.PerformPackages(pm, func(pkg bootstrapper.Package) error {
 		dest, ok := pkgDirs[pkg.Name]
 
 		if !ok {

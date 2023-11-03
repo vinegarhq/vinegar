@@ -12,15 +12,15 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type Manifest struct {
+type PackageManifest struct {
 	*version.Version
 	DeployURL string
 	Packages
 }
 
 var (
-	ErrInvalidManifest          = errors.New("invalid package manifest given")
-	ErrUnhandledManifestVersion = errors.New("unhandled package manifest version")
+	ErrInvalidPkgManifest      = errors.New("invalid package manifest given")
+	ErrUnhandledPkgManifestVer = errors.New("unhandled package manifest version")
 )
 
 type Package struct {
@@ -44,10 +44,10 @@ func channelPath(channel string) string {
 	return "/channel/" + channel + "/"
 }
 
-func FetchManifest(ver *version.Version) (Manifest, error) {
+func FetchPackageManifest(ver *version.Version) (PackageManifest, error) {
 	cdn, err := CDN()
 	if err != nil {
-		return Manifest{}, err
+		return PackageManifest{}, err
 	}
 	durl := cdn + channelPath(ver.Channel) + ver.GUID
 	url := durl + "-rbxPkgManifest.txt"
@@ -56,7 +56,7 @@ func FetchManifest(ver *version.Version) (Manifest, error) {
 
 	smanif, err := util.Body(url)
 	if err != nil {
-		return Manifest{}, fmt.Errorf("fetch %s manifest: %w", ver.GUID, err)
+		return PackageManifest{}, fmt.Errorf("fetch %s package manifest: %w", ver.GUID, err)
 	}
 
 	// Because the manifest ends with also a newline, it has to be removed.
@@ -67,10 +67,10 @@ func FetchManifest(ver *version.Version) (Manifest, error) {
 
 	pkgs, err := ParsePackages(manif)
 	if err != nil {
-		return Manifest{}, err
+		return PackageManifest{}, err
 	}
 
-	return Manifest{
+	return PackageManifest{
 		Version:   ver,
 		DeployURL: durl,
 		Packages:  pkgs,
@@ -81,11 +81,11 @@ func ParsePackages(manifest []string) (Packages, error) {
 	pkgs := make(Packages, 0)
 
 	if (len(manifest)-1)%4 != 0 {
-		return pkgs, ErrInvalidManifest
+		return pkgs, ErrInvalidPkgManifest
 	}
 
 	if manifest[0] != "v0" {
-		return pkgs, fmt.Errorf("%w: %s", ErrUnhandledManifestVersion, manifest[0])
+		return pkgs, fmt.Errorf("%w: %s", ErrUnhandledPkgManifestVer, manifest[0])
 	}
 
 	for i := 1; i <= len(manifest)-4; i += 4 {

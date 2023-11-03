@@ -22,4 +22,4 @@ jobs:
     - name: 'Build Vinegar'
       run: make
     - name: 'Build Vinegar with nosplash'
-      run: make VINEGAR_GOFLAGS=--tags=nogui
+      run: make clean vinegar VINEGAR_GOFLAGS=--tags=nogui

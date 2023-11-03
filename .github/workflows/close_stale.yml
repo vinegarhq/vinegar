@@ -2,7 +2,6 @@ name: "Close Stale Issues"
 on:
   schedule:
   - cron: "0 0 * * *"
-
 jobs:
   cleanup:
     runs-on: ubuntu-latest

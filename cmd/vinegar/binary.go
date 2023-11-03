@@ -146,9 +146,7 @@ func (b *Binary) Run(args ...string) error {
 			return
 		}
 
-		if b.Config.AutoKillPrefix {
-			b.Prefix.Kill()
-		}
+		b.Prefix.Kill()
 	}()
 
 	if err := cmd.Run(); err != nil {

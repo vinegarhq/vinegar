@@ -80,7 +80,10 @@ mime:
 	xdg-mime default $(FLATPAK).studio.desktop application/x-roblox-rbxl
 	xdg-mime default $(FLATPAK).studio.desktop application/x-roblox-rbxlx
 
+tests:
+	$(GO) test $(GOFLAGS) ./...
+
 clean:
 	rm -f vinegar robloxmutexer.exe
 
-.PHONY: all install install-vinegar install-robloxmutexer install-desktop install-icons uninstall icons mime clean
+.PHONY: all install install-vinegar install-robloxmutexer install-desktop install-icons uninstall icons mime tests clean

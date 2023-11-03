@@ -26,16 +26,15 @@ type Splash struct {
 }
 
 type Binary struct {
-	Channel        string        `toml:"channel"`
-	Launcher       string        `toml:"launcher"`
-	Renderer       string        `toml:"renderer"`
-	DiscordRPC     bool          `toml:"discord_rpc"`
-	ForcedVersion  string        `toml:"forced_version"`
-	AutoKillPrefix bool          `toml:"auto_kill_prefix"`
-	Dxvk           bool          `toml:"dxvk"`
-	FFlags         roblox.FFlags `toml:"fflags"`
-	Env            Environment   `toml:"env"`
-	ForcedGpu      string        `toml:"gpu"`
+	Channel       string        `toml:"channel"`
+	Launcher      string        `toml:"launcher"`
+	Renderer      string        `toml:"renderer"`
+	DiscordRPC    bool          `toml:"discord_rpc"`
+	ForcedVersion string        `toml:"forced_version"`
+	Dxvk          bool          `toml:"dxvk"`
+	FFlags        roblox.FFlags `toml:"fflags"`
+	Env           Environment   `toml:"env"`
+	ForcedGpu     string        `toml:"gpu"`
 }
 
 type Config struct {
@@ -50,6 +49,13 @@ type Config struct {
 	Splash            Splash      `toml:"splash"`
 }
 
+var (
+	ErrInvalidRenderer  = errors.New("invalid renderer given")
+	ErrNeedDXVKRenderer = errors.New("dxvk is only valid with d3d renderers")
+	ErrWineRootAbs      = errors.New("ensure that the wine root given is an absolute path")
+	ErrWineRootInvalid  = errors.New("invalid wine root given")
+)
+
 func Load(path string) (Config, error) {
 	cfg := Default()
 
@@ -60,10 +66,6 @@ func Load(path string) (Config, error) {
 	}
 
 	if _, err := toml.DecodeFile(path, &cfg); err != nil {
-		return cfg, err
-	}
-
-	if err := cfg.globalize(); err != nil {
 		return cfg, err
 	}
 
@@ -108,16 +110,14 @@ func Default() Config {
 			},
 		},
 		Player: Binary{
-			DiscordRPC:     true,
-			Dxvk:           true,
-			AutoKillPrefix: true,
+			DiscordRPC: true,
+			Dxvk:       true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
 		},
 		Studio: Binary{
-			Dxvk:           true,
-			AutoKillPrefix: true,
+			Dxvk: true,
 		},
 
 		Splash: Splash{
@@ -134,7 +134,7 @@ func Default() Config {
 
 func (b *Binary) setup() error {
 	if !roblox.ValidRenderer(b.Renderer) {
-		return errors.New("invalid renderer given")
+		return ErrInvalidRenderer
 	}
 
 	if err := b.pickCard(); err != nil {
@@ -142,7 +142,7 @@ func (b *Binary) setup() error {
 	}
 
 	if !strings.HasPrefix(b.Renderer, "D3D11") && b.Dxvk {
-		return errors.New("dxvk is only valid with d3d renderers")
+		return ErrNeedDXVKRenderer
 	}
 
 	b.Env.Setenv()
@@ -163,12 +163,12 @@ func (c *Config) setup() error {
 		bin := filepath.Join(c.WineRoot, "bin")
 
 		if !filepath.IsAbs(c.WineRoot) {
-			return errors.New("ensure that the wine root given is an absolute path")
+			return ErrWineRootAbs
 		}
 
 		_, err := os.Stat(filepath.Join(bin, "wine"))
 		if err != nil {
-			return fmt.Errorf("invalid wine root given: %s", err)
+			return fmt.Errorf("%w: %s", ErrWineRootInvalid, err)
 		}
 
 		c.Global.Env["PATH"] = bin + ":" + os.Getenv("PATH")

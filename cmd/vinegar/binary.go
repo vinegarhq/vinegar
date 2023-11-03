@@ -270,7 +270,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	manifest, err := bootstrapper.FetchPackageManifest(&b.Version)
+	pm, err := bootstrapper.FetchPackageManifest(&b.Version)
 	if err != nil {
 		return err
 	}
@@ -280,12 +280,22 @@ func (b *Binary) Install() error {
 	}
 
 	b.Splash.SetMessage("Downloading " + b.Alias)
-	if err := b.DownloadPackages(&manifest); err != nil {
+	if err := b.DownloadPackages(&pm); err != nil {
 		return err
 	}
 
 	b.Splash.SetMessage("Extracting " + b.Alias)
-	if err := b.ExtractPackages(&manifest); err != nil {
+	if err := b.ExtractPackages(&pm); err != nil {
+		return err
+	}
+
+	m, err := bootstrapper.FetchManifest(&b.Version)
+	if err != nil {
+		return err
+	}
+
+	b.Splash.SetMessage("Verifying " + b.Alias)
+	if err := b.VerifyFiles(m); err != nil {
 		return err
 	}
 
@@ -302,7 +312,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	if err := state.SavePackageManifest(&manifest); err != nil {
+	if err := state.SavePackageManifest(&pm); err != nil {
 		return err
 	}
 
@@ -314,7 +324,7 @@ func (b *Binary) Install() error {
 }
 
 func (b *Binary) PerformPackages(pm *bootstrapper.PackageManifest, fn func(bootstrapper.Package) error) error {
-	donePkgs := 0
+	pkgsDone := 0
 	pkgsLen := len(pm.Packages)
 
 	return pm.Packages.Perform(func(pkg bootstrapper.Package) error {
@@ -323,8 +333,8 @@ func (b *Binary) PerformPackages(pm *bootstrapper.PackageManifest, fn func(boots
 			return err
 		}
 
-		donePkgs++
-		b.Splash.SetProgress(float32(donePkgs) / float32(pkgsLen))
+		pkgsDone++
+		b.Splash.SetProgress(float32(pkgsDone) / float32(pkgsLen))
 
 		return nil
 	})
@@ -351,6 +361,25 @@ func (b *Binary) ExtractPackages(pm *bootstrapper.PackageManifest) error {
 
 		return pkg.Extract(filepath.Join(dirs.Downloads, pkg.Checksum), filepath.Join(b.Dir, dest))
 	})
+}
+
+func (b *Binary) VerifyFiles(m bootstrapper.Manifest) error {
+	filesLen := len(m)
+	filesDone := 0
+
+	log.Printf("Verifying %d files", filesLen)
+
+	for _, f := range m {
+		err := util.VerifyFileMD5(filepath.Join(b.Dir, f.Path), f.Checksum)
+		if err != nil {
+			return err
+		}
+
+		filesDone++
+		b.Splash.SetProgress(float32(filesDone) / float32(filesLen))
+	}
+
+	return nil
 }
 
 func (b *Binary) SetupDxvk() error {

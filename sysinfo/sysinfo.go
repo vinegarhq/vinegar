@@ -11,8 +11,8 @@ import (
 var (
 	Kernel    string
 	CPU       string
-	Cards     []card
-	Distro    distro
+	Cards     []Card
+	Distro    string
 	HasAVX    = cpu.X86.HasAVX
 	InFlatpak bool
 )

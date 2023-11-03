@@ -8,15 +8,13 @@ import (
 	"strings"
 )
 
-type distro struct {
-	Name    string
-	Version string
-}
+func getDistro() string {
+	name := "Linux"
+	ver := ""
 
-func getDistro() (d distro) {
 	f, err := os.Open("/etc/os-release")
 	if err != nil {
-		return
+		return name
 	}
 	defer f.Close()
 
@@ -32,19 +30,11 @@ func getDistro() (d distro) {
 
 		switch m[0] {
 		case "PRETTY_NAME":
-			d.Name = val
+			name = val
 		case "VERSION_ID":
-			d.Version = val
+			ver = val
 		}
 	}
 
-	return
-}
-
-func (d distro) String() string {
-	if d.Name == "" {
-		d.Name = "Linux"
-	}
-
-	return d.Name + " " + d.Version
+	return name + " " + ver
 }

@@ -9,14 +9,6 @@ import (
 
 const DefaultChannel = "live"
 
-type ClientVersion struct {
-	Version                 string `json:"version"`
-	ClientVersionUpload     string `json:"clientVersionUpload"`
-	BootstrapperVersion     string `json:"bootstrapperVersion"`
-	NextClientVersionUpload string `json:"nextClientVersionUpload"`
-	NextClientVersion       string `json:"nextClientVersion"`
-}
-
 type Version struct {
 	Type    roblox.BinaryType
 	Channel string

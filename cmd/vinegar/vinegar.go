@@ -19,12 +19,16 @@ import (
 	"github.com/vinegarhq/vinegar/wine"
 )
 
-var BinPrefix string
+var (
+	BinPrefix string
+	Version   string
+)
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
-	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] exec prog [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] edit|kill|uninstall|delete|install-webview2|winetricks|sysinfo")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] exec prog [args...]")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] delete|edit|uninstall|version")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] kill|install-webview2|winetricks|sysinfo")
 	os.Exit(1)
 }
 
@@ -38,7 +42,7 @@ func main() {
 
 	switch cmd {
 	// These commands don't require a configuration
-	case "delete", "edit", "uninstall":
+	case "delete", "edit", "uninstall", "version":
 		switch cmd {
 		case "delete":
 			Delete()
@@ -48,6 +52,8 @@ func main() {
 			}
 		case "uninstall":
 			Uninstall()
+		case "version":
+			fmt.Println("Vinegar", Version)
 		}
 	// These commands (except player & studio) don't require a configuration,
 	// but they require a wineprefix, hence wineroot of configuration is required.
@@ -132,13 +138,14 @@ func Sysinfo(pfx *wine.Prefix) {
 	}
 
 	info := `## System information
+* Vinegar: %s
 * Distro: %s
 * Processor: %s
   * Supports AVX: %t
 * Kernel: %s
 * Wine: %s`
 
-	fmt.Printf(info, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
+	fmt.Printf(info, Version, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
 	if sysinfo.InFlatpak {
 		fmt.Println("* Flatpak: [x]")
 	}

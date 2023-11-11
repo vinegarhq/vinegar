@@ -156,6 +156,8 @@ func Sysinfo(pfx *wine.Prefix) {
 }
 
 func (b *Binary) Main(args ...string) {
+	b.Config.Env.Setenv()
+
 	logFile := logs.File(b.Type.String())
 	defer logFile.Close()
 

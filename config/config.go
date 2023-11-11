@@ -138,17 +138,11 @@ func (b *Binary) setup() error {
 		return ErrInvalidRenderer
 	}
 
-	if err := b.pickCard(); err != nil {
-		return err
-	}
-
 	if !strings.HasPrefix(b.Renderer, "D3D11") && b.Dxvk {
 		return ErrNeedDXVKRenderer
 	}
 
-	b.Env.Setenv()
-
-	return nil
+	return b.pickCard()
 }
 
 func (c *Config) setup() error {

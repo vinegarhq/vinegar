@@ -1,6 +1,7 @@
 package config
 
 import (
+	"os"
 	"errors"
 	"path/filepath"
 	"testing"
@@ -39,14 +40,18 @@ func TestGlobal(t *testing.T) {
 	if c.Player.Env["MEOW"] != "PLAYER" {
 		t.Error("expected player overrides global env")
 	}
-
+	
 	if c.Studio.Env["MEOW"] != "DEPRECATED" {
 		t.Error("expected studio applies global env")
 	}
 }
 
 func TestBinarySetup(t *testing.T) {
-	var b Binary
+	b := Binary{
+		Env: Environment{
+			"MEOW": "MEOW",
+		},
+	}
 
 	if err := b.setup(); err != nil {
 		t.Fatal(err)
@@ -66,6 +71,10 @@ func TestBinarySetup(t *testing.T) {
 	b.Renderer = "D3D11FL10"
 	if err := b.setup(); errors.Is(err, ErrNeedDXVKRenderer) {
 		t.Error("expected not dxvk appropiate renderer check")
+	}
+
+	if os.Getenv("MEOW") == "MEOW" {
+		t.Error("expected no change in environment")
 	}
 }
 

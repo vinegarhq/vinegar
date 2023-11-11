@@ -137,8 +137,7 @@ func Sysinfo(pfx *wine.Prefix) {
 		log.Fatal(err)
 	}
 
-	info := `## System information
-* Vinegar: %s
+	info := `* Vinegar: %s
 * Distro: %s
 * Processor: %s
   * Supports AVX: %t

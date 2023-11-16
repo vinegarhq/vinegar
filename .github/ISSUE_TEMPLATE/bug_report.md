@@ -7,6 +7,8 @@ assignees: ""
 ---
 
 #### Describe the bug
+- [ ] I have searched open and closed issues to make sure that the bug has not yet been reported
+
 A clear and concise description of what the bug is.
 
 #### To Reproduce

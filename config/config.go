@@ -116,6 +116,9 @@ func Default() Config {
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
+			Env: Environment{
+				"OBS_VKCAPTURE": "1",
+			},
 		},
 		Studio: Binary{
 			Dxvk: true,

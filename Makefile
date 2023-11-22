@@ -9,9 +9,10 @@ FLATPAK = io.github.vinegarhq.Vinegar
 
 GO = go
 GO_LDFLAGS = -s -w
+GIT_HEAD = $(shell git log -1 --pretty=format:"%H")
 
 VINEGAR_ICONPATH = $(ICONPREFIX)/64x64/apps/$(FLATPAK).png
-VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
+VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION) -X main.GitHead=$(GIT_HEAD)
 VINEGAR_GOFLAGS = --tags nowayland,novulkan
 
 all: vinegar robloxmutexer.exe

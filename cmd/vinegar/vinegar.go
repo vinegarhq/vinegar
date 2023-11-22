@@ -22,6 +22,7 @@ import (
 var (
 	BinPrefix string
 	Version   string
+	GitHead   string
 )
 
 func usage() {
@@ -130,6 +131,12 @@ func Delete() {
 }
 
 func Sysinfo(pfx *wine.Prefix) {
+	fmtHead := GitHead
+
+	if fmtHead == "" {
+		fmtHead = "N/A"
+	}
+
 	cmd := pfx.Wine("--version")
 	cmd.Stdout = nil // required for Output()
 	ver, err := cmd.Output()
@@ -137,14 +144,14 @@ func Sysinfo(pfx *wine.Prefix) {
 		log.Fatal(err)
 	}
 
-	info := `* Vinegar: %s
+	info := `* Vinegar: %s (%s)
 * Distro: %s
 * Processor: %s
   * Supports AVX: %t
 * Kernel: %s
 * Wine: %s`
 
-	fmt.Printf(info, Version, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
+	fmt.Printf(info, Version, fmtHead, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
 	if sysinfo.InFlatpak {
 		fmt.Println("* Flatpak: [x]")
 	}

@@ -35,6 +35,7 @@ type Binary struct {
 	FFlags        roblox.FFlags `toml:"fflags"`
 	Env           Environment   `toml:"env"`
 	ForcedGpu     string        `toml:"gpu"`
+	GameMode      bool        `toml:"gamemode"`
 }
 
 type Config struct {
@@ -113,6 +114,7 @@ func Default() Config {
 		Player: Binary{
 			DiscordRPC: true,
 			Dxvk:       true,
+			GameMode:   true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
@@ -121,7 +123,8 @@ func Default() Config {
 			},
 		},
 		Studio: Binary{
-			Dxvk: true,
+			Dxvk:     true,
+			GameMode: true,
 		},
 
 		Splash: Splash{

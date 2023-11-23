@@ -82,3 +82,11 @@ func (c *Cmd) Run() error {
 	}
 	return c.Wait()
 }
+
+func (c *Cmd) RunNoLock() error {
+	if err := c.Start(); err != nil {
+		return err
+	}
+
+	return nil
+}

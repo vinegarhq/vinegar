@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"syscall"
 
 	"github.com/vinegarhq/vinegar/config"
@@ -137,14 +138,22 @@ func Sysinfo(pfx *wine.Prefix) {
 		log.Fatal(err)
 	}
 
-	info := `* Vinegar: %s
+	var revision string
+	bi, _ := debug.ReadBuildInfo()
+	for _, bs := range bi.Settings {
+		if bs.Key == "vcs.revision" {
+			revision = fmt.Sprintf("(%s)", bs.Value)
+		}
+	}
+
+	info := `* Vinegar: %s %s
 * Distro: %s
 * Processor: %s
   * Supports AVX: %t
 * Kernel: %s
 * Wine: %s`
 
-	fmt.Printf(info, Version, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
+	fmt.Printf(info, Version, revision, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
 	if sysinfo.InFlatpak {
 		fmt.Println("* Flatpak: [x]")
 	}

@@ -12,9 +12,7 @@ func (s *SessionBus) GamemodeRegister(pid int) (bool, error) {
 	if s.conn == nil {
 		return false, nil
 	}
-
-	fmt.Println(os.Getpid())
-
+	
 	call := s.portal.Call("org.freedesktop.portal.GameMode.RegisterGame", 0, int32(pid))
 	if call.Err != nil {
 		//Transparently handle missing portal

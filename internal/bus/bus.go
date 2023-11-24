@@ -11,7 +11,7 @@ type SessionBus struct {
 	portal dbus.BusObject
 }
 
-func NewSession() *SessionBus {
+func New() *SessionBus {
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		return &SessionBus{}

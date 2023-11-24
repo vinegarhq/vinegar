@@ -76,7 +76,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Bina
 		Type:   bt,
 		Prefix: pfx,
 
-		BusSession: bus.NewSession(),
+		BusSession: bus.New(),
 	}
 }
 

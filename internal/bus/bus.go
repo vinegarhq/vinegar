@@ -15,12 +15,8 @@ func NewSession() *SessionBus {
 		return &SessionBus{}
 	}
 
-	portal := conn.Object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop")
-
-	session := &SessionBus{
+	return &SessionBus{
 		conn: conn,
-		portal: portal,
+		portal: conn.Object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop"),
 	}
-
-	return session
 }

@@ -26,9 +26,5 @@ func (s *SessionBus) GamemodeRegister(pid int) (bool, error) {
 
 	response := call.Body[0].(int32)
 
-	if response < 0 {
-		return false, nil
-	}
-
-	return true, nil
+	return response > 0, nil
 }

@@ -23,7 +23,7 @@ func NewSession() *SessionBus {
 	}
 }
 
-func (s *SessionBus) GamemodeRegister(pid int) (error) {
+func (s *SessionBus) GamemodeRegister(pid int) error {
 	if s.conn == nil {
 		return nil
 	}

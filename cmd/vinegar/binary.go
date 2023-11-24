@@ -16,6 +16,7 @@ import (
 
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
+	"github.com/vinegarhq/vinegar/internal/bus"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
@@ -25,7 +26,6 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
-	"github.com/vinegarhq/vinegar/internal/bus"
 )
 
 const (

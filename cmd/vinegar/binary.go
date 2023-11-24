@@ -128,7 +128,7 @@ func (b *Binary) Run(args ...string) error {
 	log.Printf("Launching %s", b.Name)
 	b.Splash.SetMessage("Launching " + b.Alias)
 
-	if err := cmd.RunNoLock(); err != nil {
+	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("roblox process: %w", err)
 	}
 

@@ -4,7 +4,7 @@ import (
 	"github.com/godbus/dbus/v5"
 )
 
-type SessionBus struct{
+type SessionBus struct {
 	conn   *dbus.Conn
 	portal dbus.BusObject
 }
@@ -16,7 +16,7 @@ func NewSession() *SessionBus {
 	}
 
 	return &SessionBus{
-		conn: conn,
+		conn:   conn,
 		portal: conn.Object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop"),
 	}
 }

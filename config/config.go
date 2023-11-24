@@ -35,7 +35,7 @@ type Binary struct {
 	FFlags        roblox.FFlags `toml:"fflags"`
 	Env           Environment   `toml:"env"`
 	ForcedGpu     string        `toml:"gpu"`
-	GameMode      bool        `toml:"gamemode"`
+	GameMode      bool          `toml:"gamemode"`
 }
 
 type Config struct {

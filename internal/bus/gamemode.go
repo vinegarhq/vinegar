@@ -2,8 +2,6 @@ package bus
 
 import (
 	"errors"
-	"fmt"
-	"os"
 
 	"github.com/godbus/dbus/v5"
 )

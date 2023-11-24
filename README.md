@@ -26,7 +26,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Roblox's logs appear within Vinegar
 + FPS Unlocking for Player by default, without rbxfpsunlocker
 + Browser launch via MIME
-+ Built-in, no hassle, [GameMode](https://github.com/FeralInteractive/gamemode) functionality
++ Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
 + Custom execution of wine program within wineprefix
 + TOML configuration file
   + Force a specific version of Roblox

@@ -133,7 +133,7 @@ func (b *Binary) Run(args ...string) error {
 	}
 
 	if b.Config.GameMode {
-		if _, err := b.BusSession.GamemodeRegister(cmd.Process.Pid); err != nil {
+		if err := b.BusSession.GamemodeRegister(cmd.Process.Pid); err != nil {
 			fmt.Fprintf(os.Stderr, "failed to register gamemode: %s", err.Error())
 		}
 	}

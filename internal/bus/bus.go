@@ -23,21 +23,19 @@ func NewSession() *SessionBus {
 	}
 }
 
-func (s *SessionBus) GamemodeRegister(pid int) (bool, error) {
+func (s *SessionBus) GamemodeRegister(pid int) (error) {
 	if s.conn == nil {
-		return false, nil
+		return nil
 	}
 
 	call := s.portal.Call("org.freedesktop.portal.GameMode.RegisterGame", 0, int32(pid))
 	if call.Err != nil {
 		//Transparently handle missing portal
 		if !errors.Is(call.Err, dbus.ErrMsgNoObject) {
-			return false, nil
+			return nil
 		}
-		return false, call.Err
+		return call.Err
 	}
 
-	response := call.Body[0].(int32)
-
-	return response > 0, nil
+	return nil
 }

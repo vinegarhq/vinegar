@@ -16,6 +16,7 @@ import (
 
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
+	"github.com/vinegarhq/vinegar/internal/bus"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
@@ -49,6 +50,9 @@ type Binary struct {
 	// Logging
 	Auth     bool
 	Activity bsrpc.Activity
+
+	// DBUS session
+	BusSession *bus.SessionBus
 }
 
 func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Binary {
@@ -71,6 +75,8 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Bina
 		Name:   bt.BinaryName(),
 		Type:   bt,
 		Prefix: pfx,
+
+		BusSession: bus.New(),
 	}
 }
 
@@ -122,6 +128,16 @@ func (b *Binary) Run(args ...string) error {
 	log.Printf("Launching %s", b.Name)
 	b.Splash.SetMessage("Launching " + b.Alias)
 
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("roblox process: %w", err)
+	}
+
+	if b.Config.GameMode {
+		if err := b.BusSession.GamemodeRegister(int32(cmd.Process.Pid)); err != nil {
+			fmt.Fprintf(os.Stderr, "failed to register gamemode: %s", err.Error())
+		}
+	}
+
 	defer func() {
 		// Don't do anything if the process even ran correctly.
 		if cmd.Process == nil {
@@ -149,7 +165,7 @@ func (b *Binary) Run(args ...string) error {
 		b.Prefix.Kill()
 	}()
 
-	if err := cmd.Run(); err != nil {
+	if err := cmd.Wait(); err != nil {
 		return fmt.Errorf("roblox process: %w", err)
 	}
 

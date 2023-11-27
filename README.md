@@ -26,11 +26,12 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Roblox's logs appear within Vinegar
 + FPS Unlocking for Player by default, without rbxfpsunlocker
 + Browser launch via MIME
++ Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
 + Custom execution of wine program within wineprefix
 + TOML configuration file
   + Force a specific version of Roblox
   + Select/Force Roblox release channels, lets you opt into non-production Roblox release channels
-  + Custom launcher specified to be used when launching Roblox (eg. [GameMode](https://github.com/FeralInteractive/gamemode)).
+  + Custom launcher specified to be used when launching Roblox
   + Wine Root, allows you to set a specific wine installation path
   + Sanitization of environment
   + Set different environment variables and FFlags for both Player and Studio

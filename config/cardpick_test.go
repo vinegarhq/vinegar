@@ -30,7 +30,7 @@ func TestCard(t *testing.T) {
 	}
 }
 
-func TestIntegratedCard(t *testing.T) {
+func TestIntegratedAndDiscreteCard(t *testing.T) {
 	b := Binary{
 		ForcedGpu: "integrated",
 		Env:       Environment{},
@@ -38,10 +38,12 @@ func TestIntegratedCard(t *testing.T) {
 	sysinfo.Cards = []sysinfo.Card{
 		{
 			Driver:   "i915",
+			Device:   "0000:01:00.0",
 			Embedded: true,
 		},
 		{
 			Driver:   "nvidia",
+			Device:   "0000:02:00.0",
 			Embedded: false,
 		},
 	}
@@ -50,36 +52,22 @@ func TestIntegratedCard(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if v := b.Env["DRI_PRIME"]; v != "0" {
+	if v := b.Env["DRI_PRIME"]; v != "pci-0000_01_00_0" {
 		t.Fatal("expected change in integrated prime index")
 	}
 
 	if v := b.Env["__GLX_VENDOR_LIBRARY_NAME"]; v != "mesa" {
 		t.Fatal("expected glx vendor to be mesa")
 	}
-}
 
-func TestDiscreteCard(t *testing.T) {
-	b := Binary{
-		ForcedGpu: "prime-discrete",
-		Env:       Environment{},
-	}
-	sysinfo.Cards = []sysinfo.Card{
-		{
-			Driver:   "i915",
-			Embedded: true,
-		},
-		{
-			Driver:   "nvidia",
-			Embedded: false,
-		},
-	}
+	b.Env = Environment{}
+	b.ForcedGpu = "prime-discrete"
 
 	if err := b.pickCard(); err != nil {
 		t.Fatal(err)
 	}
 
-	if v := b.Env["DRI_PRIME"]; v != "1" {
+	if v := b.Env["DRI_PRIME"]; v != "pci-0000_02_00_0" {
 		t.Fatal("expected change in discrete prime index")
 	}
 

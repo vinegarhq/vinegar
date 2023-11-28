@@ -2,7 +2,9 @@ package config
 
 import (
 	"errors"
+	"path"
 	"strconv"
+	"strings"
 
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
@@ -62,10 +64,14 @@ func (b *Binary) pickCard() error {
 		return ErrNoCardFound
 	}
 
-	b.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
-	b.Env.Set("DRI_PRIME", strconv.Itoa(idx))
+	c := sysinfo.Cards[idx]
 
-	if sysinfo.Cards[idx].Driver == "nvidia" { // Workaround for OpenGL in nvidia GPUs
+	b.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
+	b.Env.Set("DRI_PRIME",
+		"pci-"+strings.NewReplacer(":", "_", ".", "_").Replace(path.Base(c.Device)),
+	)
+
+	if c.Driver == "nvidia" { // Workaround for OpenGL in nvidia GPUs
 		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	} else {
 		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")

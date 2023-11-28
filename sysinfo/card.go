@@ -10,9 +10,10 @@ import (
 )
 
 type Card struct {
-	Path     string
-	Driver   string
-	Embedded bool
+	Path     string // Path to the drm card
+	Device   string // Path to the PCI device
+	Driver   string // Base driver name
+	Embedded bool   // Integrated display
 }
 
 const drmPath = "/sys/class/drm"
@@ -25,12 +26,14 @@ func getCards() (cs []Card) {
 	drmCards, _ := filepath.Glob(path.Join(drmPath, "card[0-9]"))
 
 	for _, c := range drmCards {
-		d, _ := filepath.EvalSymlinks(path.Join(c, "device/driver"))
-		d = path.Base(d)
+		dev, _ := filepath.EvalSymlinks(path.Join(c, "device"))
+		driver, _ := filepath.EvalSymlinks(path.Join(dev, "driver"))
+		driver = path.Base(driver)
 
 		cs = append(cs, Card{
 			Path:     c,
-			Driver:   d,
+			Device:   dev,
+			Driver:   driver,
 			Embedded: embedded(c),
 		})
 	}

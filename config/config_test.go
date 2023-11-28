@@ -1,8 +1,8 @@
 package config
 
 import (
-	"os"
 	"errors"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -40,7 +40,7 @@ func TestGlobal(t *testing.T) {
 	if c.Player.Env["MEOW"] != "PLAYER" {
 		t.Error("expected player overrides global env")
 	}
-	
+
 	if c.Studio.Env["MEOW"] != "DEPRECATED" {
 		t.Error("expected studio applies global env")
 	}

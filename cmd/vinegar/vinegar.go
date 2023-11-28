@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime/debug"
 	"syscall"
@@ -160,7 +161,7 @@ func Sysinfo(pfx *wine.Prefix) {
 
 	fmt.Println("* Cards:")
 	for i, c := range sysinfo.Cards {
-		fmt.Printf("  * Card %d: %s %s\n", i, c.Driver, c.Path)
+		fmt.Printf("  * Card %d: %s %s %s\n", i, c.Driver, path.Base(c.Device), c.Path)
 	}
 }
 

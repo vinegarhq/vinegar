@@ -10,7 +10,6 @@ FLATPAK = io.github.vinegarhq.Vinegar
 GO = go
 GO_LDFLAGS = -s -w
 
-VINEGAR_ICONPATH = $(ICONPREFIX)/64x64/apps/$(FLATPAK).png
 VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
 VINEGAR_GOFLAGS = --tags nowayland,novulkan
 

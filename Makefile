@@ -5,7 +5,7 @@ BINPREFIX  = $(PREFIX)/libexec/vinegar
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
-FLATPAK = io.github.vinegarhq.Vinegar
+FLATPAK = org.vinegarhq.Vinegar
 
 GO = go
 GO_LDFLAGS = -s -w

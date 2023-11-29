@@ -9,17 +9,18 @@ import (
 )
 
 var (
-	Kernel    string
-	CPU       string
-	Cards     []Card
-	Distro    string
-	HasAVX    = cpu.X86.HasAVX
-	InFlatpak bool
+	Kernel             string
+	CPU                string
+	Cards              []Card
+	Distro             string
+	HasAVX             = cpu.X86.HasAVX
+	HasSplitLockDetect bool
+	InFlatpak          bool
 )
 
 func init() {
 	Kernel = getKernel()
-	CPU = cpuModel()
+	CPU, HasSplitLockDetect = cpuModel()
 	Cards = getCards()
 	Distro = getDistro()
 

@@ -150,10 +150,11 @@ func Sysinfo(pfx *wine.Prefix) {
 * Distro: %s
 * Processor: %s
   * Supports AVX: %t
+  * Supports split lock detection: %t
 * Kernel: %s
 * Wine: %s`
 
-	fmt.Printf(info, Version, revision, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.Kernel, ver)
+	fmt.Printf(info, Version, revision, sysinfo.Distro, sysinfo.CPU, sysinfo.HasAVX, sysinfo.HasSplitLockDetect, sysinfo.Kernel, ver)
 	if sysinfo.InFlatpak {
 		fmt.Println("* Flatpak: [x]")
 	}

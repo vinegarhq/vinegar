@@ -7,18 +7,26 @@ import (
 	"os"
 	"regexp"
 	"strings"
+
+	cpulib "golang.org/x/sys/cpu"
 )
 
-func cpuModel() (string, bool) {
+var CPU struct {
+	Name            string
+	AVX             bool
+	SplitLockDetect bool
+}
+
+func init() {
+	CPU.Name = "unknown cpu"
+	CPU.AVX = cpulib.X86.HasAVX
+
 	column := regexp.MustCompile("\t+: ")
 
 	f, _ := os.Open("/proc/cpuinfo")
 	defer f.Close()
 
 	s := bufio.NewScanner(f)
-
-	n := "unknown cpu"
-	l := false
 
 	for s.Scan() {
 		sl := column.Split(s.Text(), 2)
@@ -28,15 +36,13 @@ func cpuModel() (string, bool) {
 
 		// pfft, who needs multiple cpus? just return if we got all we need
 		if sl[0] == "model name" {
-			n = sl[1]
+			CPU.Name = sl[1]
 		}
 
 		if sl[0] == "flags" {
-			l = strings.Contains(sl[1], "split_lock_detect")
+			CPU.SplitLockDetect = strings.Contains(sl[1], "split_lock_detect")
 			break
 		}
 
 	}
-
-	return n, l
 }

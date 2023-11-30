@@ -8,19 +8,26 @@ import (
 	"golang.org/x/sys/cpu"
 )
 
+type CPUInfo struct {
+	Name            string
+	AVX             bool
+	SplitLockDetect bool
+}
+
 var (
-	Kernel             string
-	CPU                string
-	Cards              []Card
-	Distro             string
-	HasAVX             = cpu.X86.HasAVX
-	HasSplitLockDetect bool
-	InFlatpak          bool
+	Kernel    string
+	CPU       CPUInfo
+	Cards     []Card
+	Distro    string
+	InFlatpak bool
 )
 
 func init() {
 	Kernel = getKernel()
-	CPU, HasSplitLockDetect = cpuModel()
+
+	CPU.AVX = cpu.X86.HasAVX
+	CPU.Name, CPU.SplitLockDetect = cpuModel()
+
 	Cards = getCards()
 	Distro = getDistro()
 

@@ -11,15 +11,17 @@ import (
 	cpulib "golang.org/x/sys/cpu"
 )
 
-var CPU struct {
+type cpu struct {
 	Name            string
 	AVX             bool
 	SplitLockDetect bool
 }
 
-func init() {
-	CPU.Name = "unknown cpu"
-	CPU.AVX = cpulib.X86.HasAVX
+func getCPU() cpu {
+	c := cpu{
+		Name: "unknown cpu",
+		AVX: cpulib.X86.HasAVX,
+	}
 
 	column := regexp.MustCompile("\t+: ")
 
@@ -36,13 +38,15 @@ func init() {
 
 		// pfft, who needs multiple cpus? just return if we got all we need
 		if sl[0] == "model name" {
-			CPU.Name = sl[1]
+			c.Name = sl[1]
 		}
 
 		if sl[0] == "flags" {
-			CPU.SplitLockDetect = strings.Contains(sl[1], "split_lock_detect")
+			c.SplitLockDetect = strings.Contains(sl[1], "split_lock_detect")
 			break
 		}
 
 	}
+
+	return c
 }

@@ -8,6 +8,7 @@ import (
 
 var (
 	Kernel    string
+	CPU       cpu
 	Cards     []Card
 	Distro    string
 	InFlatpak bool
@@ -15,6 +16,7 @@ var (
 
 func init() {
 	Kernel = getKernel()
+	CPU = getCPU()
 	Cards = getCards()
 	Distro = getDistro()
 

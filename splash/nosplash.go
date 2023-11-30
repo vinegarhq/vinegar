@@ -12,9 +12,7 @@ import (
 var ErrClosed = errors.New("window closed")
 
 type Splash struct {
-	Config *config.Splash
-
-	LogPath string // unused
+	LogPath string
 }
 
 func (ui *Splash) SetMessage(msg string) {
@@ -41,15 +39,9 @@ func (ui *Splash) Dialog(title, msg string) {
 }
 
 func New(cfg *config.Splash) *Splash {
-	return &Splash{
-		Config: cfg,
-	}
+	return &Splash{}
 }
 
 func (ui *Splash) Run() error {
-	if ui.Config.Enabled {
-		return errors.New("splash: splash is enabled, despite being built with nosplash")
-	}
-
 	return nil
 }

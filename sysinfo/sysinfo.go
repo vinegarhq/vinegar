@@ -4,22 +4,19 @@ package sysinfo
 
 import (
 	"os"
-
-	"golang.org/x/sys/cpu"
 )
 
 var (
 	Kernel    string
-	CPU       string
+	CPU       cpu
 	Cards     []Card
 	Distro    string
-	HasAVX    = cpu.X86.HasAVX
 	InFlatpak bool
 )
 
 func init() {
 	Kernel = getKernel()
-	CPU = cpuModel()
+	CPU = getCPU()
 	Cards = getCards()
 	Distro = getDistro()
 

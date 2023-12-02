@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 )
 
+var ErrInvalidRenderer = errors.New("invalid renderer given")
+
 var renderers = []string{
 	"OpenGL",
 	"D3D11FL10",
@@ -18,14 +20,9 @@ var renderers = []string{
 
 type FFlags map[string]interface{}
 
-func (f *FFlags) Apply(versionDir string) error {
+func (f FFlags) Apply(versionDir string) error {
 	dir := filepath.Join(versionDir, "ClientSettings")
 	path := filepath.Join(dir, "ClientAppSettings.json")
-
-	// If the fflags are empty, the FFlags file's contents will be 'null'
-	if len(*f) == 0 {
-		return nil
-	}
 
 	log.Printf("Applying custom FFlags")
 
@@ -68,18 +65,14 @@ func ValidRenderer(renderer string) bool {
 	return false
 }
 
-func (f *FFlags) SetRenderer(renderer string) error {
+func (f FFlags) SetRenderer(renderer string) error {
 	// Assume Roblox's internal default renderer
 	if renderer == "" {
 		return nil
 	}
 
 	if !ValidRenderer(renderer) {
-		return fmt.Errorf("invalid renderer given: %s", renderer)
-	}
-
-	if len(*f) == 0 {
-		*f = make(FFlags)
+		return fmt.Errorf("fflags: %w: %s", ErrInvalidRenderer, renderer)
 	}
 
 	log.Printf("Using renderer: %s", renderer)
@@ -88,8 +81,8 @@ func (f *FFlags) SetRenderer(renderer string) error {
 	for _, r := range renderers {
 		isRenderer := r == renderer
 
-		(*f)["FFlagDebugGraphicsPrefer"+r] = isRenderer
-		(*f)["FFlagDebugGraphicsDisable"+r] = !isRenderer
+		f["FFlagDebugGraphicsPrefer"+r] = isRenderer
+		f["FFlagDebugGraphicsDisable"+r] = !isRenderer
 	}
 
 	return nil

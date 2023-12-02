@@ -20,7 +20,7 @@ type cpu struct {
 func getCPU() cpu {
 	c := cpu{
 		Name: "unknown cpu",
-		AVX: cpulib.X86.HasAVX,
+		AVX:  cpulib.X86.HasAVX,
 	}
 
 	column := regexp.MustCompile("\t+: ")

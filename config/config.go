@@ -79,11 +79,11 @@ func (c *Config) globalize() error {
 		return err
 	}
 
-	if err := mergo.Merge(&c.Player, c.Global, mergo.WithAppendSlice); err != nil {
+	if err := mergo.Merge(&c.Player, c.Global, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
 		return err
 	}
 
-	if err := mergo.Merge(&c.Studio, c.Global, mergo.WithAppendSlice); err != nil {
+	if err := mergo.Merge(&c.Studio, c.Global, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
 		return err
 	}
 
@@ -98,6 +98,8 @@ func Default() Config {
 		Global: Binary{
 			ForcedGpu: "prime-discrete",
 			Renderer:  "D3D11",
+			Dxvk:      true,
+			GameMode:  true,
 			Env: Environment{
 				"WINEARCH":         "win64",
 				"WINEDEBUG":        "err-kerberos,err-ntlm",
@@ -113,8 +115,6 @@ func Default() Config {
 		},
 		Player: Binary{
 			DiscordRPC: true,
-			Dxvk:       true,
-			GameMode:   true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
@@ -122,10 +122,7 @@ func Default() Config {
 				"OBS_VKCAPTURE": "1",
 			},
 		},
-		Studio: Binary{
-			Dxvk:     true,
-			GameMode: true,
-		},
+		Studio: Binary{},
 
 		Splash: Splash{
 			Enabled: true,

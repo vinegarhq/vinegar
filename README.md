@@ -1,6 +1,6 @@
 # <img src="splash/vinegar.png" alt="Vinegar logo"> Vinegar
 
-![Workflow Status][workflow_img    ]
+[![Pipeline Status][pipeline_img    ]][pipeline    ]
 [![Version        ][version_img     ]][version     ]
 [![Flathub        ][flathub_img     ]][flathub     ]
 [![Report Card    ][goreportcard_img]][goreportcard]
@@ -8,15 +8,16 @@
 
 An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
 
-[workflow_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml
-[version]: https://github.com/vinegarhq/vinegar/releases/latest
-[version_img]: https://img.shields.io/github/v/release/vinegarhq/vinegar?display_name=tag
-[flathub]: https://flathub.org/apps/details/org.vinegarhq.Vinegar
-[flathub_img]: https://img.shields.io/flathub/downloads/io.github.vinegarhq.Vinegar
+[pipeline]:     https://github.com/vinegarhq/vinegar/actions/workflows/go.yml
+[pipeline_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/go.yml?style=flat-square&label=build%20%26%20tests
+[version]:     https://github.com/vinegarhq/vinegar/releases/latest
+[version_img]: https://img.shields.io/github/v/release/vinegarhq/vinegar?style=flat-square&display_name=tag
+[flathub]:     https://flathub.org/apps/details/org.vinegarhq.Vinegar
+[flathub_img]: https://img.shields.io/flathub/downloads/io.github.vinegarhq.Vinegar?style=flat-square
 [goreportcard]:     https://goreportcard.com/report/github.com/vinegarhq/vinegar
 [goreportcard_img]: https://goreportcard.com/badge/github.com/vinegarhq/vinegar?style=flat-square
-[discord]: https://discord.gg/dzdzZ6Pps2
-[discord_img]: https://img.shields.io/discord/1069506340973707304
+[discord]:     https://discord.gg/dzdzZ6Pps2
+[discord_img]: https://img.shields.io/discord/1069506340973707304?style=flat-square
 
 # Features
 + Automatic DXVK Installer and uninstaller

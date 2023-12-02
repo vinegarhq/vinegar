@@ -1,4 +1,4 @@
-# <img src="splash/vinegar.png"> Vinegar
+# <img src="splash/vinegar.png" alt="Vinegar logo"> Vinegar
 
 ![Workflow Status][workflow_img    ]
 [![Version        ][version_img     ]][version     ]
@@ -30,13 +30,12 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Custom execution of wine program within wineprefix
 + TOML configuration file
   + Force a specific version of Roblox
-  + Select/Force Roblox release channels, lets you opt into non-production Roblox release channels
   + Custom launcher specified to be used when launching Roblox
   + Wine Root, allows you to set a specific wine installation path
   + Sanitization of environment
   + Set different environment variables and FFlags for both Player and Studio
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
-+ Faster Multi-threaded installation and extraction of Roblox
++ Fast Multi-threaded installation and extraction of Roblox
 + Multiple instances of Roblox open simultaneously
 + Loading window during setup
 + Logging for both Vinegar, Wine and Roblox

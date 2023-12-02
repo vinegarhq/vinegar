@@ -14,11 +14,13 @@ func TestGlobal(t *testing.T) {
 		},
 		Global: Binary{
 			Launcher: "meow",
+			Dxvk: true,
 			Env: Environment{
 				"MEOW": "GLOBAL",
 			},
 		},
 		Player: Binary{
+			Dxvk: false,
 			Env: Environment{
 				"MEOW": "PLAYER",
 			},
@@ -33,16 +35,16 @@ func TestGlobal(t *testing.T) {
 		t.Error("expected env overrides global env")
 	}
 
-	if c.Player.Launcher != "meow" && c.Studio.Launcher != "meow" {
-		t.Error("expected player or/and studio applies global launcher")
+	if c.Player.Launcher != "meow" {
+		t.Error("expected binary applies global launcher")
 	}
 
-	if c.Player.Env["MEOW"] != "PLAYER" {
-		t.Error("expected player overrides global env")
+	if c.Player.Env["MEOW"] != "DEPRECATED" {
+		t.Error("expected global env overrides binary env")
 	}
 
-	if c.Studio.Env["MEOW"] != "DEPRECATED" {
-		t.Error("expected studio applies global env")
+	if !c.Player.Dxvk {
+		t.Error("expected global dxvk overrides binary dxvk")
 	}
 }
 

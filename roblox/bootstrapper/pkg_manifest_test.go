@@ -32,12 +32,14 @@ func TestParsePackages(t *testing.T) {
 		Name:     "foo.zip",
 		Checksum: "026b271a21b03f2e564c036525356db5",
 		Size:     109436874,
+		ZipSize:  71367142,
 	}
 
 	pkgBarWant := Package{
 		Name:     "bar.zip",
 		Checksum: "4d9ec7b52a29c80f3ce1f6a65b14b563",
 		Size:     1191394,
+		ZipSize:  408629,
 	}
 
 	if pkgs[0] != pkgFooWant {

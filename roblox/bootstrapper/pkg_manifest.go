@@ -24,9 +24,10 @@ var (
 )
 
 type Package struct {
-	Name     string
-	Checksum string
-	Size     int64
+	Name      string
+	Checksum  string
+	Size      int64
+	ZipSize   int64
 }
 
 type Packages []Package
@@ -94,15 +95,20 @@ func ParsePackages(manifest []string) (Packages, error) {
 			continue
 		}
 
-		size, err := strconv.ParseInt(manifest[i+3], 10, 64)
+		zs, err := strconv.ParseInt(manifest[i+2], 10, 64)
 		if err != nil {
 			return pkgs, err
 		}
-
+		s, err := strconv.ParseInt(manifest[i+3], 10, 64)
+		if err != nil {
+			return pkgs, err
+		}
+		
 		pkgs = append(pkgs, Package{
 			Name:     manifest[i],
 			Checksum: manifest[i+1],
-			Size:     size,
+			Size:     s,
+			ZipSize:  zs,
 		})
 	}
 

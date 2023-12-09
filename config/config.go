@@ -122,7 +122,11 @@ func Default() Config {
 				"OBS_VKCAPTURE": "1",
 			},
 		},
-		Studio: Binary{},
+		Studio: Binary{
+			// TODO: fill with studio fflag/env goodies
+			FFlags: make(roblox.FFlags),
+			Env:    make(Environment),
+		},
 
 		Splash: Splash{
 			Enabled: true,

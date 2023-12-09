@@ -48,7 +48,7 @@ func SubmitMerlin() error {
 	}
 	defer resp.Body.Close()
 
-	if resp.Status != "202" {
+	if resp.StatusCode != http.StatusAccepted {
 		return fmt.Errorf("merlin: bad status: %s", resp.Status)
 	}
 

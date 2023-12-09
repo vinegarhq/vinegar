@@ -42,8 +42,6 @@ func SubmitMerlin() error {
 		return err
 	}
 
-	log.Println(string(sd))
-
 	resp, err := http.Post("https://merlin.vinegarhq.org:7000", "application/json", bytes.NewBuffer(sd))
 	if err != nil {
 		return fmt.Errorf("merlin: %w", err)

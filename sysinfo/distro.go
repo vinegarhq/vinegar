@@ -8,13 +8,12 @@ import (
 	"strings"
 )
 
-func getDistro() string {
-	name := "Linux"
-	ver := ""
+func getDistro() (name string) {
+	name = "Linux"
 
 	f, err := os.Open("/etc/os-release")
 	if err != nil {
-		return name
+		return
 	}
 	defer f.Close()
 
@@ -32,9 +31,9 @@ func getDistro() string {
 		case "PRETTY_NAME":
 			name = val
 		case "VERSION_ID":
-			ver = val
+			name += " " + val
 		}
 	}
 
-	return name + " " + ver
+	return
 }

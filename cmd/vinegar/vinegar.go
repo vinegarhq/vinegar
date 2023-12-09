@@ -30,7 +30,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] exec prog args...")
 	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] kill|winetricks|sysinfo")
-	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|uninstall|version")
+	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|submit|uninstall|version")
 	os.Exit(1)
 }
 
@@ -44,12 +44,16 @@ func main() {
 
 	switch cmd {
 	// These commands don't require a configuration
-	case "delete", "edit", "uninstall", "version":
+	case "delete", "edit", "submit", "uninstall", "version":
 		switch cmd {
 		case "delete":
 			Delete()
 		case "edit":
 			if err := editor.Edit(*configPath); err != nil {
+				log.Fatal(err)
+			}
+		case "submit":
+			if err := SubmitMerlin(); err != nil {
 				log.Fatal(err)
 			}
 		case "uninstall":

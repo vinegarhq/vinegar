@@ -25,8 +25,8 @@ func (ui *Splash) Dialog(title, msg string) {
 		return
 	}
 
-	for e := range w.Events() {
-		switch e := e.(type) {
+	for {
+		switch e := ui.NextEvent().(type) {
 		case system.DestroyEvent:
 			// no real care for errors, this is a dialog
 			return
@@ -34,7 +34,7 @@ func (ui *Splash) Dialog(title, msg string) {
 			gtx := layout.NewContext(&ops, e)
 			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
 
-			if okButton.Clicked() {
+			if okButton.Clicked(gtx) {
 				w.Perform(system.ActionClose)
 			}
 

@@ -108,7 +108,6 @@ func New(cfg *config.Splash) *Splash {
 }
 
 func (ui *Splash) Run() error {
-	var ops op.Ops
 	drawfn := ui.drawCompact
 
 	defer func() {
@@ -123,8 +122,9 @@ func (ui *Splash) Run() error {
 		drawfn = ui.drawFamiliar
 	}
 
-	for e := range ui.Events() {
-		switch e := e.(type) {
+	var ops op.Ops
+	for {
+		switch e := ui.NextEvent().(type) {
 		case system.DestroyEvent:
 			if ui.closed && e.Err == nil {
 				return nil
@@ -137,7 +137,7 @@ func (ui *Splash) Run() error {
 			gtx := layout.NewContext(&ops, e)
 			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
 
-			if ui.openLogButton.Clicked() {
+			if ui.openLogButton.Clicked(gtx) {
 				log.Printf("Opening log file: %s", ui.LogPath)
 				err := util.XDGOpen(ui.LogPath).Start()
 				if err != nil {
@@ -145,7 +145,7 @@ func (ui *Splash) Run() error {
 				}
 			}
 
-			if ui.exitButton.Clicked() {
+			if ui.exitButton.Clicked(gtx) {
 				ui.Perform(system.ActionClose)
 			}
 
@@ -155,6 +155,5 @@ func (ui *Splash) Run() error {
 		}
 	}
 
-	ui.closed = true
 	return nil
 }

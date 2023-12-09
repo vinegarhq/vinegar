@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/vinegarhq/vinegar/roblox"
 )
 
 func TestGlobal(t *testing.T) {
@@ -50,6 +52,7 @@ func TestGlobal(t *testing.T) {
 
 func TestBinarySetup(t *testing.T) {
 	b := Binary{
+		FFlags: make(roblox.FFlags),
 		Env: Environment{
 			"MEOW": "MEOW",
 		},

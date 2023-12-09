@@ -259,10 +259,6 @@ func (b *Binary) Setup() error {
 
 	b.Config.Env.Setenv()
 
-	if err := b.Config.FFlags.SetRenderer(b.Config.Renderer); err != nil {
-		return err
-	}
-
 	if err := b.Config.FFlags.Apply(b.Dir); err != nil {
 		return err
 	}

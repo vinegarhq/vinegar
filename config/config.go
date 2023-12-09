@@ -145,6 +145,10 @@ func (b *Binary) setup() error {
 		return ErrNeedDXVKRenderer
 	}
 
+	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
+		return err
+	}
+
 	return b.pickCard()
 }
 

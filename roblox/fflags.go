@@ -75,8 +75,6 @@ func (f FFlags) SetRenderer(renderer string) error {
 		return fmt.Errorf("fflags: %w: %s", ErrInvalidRenderer, renderer)
 	}
 
-	log.Printf("Using renderer: %s", renderer)
-
 	// Disable all other renderers except the given one.
 	for _, r := range renderers {
 		isRenderer := r == renderer

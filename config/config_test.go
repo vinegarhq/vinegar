@@ -16,7 +16,7 @@ func TestGlobal(t *testing.T) {
 		},
 		Global: Binary{
 			Launcher: "meow",
-			Dxvk: true,
+			Dxvk:     true,
 			Env: Environment{
 				"MEOW": "GLOBAL",
 			},

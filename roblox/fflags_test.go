@@ -1,9 +1,9 @@
 package roblox
 
 import (
-	"testing"
 	"errors"
 	"maps"
+	"testing"
 )
 
 func TestFFlagRenderer(t *testing.T) {
@@ -26,14 +26,14 @@ func TestFFlagRenderer(t *testing.T) {
 	}
 
 	expected := FFlags{
-		"FFlagDebugGraphicsPreferOpenGL": false,
-		"FFlagDebugGraphicsPreferD3D11FL10": false,
-		"FFlagDebugGraphicsPreferD3D11": false,
-		"FFlagDebugGraphicsPreferVulkan": true,
-		"FFlagDebugGraphicsDisableOpenGL": true,
+		"FFlagDebugGraphicsPreferOpenGL":     false,
+		"FFlagDebugGraphicsPreferD3D11FL10":  false,
+		"FFlagDebugGraphicsPreferD3D11":      false,
+		"FFlagDebugGraphicsPreferVulkan":     true,
+		"FFlagDebugGraphicsDisableOpenGL":    true,
 		"FFlagDebugGraphicsDisableD3D11FL10": true,
-		"FFlagDebugGraphicsDisableD3D11": true,
-		"FFlagDebugGraphicsDisableVulkan": false,
+		"FFlagDebugGraphicsDisableD3D11":     true,
+		"FFlagDebugGraphicsDisableVulkan":    false,
 	}
 
 	if !maps.Equal(f, expected) {

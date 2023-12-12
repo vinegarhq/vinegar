@@ -15,7 +15,6 @@ import (
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logs"
-	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
@@ -30,7 +29,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
 	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] exec prog args...")
 	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] kill|winetricks|sysinfo")
-	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|submit|uninstall|version")
+	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|submit|version")
 	os.Exit(1)
 }
 
@@ -44,7 +43,7 @@ func main() {
 
 	switch cmd {
 	// These commands don't require a configuration
-	case "delete", "edit", "submit", "uninstall", "version":
+	case "delete", "edit", "submit", "version":
 		switch cmd {
 		case "delete":
 			Delete()
@@ -56,8 +55,6 @@ func main() {
 			if err := SubmitMerlin(); err != nil {
 				log.Fatal(err)
 			}
-		case "uninstall":
-			Uninstall()
 		case "version":
 			fmt.Println("Vinegar", Version)
 		}
@@ -100,27 +97,6 @@ func main() {
 		}
 	default:
 		usage()
-	}
-}
-
-func Uninstall() {
-	vers, err := state.Versions()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for _, ver := range vers {
-		log.Println("Removing version directory", ver)
-
-		err = os.RemoveAll(filepath.Join(dirs.Versions, ver))
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	err = state.ClearApplications()
-	if err != nil {
-		log.Fatal(err)
 	}
 }
 

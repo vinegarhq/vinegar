@@ -2,7 +2,6 @@ package state
 
 import (
 	"errors"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -14,21 +13,43 @@ import (
 
 var path = filepath.Join(dirs.PrefixData, "state.toml")
 
-type ApplicationState struct {
+// ApplicationState is used track a Binary's version and it's packages
+type BinaryState struct {
 	Version  string
 	Packages []string
 }
 
-type ApplicationStates map[string]ApplicationState
+// ApplicationStates is a map representation with the string
+// type being the binary name in string form.
+type BinaryStates map[string]BinaryState
 
+// State holds various details about Vinegar's configuration
 type State struct {
 	DxvkVersion  string
-	Applications ApplicationStates
+	Applications BinaryStates // called Applications to retain compatibility
 }
 
-func Save(state *State) error {
-	err := dirs.Mkdirs(dirs.PrefixData)
-	if err != nil {
+// Load will load the state file in dirs.PrefixData and return it's
+// contents. If the state file does not exist, it will return an
+// empty state.
+func Load() (State, error) {
+	var state State
+
+	_, err := toml.DecodeFile(path, &state)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return State{}, err
+	}
+
+	if state.Applications == nil {
+		state.Applications = make(BinaryStates, 0)
+	}
+
+	return state, nil
+}
+
+// Save will save the state to a toml-encoded file in dirs.PrefixData
+func (s *State) Save() error {
+	if err := dirs.Mkdirs(filepath.Dir(path)); err != nil {
 		return err
 	}
 
@@ -43,119 +64,42 @@ func Save(state *State) error {
 		return err
 	}
 
-	err = toml.NewEncoder(file).Encode(state)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return toml.NewEncoder(file).Encode(s)
 }
 
-func Load() (State, error) {
-	var state State
-
-	_, err := toml.DecodeFile(path, &state)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		return State{}, err
-	}
-
-	return state, nil
-}
-
-func SavePackageManifest(pm *bootstrapper.PackageManifest) error {
-	name := pm.Version.Type.BinaryName()
-
-	log.Printf("Saving Manifest State for %s", name)
-
-	state, err := Load()
-	if err != nil {
-		return err
-	}
-
-	app := ApplicationState{
+// AddBinary adds a given package manifest's packages and it's checksums
+// to the state's Applications, with the identifier as the package
+// manifest's binary name.
+func (s *State) AddBinary(pm *bootstrapper.PackageManifest) {
+	b := BinaryState{
 		Version: pm.Version.GUID,
 	}
 	for _, pkg := range pm.Packages {
-		app.Packages = append(app.Packages, pkg.Checksum)
+		b.Packages = append(b.Packages, pkg.Checksum)
 	}
 
-	if state.Applications == nil {
-		state.Applications = make(ApplicationStates, 0)
-	}
-
-	state.Applications[name] = app
-
-	return Save(&state)
+	s.Applications[pm.Version.Type.BinaryName()] = b
 }
 
-func SaveDxvk(ver string) error {
-	log.Printf("Saving installed DXVK State")
-
-	state, err := Load()
-	if err != nil {
-		return err
+// Packages retrieves all the available Binary packages from the state
+func (s *State) Packages() (pkgs []string) {
+	for _, info := range s.Applications {
+		pkgs = append(pkgs, info.Packages...)
 	}
 
-	state.DxvkVersion = ver
-
-	return Save(&state)
+	return
 }
 
-func Packages() ([]string, error) {
-	var packages []string
-
-	states, err := Load()
-	if err != nil {
-		return []string{}, err
+// Packages retrieves all the available Binary versions from the state
+func (s *State) Versions() (vers []string) {
+	for _, ver := range s.Applications {
+		vers = append(vers, ver.Version)
 	}
 
-	for _, info := range states.Applications {
-		packages = append(packages, info.Packages...)
-	}
-
-	return packages, nil
+	return
 }
 
-func Version(bt roblox.BinaryType) (string, error) {
-	states, err := Load()
-	if err != nil {
-		return "", err
-	}
-
-	return states.Applications[bt.BinaryName()].Version, nil
-}
-
-func Versions() ([]string, error) {
-	var versions []string
-
-	states, err := Load()
-	if err != nil {
-		return []string{}, err
-	}
-
-	for _, info := range states.Applications {
-		versions = append(versions, info.Version)
-	}
-
-	return versions, nil
-}
-
-func ClearApplications() error {
-	state, err := Load()
-	if err != nil {
-		return err
-	}
-
-	state.Applications = nil
-
-	return Save(&state)
-}
-
-func DxvkVersion() (string, error) {
-	states, err := Load()
-	if err != nil {
-		return "", err
-	}
-
-	return states.DxvkVersion, nil
+// Version is retrieves the version of a Binary from the state
+func (s *State) Version(bt roblox.BinaryType) string {
+	return s.Applications[bt.BinaryName()].Version
 }

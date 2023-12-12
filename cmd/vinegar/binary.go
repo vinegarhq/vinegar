@@ -36,6 +36,7 @@ const (
 
 type Binary struct {
 	Splash *splash.Splash
+	State *state.State
 
 	GlobalConfig *config.Config
 	Config       *config.Binary
@@ -233,20 +234,22 @@ func (b *Binary) FetchVersion() (version.Version, error) {
 }
 
 func (b *Binary) Setup() error {
+	s, err := state.Load()
+	if err != nil {
+		return err
+	}
+	b.State = &s
+
 	ver, err := b.FetchVersion()
 	if err != nil {
 		return err
 	}
-
+	
 	b.Splash.SetDesc(fmt.Sprintf("%s %s", ver.GUID, ver.Channel))
 	b.Version = ver
 	b.Dir = filepath.Join(dirs.Versions, ver.GUID)
 
-	stateVer, err := state.Version(b.Type)
-	if err != nil {
-		log.Printf("Failed to retrieve stored %s version: %s", b.Name, err)
-	}
-
+	stateVer := b.State.Version(b.Type)
 	if stateVer != ver.GUID {
 		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, ver.GUID)
 
@@ -272,7 +275,7 @@ func (b *Binary) Setup() error {
 	}
 
 	b.Splash.SetProgress(1.0)
-	return nil
+	return b.State.Save()
 }
 
 func (b *Binary) Install() error {
@@ -314,15 +317,13 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	if err := state.SavePackageManifest(&manifest); err != nil {
+	b.State.AddBinary(&manifest)
+
+	if err := b.State.CleanPackages(); err != nil {
 		return err
 	}
 
-	if err := state.CleanPackages(); err != nil {
-		return err
-	}
-
-	return state.CleanVersions()
+	return b.State.CleanVersions()
 }
 
 func (b *Binary) PerformPackages(pm *bootstrapper.PackageManifest, fn func(bootstrapper.Package) error) error {
@@ -366,19 +367,14 @@ func (b *Binary) ExtractPackages(pm *bootstrapper.PackageManifest) error {
 }
 
 func (b *Binary) SetupDxvk() error {
-	ver, err := state.DxvkVersion()
-	if err != nil {
-		return err
-	}
-	installed := ver != ""
-
-	if installed && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
+	if b.State.DxvkVersion != "" && b.GlobalConfig.Player.Dxvk && b.GlobalConfig.Studio.Dxvk {
 		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return err
 		}
 
-		return state.SaveDxvk("")
+		b.State.DxvkVersion = ""
+		return nil
 	}
 
 	if !b.Config.Dxvk {
@@ -388,7 +384,7 @@ func (b *Binary) SetupDxvk() error {
 	b.Splash.SetProgress(0.0)
 	dxvk.Setenv()
 
-	if b.GlobalConfig.DxvkVersion == ver {
+	if b.GlobalConfig.DxvkVersion == b.State.DxvkVersion {
 		return nil
 	}
 
@@ -410,7 +406,8 @@ func (b *Binary) SetupDxvk() error {
 	}
 	b.Splash.SetProgress(1.0)
 
-	return state.SaveDxvk(b.GlobalConfig.DxvkVersion)
+	b.State.DxvkVersion = b.GlobalConfig.DxvkVersion
+	return nil
 }
 
 func (b *Binary) Command(args ...string) (*wine.Cmd, error) {

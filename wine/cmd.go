@@ -3,7 +3,6 @@ package wine
 import (
 	"errors"
 	"io"
-	"log"
 	"os"
 	"os/exec"
 )
@@ -70,8 +69,6 @@ func (c *Cmd) Start() error {
 	c.Env = append(c.Environ(),
 		"WINEPREFIX="+c.prefixDir,
 	)
-
-	log.Printf("Starting command: %s", c.String())
 
 	return c.Cmd.Start()
 }

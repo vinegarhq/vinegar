@@ -126,7 +126,7 @@ func (b *Binary) Run(args ...string) error {
 
 	go b.HandleOutput(o)
 
-	log.Printf("Launching %s", b.Name)
+	log.Printf("Launching %s (%s)", b.Name, cmd)
 	b.Splash.SetMessage("Launching " + b.Alias)
 
 	if err := cmd.Start(); err != nil {
@@ -403,6 +403,8 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 	}
 
 	if b.GlobalConfig.MultipleInstances {
+		log.Println("Launching robloxmutexer in background")
+
 		mutexer := b.Prefix.Command("wine", filepath.Join(BinPrefix, "robloxmutexer.exe"))
 		err := mutexer.Start()
 		if err != nil {

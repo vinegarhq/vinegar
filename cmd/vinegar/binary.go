@@ -36,7 +36,7 @@ const (
 
 type Binary struct {
 	Splash *splash.Splash
-	State *state.State
+	State  *state.State
 
 	GlobalConfig *config.Config
 	Config       *config.Binary
@@ -244,7 +244,7 @@ func (b *Binary) Setup() error {
 	if err != nil {
 		return err
 	}
-	
+
 	b.Splash.SetDesc(fmt.Sprintf("%s %s", ver.GUID, ver.Channel))
 	b.Version = ver
 	b.Dir = filepath.Join(dirs.Versions, ver.GUID)

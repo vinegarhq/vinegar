@@ -10,7 +10,7 @@ FLATPAK = org.vinegarhq.Vinegar
 GO = go
 GO_LDFLAGS = -s -w
 
-VINEGAR_ICONPATH = $(ICONPREFIX)/48x48/apps/$(FLATPAK).png
+VINEGAR_ICONPATH = $(ICONPREFIX)/64x64/apps/$(FLATPAK).png
 VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION) \
 	-X github.com/vinegarhq/vinegar/config.LogoPath=$(VINEGAR_ICONPATH)
 VINEGAR_GOFLAGS = --tags nowayland,novulkan 

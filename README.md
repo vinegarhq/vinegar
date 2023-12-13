@@ -1,4 +1,4 @@
-# <img src="splash/vinegar.png" alt="Vinegar logo"> Vinegar
+# <img src="icons/64/vinegar.png" alt="Vinegar logo"> Vinegar
 
 [![Pipeline Status][pipeline_img    ]][pipeline    ]
 [![Version        ][version_img     ]][version     ]

@@ -30,11 +30,14 @@ install-robloxmutexer: robloxmutexer.exe
 
 install-desktop:
 	mkdir -p $(DESTDIR)$(APPPREFIX)
+	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/vinegar.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).desktop
 	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/roblox-app.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).app.desktop
 	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/roblox-player.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).player.desktop
 	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/roblox-studio.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).studio.desktop
 
 install-icons:
+	install -Dm644 icons/vinegar.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/$(FLATPAK).png
+	install -Dm644 icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(FLATPAK).svg
 	install -Dm644 icons/16/roblox-player.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).player.png
 	install -Dm644 icons/16/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).studio.png
 	install -Dm644 icons/32/roblox-player.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/$(FLATPAK).player.png
@@ -49,9 +52,12 @@ install-icons:
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar
 	rm -f $(DESTDIR)$(BINPREFIX)/robloxmutexer.exe
+	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).app.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).player.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).studio.desktop
+	rm -f $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(FLATPAK).png
+	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/$(FLATPAK).png
 	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).player.png
 	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).studio.png
 	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/$(FLATPAK).player.png

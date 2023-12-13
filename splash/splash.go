@@ -1,5 +1,6 @@
 //go:build !nogui && !nosplash
 
+// Package splash contains routines to run Vinegar's splash window.
 package splash
 
 import (

@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// VerifyFileMD5 checks the named file with the named MD5 checksum.
 func VerifyFileMD5(name string, sum string) error {
 	f, err := os.Open(name)
 	if err != nil {

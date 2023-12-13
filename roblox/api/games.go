@@ -1,5 +1,6 @@
 package api
 
+// Creator is a representation of the Roblox GameCreator model.
 type Creator struct {
 	ID               int64  `json:"id"`
 	Name             string `json:"name"`
@@ -8,6 +9,7 @@ type Creator struct {
 	HasVerifiedBadge bool   `json:"hasVerifiedBadge"`
 }
 
+// GameDetail is a representation of the Roblox GameDetailResponse model.
 type GameDetail struct {
 	ID                        int64    `json:"id"`
 	RootPlaceID               int64    `json:"rootPlaceId"`
@@ -35,10 +37,12 @@ type GameDetail struct {
 	FavoritedCount            int64    `json:"favoritedCount"`
 }
 
+// GameDetail is a representation of the Roblox ApiArrayResponse GameDetailResponse model.
 type GameDetailsResponse struct {
 	Data []GameDetail `json:"data"`
 }
 
+// GetGameDetails gets the list of a named universeID's detail
 func GetGameDetails(universeID string) (GameDetail, error) {
 	var gdr GameDetailsResponse
 

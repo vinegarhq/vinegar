@@ -23,7 +23,7 @@ func TestParsePackages(t *testing.T) {
 		"1191394",
 	}
 
-	pkgs, err := ParsePackages(manifest)
+	pkgs, err := parsePackages(manifest)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -59,14 +59,14 @@ func TestInvalidPackagePackageManifest(t *testing.T) {
 		"71367142",
 	}
 
-	_, err := ParsePackages(manifest)
+	_, err := parsePackages(manifest)
 	if !errors.Is(err, ErrInvalidPkgManifest) {
 		t.Fail()
 	}
 
 	manifest = append(manifest, "foo")
 
-	_, err = ParsePackages(manifest)
+	_, err = parsePackages(manifest)
 	if !errors.Is(err, strconv.ErrSyntax) {
 		t.Fail()
 	}
@@ -81,7 +81,7 @@ func TestUnhandledPackagePackageManifest(t *testing.T) {
 		"109436874",
 	}
 
-	_, err := ParsePackages(manifest)
+	_, err := parsePackages(manifest)
 	if !errors.Is(err, ErrUnhandledPkgManifestVer) {
 		t.Fail()
 	}
@@ -102,7 +102,7 @@ func TestExcludedPackage(t *testing.T) {
 		"4974576",
 	}
 
-	pkgs, err := ParsePackages(manifest)
+	pkgs, err := parsePackages(manifest)
 	if err != nil {
 		t.Fatal(err)
 	}

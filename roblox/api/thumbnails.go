@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Thumbnail is a representation of the Roblox ThumbnailResponse model.
 type Thumbnail struct {
 	TargetID int64  `json:"targetId"`
 	State    string `json:"state"`
@@ -11,10 +12,15 @@ type Thumbnail struct {
 	Version  string `json:"version"`
 }
 
+// Thumbnail is a representation of the Roblox ApiArrayResponse ThumbnailResponse model.
 type thumbnailResponse struct {
 	Data []Thumbnail `json:"data"`
 }
 
+// GetGameIcon gets the thumbnail URL for the given universeID, refer to the
+// [Thumbnails API documentation] for more information.
+//
+// [[Thumbnails API documentation]: https://thumbnails.roblox.com/docs/index.html
 func GetGameIcon(universeID, returnPolicy, size, format string, isCircular bool) (Thumbnail, error) {
 	var tnr thumbnailResponse
 

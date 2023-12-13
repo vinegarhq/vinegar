@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// ErrorResponse is a representation of a Roblox web API error.
 type ErrorResponse struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`

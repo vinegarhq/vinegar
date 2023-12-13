@@ -4,6 +4,8 @@ import (
 	"os"
 )
 
+// Environment is a map representation of a operating environment
+// with it's variables.
 type Environment map[string]string
 
 // Set will only set the given environment key and value

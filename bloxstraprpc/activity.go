@@ -1,3 +1,7 @@
+// Package bloxstraprpc implements the BloxstrapRPC protocol.
+//
+// This package remains undocumented as it is modeled after Bloxstrap's
+// implementation protocol.
 package bloxstraprpc
 
 import (

@@ -1,3 +1,4 @@
+// Package dxvk implements routines to install DXVK to a given [wine.Prefix]
 package dxvk
 
 import (
@@ -17,6 +18,8 @@ import (
 var pfxDll32Path = filepath.Join("drive_c", "Program Files (x86)", "DXVK")
 var pfxDll64Path = filepath.Join("drive_c", "Program Files", "DXVK")
 
+// Setenv sets/appends WINEDLLPATH and WINEDLLOVERRIDES to tell Wine
+// to use the DXVK DLLs
 func Setenv(pfx *wine.Prefix) {
 	log.Printf("Enabling WINE DXVK DLL overrides")
 

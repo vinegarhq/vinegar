@@ -1,3 +1,4 @@
+// Package config implements types and routines to configure Vinegar.
 package config
 
 import (
@@ -15,8 +16,11 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 )
 
+// LogoPath is set at build-time to set the logo icon path, which is
+// used in [splash.Config] to set the icon path.
 var LogoPath string
 
+// Config is a representation of a Roblox binary Vinegar configuration.
 type Binary struct {
 	Channel       string        `toml:"channel"`
 	Launcher      string        `toml:"launcher"`
@@ -30,6 +34,7 @@ type Binary struct {
 	GameMode      bool          `toml:"gamemode"`
 }
 
+// Config is a representation of the Vinegar configuration.
 type Config struct {
 	WineRoot          string        `toml:"wineroot"`
 	DxvkVersion       string        `toml:"dxvk_version"`
@@ -39,7 +44,8 @@ type Config struct {
 	Player            Binary        `toml:"player"`
 	Studio            Binary        `toml:"studio"`
 	env               Environment   `toml:"env"` // kept for compatibilty
-	Splash            splash.Config `toml:"splash"`
+
+	Splash splash.Config `toml:"splash"`
 }
 
 var (
@@ -49,16 +55,24 @@ var (
 	ErrWineRootInvalid  = errors.New("invalid wine root given")
 )
 
-func Load(path string) (Config, error) {
+// Load will load the named file to a Config; if it doesn't exist, it
+// will fallback to the default configuration.
+//
+// The returned configuration will always be appended ontop of the default
+// configuration.
+//
+// Load is required for any initialization for Config, as it calls routines
+// to setup certain variables and verifies the configuration.
+func Load(name string) (Config, error) {
 	cfg := Default()
 
-	if _, err := os.Stat(path); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
 		log.Println("Using default configuration")
 
 		return cfg, nil
 	}
 
-	if _, err := toml.DecodeFile(path, &cfg); err != nil {
+	if _, err := toml.DecodeFile(name, &cfg); err != nil {
 		return cfg, err
 	}
 
@@ -82,6 +96,7 @@ func (c *Config) globalize() error {
 	return nil
 }
 
+// Default returns a sane default configuration for Vinegar.
 func Default() Config {
 	return Config{
 		DxvkVersion: "2.3",

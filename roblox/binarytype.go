@@ -1,5 +1,7 @@
 package roblox
 
+// BinaryType is a representation of available
+// Roblox applications aka. Binaries
 type BinaryType int
 
 const (
@@ -18,6 +20,10 @@ func (bt BinaryType) String() string {
 	}
 }
 
+// BinaryName returns Roblox's internal API name for the 
+// named BinaryType
+//
+// Does not support platforms other than Windows.
 func (bt BinaryType) BinaryName() string {
 	switch bt {
 	case Player:
@@ -29,6 +35,10 @@ func (bt BinaryType) BinaryName() string {
 	}
 }
 
+// Executable returns the executable file name for the
+// named BinaryType
+//
+// Does not support platforms other than Windows.
 func (bt BinaryType) Executable() string {
 	switch bt {
 	case Player:

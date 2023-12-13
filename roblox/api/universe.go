@@ -4,12 +4,14 @@ import (
 	"strconv"
 )
 
-type UniverseIdResponse struct {
+type universeIdResponse struct {
 	UniverseID int64 `json:"universeId"`
 }
 
+// GetUniverseID uses an undocumented Roblox web API service to retrieve
+// the universeID for the named placeID.
 func GetUniverseID(placeID string) (string, error) {
-	var uidr UniverseIdResponse
+	var uidr universeIdResponse
 
 	// This API is undocumented.
 	err := Request("GET", "apis", "universes/v1/places/"+placeID+"/universe", &uidr)

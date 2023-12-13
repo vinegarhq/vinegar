@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-var allowedEnv = []string{
+var AllowedEnv = []string{
 	"PATH",
 	"HOME", "USER", "LOGNAME",
 	"TZ",
@@ -21,6 +21,8 @@ var allowedEnv = []string{
 	"__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS", // Flatpak
 }
 
+// SanitizeEnv modifies the global environment by removing
+// all environment variables that arent in AllowedEnv.
 func SanitizeEnv() {
 	log.Println("Sanitizing environment")
 
@@ -33,7 +35,7 @@ func SanitizeEnv() {
 
 		allowed := false
 
-		for _, aenv := range allowedEnv {
+		for _, aenv := range AllowedEnv {
 			if aenv == parts[0] {
 				allowed = true
 			}

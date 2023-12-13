@@ -18,8 +18,11 @@ var renderers = []string{
 	"Vulkan",
 }
 
+// FFlags is Roblox's Fast Flags implemented in map form.
 type FFlags map[string]interface{}
 
+// Apply creates and compiles the FFlags file and 
+// directory in the named versionDir.
 func (f FFlags) Apply(versionDir string) error {
 	dir := filepath.Join(versionDir, "ClientSettings")
 	path := filepath.Join(dir, "ClientAppSettings.json")
@@ -50,6 +53,12 @@ func (f FFlags) Apply(versionDir string) error {
 	return nil
 }
 
+// ValidRenderer determines if the named renderer is part of
+// the available supported Roblox renderer backends, used in
+// SetRenderer.
+//
+// If given no renderer, it allows for Roblox to select
+// it's default renderer backend.
 func ValidRenderer(renderer string) bool {
 	// Assume Roblox's internal default renderer
 	if renderer == "" {
@@ -65,6 +74,8 @@ func ValidRenderer(renderer string) bool {
 	return false
 }
 
+// SetRenderer sets the named renderer to the FFlags, by disabling
+// all other unused renderers.
 func (f FFlags) SetRenderer(renderer string) error {
 	// Assume Roblox's internal default renderer
 	if renderer == "" {

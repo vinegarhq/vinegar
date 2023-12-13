@@ -65,17 +65,11 @@ func (c *Cmd) OutputPipe() (io.Reader, error) {
 	return io.MultiReader(e, o), nil
 }
 
+// Start starts the specified command but does not wait for it to complete.
 func (c *Cmd) Start() error {
 	c.Env = append(c.Environ(),
 		"WINEPREFIX="+c.prefixDir,
 	)
 
 	return c.Cmd.Start()
-}
-
-func (c *Cmd) Run() error {
-	if err := c.Start(); err != nil {
-		return err
-	}
-	return c.Wait()
 }

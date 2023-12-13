@@ -1,5 +1,6 @@
 package api
 
+// ClientVersion is a representation of the Roblox ClientVersionResponse model.
 type ClientVersion struct {
 	Version                 string `json:"version"`
 	ClientVersionUpload     string `json:"clientVersionUpload"`
@@ -8,6 +9,7 @@ type ClientVersion struct {
 	NextClientVersion       string `json:"nextClientVersion,omitempty"`
 }
 
+// GetClientVersion gets the ClientVersion for the named binaryType and deployment channel.
 func GetClientVersion(binaryType string, channel string) (ClientVersion, error) {
 	var cv ClientVersion
 

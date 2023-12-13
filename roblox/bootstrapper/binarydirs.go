@@ -4,8 +4,10 @@ import (
 	"github.com/vinegarhq/vinegar/roblox"
 )
 
+// PackageDirectories is a map of where Binary packages should go.
 type PackageDirectories map[string]string
 
+// BinaryDirectories retrieves the PackageDirectories for the given [roblox.BinaryType].
 func BinaryDirectories(t roblox.BinaryType) PackageDirectories {
 	switch t {
 	case roblox.Player:
@@ -17,7 +19,9 @@ func BinaryDirectories(t roblox.BinaryType) PackageDirectories {
 	return nil
 }
 
-/* github.com/pizzaboxer/bloxstrap/blob/main/Bloxstrap/Bootstrapper.cs */
+// PlayerDirectories is retrieved from [Bloxstrap].
+//
+// [Bloxstrap]: https://github.com/pizzaboxer/bloxstrap/blob/main/Bloxstrap/Bootstrapper.cs
 var PlayerDirectories = PackageDirectories{
 	"RobloxApp.zip":                 "",
 	"shaders.zip":                   "shaders/",
@@ -41,8 +45,9 @@ var PlayerDirectories = PackageDirectories{
 	"extracontent-places.zip":       "ExtraContent/places",
 }
 
-/* github.com/MaximumADHD/Roblox-Studio-Mod-Manager/blob/main/Config/KnownRoots.json */
-/* jq 'reduce to_entries[] as $item ({}; . + {($item.key): $item.value.ExtractTo})' */
+// StudioDirectories is retrieved from [Roblox-Studio-Mod-Manager].
+//
+// [Roblox-Studio-Mod-Manager]: https://github.com/MaximumADHD/Roblox-Studio-Mod-Manager/blob/main/Config/KnownRoots.json
 var StudioDirectories = PackageDirectories{
 	"BuiltInPlugins.zip":              "BuiltInPlugins",
 	"ApplicationConfig.zip":           "ApplicationConfig",

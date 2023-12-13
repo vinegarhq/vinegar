@@ -13,11 +13,12 @@ var (
 		"https://s3.amazonaws.com/setup.roblox.com",
 		"https://setup-ak.rbxcdn.com",
 		"https://setup-hw.rbxcdn.com",
-		"https://setup-cfly.rbxcdn.com",
+		"https://setup-cfly.rbxcdn.com", // Fastest
 		"https://roblox-setup.cachefly.net",
 	}
 )
 
+// CDN returns a CDN (from CDNs) that is available.
 func CDN() (string, error) {
 	log.Println("Finding an accessible Roblox deploy mirror")
 

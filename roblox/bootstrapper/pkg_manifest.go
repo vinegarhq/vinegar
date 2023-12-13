@@ -12,6 +12,8 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// PackageManifest is a representation of a Binary version's packages
+// DeployURL is required, as it is where the package manifest is fetched from.
 type PackageManifest struct {
 	*version.Version
 	DeployURL string
@@ -23,6 +25,7 @@ var (
 	ErrUnhandledPkgManifestVer = errors.New("unhandled package manifest version")
 )
 
+// Package is a representation of a Binary package.
 type Package struct {
 	Name     string
 	Checksum string
@@ -45,6 +48,7 @@ func channelPath(channel string) string {
 	return "/channel/" + channel + "/"
 }
 
+// FetchPackageManifest retrieves a package manifest for the given Binary version.
 func FetchPackageManifest(ver *version.Version) (PackageManifest, error) {
 	cdn, err := CDN()
 	if err != nil {
@@ -66,7 +70,7 @@ func FetchPackageManifest(ver *version.Version) (PackageManifest, error) {
 		manif = manif[:len(manif)-1]
 	}
 
-	pkgs, err := ParsePackages(manif)
+	pkgs, err := parsePackages(manif)
 	if err != nil {
 		return PackageManifest{}, err
 	}
@@ -78,7 +82,7 @@ func FetchPackageManifest(ver *version.Version) (PackageManifest, error) {
 	}, nil
 }
 
-func ParsePackages(manifest []string) (Packages, error) {
+func parsePackages(manifest []string) (Packages, error) {
 	pkgs := make(Packages, 0)
 
 	if (len(manifest)-1)%4 != 0 {
@@ -115,6 +119,8 @@ func ParsePackages(manifest []string) (Packages, error) {
 	return pkgs, nil
 }
 
+// Perform is a wrapper of errgroups, which performs the named function
+// concurrently with error handling.
 func (pkgs *Packages) Perform(fn func(Package) error) error {
 	var eg errgroup.Group
 

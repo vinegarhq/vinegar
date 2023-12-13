@@ -1,4 +1,4 @@
-//go:build linux
+//go:build linux && amd64
 
 package sysinfo
 
@@ -11,14 +11,15 @@ import (
 	cpulib "golang.org/x/sys/cpu"
 )
 
-type cpu struct {
+// Processor is a representation of a CPU from /proc/cpuinfo
+type Processor struct {
 	Name            string
 	AVX             bool
-	SplitLockDetect bool
+	SplitLockDetect bool // if cpu has flag split_lock_detect
 }
 
-func getCPU() cpu {
-	c := cpu{
+func getCPU() Processor {
+	c := Processor{
 		Name: "unknown cpu",
 		AVX:  cpulib.X86.HasAVX,
 	}

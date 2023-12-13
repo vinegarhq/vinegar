@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Card is a representation of a drm card in /sys/class/drm
 type Card struct {
 	Path     string // Path to the drm card
 	Device   string // Path to the PCI device
@@ -41,6 +42,8 @@ func getCards() (cs []Card) {
 	return
 }
 
+// Walks over the drm path, and checks if there are any displays
+// that are matched with the card path and contain any of embeddedDisplays
 func embedded(cardPath string) (embed bool) {
 	filepath.Walk(drmPath, func(p string, f os.FileInfo, err error) error {
 		if !strings.HasPrefix(p, cardPath) {

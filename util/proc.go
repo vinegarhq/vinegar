@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+// CommFound loops over every directory in /proc and checks if the contents of
+// the comm file in the directory contains the named query.
 func CommFound(query string) bool {
 	comms, _ := filepath.Glob("/proc/*/comm")
 

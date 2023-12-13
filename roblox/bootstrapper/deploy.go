@@ -8,6 +8,7 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 )
 
+// Verify checks the named package source file against it's checksum
 func (p *Package) Verify(src string) error {
 	log.Printf("Verifying Package %s (%s)", p.Name, p.Checksum)
 
@@ -18,6 +19,9 @@ func (p *Package) Verify(src string) error {
 	return nil
 }
 
+// Download will download the package to the named dest destination
+// directory with the given deployURL deploy mirror; if the package
+// exists and has the correct checksum, it will return immediately.
 func (p *Package) Download(dest, deployURL string) error {
 	if err := p.Verify(dest); err == nil {
 		log.Printf("Package %s is already downloaded", p.Name)
@@ -33,6 +37,7 @@ func (p *Package) Download(dest, deployURL string) error {
 	return p.Verify(dest)
 }
 
+// Fetch is a wrapper around Download to account for failures.
 func (p *Package) Fetch(dest, deployURL string) error {
 	err := p.Download(dest, deployURL)
 	if err == nil {
@@ -44,6 +49,7 @@ func (p *Package) Fetch(dest, deployURL string) error {
 	return p.Download(dest, deployURL)
 }
 
+// Extract extracts the named package source file to a given destination directory
 func (p *Package) Extract(src, dest string) error {
 	if err := extract(src, dest); err != nil {
 		return fmt.Errorf("extract package %s (%s): %w", p.Name, src, err)

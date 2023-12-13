@@ -1,3 +1,4 @@
+// Package api provides API routines to interact with Roblox's web API.
 package api
 
 import (
@@ -14,10 +15,13 @@ var httpClient = &http.Client{}
 
 var ErrBadStatus = errors.New("bad status")
 
+// SetClient sets the http.Client used to make API requests.
 func SetClient(client *http.Client) {
 	httpClient = client
 }
 
+// Request makes a API request given method, service, endpoint, and data
+// to send to the endpoint with the given method.
 func Request(method, service, endpoint string, v interface{}) error {
 	log.Printf("Performing Roblox API %s %s request on %s", method, service, endpoint)
 

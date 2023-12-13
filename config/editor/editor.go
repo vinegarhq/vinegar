@@ -10,6 +10,21 @@ import (
 	"github.com/vinegarhq/vinegar/config"
 )
 
+// Editor retrieves the editor from the environment.
+// If no environment variable is present it will fall back
+// to nano, returning an error if it doesn't exist.
+func Editor() (string, error) {
+	if editor := os.Getenv("EDITOR"); editor != "" {
+		return editor, nil
+	}
+
+	log.Println("no EDITOR set, falling back to nano")
+
+	return exec.LookPath("nano")
+}
+
+// Edit loops over editing the named configuration file name with
+// an editor retrieved from [Editor] until it has no errors.
 func Edit(name string) error {
 	editor, err := Editor()
 	if err != nil {
@@ -74,14 +89,4 @@ func fillTemplate(name string) error {
 	}
 
 	return nil
-}
-
-func Editor() (string, error) {
-	if editor := os.Getenv("EDITOR"); editor != "" {
-		return editor, nil
-	}
-
-	log.Println("no EDITOR set, falling back to nano")
-
-	return exec.LookPath("nano")
 }

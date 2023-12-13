@@ -8,8 +8,11 @@ import (
 	"os"
 )
 
+// ErrBadStatus is the error returned by Download and Body
+// if the returned HTTP status code is not http.StatusOK.
 var ErrBadStatus = errors.New("bad status")
 
+// Download downloads the named url to the named file.
 func Download(url, file string) error {
 	out, err := os.Create(file)
 	if err != nil {
@@ -34,6 +37,7 @@ func Download(url, file string) error {
 	return nil
 }
 
+// Body retrieves the body of the named url to string form.
 func Body(url string) (string, error) {
 	resp, err := http.Get(url)
 	if err != nil {

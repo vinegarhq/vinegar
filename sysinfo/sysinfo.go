@@ -1,5 +1,5 @@
-//go:build amd64
-
+// Package sysinfo provides global top-level variables about
+// the running host machine.
 package sysinfo
 
 import (
@@ -8,7 +8,7 @@ import (
 
 var (
 	Kernel    string
-	CPU       cpu
+	CPU       Processor
 	Cards     []Card
 	Distro    string
 	InFlatpak bool

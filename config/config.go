@@ -11,19 +11,9 @@ import (
 	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/util"
 )
-
-type Splash struct {
-	Enabled bool   `toml:"enabled"`
-	Style   string `toml:"style"`
-	Bg      uint32 `toml:"background"`
-	Fg      uint32 `toml:"foreground"`
-	Red     uint32 `toml:"red"`
-	Accent  uint32 `toml:"accent"`
-	Gray1   uint32 `toml:"gray1"`
-	Gray2   uint32 `toml:"gray2"`
-}
 
 type Binary struct {
 	Channel       string        `toml:"channel"`
@@ -39,15 +29,15 @@ type Binary struct {
 }
 
 type Config struct {
-	WineRoot          string      `toml:"wineroot"`
-	DxvkVersion       string      `toml:"dxvk_version"`
-	MultipleInstances bool        `toml:"multiple_instances"`
-	SanitizeEnv       bool        `toml:"sanitize_env"`
-	Global            Binary      `toml:"global"`
-	Player            Binary      `toml:"player"`
-	Studio            Binary      `toml:"studio"`
-	env               Environment `toml:"env"` // kept for compatibilty
-	Splash            Splash      `toml:"splash"`
+	WineRoot          string        `toml:"wineroot"`
+	DxvkVersion       string        `toml:"dxvk_version"`
+	MultipleInstances bool          `toml:"multiple_instances"`
+	SanitizeEnv       bool          `toml:"sanitize_env"`
+	Global            Binary        `toml:"global"`
+	Player            Binary        `toml:"player"`
+	Studio            Binary        `toml:"studio"`
+	env               Environment   `toml:"env"` // kept for compatibilty
+	Splash            splash.Config `toml:"splash"`
 }
 
 var (
@@ -128,7 +118,7 @@ func Default() Config {
 			Env:    make(Environment),
 		},
 
-		Splash: Splash{
+		Splash: splash.Config{
 			Enabled: true,
 			Bg:      0x242424,
 			Fg:      0xfafafa,

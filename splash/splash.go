@@ -19,17 +19,27 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/util"
 )
 
 var ErrClosed = errors.New("window closed")
 
+type Config struct {
+	Enabled bool   `toml:"enabled"`
+	Style   string `toml:"style"`
+	Bg      uint32 `toml:"background"`
+	Fg      uint32 `toml:"foreground"`
+	Red     uint32 `toml:"red"`
+	Accent  uint32 `toml:"accent"`
+	Gray1   uint32 `toml:"gray1"`
+	Gray2   uint32 `toml:"gray2"`
+}
+
 type Splash struct {
 	*app.Window
 
 	Theme  *material.Theme
-	Config *config.Splash
+	Config *Config
 	Style
 	LogPath string
 
@@ -78,7 +88,7 @@ func window(width, height unit.Dp) *app.Window {
 	)
 }
 
-func New(cfg *config.Splash) *Splash {
+func New(cfg *Config) *Splash {
 	s := Compact
 
 	if cfg.Style == "familiar" {

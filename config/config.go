@@ -15,6 +15,8 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 )
 
+var LogoPath string
+
 type Binary struct {
 	Channel       string        `toml:"channel"`
 	Launcher      string        `toml:"launcher"`
@@ -119,13 +121,14 @@ func Default() Config {
 		},
 
 		Splash: splash.Config{
-			Enabled: true,
-			Bg:      0x242424,
-			Fg:      0xfafafa,
-			Red:     0xbc3c3c,
-			Gray1:   0x303030,
-			Gray2:   0x777777,
-			Accent:  0x8fbc5e,
+			Enabled:     true,
+			LogoPath:    LogoPath,
+			BgColor:     0x242424,
+			FgColor:     0xfafafa,
+			CancelColor: 0xbc3c3c,
+			TrackColor:  0x303030,
+			AccentColor: 0x8fbc5e,
+			InfoColor:   0x777777,
 		},
 	}
 }

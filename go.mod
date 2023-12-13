@@ -15,7 +15,6 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/hugolgst/rich-go v0.0.0-20230917173849-4a4fb1d3c362
 	golang.org/x/sys v0.15.0
-	golang.org/x/time v0.5.0
 )
 
 require (

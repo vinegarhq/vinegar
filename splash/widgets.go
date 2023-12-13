@@ -6,6 +6,7 @@ import (
 	_ "image/png"
 
 	"gioui.org/layout"
+	"gioui.org/op/paint"
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
@@ -16,7 +17,15 @@ type (
 	D = layout.Dimensions
 )
 
-func (ui *Splash) buttons(gtx C, s layout.Spacing) D {
+func (ui *Splash) drawLogo() *widget.Image {
+	if ui.logo == nil {
+		return &widget.Image{}
+	}
+
+	return &widget.Image{Src: paint.NewImageOp(*ui.logo)}
+}
+
+func (ui *Splash) drawButtons(gtx C, s layout.Spacing) D {
 	return layout.Flex{
 		Axis:    layout.Horizontal,
 		Spacing: s,
@@ -26,14 +35,15 @@ func (ui *Splash) buttons(gtx C, s layout.Spacing) D {
 				return D{}
 			}
 
-			btn := button(ui.Theme, &ui.openLogButton, "Show logs")
+			btn := button(ui.Theme, ui.openLogButton, "Show logs")
 			return layout.Inset{Right: unit.Dp(16)}.Layout(gtx, func(gtx C) D {
 				return btn.Layout(gtx)
 			})
 		}),
 		layout.Rigid(func(gtx C) D {
-			btn := button(ui.Theme, &ui.exitButton, "Cancel")
-			btn.Background = rgb(ui.Config.Red)
+			btn := button(ui.Theme, ui.exitButton, "Cancel")
+			btn.Color = ui.Theme.Palette.Fg
+			btn.Background = rgb(ui.Config.CancelColor)
 			return btn.Layout(gtx)
 		}),
 	)
@@ -42,7 +52,7 @@ func (ui *Splash) buttons(gtx C, s layout.Spacing) D {
 func (ui *Splash) drawDesc(gtx C) D {
 	d := material.Caption(ui.Theme, ui.desc)
 	d.Font.Typeface = "go mono, monospace"
-	d.Color = ui.Theme.Palette.ContrastFg
+	d.Color = rgb(ui.Config.InfoColor)
 	return d.Layout(gtx)
 }
 

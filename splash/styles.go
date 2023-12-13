@@ -3,12 +3,8 @@
 package splash
 
 import (
-	_ "image/png"
-
 	"gioui.org/layout"
-	"gioui.org/op/paint"
 	"gioui.org/unit"
-	"gioui.org/widget"
 	"gioui.org/widget/material"
 )
 
@@ -23,7 +19,7 @@ func (s Style) Size() (w, h unit.Dp) {
 	switch s {
 	case Compact:
 		w = unit.Dp(448)
-		h = unit.Dp(156) // 118, 0
+		h = unit.Dp(150) // 118, 0
 	case Familiar:
 		w = unit.Dp(480)
 		h = unit.Dp(246) // 198
@@ -34,10 +30,10 @@ func (s Style) Size() (w, h unit.Dp) {
 
 func (ui *Splash) drawCompact(gtx C) D {
 	return layout.Inset{
-		Top:    unit.Dp(18),
-		Bottom: unit.Dp(18),
-		Left:   unit.Dp(12),
-		Right:  unit.Dp(18),
+		Top:    unit.Dp(16),
+		Bottom: unit.Dp(16),
+		Left:   unit.Dp(16),
+		Right:  unit.Dp(16),
 	}.Layout(gtx, func(gtx C) D {
 		return layout.Flex{
 			Axis: layout.Vertical,
@@ -47,7 +43,8 @@ func (ui *Splash) drawCompact(gtx C) D {
 					Axis:      layout.Horizontal,
 					Alignment: layout.Start,
 				}.Layout(gtx,
-					layout.Rigid(widget.Image{Src: paint.NewImageOp(ui.logo)}.Layout),
+					layout.Rigid(ui.drawLogo().Layout),
+					layout.Rigid(layout.Spacer{Width: unit.Dp(10)}.Layout),
 					layout.Rigid(func(gtx C) D {
 						return layout.Flex{
 							Axis:      layout.Vertical,
@@ -61,7 +58,7 @@ func (ui *Splash) drawCompact(gtx C) D {
 							layout.Rigid(layout.Spacer{Height: unit.Dp(20)}.Layout),
 							layout.Rigid(func(gtx C) D {
 								pb := ProgressBar(ui.Theme, ui.progress)
-								pb.TrackColor = rgb(ui.Config.Gray1)
+								pb.TrackColor = rgb(ui.Config.TrackColor)
 								return pb.Layout(gtx)
 							}),
 						)
@@ -70,7 +67,7 @@ func (ui *Splash) drawCompact(gtx C) D {
 			}),
 			layout.Rigid(layout.Spacer{Height: unit.Dp(18)}.Layout),
 			layout.Rigid(func(gtx C) D {
-				return ui.buttons(gtx, layout.SpaceStart)
+				return ui.drawButtons(gtx, layout.SpaceStart)
 			}),
 		)
 	})
@@ -82,7 +79,7 @@ func (ui *Splash) drawFamiliar(gtx C) D {
 			Axis:      layout.Vertical,
 			Alignment: layout.Middle,
 		}.Layout(gtx,
-			layout.Rigid(widget.Image{Src: paint.NewImageOp(ui.logo)}.Layout),
+			layout.Rigid(ui.drawLogo().Layout),
 			layout.Rigid(func(gtx C) D {
 				return layout.Flex{
 					Axis:      layout.Vertical,
@@ -98,7 +95,7 @@ func (ui *Splash) drawFamiliar(gtx C) D {
 							Right:  unit.Dp(32),
 						}.Layout(gtx, func(gtx C) D {
 							pb := ProgressBar(ui.Theme, ui.progress)
-							pb.TrackColor = rgb(ui.Config.Gray1)
+							pb.TrackColor = rgb(ui.Config.TrackColor)
 							return pb.Layout(gtx)
 						})
 					}),
@@ -109,7 +106,7 @@ func (ui *Splash) drawFamiliar(gtx C) D {
 				)
 			}),
 			layout.Rigid(func(gtx C) D {
-				return ui.buttons(gtx, layout.SpaceAround)
+				return ui.drawButtons(gtx, layout.SpaceAround)
 			}),
 		)
 	})

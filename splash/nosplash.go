@@ -5,8 +5,6 @@ package splash
 import (
 	"errors"
 	"log"
-
-	"github.com/vinegarhq/vinegar/config"
 )
 
 var ErrClosed = errors.New("window closed")
@@ -38,7 +36,7 @@ func (ui *Splash) Dialog(title, msg string) {
 	log.Printf("splash: dialog: %s %s", title, msg)
 }
 
-func New(cfg *config.Splash) *Splash {
+func New(cfg *Config) *Splash {
 	return &Splash{}
 }
 

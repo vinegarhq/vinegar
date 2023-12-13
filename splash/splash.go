@@ -3,11 +3,11 @@
 package splash
 
 import (
-	"bytes"
 	"errors"
 	"image"
 	_ "image/png"
 	"log"
+	"os"
 
 	"gioui.org/app"
 	"gioui.org/font/gofont"
@@ -24,17 +24,6 @@ import (
 
 var ErrClosed = errors.New("window closed")
 
-type Config struct {
-	Enabled bool   `toml:"enabled"`
-	Style   string `toml:"style"`
-	Bg      uint32 `toml:"background"`
-	Fg      uint32 `toml:"foreground"`
-	Red     uint32 `toml:"red"`
-	Accent  uint32 `toml:"accent"`
-	Gray1   uint32 `toml:"gray1"`
-	Gray2   uint32 `toml:"gray2"`
-}
-
 type Splash struct {
 	*app.Window
 
@@ -43,15 +32,15 @@ type Splash struct {
 	Style
 	LogPath string
 
-	logo    image.Image
+	logo    *image.Image
 	message string
 	desc    string
 
 	progress float32
 	closed   bool
 
-	exitButton    widget.Clickable
-	openLogButton widget.Clickable
+	exitButton    *widget.Clickable
+	openLogButton *widget.Clickable
 }
 
 func (ui *Splash) SetMessage(msg string) {
@@ -95,30 +84,57 @@ func New(cfg *Config) *Splash {
 		s = Familiar
 	}
 
-	logo, _, _ := image.Decode(bytes.NewReader(vinegarlogo))
 	w := window(s.Size())
 	w.Perform(system.ActionCenter)
 
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
 	th.Palette = material.Palette{
-		Bg:         rgb(cfg.Bg),
-		Fg:         rgb(cfg.Fg),
-		ContrastBg: rgb(cfg.Accent),
-		ContrastFg: rgb(cfg.Gray2),
+		Bg:         rgb(cfg.BgColor),
+		Fg:         rgb(cfg.FgColor),
+		ContrastBg: rgb(cfg.AccentColor),
+		ContrastFg: rgb(cfg.InfoColor),
 	}
 
+	eb := new(widget.Clickable)
+	olb := new(widget.Clickable)
+
 	return &Splash{
-		logo:   logo,
-		Theme:  th,
-		Style:  s,
-		Config: cfg,
-		Window: w,
+		Theme:         th,
+		Style:         s,
+		Config:        cfg,
+		Window:        w,
+		exitButton:    eb,
+		openLogButton: olb,
 	}
+}
+
+func (ui *Splash) loadLogo() error {
+	if ui.Config.LogoPath == "" {
+		return errors.New("logo file path unset")
+	}
+
+	logoFile, err := os.Open(ui.Config.LogoPath)
+	if err != nil {
+		return err
+	}
+	defer logoFile.Close()
+
+	logo, _, err := image.Decode(logoFile)
+	if err != nil {
+		return err
+	}
+
+	ui.logo = &logo
+	return nil
 }
 
 func (ui *Splash) Run() error {
 	drawfn := ui.drawCompact
+
+	if err := ui.loadLogo(); err != nil {
+		log.Println("Failed to load logo:", err)
+	}
 
 	defer func() {
 		ui.closed = true

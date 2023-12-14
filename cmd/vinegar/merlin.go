@@ -42,7 +42,7 @@ func SubmitMerlin() error {
 		return err
 	}
 
-	resp, err := http.Post("https://merlin.vinegarhq.org:7000", "application/json", bytes.NewBuffer(sd))
+	resp, err := http.Post("https://merlin.vinegarhq.org", "application/json", bytes.NewBuffer(sd))
 	if err != nil {
 		return fmt.Errorf("merlin: %w", err)
 	}

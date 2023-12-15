@@ -107,6 +107,7 @@ func New(cfg *Config) *Splash {
 		Window:        w,
 		exitButton:    eb,
 		openLogButton: olb,
+		closed:        true,
 	}
 }
 
@@ -149,6 +150,7 @@ func (ui *Splash) Run() error {
 		drawfn = ui.drawFamiliar
 	}
 
+	ui.closed = false
 	var ops op.Ops
 	for {
 		switch e := ui.NextEvent().(type) {

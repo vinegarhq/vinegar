@@ -156,7 +156,6 @@ func (b *Binary) setup() error {
 		return ErrNeedDXVKRenderer
 	}
 
-
 	return b.pickCard()
 }
 

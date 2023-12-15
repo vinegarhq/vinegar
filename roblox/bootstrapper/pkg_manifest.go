@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/util"
 	"golang.org/x/sync/errgroup"
 )
@@ -15,7 +14,7 @@ import (
 // PackageManifest is a representation of a Binary version's packages
 // DeployURL is required, as it is where the package manifest is fetched from.
 type PackageManifest struct {
-	*roblox.Deployment
+	*Deployment
 	DeployURL string
 	Packages
 }
@@ -41,7 +40,7 @@ func channelPath(channel string) string {
 	channel = strings.ToLower(channel)
 
 	// Roblox CDN only accepts no channel if its the default channel
-	if channel == "" || channel == roblox.DefaultChannel {
+	if channel == "" || channel == DefaultChannel {
 		return "/"
 	}
 
@@ -49,7 +48,7 @@ func channelPath(channel string) string {
 }
 
 // FetchPackageManifest retrieves a package manifest for the given binary deployment.
-func FetchPackageManifest(d *roblox.Deployment) (PackageManifest, error) {
+func FetchPackageManifest(d *Deployment) (PackageManifest, error) {
 	cdn, err := CDN()
 	if err != nil {
 		return PackageManifest{}, err

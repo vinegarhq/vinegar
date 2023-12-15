@@ -20,7 +20,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
-	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
+	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
@@ -45,7 +45,7 @@ type Binary struct {
 	Dir    string
 	Prefix *wine.Prefix
 	Type   roblox.BinaryType
-	Deploy *roblox.Deployment
+	Deploy *boot.Deployment
 
 	// Logging
 	Auth     bool
@@ -226,12 +226,12 @@ func (b *Binary) FetchDeployment() error {
 	if b.Config.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
 
-		d := roblox.NewDeployment(b.Type, b.Config.Channel, b.Config.ForcedVersion)
+		d := boot.NewDeployment(b.Type, b.Config.Channel, b.Config.ForcedVersion)
 		b.Deploy = &d
 		return nil
 	}
 
-	d, err := roblox.FetchDeployment(b.Type, b.Config.Channel)
+	d, err := boot.FetchDeployment(b.Type, b.Config.Channel)
 	if err != nil {
 		return err
 	}
@@ -290,7 +290,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	manifest, err := bootstrapper.FetchPackageManifest(b.Deploy)
+	manifest, err := boot.FetchPackageManifest(b.Deploy)
 	if err != nil {
 		return err
 	}
@@ -318,7 +318,7 @@ func (b *Binary) Install() error {
 		}
 	}
 
-	if err := bootstrapper.WriteAppSettings(b.Dir); err != nil {
+	if err := boot.WriteAppSettings(b.Dir); err != nil {
 		return err
 	}
 
@@ -331,11 +331,11 @@ func (b *Binary) Install() error {
 	return b.State.CleanVersions()
 }
 
-func (b *Binary) PerformPackages(pm *bootstrapper.PackageManifest, fn func(bootstrapper.Package) error) error {
+func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package) error) error {
 	donePkgs := 0
 	pkgsLen := len(pm.Packages)
 
-	return pm.Packages.Perform(func(pkg bootstrapper.Package) error {
+	return pm.Packages.Perform(func(pkg boot.Package) error {
 		err := fn(pkg)
 		if err != nil {
 			return err
@@ -348,20 +348,20 @@ func (b *Binary) PerformPackages(pm *bootstrapper.PackageManifest, fn func(boots
 	})
 }
 
-func (b *Binary) DownloadPackages(pm *bootstrapper.PackageManifest) error {
+func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
 	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
 
-	return b.PerformPackages(pm, func(pkg bootstrapper.Package) error {
+	return b.PerformPackages(pm, func(pkg boot.Package) error {
 		return pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
 	})
 }
 
-func (b *Binary) ExtractPackages(pm *bootstrapper.PackageManifest) error {
+func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
 	log.Printf("Extracting %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
 
-	pkgDirs := bootstrapper.BinaryDirectories(b.Type)
+	pkgDirs := boot.BinaryDirectories(b.Type)
 
-	return b.PerformPackages(pm, func(pkg bootstrapper.Package) error {
+	return b.PerformPackages(pm, func(pkg boot.Package) error {
 		dest, ok := pkgDirs[pkg.Name]
 
 		if !ok {

@@ -28,7 +28,7 @@ func TestState(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	v := roblox.NewDeployment(roblox.Player, "", "version-meowmeowmrrp")
+	v := bootstrapper.NewDeployment(roblox.Player, "", "version-meowmeowmrrp")
 	s.DxvkVersion = "6.9"
 	s.AddBinary(&bootstrapper.PackageManifest{
 		Deployment: &v,

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/vinegarhq/vinegar/roblox/version"
+	"github.com/vinegarhq/vinegar/roblox"
 )
 
 func TestParsePackages(t *testing.T) {
@@ -113,7 +113,7 @@ func TestExcludedPackage(t *testing.T) {
 }
 
 func TestChannelPath(t *testing.T) {
-	if channelPath(version.DefaultChannel) != "/" {
+	if channelPath(roblox.DefaultChannel) != "/" {
 		t.Fatal("expected default channel empty path")
 	}
 

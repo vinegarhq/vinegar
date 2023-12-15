@@ -21,7 +21,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
-	"github.com/vinegarhq/vinegar/roblox/version"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
@@ -41,12 +40,12 @@ type Binary struct {
 	GlobalConfig *config.Config
 	Config       *config.Binary
 
-	Alias   string
-	Name    string
-	Dir     string
-	Prefix  *wine.Prefix
-	Type    roblox.BinaryType
-	Version version.Version
+	Alias  string
+	Name   string
+	Dir    string
+	Prefix *wine.Prefix
+	Type   roblox.BinaryType
+	Deploy *roblox.Deployment
 
 	// Logging
 	Auth     bool
@@ -221,16 +220,24 @@ func (b *Binary) HandleRobloxLog(line string) {
 	}
 }
 
-func (b *Binary) FetchVersion() (version.Version, error) {
+func (b *Binary) FetchDeployment() error {
 	b.Splash.SetMessage("Fetching " + b.Alias)
 
 	if b.Config.ForcedVersion != "" {
 		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
 
-		return version.New(b.Type, b.Config.Channel, b.Config.ForcedVersion), nil
+		d := roblox.NewDeployment(b.Type, b.Config.Channel, b.Config.ForcedVersion)
+		b.Deploy = &d
+		return nil
 	}
 
-	return version.Fetch(b.Type, b.Config.Channel)
+	d, err := roblox.FetchDeployment(b.Type, b.Config.Channel)
+	if err != nil {
+		return err
+	}
+
+	b.Deploy = &d
+	return nil
 }
 
 func (b *Binary) Setup() error {
@@ -240,24 +247,22 @@ func (b *Binary) Setup() error {
 	}
 	b.State = &s
 
-	ver, err := b.FetchVersion()
-	if err != nil {
+	if err := b.FetchDeployment(); err != nil {
 		return err
 	}
 
-	b.Splash.SetDesc(fmt.Sprintf("%s %s", ver.GUID, ver.Channel))
-	b.Version = ver
-	b.Dir = filepath.Join(dirs.Versions, ver.GUID)
+	b.Dir = filepath.Join(dirs.Versions, b.Deploy.GUID)
+	b.Splash.SetDesc(fmt.Sprintf("%s %s", b.Deploy.GUID, b.Deploy.Channel))
 
 	stateVer := b.State.Version(b.Type)
-	if stateVer != ver.GUID {
-		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, ver.GUID)
+	if stateVer != b.Deploy.GUID {
+		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, b.Deploy.GUID)
 
 		if err := b.Install(); err != nil {
 			return err
 		}
 	} else {
-		log.Printf("%s is up to date (%s)", b.Name, ver.GUID)
+		log.Printf("%s is up to date (%s)", b.Name, b.Deploy.GUID)
 	}
 
 	b.Config.Env.Setenv()
@@ -285,7 +290,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	manifest, err := bootstrapper.FetchPackageManifest(&b.Version)
+	manifest, err := bootstrapper.FetchPackageManifest(b.Deploy)
 	if err != nil {
 		return err
 	}
@@ -344,7 +349,7 @@ func (b *Binary) PerformPackages(pm *bootstrapper.PackageManifest, fn func(boots
 }
 
 func (b *Binary) DownloadPackages(pm *bootstrapper.PackageManifest) error {
-	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Version.GUID)
+	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
 
 	return b.PerformPackages(pm, func(pkg bootstrapper.Package) error {
 		return pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
@@ -352,7 +357,8 @@ func (b *Binary) DownloadPackages(pm *bootstrapper.PackageManifest) error {
 }
 
 func (b *Binary) ExtractPackages(pm *bootstrapper.PackageManifest) error {
-	log.Printf("Extracting %d Packages for %s", len(pm.Packages), pm.Version.GUID)
+	log.Printf("Extracting %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
+
 	pkgDirs := bootstrapper.BinaryDirectories(b.Type)
 
 	return b.PerformPackages(pm, func(pkg bootstrapper.Package) error {

@@ -20,7 +20,7 @@ func (bt BinaryType) String() string {
 	}
 }
 
-// BinaryName returns Roblox's internal API name for the 
+// BinaryName returns Roblox's internal API name for the
 // named BinaryType
 //
 // Does not support platforms other than Windows.

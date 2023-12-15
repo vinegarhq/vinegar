@@ -8,7 +8,6 @@ import (
 
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
-	"github.com/vinegarhq/vinegar/roblox/version"
 )
 
 func TestState(t *testing.T) {
@@ -29,10 +28,10 @@ func TestState(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	v := version.New(roblox.Player, "", "version-meowmeowmrrp")
+	v := roblox.NewDeployment(roblox.Player, "", "version-meowmeowmrrp")
 	s.DxvkVersion = "6.9"
 	s.AddBinary(&bootstrapper.PackageManifest{
-		Version: &v,
+		Deployment: &v,
 		Packages: bootstrapper.Packages{{
 			Checksum: "meow",
 		}},

@@ -72,13 +72,13 @@ func (s *State) Save() error {
 // manifest's binary name.
 func (s *State) AddBinary(pm *bootstrapper.PackageManifest) {
 	b := BinaryState{
-		Version: pm.Version.GUID,
+		Version: pm.Deployment.GUID,
 	}
 	for _, pkg := range pm.Packages {
 		b.Packages = append(b.Packages, pkg.Checksum)
 	}
 
-	s.Applications[pm.Version.Type.BinaryName()] = b
+	s.Applications[pm.Deployment.Type.BinaryName()] = b
 }
 
 // Packages retrieves all the available Binary packages from the state

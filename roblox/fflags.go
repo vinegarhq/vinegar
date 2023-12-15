@@ -21,7 +21,7 @@ var renderers = []string{
 // FFlags is Roblox's Fast Flags implemented in map form.
 type FFlags map[string]interface{}
 
-// Apply creates and compiles the FFlags file and 
+// Apply creates and compiles the FFlags file and
 // directory in the named versionDir.
 func (f FFlags) Apply(versionDir string) error {
 	dir := filepath.Join(versionDir, "ClientSettings")

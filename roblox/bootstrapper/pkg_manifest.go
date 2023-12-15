@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vinegarhq/vinegar/roblox/version"
+	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/util"
 	"golang.org/x/sync/errgroup"
 )
@@ -15,7 +15,7 @@ import (
 // PackageManifest is a representation of a Binary version's packages
 // DeployURL is required, as it is where the package manifest is fetched from.
 type PackageManifest struct {
-	*version.Version
+	*roblox.Deployment
 	DeployURL string
 	Packages
 }
@@ -41,27 +41,27 @@ func channelPath(channel string) string {
 	channel = strings.ToLower(channel)
 
 	// Roblox CDN only accepts no channel if its the default channel
-	if channel == "" || channel == version.DefaultChannel {
+	if channel == "" || channel == roblox.DefaultChannel {
 		return "/"
 	}
 
 	return "/channel/" + channel + "/"
 }
 
-// FetchPackageManifest retrieves a package manifest for the given Binary version.
-func FetchPackageManifest(ver *version.Version) (PackageManifest, error) {
+// FetchPackageManifest retrieves a package manifest for the given binary deployment.
+func FetchPackageManifest(d *roblox.Deployment) (PackageManifest, error) {
 	cdn, err := CDN()
 	if err != nil {
 		return PackageManifest{}, err
 	}
-	durl := cdn + channelPath(ver.Channel) + ver.GUID
+	durl := cdn + channelPath(d.Channel) + d.GUID
 	url := durl + "-rbxPkgManifest.txt"
 
-	log.Printf("Fetching manifest for %s (%s)", ver.GUID, url)
+	log.Printf("Fetching manifest for %s (%s)", d.GUID, url)
 
 	smanif, err := util.Body(url)
 	if err != nil {
-		return PackageManifest{}, fmt.Errorf("fetch %s package manifest: %w", ver.GUID, err)
+		return PackageManifest{}, fmt.Errorf("fetch %s package manifest: %w", d.GUID, err)
 	}
 
 	// Because the manifest ends with also a newline, it has to be removed.
@@ -76,9 +76,9 @@ func FetchPackageManifest(ver *version.Version) (PackageManifest, error) {
 	}
 
 	return PackageManifest{
-		Version:   ver,
-		DeployURL: durl,
-		Packages:  pkgs,
+		Deployment: d,
+		DeployURL:  durl,
+		Packages:   pkgs,
 	}, nil
 }
 

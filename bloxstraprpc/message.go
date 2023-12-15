@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"strconv"
 	"strings"
 )
 
@@ -31,10 +32,13 @@ type Message struct {
 func ParseMessage(line string) (Message, error) {
 	var m Message
 
-	msg := line[strings.Index(line, GameMessageEntry)+len(GameMessageEntry)+1:]
+	msg, err := strconv.Unquote(`"` + line[strings.Index(line, GameMessageEntry)+len(GameMessageEntry)+1:] + `"`)
+	if err != nil {
+		return Message{}, err
+	}
 
 	if err := json.Unmarshal([]byte(msg), &m); err != nil {
-		return m, err
+		return Message{}, err
 	}
 
 	if m.Command == "" {

@@ -5,6 +5,7 @@
 package bloxstraprpc
 
 import (
+	"fmt"
 	"log"
 	"regexp"
 	"strings"
@@ -108,7 +109,7 @@ func (a *Activity) HandleRobloxLog(line string) error {
 		if strings.Contains(line, GameMessageEntry) {
 			m, err := ParseMessage(line)
 			if err != nil {
-				return err
+				return fmt.Errorf("parse bloxstraprpc message: %w", err)
 			}
 
 			a.ProcessMessage(&m)

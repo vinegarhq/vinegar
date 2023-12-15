@@ -36,14 +36,14 @@ type Binary struct {
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
-	WineRoot          string        `toml:"wineroot"`
-	DxvkVersion       string        `toml:"dxvk_version"`
-	MultipleInstances bool          `toml:"multiple_instances"`
-	SanitizeEnv       bool          `toml:"sanitize_env"`
-	Global            Binary        `toml:"global"`
-	Player            Binary        `toml:"player"`
-	Studio            Binary        `toml:"studio"`
-	env               Environment   `toml:"env"` // kept for compatibilty
+	WineRoot          string      `toml:"wineroot"`
+	DxvkVersion       string      `toml:"dxvk_version"`
+	MultipleInstances bool        `toml:"multiple_instances"`
+	SanitizeEnv       bool        `toml:"sanitize_env"`
+	Global            Binary      `toml:"global"`
+	Player            Binary      `toml:"player"`
+	Studio            Binary      `toml:"studio"`
+	env               Environment `toml:"env"` // kept for compatibilty
 
 	Splash splash.Config `toml:"splash"`
 }

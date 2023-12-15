@@ -13,8 +13,19 @@ func TestFFlagRenderer(t *testing.T) {
 		t.Error("expected no failure with no renderer")
 	}
 
-	if !maps.Equal(f, FFlags{}) {
-		t.Error("expected no change with no renderer")
+	expectedUnset := FFlags{
+		"FFlagDebugGraphicsPreferOpenGL":     false,
+		"FFlagDebugGraphicsPreferD3D11FL10":  false,
+		"FFlagDebugGraphicsPreferD3D11":      true,
+		"FFlagDebugGraphicsPreferVulkan":     false,
+		"FFlagDebugGraphicsDisableOpenGL":    true,
+		"FFlagDebugGraphicsDisableD3D11FL10": true,
+		"FFlagDebugGraphicsDisableD3D11":     false,
+		"FFlagDebugGraphicsDisableVulkan":    true,
+	}
+
+	if !maps.Equal(f, expectedUnset) {
+		t.Error("expected fflag set renderer no renderer to match expected d3d11 set")
 	}
 
 	if err := f.SetRenderer("meow"); !errors.Is(err, ErrInvalidRenderer) {
@@ -25,7 +36,7 @@ func TestFFlagRenderer(t *testing.T) {
 		t.Error("expected no failure with correct renderer")
 	}
 
-	expected := FFlags{
+	expectedSet := FFlags{
 		"FFlagDebugGraphicsPreferOpenGL":     false,
 		"FFlagDebugGraphicsPreferD3D11FL10":  false,
 		"FFlagDebugGraphicsPreferD3D11":      false,
@@ -36,7 +47,7 @@ func TestFFlagRenderer(t *testing.T) {
 		"FFlagDebugGraphicsDisableVulkan":    false,
 	}
 
-	if !maps.Equal(f, expected) {
-		t.Error("expected fflag set renderer to match expected set")
+	if !maps.Equal(f, expectedSet) {
+		t.Error("expected fflag set renderer vulkan to match expected vulkan set")
 	}
 }

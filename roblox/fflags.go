@@ -11,6 +11,10 @@ import (
 
 var ErrInvalidRenderer = errors.New("invalid renderer given")
 
+// defaultRenderer is used as the default renderer when
+// no explicit named renderer argument has been given.
+const DefaultRenderer = "D3D11"
+
 var renderers = []string{
 	"OpenGL",
 	"D3D11FL10",
@@ -56,15 +60,7 @@ func (f FFlags) Apply(versionDir string) error {
 // ValidRenderer determines if the named renderer is part of
 // the available supported Roblox renderer backends, used in
 // SetRenderer.
-//
-// If given no renderer, it allows for Roblox to select
-// it's default renderer backend.
 func ValidRenderer(renderer string) bool {
-	// Assume Roblox's internal default renderer
-	if renderer == "" {
-		return true
-	}
-
 	for _, r := range renderers {
 		if renderer == r {
 			return true
@@ -77,9 +73,8 @@ func ValidRenderer(renderer string) bool {
 // SetRenderer sets the named renderer to the FFlags, by disabling
 // all other unused renderers.
 func (f FFlags) SetRenderer(renderer string) error {
-	// Assume Roblox's internal default renderer
 	if renderer == "" {
-		return nil
+		renderer = DefaultRenderer
 	}
 
 	if !ValidRenderer(renderer) {

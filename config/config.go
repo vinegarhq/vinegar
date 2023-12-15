@@ -49,7 +49,6 @@ type Config struct {
 }
 
 var (
-	ErrInvalidRenderer  = errors.New("invalid renderer given")
 	ErrNeedDXVKRenderer = errors.New("dxvk is only valid with d3d renderers")
 	ErrWineRootAbs      = errors.New("ensure that the wine root given is an absolute path")
 	ErrWineRootInvalid  = errors.New("invalid wine root given")
@@ -149,17 +148,14 @@ func Default() Config {
 }
 
 func (b *Binary) setup() error {
-	if !roblox.ValidRenderer(b.Renderer) {
-		return ErrInvalidRenderer
+	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
+		return err
 	}
 
 	if !strings.HasPrefix(b.Renderer, "D3D11") && b.Dxvk {
 		return ErrNeedDXVKRenderer
 	}
 
-	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
-		return err
-	}
 
 	return b.pickCard()
 }

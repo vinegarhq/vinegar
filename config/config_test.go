@@ -63,7 +63,7 @@ func TestBinarySetup(t *testing.T) {
 	}
 
 	b.Renderer = "Meow"
-	if err := b.setup(); !errors.Is(err, ErrInvalidRenderer) {
+	if err := b.setup(); !errors.Is(err, roblox.ErrInvalidRenderer) {
 		t.Error("expected renderer check")
 	}
 

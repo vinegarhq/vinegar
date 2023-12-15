@@ -5,27 +5,29 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hugolgst/rich-go/client"
+	"github.com/altfoxie/drpc"
 	"github.com/vinegarhq/vinegar/roblox/api"
 )
 
 // This is Bloxstrap's Discord RPC application ID.
 const RPCAppID = "1005469189907173486"
 
-func Login() error {
-	log.Println("Authenticating Discord RPC")
-	return client.Login(RPCAppID)
+func (a *Activity) Connect() error {
+	log.Println("Connecting to Discord RPC")
+
+	return a.drpcClient.Connect()
 }
 
-func Logout() {
-	log.Println("Deauthenticating Discord RPC")
-	client.Logout()
+func (a *Activity) Close() error {
+	log.Println("Closing Discord RPC")
+
+	return a.drpcClient.Close()
 }
 
 func (a *Activity) SetCurrentGame() error {
 	if !a.ingame {
 		log.Println("Not in game, clearing presence")
-		a.presence = client.Activity{}
+		a.presence = drpc.Activity{}
 	} else {
 		if err := a.SetPresence(); err != nil {
 			return err
@@ -63,18 +65,18 @@ func (a *Activity) SetPresence() error {
 	}
 	log.Printf("Got Universe thumbnail as %s", tn.ImageURL)
 
-	buttons := []*client.Button{{
+	buttons := []drpc.Button{{
 		Label: "See game page",
-		Url:   "https://www.roblox.com/games/" + a.placeID,
+		URL:   "https://www.roblox.com/games/" + a.placeID,
 	}}
 
 	joinurl := "roblox://experiences/start?placeId=" + a.placeID + "&gameInstanceId=" + a.jobID
 	switch a.server {
 	case Public:
 		status = "by " + gd.Creator.Name
-		buttons = append(buttons, &client.Button{
+		buttons = append(buttons, drpc.Button{
 			Label: "Join server",
-			Url:   joinurl,
+			URL:   joinurl,
 		})
 	case Private:
 		status = "In a private server"
@@ -82,15 +84,17 @@ func (a *Activity) SetPresence() error {
 		status = "In a reserved server"
 	}
 
-	a.presence = client.Activity{
-		State:      status,
-		Details:    "Playing " + gd.Name,
-		LargeImage: tn.ImageURL,
-		LargeText:  gd.Name,
-		SmallImage: "roblox",
-		SmallText:  "Roblox",
-		Timestamps: &client.Timestamps{
-			Start: &a.timeStartedUniverse,
+	a.presence = drpc.Activity{
+		State:   status,
+		Details: "Playing " + gd.Name,
+		Assets: &drpc.Assets{
+			LargeImage: tn.ImageURL,
+			LargeText:  gd.Name,
+			SmallImage: "roblox",
+			SmallText:  "Roblox",
+		},
+		Timestamps: &drpc.Timestamps{
+			Start: a.timeStartedUniverse,
 		},
 		Buttons: buttons,
 	}
@@ -113,47 +117,37 @@ func (a *Activity) ProcessMessage(m *Message) {
 
 	if a.presence.Timestamps != nil {
 		if m.TimestampStart == 0 {
-			a.presence.Timestamps.Start = nil
+			a.presence.Timestamps = nil
 		} else {
-			ts := time.UnixMilli(m.TimestampStart)
-			a.presence.Timestamps.Start = &ts
+			a.presence.Timestamps.Start = time.UnixMilli(m.TimestampStart)
 		}
-	}
-
-	if a.presence.Timestamps != nil {
 		if m.TimestampEnd == 0 {
-			a.presence.Timestamps.End = nil
+			a.presence.Timestamps = nil
 		} else {
-			te := time.UnixMilli(m.TimestampEnd)
-			a.presence.Timestamps.End = &te
+			a.presence.Timestamps.End = time.UnixMilli(m.TimestampEnd)
 		}
 	}
 
 	if m.SmallImage.Clear {
-		a.presence.SmallImage = ""
+		a.presence.Assets.SmallImage = ""
 	}
 
 	if m.SmallImage.AssetID != 0 {
-		a.presence.SmallImage = "https://assetdelivery.roblox.com/v1/asset/?id" +
+		a.presence.Assets.SmallImage = "https://assetdelivery.roblox.com/v1/asset/?id" +
 			strconv.FormatInt(m.SmallImage.AssetID, 10)
 	}
 
 	if m.LargeImage.Clear {
-		a.presence.LargeImage = ""
+		a.presence.Assets.LargeImage = ""
 	}
 
 	if m.LargeImage.AssetID != 0 {
-		a.presence.LargeImage = "https://assetdelivery.roblox.com/v1/asset/?id" +
+		a.presence.Assets.LargeImage = "https://assetdelivery.roblox.com/v1/asset/?id" +
 			strconv.FormatInt(m.LargeImage.AssetID, 10)
 	}
 }
 
 func (a *Activity) UpdatePresence() error {
-	//	if a.presence == client.Activity{} {
-	//		log.Println("Presence is empty, clearing")
-	//		return ClearPresence()
-	//	}
-
 	log.Printf("Updating presence: %+v", a.presence)
-	return client.SetActivity(a.presence)
+	return a.drpcClient.SetActivity(a.presence)
 }

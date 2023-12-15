@@ -31,6 +31,8 @@ const (
 	DialogInternalBrowserBrokenTitle = "WebView/InternalBrowser is broken"
 	DialogUseBrowserMsg              = "Use the browser for whatever you were doing just now."
 	DialogQuickLoginMsg              = "Use Quick Log In to authenticate ('Log In With Another Device' button)"
+	DialogNoAVXTitle                 = "Minimum requirements aren't met"
+	DialogNoAVXMsg                   = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
 )
 
 type Binary struct {
@@ -66,7 +68,8 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Bina
 	}
 
 	return &Binary{
-		Splash: splash.New(&cfg.Splash),
+		Activity: bsrpc.New(),
+		Splash:   splash.New(&cfg.Splash),
 
 		GlobalConfig: cfg,
 		Config:       &bcfg,
@@ -82,12 +85,11 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Bina
 
 func (b *Binary) Run(args ...string) error {
 	if b.Config.DiscordRPC {
-		if err := bsrpc.Login(); err != nil {
+		if err := b.Activity.Connect(); err != nil {
 			log.Printf("WARNING: Could not initialize Discord RPC: %s, disabling...", err)
 			b.Config.DiscordRPC = false
 		} else {
-			// NOTE: This will panic if logout fails
-			defer bsrpc.Logout()
+			defer b.Activity.Close()
 		}
 	}
 

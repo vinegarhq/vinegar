@@ -152,6 +152,17 @@ func (b *Binary) Main(args ...string) {
 	b.Prefix.Output = logOutput
 	log.SetOutput(logOutput)
 
+	firstRun := false
+	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
+		firstRun = true
+	}
+
+	if firstRun {
+		if !sysinfo.CPU.AVX {
+			b.Splash.Dialog(DialogNoAVXTitle, DialogNoAVXMsg)
+		}
+	}
+
 	go func() {
 		if err := b.Splash.Run(); err != nil {
 			log.Printf("splash: %s", err)
@@ -177,7 +188,7 @@ func (b *Binary) Main(args ...string) {
 
 	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
 	// automatically create the Wineprefix.
-	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
+	if firstRun {
 		log.Printf("Initializing wineprefix at %s", b.Prefix.Dir())
 		b.Splash.SetMessage("Initializing wineprefix")
 

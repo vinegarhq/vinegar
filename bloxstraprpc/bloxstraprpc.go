@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hugolgst/rich-go/client"
+	"github.com/altfoxie/drpc"
 )
 
 const (
@@ -39,19 +39,26 @@ const (
 )
 
 type Activity struct {
-	presence            client.Activity
+	presence            drpc.Activity
+	drpcClient          *drpc.Client
 	timeStartedUniverse time.Time
-	currentUniverseID   string
 
-	ingame     bool
-	teleported bool
-	server     ServerType
-	placeID    string
-	jobID      string
-	mac        string
+	currentUniverseID string
+	ingame            bool
+	teleported        bool
+	server            ServerType
+	placeID           string
+	jobID             string
+	mac               string
+	teleport          bool
+	reservedteleport  bool
+}
 
-	teleport         bool
-	reservedteleport bool
+func New() Activity {
+	c, _ := drpc.New(RPCAppID)
+	return Activity{
+		drpcClient: c,
+	}
 }
 
 func (a *Activity) HandleRobloxLog(line string) error {
@@ -154,7 +161,6 @@ func (a *Activity) handleGameJoined(line string) {
 
 	a.ingame = true
 	log.Printf("Joined Game (%s/%s/%s)", a.placeID, a.jobID, a.mac)
-	// handle rpc
 }
 
 func (a *Activity) Clear() {
@@ -164,5 +170,5 @@ func (a *Activity) Clear() {
 	a.jobID = ""
 	a.mac = ""
 	a.server = Public
-	a.presence = client.Activity{}
+	a.presence = drpc.Activity{}
 }

@@ -13,6 +13,8 @@ github.com/BurntSushi/toml v1.3.2 h1:o7IhLm0Msx3BaB+n3Ag7L8EVlByGnpq14C4YWiu/gL8
 github.com/BurntSushi/toml v1.3.2/go.mod h1:CxXYINrC8qIiEnFrOxCa7Jy5BFHlXnUU2pbicEuybxQ=
 github.com/adrg/xdg v0.4.0 h1:RzRqFcjH4nE5C6oTAxhBtoE2IRyjBSa62SCbyPidvls=
 github.com/adrg/xdg v0.4.0/go.mod h1:N6ag73EX4wyxeaoeHctc1mas01KZgsj5tYiAIwqJE/E=
+github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53 h1:NcI4SrGv7yDhMRFc6SOQnmTvkOWya6WT/eXVjQoT+TA=
+github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53/go.mod h1:vV4ApNpKIGN4PT5NYmWqw1IEIsFzqj0pspTUSltS+gk=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-text/typesetting v0.0.0-20231206174126-ce41cc83e028 h1:Ml7tuFjpWEaaUcgzQv/yx/oLkyGAFNmgBwVEvvnElGU=
@@ -21,8 +23,8 @@ github.com/go-text/typesetting-utils v0.0.0-20231204162240-fa4dc564ba79 h1:3yBOz
 github.com/go-text/typesetting-utils v0.0.0-20231204162240-fa4dc564ba79/go.mod h1:DDxDdQEnB70R8owOx3LVpEFvpMK9eeH1o2r0yZhFI9o=
 github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
 github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
-github.com/hugolgst/rich-go v0.0.0-20230917173849-4a4fb1d3c362 h1:Q8D2HP1l2mOoeRVLhHjDhK8MRb7LkjESWRtd2gbauws=
-github.com/hugolgst/rich-go v0.0.0-20230917173849-4a4fb1d3c362/go.mod h1:nGaW7CGfNZnhtiFxMpc4OZdqIexGXjUlBnlmpZmjEKA=
+github.com/google/uuid v1.5.0 h1:1p67kYwdtXjb0gL0BPiP1Av9wiZPo5A8z2cWkTZ+eyU=
+github.com/google/uuid v1.5.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/otiai10/copy v1.14.0 h1:dCI/t1iTdYGtkvCuBG2BgR6KZa83PTclw4U5n2wAllU=
 github.com/otiai10/copy v1.14.0/go.mod h1:ECfuL02W+/FkTWZWgQqXPWZgW9oeKCSQ5qVfSc4qc4w=
 github.com/otiai10/mint v1.5.1 h1:XaPLeE+9vGbuyEHem1JNk3bYc7KKqyI/na0/mLd/Kks=

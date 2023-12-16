@@ -39,6 +39,8 @@ func (ui *Splash) Dialog(title, msg string) {
 		ContrastFg: rgb(ui.Config.InfoColor),
 	}
 
+	msgState := new(widget.Selectable)
+
 	for {
 		switch e := w.NextEvent().(type) {
 		case system.DestroyEvent:
@@ -59,10 +61,14 @@ func (ui *Splash) Dialog(title, msg string) {
 				}.Layout(gtx,
 					layout.Rigid(material.Body1(th, title).Layout),
 					layout.Rigid(layout.Spacer{Height: unit.Dp(4)}.Layout),
-					layout.Rigid(material.Body2(th, msg).Layout),
+					layout.Rigid(func(gtx C) D {
+						m := material.Body2(th, msg)
+						m.State = msgState
+						return m.Layout(gtx)
+					}),
 					layout.Rigid(func(gtx C) D {
 						return layout.Flex{Spacing: layout.SpaceStart}.Layout(gtx,
-							layout.Rigid(button(th, &okButton, "Ok").Layout),
+							layout.Rigid(button(th, &okButton, "Okay").Layout),
 						)
 					}),
 				)

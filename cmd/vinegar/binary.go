@@ -31,6 +31,7 @@ const (
 	DialogInternalBrowserBrokenTitle = "WebView/InternalBrowser is broken"
 	DialogUseBrowserMsg              = "Use the browser for whatever you were doing just now."
 	DialogQuickLoginMsg              = "Use Quick Log In to authenticate ('Log In With Another Device' button)"
+	DialogFailure                    = "Vinegar experienced an error"
 	DialogNoAVXTitle                 = "Minimum requirements aren't met"
 	DialogNoAVXMsg                   = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
 )

@@ -181,8 +181,9 @@ func (b *Binary) Main(args ...string) {
 		}
 
 		log.Println(err)
-		b.Splash.LogPath = (logFile.Name())
+		b.Splash.LogPath = logFile.Name()
 		b.Splash.Invalidate()
+		b.Splash.Dialog(DialogFailure, err.Error())
 		select {} // wait for window to close
 	}
 

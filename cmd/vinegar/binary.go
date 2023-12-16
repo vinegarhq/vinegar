@@ -113,7 +113,7 @@ func (b *Binary) Run(args ...string) error {
 	go func() {
 		<-c
 
-		// Only kill the process if it even had a PID
+		// Only kill Roblox if it had a process
 		if cmd.Process != nil {
 			log.Println("Killing Roblox")
 			// This way, cmd.Run() will return and the wineprefix killer will be ran.
@@ -136,16 +136,11 @@ func (b *Binary) Run(args ...string) error {
 
 	if b.Config.GameMode {
 		if err := b.BusSession.GamemodeRegister(int32(cmd.Process.Pid)); err != nil {
-			fmt.Fprintf(os.Stderr, "failed to register gamemode: %s", err.Error())
+			log.Println("Attempted to register to Gamemode daemon")
 		}
 	}
 
 	defer func() {
-		// Don't do anything if the process even ran correctly.
-		if cmd.Process == nil {
-			return
-		}
-
 		// may or may not prevent a race condition in procfs
 		syscall.Sync()
 
@@ -164,20 +159,27 @@ func (b *Binary) Run(args ...string) error {
 
 	// Roblox was sent a signal, do not consider it an error.
 	if strings.Contains(err.Error(), "signal:") {
-		log.Println("WARNING: Roblox process exited with", err)
+		log.Println("WARNING: Roblox exited with", err)
 		return nil
 	}
 
-	return fmt.Errorf("roblox process: %w", err)
+	return fmt.Errorf("roblox: %w", err)
 }
 
 func (b *Binary) HandleOutput(wr io.Reader) {
 	s := bufio.NewScanner(wr)
+	closed := false
+
 	for s.Scan() {
 		txt := s.Text()
 
 		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
 		if len(txt) >= 39 && txt[19:37] == "OutputDebugStringA" {
+			// As soon as a singular Roblox log has been hit, close the splash window
+			if !closed {
+				b.Splash.Close()
+			}
+
 			// length of roblox Flog message
 			if len(txt) >= 90 {
 				b.HandleRobloxLog(txt[39 : len(txt)-1])
@@ -190,11 +192,6 @@ func (b *Binary) HandleOutput(wr io.Reader) {
 }
 
 func (b *Binary) HandleRobloxLog(line string) {
-	// As soon as a singular Roblox log has been hit, close the splash window
-	if !b.Splash.IsClosed() {
-		b.Splash.Close()
-	}
-
 	fmt.Fprintln(b.Prefix.Output, line)
 
 	if strings.Contains(line, "DID_LOG_IN") {

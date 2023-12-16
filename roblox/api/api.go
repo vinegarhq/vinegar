@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -23,8 +22,6 @@ func SetClient(client *http.Client) {
 // Request makes a API request given method, service, endpoint, and data
 // to send to the endpoint with the given method.
 func Request(method, service, endpoint string, v interface{}) error {
-	log.Printf("Performing Roblox API %s %s request on %s", method, service, endpoint)
-
 	url := fmt.Sprintf(APIURL, service, endpoint)
 
 	req, err := http.NewRequest(method, url, nil)

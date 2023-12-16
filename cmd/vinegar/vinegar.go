@@ -163,6 +163,11 @@ func (b *Binary) Main(args ...string) {
 		}
 	}
 
+	if !wine.WineLook() {
+		b.Splash.Dialog(DialogNoWineTitle, DialogNoWineMsg)
+		log.Fatal("wine is required to run roblox")
+	}
+
 	go func() {
 		if err := b.Splash.Run(); err != nil {
 			log.Printf("splash: %s", err)

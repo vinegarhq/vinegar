@@ -5,7 +5,11 @@ package wine
 import (
 	"io"
 	"log"
+	"os/exec"
 )
+
+// The program used for Wine.
+var Wine = "wine"
 
 // Prefix is a representation of a wineprefix, which is where
 // WINE stores its data, which is equivalent to WINE's C:\ drive.
@@ -28,6 +32,13 @@ func New(dir string, out io.Writer) Prefix {
 	}
 }
 
+// WineLook checks for [Wine] with exec.LookPath, and returns
+// true if [Wine] is present and has no problems.
+func WineLook() bool {
+	_, err := exec.LookPath(Wine)
+	return err == nil
+}
+
 // Dir retrieves the Prefix's directory.
 func (p *Prefix) Dir() string {
 	return p.dir
@@ -37,7 +48,7 @@ func (p *Prefix) Dir() string {
 func (p *Prefix) Wine(exe string, arg ...string) *Cmd {
 	arg = append([]string{exe}, arg...)
 
-	return p.Command("wine", arg...)
+	return p.Command(Wine, arg...)
 }
 
 // Kill runs Command with 'wineserver -k' as the named program.

@@ -10,10 +10,8 @@ import (
 	"os/signal"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 	"syscall"
-	"time"
 
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
@@ -109,7 +107,7 @@ func (b *Binary) Run(args ...string) error {
 
 	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
 	// Additionally, if Vinegar got TERM, it will also immediately exit, but roblox
-	// continues running.
+	// continues running if the signal holder was not present.
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -148,18 +146,8 @@ func (b *Binary) Run(args ...string) error {
 			return
 		}
 
-		for {
-			time.Sleep(100 * time.Millisecond)
-
-			// This is because there may be a race condition between the process
-			// procfs depletion and the proccess getting killed.
-			// CommFound walks over procfs, so here ensure that the process no longer
-			// exists in procfs.
-			_, err := os.Stat(filepath.Join("/proc", strconv.Itoa(cmd.Process.Pid)))
-			if err != nil {
-				break
-			}
-		}
+		// may or may not prevent a race condition in procfs
+		syscall.Sync()
 
 		if util.CommFound("Roblox") {
 			log.Println("Another Roblox instance is already running, not killing wineprefix")
@@ -169,11 +157,18 @@ func (b *Binary) Run(args ...string) error {
 		b.Prefix.Kill()
 	}()
 
-	if err := cmd.Wait(); err != nil {
-		return fmt.Errorf("roblox process: %w", err)
+	err = cmd.Wait()
+	if err == nil {
+		return nil
 	}
 
-	return nil
+	// Roblox was sent a signal, do not consider it an error.
+	if strings.Contains(err.Error(), "signal:") {
+		log.Println("WARNING: Roblox process exited with", err)
+		return nil
+	}
+
+	return fmt.Errorf("roblox process: %w", err)
 }
 
 func (b *Binary) HandleOutput(wr io.Reader) {

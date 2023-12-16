@@ -32,8 +32,8 @@ const (
 	DialogUseBrowserMsg              = "Use the browser for whatever you were doing just now."
 	DialogQuickLoginMsg              = "Use Quick Log In to authenticate ('Log In With Another Device' button)"
 	DialogFailure                    = "Vinegar experienced an error"
-	DialogNoWineTitle = "Wine is not installed"
-	DialogNoWineMsg   = "Wine is required to run Roblox on Linux"
+	DialogNoWineTitle                = "Wine is not installed"
+	DialogNoWineMsg                  = "Wine is required to run Roblox on Linux"
 	DialogNoAVXTitle                 = "Minimum requirements aren't met"
 	DialogNoAVXMsg                   = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
 )
@@ -116,8 +116,8 @@ func (b *Binary) Run(args ...string) error {
 	go func() {
 		<-c
 
-		// Only kill Roblox if it had a process
-		if cmd.Process != nil {
+		// Only kill Roblox if it exited
+		if cmd.ProcessState != nil && !cmd.ProcessState.Exited() {
 			log.Println("Killing Roblox")
 			// This way, cmd.Run() will return and the wineprefix killer will be ran.
 			cmd.Process.Kill()

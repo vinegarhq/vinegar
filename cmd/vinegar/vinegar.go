@@ -189,7 +189,6 @@ func (b *Binary) Main(args ...string) {
 		b.Splash.LogPath = logFile.Name()
 		b.Splash.Invalidate()
 		b.Splash.Dialog(DialogFailure, err.Error())
-		select {} // wait for window to close
 	}
 
 	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which

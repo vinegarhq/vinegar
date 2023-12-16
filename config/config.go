@@ -4,7 +4,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -66,8 +65,6 @@ func Load(name string) (Config, error) {
 	cfg := Default()
 
 	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
-		log.Println("Using default configuration")
-
 		return cfg, nil
 	}
 
@@ -182,7 +179,6 @@ func (c *Config) setup() error {
 
 		c.Global.Env["PATH"] = bin + ":" + os.Getenv("PATH")
 		os.Unsetenv("WINEDLLPATH")
-		log.Printf("Using Wine Root: %s", c.WineRoot)
 	}
 
 	if err := c.Player.setup(); err != nil {

@@ -160,6 +160,7 @@ func (b *Binary) Main(args ...string) {
 	if firstRun {
 		if !sysinfo.CPU.AVX {
 			b.Splash.Dialog(DialogNoAVXTitle, DialogNoAVXMsg)
+			log.Fatal("avx is required to run roblox")
 		}
 	}
 

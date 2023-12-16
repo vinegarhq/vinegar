@@ -23,7 +23,7 @@ func VerifyFileMD5(name string, sum string) error {
 	fsum := hex.EncodeToString(h.Sum(nil))
 
 	if sum != fsum {
-		return fmt.Errorf("file %s checksum mismatch: %s != %s", name, sum, fsum)
+		return fmt.Errorf("file %s has checksum mismatch", name)
 	}
 
 	return nil

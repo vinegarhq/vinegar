@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -25,6 +26,7 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
+	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -269,6 +271,7 @@ func (b *Binary) Setup() error {
 
 	b.Config.Env.Setenv()
 
+	log.Println("Using Renderer:", b.Config.Renderer)
 	if err := b.Config.FFlags.Apply(b.Dir); err != nil {
 		return err
 	}
@@ -292,7 +295,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	manifest, err := boot.FetchPackageManifest(b.Deploy)
+	pm, err := boot.FetchPackageManifest(b.Deploy)
 	if err != nil {
 		return err
 	}
@@ -301,13 +304,21 @@ func (b *Binary) Install() error {
 		return err
 	}
 
+	// Prioritize smaller files first, to have less pressure
+	// on network and extraction
+	//
+	// *Theoretically*, this should be better
+	sort.SliceStable(pm.Packages, func(i, j int) bool {
+		return pm.Packages[i].ZipSize < pm.Packages[j].ZipSize
+	})
+
 	b.Splash.SetMessage("Downloading " + b.Alias)
-	if err := b.DownloadPackages(&manifest); err != nil {
+	if err := b.DownloadPackages(&pm); err != nil {
 		return err
 	}
 
 	b.Splash.SetMessage("Extracting " + b.Alias)
-	if err := b.ExtractPackages(&manifest); err != nil {
+	if err := b.ExtractPackages(&pm); err != nil {
 		return err
 	}
 
@@ -324,7 +335,7 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	b.State.AddBinary(&manifest)
+	b.State.AddBinary(&pm)
 
 	if err := b.State.CleanPackages(); err != nil {
 		return err
@@ -336,25 +347,32 @@ func (b *Binary) Install() error {
 func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package) error) error {
 	donePkgs := 0
 	pkgsLen := len(pm.Packages)
+	eg := new(errgroup.Group)
+	eg.SetLimit((pkgsLen / 2) + 3)
 
-	return pm.Packages.Perform(func(pkg boot.Package) error {
-		err := fn(pkg)
-		if err != nil {
-			return err
-		}
+	for _, p := range pm.Packages {
+		p := p
+		eg.Go(func() error {
+			err := fn(p)
+			if err != nil {
+				return err
+			}
 
-		donePkgs++
-		b.Splash.SetProgress(float32(donePkgs) / float32(pkgsLen))
+			donePkgs++
+			b.Splash.SetProgress(float32(donePkgs) / float32(pkgsLen))
 
-		return nil
-	})
+			return nil
+		})
+	}
+
+	return eg.Wait()
 }
 
 func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
 	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
 
 	return b.PerformPackages(pm, func(pkg boot.Package) error {
-		return pkg.Fetch(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
+		return pkg.Download(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
 	})
 }
 

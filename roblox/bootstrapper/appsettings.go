@@ -7,10 +7,9 @@ import (
 )
 
 // WriteAppSettings writes the AppSettings.xml file - required
-// to run Roblox - to the named directory, which is assumed to be
-// a Binary's deployment directory.
+// to run Roblox - to a binary's deployment directory.
 func WriteAppSettings(dir string) error {
-	log.Printf("Writing AppSettings: %s", dir)
+	log.Println("Writing AppSettings:", dir)
 
 	f, err := os.Create(filepath.Join(dir, "AppSettings.xml"))
 	if err != nil {

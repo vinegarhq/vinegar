@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/vinegarhq/vinegar/util"
-	"golang.org/x/sync/errgroup"
 )
 
 // PackageManifest is a representation of a Binary version's packages
@@ -24,25 +23,15 @@ var (
 	ErrUnhandledPkgManifestVer = errors.New("unhandled package manifest version")
 )
 
-// Package is a representation of a Binary package.
-type Package struct {
-	Name     string
-	Checksum string
-	Size     int64
-	ZipSize  int64
-}
-
-type Packages []Package
-
 func channelPath(channel string) string {
+	// Roblox CDN only accepts no channel if its the default channel
+	if channel == DefaultChannel {
+		return "/"
+	}
+
 	// Ensure that the channel is lowercased, since internally in
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
-
-	// Roblox CDN only accepts no channel if its the default channel
-	if channel == "" || channel == DefaultChannel {
-		return "/"
-	}
 
 	return "/channel/" + channel + "/"
 }
@@ -116,20 +105,4 @@ func parsePackages(manifest []string) (Packages, error) {
 	}
 
 	return pkgs, nil
-}
-
-// Perform is a wrapper of errgroups, which performs the named function
-// concurrently with error handling.
-func (pkgs *Packages) Perform(fn func(Package) error) error {
-	var eg errgroup.Group
-
-	for _, pkg := range *pkgs {
-		pkg := pkg
-
-		eg.Go(func() error {
-			return fn(pkg)
-		})
-	}
-
-	return eg.Wait()
 }

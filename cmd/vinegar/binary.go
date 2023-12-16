@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"sort"
@@ -438,14 +437,11 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 	launcher := strings.Fields(b.Config.Launcher)
 	if len(launcher) >= 1 {
 		cmd.Args = append(launcher, cmd.Args...)
-
-		// For safety, ensure that the launcher is in PATH
-		launcherPath, err := exec.LookPath(launcher[0])
+		p, err := b.Config.LauncherPath()
 		if err != nil {
 			return &wine.Cmd{}, err
 		}
-
-		cmd.Path = launcherPath
+		cmd.Path = p
 	}
 
 	return cmd, nil

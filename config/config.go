@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -144,6 +145,10 @@ func Default() Config {
 	}
 }
 
+func (b *Binary) LauncherPath() (string, error) {
+	return exec.LookPath(strings.Fields(b.Launcher)[0])
+}
+
 func (b *Binary) setup() error {
 	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
 		return err
@@ -151,6 +156,12 @@ func (b *Binary) setup() error {
 
 	if !strings.HasPrefix(b.Renderer, "D3D11") && b.Dxvk {
 		return ErrNeedDXVKRenderer
+	}
+
+	if b.Launcher != "" {
+		if _, err := b.LauncherPath(); err != nil {
+			return err
+		}
 	}
 
 	return b.pickCard()

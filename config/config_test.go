@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -80,6 +81,11 @@ func TestBinarySetup(t *testing.T) {
 
 	if os.Getenv("MEOW") == "MEOW" {
 		t.Error("expected no change in environment")
+	}
+
+	b.Launcher = "_"
+	if err := b.setup(); !errors.Is(err, exec.ErrNotFound) {
+		t.Error("expected exec not found")
 	}
 }
 

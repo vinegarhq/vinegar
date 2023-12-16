@@ -31,7 +31,7 @@ func (f FFlags) Apply(versionDir string) error {
 	dir := filepath.Join(versionDir, "ClientSettings")
 	path := filepath.Join(dir, "ClientAppSettings.json")
 
-	log.Printf("Applying custom FFlags")
+	log.Println("Applying custom FFlags:", path)
 
 	err := os.Mkdir(dir, 0o755)
 	if err != nil && !errors.Is(err, os.ErrExist) {

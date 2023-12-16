@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"time"
 	"path"
 	"path/filepath"
 	"runtime/debug"
@@ -14,7 +15,6 @@ import (
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/logs"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
@@ -142,10 +142,31 @@ func Sysinfo(pfx *wine.Prefix) {
 	}
 }
 
+func LogFile(name string) (*os.File, error) {
+	if err := dirs.Mkdirs(dirs.Logs); err != nil {
+		return nil, err
+	}
+
+	// name-2006-01-02T15:04:05Z07:00.log
+	path := filepath.Join(dirs.Logs, name+"-"+time.Now().Format(time.RFC3339)+".log")
+
+	file, err := os.Create(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create %s log file: %w", name, err)
+	}
+
+	log.Printf("Logging to file: %s", path)
+
+	return file, nil
+}
+
 func (b *Binary) Main(args ...string) {
 	b.Config.Env.Setenv()
 
-	logFile := logs.File(b.Type.String())
+	logFile, err := LogFile(b.Type.String())
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer logFile.Close()
 
 	logOutput := io.MultiWriter(logFile, os.Stderr)

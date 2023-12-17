@@ -401,18 +401,32 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
+	vk_ver := b.Prefix.VkVer()
+	if vk_ver == "" {
+		return nil
+	}
+
+	dxvk_version := b.GlobalConfig.DxvkVersion
+	if dxvk_version == "last_supported" {
+		if strings.Split(vk_ver, ".")[1] >= "3" {
+			dxvk_version = "2.3"
+		} else {
+			dxvk_version = "1.10.3"
+		}
+	}
+
 	b.Splash.SetProgress(0.0)
 	dxvk.Setenv()
 
-	if b.GlobalConfig.DxvkVersion == b.State.DxvkVersion {
+	if dxvk_version == b.State.DxvkVersion {
 		return nil
 	}
 
 	// This would only get saved if Install succeeded
-	b.State.DxvkVersion = b.GlobalConfig.DxvkVersion
+	b.State.DxvkVersion = dxvk_version
 
 	b.Splash.SetMessage("Installing DXVK")
-	return dxvk.Install(b.GlobalConfig.DxvkVersion, b.Prefix)
+	return dxvk.Install(dxvk_version, b.Prefix)
 }
 
 func (b *Binary) Command(args ...string) (*wine.Cmd, error) {

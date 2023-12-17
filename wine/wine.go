@@ -3,9 +3,12 @@
 package wine
 
 import (
+	"encoding/json"
 	"io"
 	"log"
+	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 // The program used for Wine.
@@ -42,6 +45,34 @@ func WineLook() bool {
 // Dir retrieves the Prefix's directory.
 func (p *Prefix) Dir() string {
 	return p.dir
+}
+
+// Get supported vulkan version.
+func (p *Prefix) VkVer() string {
+	winevk_info := filepath.Join(p.Dir(), "drive_c", "windows", "syswow64", "winevulkan.json")
+
+	tf, err := os.ReadFile(winevk_info)
+	if err != nil {
+		return ""
+	}
+
+	json_payload := make(map[string]interface{})
+	err = json.Unmarshal(tf, &json_payload)
+	if err != nil {
+		return ""
+	}
+
+	icd, ok := json_payload["ICD"].(map[string]interface{})
+	if !ok {
+		return ""
+	}
+
+	api_version, ok := icd["api_version"].(string)
+	if !ok {
+		return ""
+	}
+
+	return api_version
 }
 
 // Wine makes a new Cmd with wine as the named program.

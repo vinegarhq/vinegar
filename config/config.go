@@ -97,7 +97,7 @@ func (c *Config) globalize() error {
 // Default returns a sane default configuration for Vinegar.
 func Default() Config {
 	return Config{
-		DxvkVersion: "2.3",
+		DxvkVersion: "last_supported",
 
 		// Global should only be used to set strings here.
 		Global: Binary{

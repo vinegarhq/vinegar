@@ -191,11 +191,17 @@ func (b *Binary) Main(args ...string) {
 		log.Fatal("wine is required to run roblox")
 	}
 
-	if b.Config.Dxvk || b.Config.Renderer == "Vulkan" {
-		log.Println("WARNING: Vulkan or DXVK is unsupported on this system! enabling OpenGL renderer...")
-		b.Config.Dxvk = false
-		b.Config.Renderer = "OpenGL"
+	if !b.Prefix.VulkanSupported() {
+		if b.Config.Dxvk {
+			log.Println("WARNING: Vulkan or DXVK is unsupported on this system! enabling OpenGL renderer...")
+			b.Config.Dxvk = false
+			b.Config.Renderer = "OpenGL"
+		} else if b.Config.Renderer == "Vulkan" {
+			b.Splash.Dialog(DialogNoVulkanTitle, DialogNoVulkanMsg, false)
+			log.Fatal("vulkan is not supported")
+		}
 	}
+
 	go func() {
 		err := b.Splash.Run()
 		if errors.Is(splash.ErrClosed, err) {

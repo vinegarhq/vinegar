@@ -37,6 +37,8 @@ const (
 	DialogNoWineMsg       = "Wine is required to run Roblox on Linux"
 	DialogNoAVXTitle      = "Minimum requirements aren't met"
 	DialogNoAVXMsg        = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
+	DialogNoVulkanTitle   = "Vulkan >=1.1 unsupported"
+	DialogNoVulkanMsg     = "Your GPU does not support Vulkan 1.1 or later, You need to have 'OpenGL' as your renderer."
 )
 
 type Binary struct {

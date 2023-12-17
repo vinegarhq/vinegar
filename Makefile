@@ -10,7 +10,6 @@ FLATPAK = org.vinegarhq.Vinegar
 GO = go
 GO_LDFLAGS = -s -w
 
-VINEGAR_ICONPATH = $(ICONPREFIX)/64x64/apps/$(FLATPAK).png
 VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
 VINEGAR_GOFLAGS = --tags nowayland,novulkan 
 
@@ -21,10 +20,10 @@ ROBLOX_ICONS = \
 	icons/48/roblox-player.png icons/48/roblox-studio.png \
 	icons/64/roblox-player.png icons/64/roblox-studio.png
 
-VINEGAR_ICONS = icons/64/vinegar.png splash/vinegar.png
+VINEGAR_ICON = splash/vinegar.png
 
 all: vinegar robloxmutexer.exe
-icons: $(ROBLOX_ICONS) $(VINEGAR_ICONS)
+icons: $(ROBLOX_ICONS) $(VINEGAR_ICON)
 install: install-vinegar install-robloxmutexer install-desktop install-icons
 
 vinegar:
@@ -42,10 +41,9 @@ $(ROBLOX_ICONS): icons/roblox-player.svg icons/roblox-studio.svg
 	convert -density 384 -background none $^ -resize 64x64   -set filename:f '%w/%t' 'icons/%[filename:f].png'
 	convert -density 384 -background none $^ -resize 128x128 -set filename:f '%w/%t' 'icons/%[filename:f].png'
 	
-$(VINEGAR_ICONS): icons/vinegar.svg
+$(VINEGAR_ICON): icons/vinegar.svg
 	# -fuzz 1% -trim +repage removes empty space, makes the image 44x64
 	convert -density 384 -background none icons/vinegar.svg -resize 64x64 -fuzz 1% -trim +repage splash/vinegar.png
-	convert -density 384 -background none icons/vinegar.svg -resize 64x64 icons/64/vinegar.png
 
 install-vinegar: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
@@ -61,7 +59,6 @@ install-desktop:
 	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/roblox-studio.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).studio.desktop
 
 install-icons: icons
-	install -Dm644 icons/64/vinegar.png $(DESTDIR)$(VINEGAR_ICONPATH)
 	install -Dm644 icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(FLATPAK).svg
 	install -Dm644 icons/16/roblox-player.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).player.png
 	install -Dm644 icons/16/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).studio.png
@@ -82,7 +79,6 @@ uninstall:
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).player.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).studio.desktop
 	rm -f $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(FLATPAK).png
-	rm -f $(DESTDIR)$(VINEGAR_ICONPATH)
 	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).player.png
 	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).studio.png
 	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/$(FLATPAK).player.png

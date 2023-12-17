@@ -37,6 +37,8 @@ const (
 	DialogNoWineMsg       = "Wine is required to run Roblox on Linux"
 	DialogNoAVXTitle      = "Minimum requirements aren't met"
 	DialogNoAVXMsg        = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
+	DialogNoVulkanTitle   = "Your GPU does not support Vulkan 1.1 or later"
+	DialogNoVulkanMsg     = "You have to set OpenGL as your renderer."
 )
 
 type Binary struct {
@@ -401,14 +403,9 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	vk_ver := b.Prefix.VkVer()
-	if vk_ver == "" {
-		return nil
-	}
-
 	dxvk_version := b.GlobalConfig.DxvkVersion
 	if dxvk_version == "last_supported" {
-		if strings.Split(vk_ver, ".")[1] >= "3" {
+		if strings.Split(b.Prefix.VulkanVersion(), ".")[1] >= "3" {
 			dxvk_version = "2.3"
 		} else {
 			dxvk_version = "1.10.3"

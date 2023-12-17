@@ -181,16 +181,19 @@ func (b *Binary) Main(args ...string) {
 		firstRun = true
 	}
 
-	if firstRun {
-		if !sysinfo.CPU.AVX {
-			b.Splash.Dialog(DialogNoAVXTitle, DialogNoAVXMsg, false)
-			log.Fatal("avx is required to run roblox")
-		}
+	if firstRun && !sysinfo.CPU.AVX {
+		b.Splash.Dialog(DialogNoAVXTitle, DialogNoAVXMsg, false)
+		log.Fatal("avx is required to run roblox")
 	}
 
 	if !wine.WineLook() {
 		b.Splash.Dialog(DialogNoWineTitle, DialogNoWineMsg, false)
 		log.Fatal("wine is required to run roblox")
+	}
+
+	if (b.Config.Renderer == "Vulkan" || b.Config.Renderer == "D3D11") && !b.Prefix.VulkanSupported() {
+		b.Splash.Dialog(DialogNoVulkanTitle, DialogNoVulkanMsg, false)
+		log.Fatal("vulkan is not supported")
 	}
 
 	go func() {

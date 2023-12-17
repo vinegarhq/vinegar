@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 // The program used for Wine.
@@ -25,6 +26,17 @@ type Prefix struct {
 	Output io.Writer
 
 	dir string
+}
+
+// Wine Vulkan information stored inside winevulkan.json.
+type WineVulkan struct {
+	FileFormatVersion string `json:"file_format_version"`
+	ICD               ICD    `json:"ICD"`
+}
+
+type ICD struct {
+	LibraryPath string `json:"library_path"`
+	ApiVersion  string `json:"api_version"`
 }
 
 // New returns a new Prefix.
@@ -48,7 +60,7 @@ func (p *Prefix) Dir() string {
 }
 
 // Get supported vulkan version.
-func (p *Prefix) VkVer() string {
+func (p *Prefix) VulkanVersion() string {
 	winevk_info := filepath.Join(p.Dir(), "drive_c", "windows", "syswow64", "winevulkan.json")
 
 	tf, err := os.ReadFile(winevk_info)
@@ -56,23 +68,19 @@ func (p *Prefix) VkVer() string {
 		return ""
 	}
 
-	json_payload := make(map[string]interface{})
-	err = json.Unmarshal(tf, &json_payload)
+	winevulkan := WineVulkan{}
+	err = json.Unmarshal(tf, &winevulkan)
 	if err != nil {
 		return ""
 	}
 
-	icd, ok := json_payload["ICD"].(map[string]interface{})
-	if !ok {
-		return ""
-	}
+	winevulkan.ICD.ApiVersion = "1.2.1234"
 
-	api_version, ok := icd["api_version"].(string)
-	if !ok {
-		return ""
-	}
+	return winevulkan.ICD.ApiVersion
+}
 
-	return api_version
+func (p *Prefix) VulkanSupported() bool {
+	return strings.Split(p.VulkanVersion(), ".")[1] >= "1"
 }
 
 // Wine makes a new Cmd with wine as the named program.

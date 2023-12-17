@@ -387,7 +387,8 @@ func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
 }
 
 func (b *Binary) SetupDxvk() error {
-	if b.State.DxvkVersion != "" && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
+	if b.State.DxvkVersion != "" && b.GlobalConfig.Player.Dxvk && b.GlobalConfig.Studio.Dxvk {
+		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return err
 		}
@@ -400,7 +401,8 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	dxvk.Setenv(b.Prefix)
+	b.Splash.SetProgress(0.0)
+	dxvk.Setenv()
 
 	if b.GlobalConfig.DxvkVersion == b.State.DxvkVersion {
 		return nil
@@ -409,12 +411,23 @@ func (b *Binary) SetupDxvk() error {
 	if err := dirs.Mkdirs(dirs.Cache); err != nil {
 		return err
 	}
+	path := filepath.Join(dirs.Cache, "dxvk-"+b.GlobalConfig.DxvkVersion+".tar.gz")
 
-	b.Splash.SetMessage("Installing DXVK")
-	// This would only get saved if Install succeeded
+	b.Splash.SetProgress(0.3)
+	b.Splash.SetMessage("Downloading DXVK")
+	if err := dxvk.Fetch(path, b.GlobalConfig.DxvkVersion); err != nil {
+		return err
+	}
+
+	b.Splash.SetProgress(0.7)
+	b.Splash.SetMessage("Extracting DXVK")
+	if err := dxvk.Extract(path, b.Prefix); err != nil {
+		return err
+	}
+	b.Splash.SetProgress(1.0)
+
 	b.State.DxvkVersion = b.GlobalConfig.DxvkVersion
-
-	return dxvk.Install(b.GlobalConfig.DxvkVersion, b.Prefix)
+	return nil
 }
 
 func (b *Binary) Command(args ...string) (*wine.Cmd, error) {

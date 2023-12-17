@@ -15,56 +15,44 @@ import (
 	"github.com/vinegarhq/vinegar/wine"
 )
 
-var pfxDll32Path = filepath.Join("drive_c", "Program Files (x86)", "DXVK")
-var pfxDll64Path = filepath.Join("drive_c", "Program Files", "DXVK")
+const Repo = "https://github.com/doitsujin/dxvk"
 
-// Setenv sets/appends WINEDLLPATH and WINEDLLOVERRIDES to tell Wine
+// Setenv sets/appends WINEDLLOVERRIDES to tell Wine
 // to use the DXVK DLLs
-func Setenv(pfx *wine.Prefix) {
+func Setenv() {
 	log.Printf("Enabling WINE DXVK DLL overrides")
 
-	os.Setenv("WINEDLLPATH", os.Getenv("WINEDLLPATH")+
-		filepath.Join(pfx.Dir(), pfxDll32Path)+":"+filepath.Join(pfx.Dir(), pfxDll64Path),
-	)
-	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+";d3d10core,d3d11,d3d9,dxgi=n")
+	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+";d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
-// Remove will remove the directories the DXVK DLLs have been extracted to by Extract()
+func Fetch(name string, ver string) error {
+	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
+
+	log.Printf("Downloading DXVK %s (%s as %s)", ver, url, name)
+
+	return util.Download(url, name)
+}
+
 func Remove(pfx *wine.Prefix) error {
-	log.Println("Removing DXVK DLLs")
+	log.Println("Deleting all overridden DXVK DLLs")
 
-	if err := os.RemoveAll(filepath.Join(pfx.Dir(), pfxDll32Path)); err != nil {
-		return err
+	for _, dir := range []string{"syswow64", "system32"} {
+		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
+			p := filepath.Join(pfx.Dir(), "drive_c", "windows", dir, dll+".dll")
+
+			log.Println("Removing DXVK DLL:", p)
+
+			if err := os.Remove(p); err != nil {
+				return err
+			}
+		}
 	}
 
-	return os.RemoveAll(filepath.Join(pfx.Dir(), pfxDll64Path))
+	log.Println("Restoring Wineprefix DLLs")
+
+	return pfx.Wine("wineboot", "-u").Run()
 }
 
-// Install will download the DXVK tarball with the given version to a temporary
-// file dictated by os.CreateTemp. Afterwards, it will proceed by calling Extract
-// with the DXVK tarball, and then removing it.
-func Install(ver string, pfx *wine.Prefix) error {
-	url := fmt.Sprintf(
-		"%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz",
-		"https://github.com/doitsujin/dxvk", ver,
-	)
-
-	f, err := os.CreateTemp("", "dxvktarball.*.tar.gz")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(f.Name())
-
-	log.Println("Downloading DXVK", ver)
-	if err := util.Download(url, f.Name()); err != nil {
-		return fmt.Errorf("download dxvk %s: %w", ver, err)
-	}
-
-	return Extract(f.Name(), pfx)
-}
-
-// Extract extracts the given DXVK tarball named file
-// to a folder within the wineprefix.
 func Extract(name string, pfx *wine.Prefix) error {
 	log.Printf("Extracting DXVK (%s)", name)
 
@@ -98,12 +86,13 @@ func Extract(name string, pfx *wine.Prefix) error {
 		}
 
 		dir, ok := map[string]string{
-			"x64": filepath.Join(pfx.Dir(), pfxDll64Path),
-			"x32": filepath.Join(pfx.Dir(), pfxDll32Path),
+			"x64": filepath.Join(pfx.Dir(), "drive_c", "windows", "system32"),
+			"x32": filepath.Join(pfx.Dir(), "drive_c", "windows", "syswow64"),
 		}[filepath.Base(filepath.Dir(hdr.Name))]
 
 		if !ok {
-			return fmt.Errorf("unhandled dxvk tarball file: %s", hdr.Name)
+			log.Printf("Skipping DXVK unhandled file: %s", hdr.Name)
+			continue
 		}
 
 		p := filepath.Join(dir, path.Base(hdr.Name))
@@ -127,5 +116,6 @@ func Extract(name string, pfx *wine.Prefix) error {
 		f.Close()
 	}
 
-	return nil
+	log.Printf("Deleting DXVK tarball (%s)", name)
+	return os.RemoveAll(name)
 }

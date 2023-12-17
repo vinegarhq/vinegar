@@ -74,8 +74,6 @@ func (p *Prefix) VulkanVersion() string {
 		return ""
 	}
 
-	winevulkan.ICD.ApiVersion = "1.2.1234"
-
 	return winevulkan.ICD.ApiVersion
 }
 

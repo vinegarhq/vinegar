@@ -5,8 +5,6 @@ BINPREFIX  = $(PREFIX)/libexec/vinegar
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
-FLATPAK = org.vinegarhq.Vinegar
-
 GO = go
 GO_LDFLAGS = -s -w
 
@@ -53,51 +51,51 @@ install-robloxmutexer: robloxmutexer.exe
 
 install-desktop:
 	mkdir -p $(DESTDIR)$(APPPREFIX)
-	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/vinegar.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).desktop
-	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/roblox-app.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).app.desktop
-	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/roblox-player.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).player.desktop
-	sed "s|\$$FLATPAK|$(FLATPAK)|g" desktop/roblox-studio.desktop.in > $(DESTDIR)$(APPPREFIX)/$(FLATPAK).studio.desktop
+	install -Dm644 desktop/vinegar.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
+	install -Dm644 desktop/roblox-app.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.app.desktop
+	install -Dm644 desktop/roblox-player.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.player.desktop
+	install -Dm644 desktop/roblox-studio.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.studio.desktop
 
 install-icons: icons
-	install -Dm644 icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(FLATPAK).svg
-	install -Dm644 icons/16/roblox-player.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).player.png
-	install -Dm644 icons/16/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).studio.png
-	install -Dm644 icons/32/roblox-player.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/$(FLATPAK).player.png
-	install -Dm644 icons/32/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/$(FLATPAK).studio.png
-	install -Dm644 icons/48/roblox-player.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/$(FLATPAK).player.png
-	install -Dm644 icons/48/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/$(FLATPAK).studio.png
-	install -Dm644 icons/64/roblox-player.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/$(FLATPAK).player.png
-	install -Dm644 icons/64/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/$(FLATPAK).studio.png
-	install -Dm644 icons/128/roblox-player.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/$(FLATPAK).player.png
-	install -Dm644 icons/128/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/$(FLATPAK).studio.png
+	install -Dm644 icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg
+	install -Dm644 icons/16/roblox-player.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/org.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/16/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/16x16/apps/org.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/32/roblox-player.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/org.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/32/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/32x32/apps/org.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/48/roblox-player.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/org.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/48/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/48x48/apps/org.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/64/roblox-player.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/org.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/64/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/64x64/apps/org.vinegarhq.Vinegar.studio.png
+	install -Dm644 icons/128/roblox-player.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/org.vinegarhq.Vinegar.player.png
+	install -Dm644 icons/128/roblox-studio.png $(DESTDIR)$(ICONPREFIX)/128x128/apps/org.vinegarhq.Vinegar.studio.png
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar
 	rm -f $(DESTDIR)$(BINPREFIX)/robloxmutexer.exe
-	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).desktop
-	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).app.desktop
-	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).player.desktop
-	rm -f $(DESTDIR)$(APPPREFIX)/$(FLATPAK).studio.desktop
-	rm -f $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(FLATPAK).png
-	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/$(FLATPAK).studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/$(FLATPAK).player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/$(FLATPAK).studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/$(FLATPAK).player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/$(FLATPAK).studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/$(FLATPAK).player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/$(FLATPAK).studio.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/$(FLATPAK).player.png
-	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/$(FLATPAK).studio.png
+	rm -f $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.app.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.player.desktop
+	rm -f $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.studio.desktop
+	rm -f $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/org.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/16x16/apps/org.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/org.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/32x32/apps/org.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/org.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/48x48/apps/org.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/org.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/64x64/apps/org.vinegarhq.Vinegar.studio.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/org.vinegarhq.Vinegar.player.png
+	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/org.vinegarhq.Vinegar.studio.png
 
 	
 mime:
-	xdg-mime default $(FLATPAK).player.desktop x-scheme-handler/roblox-player
-	xdg-mime default $(FLATPAK).player.desktop x-scheme-handler/roblox
-	xdg-mime default $(FLATPAK).studio.desktop x-scheme-handler/roblox-studio
-	xdg-mime default $(FLATPAK).studio.desktop x-scheme-handler/roblox-studio-auth
-	xdg-mime default $(FLATPAK).studio.desktop application/x-roblox-rbxl
-	xdg-mime default $(FLATPAK).studio.desktop application/x-roblox-rbxlx
+	xdg-mime default org.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox-player
+	xdg-mime default org.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox
+	xdg-mime default org.vinegarhq.Vinegar.studio.desktop x-scheme-handler/roblox-studio
+	xdg-mime default org.vinegarhq.Vinegar.studio.desktop x-scheme-handler/roblox-studio-auth
+	xdg-mime default org.vinegarhq.Vinegar.studio.desktop application/x-roblox-rbxl
+	xdg-mime default org.vinegarhq.Vinegar.studio.desktop application/x-roblox-rbxlx
 
 tests:
 	$(GO) test $(GOFLAGS) ./...

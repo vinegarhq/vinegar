@@ -2,7 +2,7 @@
 Type=Application
 Name=Roblox Player
 NoDisplay=true
-Icon=$FLATPAK.player
+Icon=org.vinegarhq.Vinegar.player
 Exec=vinegar player %u
 Terminal=false
 MimeType=x-scheme-handler/roblox;x-scheme-handler/roblox-player

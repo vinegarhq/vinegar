@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=Roblox App
-Icon=$FLATPAK.player
+Icon=org.vinegarhq.Vinegar.player
 Exec=vinegar player -app
 Terminal=false
 Categories=Game

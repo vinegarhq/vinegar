@@ -4,5 +4,5 @@ Name=Vinegar
 Exec=vinegar
 Terminal=true
 Categories=Game
-Icon=$FLATPAK
+Icon=org.vinegarhq.Vinegar
 Hidden=true

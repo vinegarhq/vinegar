@@ -4,9 +4,12 @@
 package splash
 
 import (
+	"bytes"
+	_ "embed"
 	"errors"
 	"image"
 	_ "image/png"
+	"io"
 	"log"
 	"os"
 
@@ -22,6 +25,9 @@ import (
 	"gioui.org/widget/material"
 	"github.com/vinegarhq/vinegar/util"
 )
+
+//go:embed vinegar.png
+var vinegarLogo []byte
 
 var ErrClosed = errors.New("window closed")
 
@@ -112,17 +118,20 @@ func New(cfg *Config) *Splash {
 }
 
 func (ui *Splash) loadLogo() error {
-	if ui.Config.LogoPath == "" {
-		return errors.New("logo file path unset")
+	var r io.Reader
+
+	if ui.Config.LogoPath != "" {
+		lf, err := os.Open(ui.Config.LogoPath)
+		if err != nil {
+			return err
+		}
+		defer lf.Close()
+		r = lf
+	} else {
+		r = bytes.NewReader(vinegarLogo)
 	}
 
-	logoFile, err := os.Open(ui.Config.LogoPath)
-	if err != nil {
-		return err
-	}
-	defer logoFile.Close()
-
-	logo, _, err := image.Decode(logoFile)
+	logo, _, err := image.Decode(r)
 	if err != nil {
 		return err
 	}

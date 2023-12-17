@@ -11,8 +11,7 @@ GO = go
 GO_LDFLAGS = -s -w
 
 VINEGAR_ICONPATH = $(ICONPREFIX)/64x64/apps/$(FLATPAK).png
-VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION) \
-	-X github.com/vinegarhq/vinegar/config.LogoPath=$(VINEGAR_ICONPATH)
+VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
 VINEGAR_GOFLAGS = --tags nowayland,novulkan 
 
 ROBLOX_ICONS = \
@@ -22,10 +21,10 @@ ROBLOX_ICONS = \
 	icons/48/roblox-player.png icons/48/roblox-studio.png \
 	icons/64/roblox-player.png icons/64/roblox-studio.png
 
-VINEGAR_ICON = icons/64/vinegar.png
+VINEGAR_ICONS = icons/64/vinegar.png splash/vinegar.png
 
 all: vinegar robloxmutexer.exe
-icons: $(ROBLOX_ICONS) $(VINEGAR_ICON)
+icons: $(ROBLOX_ICONS) $(VINEGAR_ICONS)
 install: install-vinegar install-robloxmutexer install-desktop install-icons
 
 vinegar:
@@ -43,9 +42,10 @@ $(ROBLOX_ICONS): icons/roblox-player.svg icons/roblox-studio.svg
 	convert -density 384 -background none $^ -resize 64x64   -set filename:f '%w/%t' 'icons/%[filename:f].png'
 	convert -density 384 -background none $^ -resize 128x128 -set filename:f '%w/%t' 'icons/%[filename:f].png'
 	
-$(VINEGAR_ICON): icons/vinegar.svg
+$(VINEGAR_ICONS): icons/vinegar.svg
 	# -fuzz 1% -trim +repage removes empty space, makes the image 44x64
-	convert -density 384 -background none icons/vinegar.svg -resize 64x64 -fuzz 1% -trim +repage $@
+	convert -density 384 -background none icons/vinegar.svg -resize 64x64 -fuzz 1% -trim +repage splash/vinegar.png
+	convert -density 384 -background none icons/vinegar.svg -resize 64x64 icons/64/vinegar.png
 
 install-vinegar: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar

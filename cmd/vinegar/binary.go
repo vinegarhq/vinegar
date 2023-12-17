@@ -408,26 +408,11 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	if err := dirs.Mkdirs(dirs.Cache); err != nil {
-		return err
-	}
-	path := filepath.Join(dirs.Cache, "dxvk-"+b.GlobalConfig.DxvkVersion+".tar.gz")
-
-	b.Splash.SetProgress(0.3)
-	b.Splash.SetMessage("Downloading DXVK")
-	if err := dxvk.Fetch(path, b.GlobalConfig.DxvkVersion); err != nil {
-		return err
-	}
-
-	b.Splash.SetProgress(0.7)
-	b.Splash.SetMessage("Extracting DXVK")
-	if err := dxvk.Extract(path, b.Prefix); err != nil {
-		return err
-	}
-	b.Splash.SetProgress(1.0)
-
+	// This would only get saved if Install succeeded
 	b.State.DxvkVersion = b.GlobalConfig.DxvkVersion
-	return nil
+
+	b.Splash.SetMessage("Installing DXVK")
+	return dxvk.Install(b.GlobalConfig.DxvkVersion, b.Prefix)
 }
 
 func (b *Binary) Command(args ...string) (*wine.Cmd, error) {

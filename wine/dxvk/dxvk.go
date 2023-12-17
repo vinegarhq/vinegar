@@ -17,30 +17,23 @@ import (
 
 const Repo = "https://github.com/doitsujin/dxvk"
 
-// Setenv sets/appends WINEDLLOVERRIDES to tell Wine
-// to use the DXVK DLLs
+// Setenv sets/appends WINEDLLOVERRIDES to tell Wine to use the DXVK DLLs.
+//
+// This is required to call inorder to tell Wine to use DXVK.
 func Setenv() {
 	log.Printf("Enabling WINE DXVK DLL overrides")
 
 	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+";d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
-func Fetch(name string, ver string) error {
-	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
-
-	log.Printf("Downloading DXVK %s (%s as %s)", ver, url, name)
-
-	return util.Download(url, name)
-}
-
 func Remove(pfx *wine.Prefix) error {
-	log.Println("Deleting all overridden DXVK DLLs")
+	log.Println("Deleting DXVK DLLs")
 
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
 			p := filepath.Join(pfx.Dir(), "drive_c", "windows", dir, dll+".dll")
 
-			log.Println("Removing DXVK DLL:", p)
+			log.Println("Removing DXVK overriden Wine DLL:", p)
 
 			if err := os.Remove(p); err != nil {
 				return err
@@ -51,6 +44,30 @@ func Remove(pfx *wine.Prefix) error {
 	log.Println("Restoring Wineprefix DLLs")
 
 	return pfx.Wine("wineboot", "-u").Run()
+}
+
+// Install will download the DXVK tarball with the given version to a temporary
+// file dictated by os.CreateTemp. Afterwards, it will proceed by calling Extract
+// with the DXVK tarball, and then removing it.
+func Install(ver string, pfx *wine.Prefix) error {
+	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
+	f, err := os.CreateTemp("", "dxvktarball.*.tar.gz")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(f.Name())
+
+	log.Printf("Downloading DXVK %s (%s)", ver, url)
+
+	if err := util.Download(url, f.Name()); err != nil {
+		return fmt.Errorf("download dxvk %s: %w", ver, err)
+	}
+
+	if err := Extract(f.Name(), pfx); err != nil {
+		return fmt.Errorf("extract dxvk %s: %w", ver, err)
+	}
+
+	return nil
 }
 
 func Extract(name string, pfx *wine.Prefix) error {

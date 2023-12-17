@@ -20,26 +20,25 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 [discord_img]: https://img.shields.io/discord/1069506340973707304?style=flat-square
 
 # Features
-+ Automatic DXVK Installer and uninstaller
++ Automatic DXVK Installer and uninstaller without touching wineprefix DLLs
 + Automatic Wineprefix killer when Roblox has quit
-+ Automatic removal of outdated cached packages and versions of Roblox
-+ Discord Rich Presence support
-+ Roblox's logs appear within Vinegar
-+ FPS Unlocking for Player by default, without rbxfpsunlocker
-+ Browser launch via MIME
++ Multiple instances of Roblox open simultaneously
++ Discord Rich Presence & BloxstrapRPC support
+* Automatic GPU selection for PRIME systems
 + Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
-+ Custom execution of wine program within wineprefix
-+ TOML configuration file
-  + Force a specific version of Roblox
-  + Custom launcher specified to be used when launching Roblox
-  + Wine Root, allows you to set a specific wine installation path
-  + Sanitization of environment
-  + Set different environment variables and FFlags for both Player and Studio
++ Logging for both Vinegar, Wine and Roblox
++ Automatic removal of outdated cached packages and versions of Roblox
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
 + Fast Multi-threaded installation and extraction of Roblox
-+ Multiple instances of Roblox open simultaneously
-+ Loading window during setup
-+ Logging for both Vinegar, Wine and Roblox
++ FPS Unlocking for Player by default, without rbxfpsunlocker
++ Custom execution of wine program within wineprefix
++ Set different environment variables and FFlags for both Player and Studio, with Global to override
++ Force a specific version of Roblox to be deployed
++ Custom launcher specified to be used when launching Roblox
++ Wine Root feature to set a specific wine installation path
++ Sanitization of environment
++ Browser launch via MIME
++ Splash window during setup, with error dialog support
 
 # See Also
 + [Discord Server](https://discord.gg/dzdzZ6Pps2)

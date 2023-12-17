@@ -27,14 +27,16 @@ import (
 )
 
 const (
-	DialogInternalBrowserBrokenTitle = "WebView/InternalBrowser is broken"
-	DialogUseBrowserMsg              = "Use the browser for whatever you were doing just now."
-	DialogQuickLoginMsg              = "Use Quick Log In to authenticate ('Log In With Another Device' button)"
-	DialogFailure                    = "Vinegar experienced an error"
-	DialogNoWineTitle                = "Wine is not installed"
-	DialogNoWineMsg                  = "Wine is required to run Roblox on Linux"
-	DialogNoAVXTitle                 = "Minimum requirements aren't met"
-	DialogNoAVXMsg                   = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
+	DialogNoWebviewTitle  = "WebView/InternalBrowser is broken"
+	DialogUseBrowserMsg   = "Use the browser for whatever you were doing just now."
+	DialogQuickLoginMsg   = "Use Quick Log In to authenticate ('Log In With Another Device' button)"
+	DialogFailure         = "Vinegar experienced an error"
+	DialogReqChannelTitle = "Roblox requested a deployment channel"
+	DialogReqChannelMsg   = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
+	DialogNoWineTitle     = "Wine is not installed"
+	DialogNoWineMsg       = "Wine is required to run Roblox on Linux"
+	DialogNoAVXTitle      = "Minimum requirements aren't met"
+	DialogNoAVXMsg        = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
 )
 
 type Binary struct {
@@ -115,9 +117,8 @@ func (b *Binary) Run(args ...string) error {
 	go func() {
 		<-c
 
-		// Only kill Roblox if it exited
-		if cmd.ProcessState != nil && !cmd.ProcessState.Exited() {
-			log.Println("Killing Roblox")
+		// Only kill Roblox if it hasn't exited
+		if cmd.ProcessState == nil {
 			// This way, cmd.Run() will return and the wineprefix killer will be ran.
 			cmd.Process.Kill()
 		}
@@ -207,7 +208,7 @@ func (b *Binary) HandleRobloxLog(line string) {
 			msg = DialogQuickLoginMsg
 		}
 
-		b.Splash.Dialog(DialogInternalBrowserBrokenTitle, msg)
+		b.Splash.Dialog(DialogNoWebviewTitle, msg, false)
 		return
 	}
 

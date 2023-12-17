@@ -6,11 +6,12 @@ import (
 	"io"
 	"log"
 	"os"
-	"time"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime/debug"
 	"syscall"
+	"time"
 
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
@@ -180,13 +181,13 @@ func (b *Binary) Main(args ...string) {
 
 	if firstRun {
 		if !sysinfo.CPU.AVX {
-			b.Splash.Dialog(DialogNoAVXTitle, DialogNoAVXMsg)
+			b.Splash.Dialog(DialogNoAVXTitle, DialogNoAVXMsg, false)
 			log.Fatal("avx is required to run roblox")
 		}
 	}
 
 	if !wine.WineLook() {
-		b.Splash.Dialog(DialogNoWineTitle, DialogNoWineMsg)
+		b.Splash.Dialog(DialogNoWineTitle, DialogNoWineMsg, false)
 		log.Fatal("wine is required to run roblox")
 	}
 
@@ -200,8 +201,6 @@ func (b *Binary) Main(args ...string) {
 		}
 	}()
 
-	b.Splash.SetDesc(b.Config.Channel)
-
 	errHandler := func(err error) {
 		if !b.GlobalConfig.Splash.Enabled || b.Splash.IsClosed() {
 			log.Fatal(err)
@@ -210,7 +209,8 @@ func (b *Binary) Main(args ...string) {
 		log.Println(err)
 		b.Splash.LogPath = logFile.Name()
 		b.Splash.Invalidate()
-		b.Splash.Dialog(DialogFailure, err.Error())
+		b.Splash.Dialog(DialogFailure, err.Error(), false)
+		os.Exit(1)
 	}
 
 	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
@@ -224,6 +224,33 @@ func (b *Binary) Main(args ...string) {
 			errHandler(err)
 		}
 	}
+
+	// If the launch uri contains a channel key with a value
+	// that isn't empty, Roblox requested a specific channel
+	func() {
+		if len(args) < 1 {
+			return
+		}
+
+		c := regexp.MustCompile(`channel:([^+]*)`).FindStringSubmatch(args[0])
+		if len(c) < 1 {
+			return
+		}
+
+		if c[1] != "" && c[1] != b.Config.Channel {
+			r := b.Splash.Dialog(DialogReqChannelTitle,
+				fmt.Sprintf(DialogReqChannelMsg, c[1], b.Config.Channel),
+				true,
+			)
+			log.Println(r)
+			if r {
+				log.Println("Switching user channel temporarily to", c[1])
+				b.Config.Channel = c[1]
+			}
+		}
+	}()
+
+	b.Splash.SetDesc(b.Config.Channel)
 
 	if err := b.Setup(); err != nil {
 		b.Splash.SetMessage("Failed to setup Roblox")

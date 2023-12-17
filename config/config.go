@@ -12,6 +12,7 @@ import (
 	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/util"
 )
@@ -101,6 +102,7 @@ func Default() Config {
 		// Global should only be used to set strings here.
 		Global: Binary{
 			ForcedGpu: "prime-discrete",
+			Channel:   bootstrapper.DefaultChannel,
 			Renderer:  "D3D11",
 			Dxvk:      true,
 			GameMode:  true,

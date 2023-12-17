@@ -387,7 +387,7 @@ func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
 }
 
 func (b *Binary) SetupDxvk() error {
-	if b.State.DxvkVersion != "" && b.GlobalConfig.Player.Dxvk && b.GlobalConfig.Studio.Dxvk {
+	if b.State.DxvkVersion != "" && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
 		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return err

@@ -28,7 +28,7 @@ type Prefix struct {
 	dir string
 }
 
-// Wine Vulkan information stored inside winevulkan.json.
+// The Vulkan information stored as winevulkan.json within a wineprefix.
 type WineVulkan struct {
 	FileFormatVersion string `json:"file_format_version"`
 	ICD               ICD    `json:"ICD"`

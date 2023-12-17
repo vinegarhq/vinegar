@@ -191,7 +191,7 @@ func (b *Binary) Main(args ...string) {
 		log.Fatal("wine is required to run roblox")
 	}
 
-	if (b.Config.Renderer == "Vulkan" || b.Config.Renderer == "D3D11") && !b.Prefix.VulkanSupported() {
+	if (b.Config.Dxvk || b.Config.Renderer == "Vulkan") && !b.Prefix.VulkanSupported() {
 		b.Splash.Dialog(DialogNoVulkanTitle, DialogNoVulkanMsg, false)
 		log.Fatal("vulkan is not supported")
 	}

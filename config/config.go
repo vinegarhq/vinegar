@@ -97,13 +97,13 @@ func (c *Config) globalize() error {
 // Default returns a sane default configuration for Vinegar.
 func Default() Config {
 	return Config{
-		// Global should only be used to set strings here.
+		// Global should only be used to set booleans here,
+		// since if a user sets something in player or studio
+		// that global overrides that is not already a string,
+		// there will be unexpected behavior from the user-end.
 		Global: Binary{
-			ForcedGpu: "prime-discrete",
-			Channel:   bootstrapper.DefaultChannel,
-			Renderer:  "D3D11",
-			Dxvk:      true,
-			GameMode:  true,
+			Dxvk:     true,
+			GameMode: true,
 			Env: Environment{
 				"WINEARCH":         "win64",
 				"WINEDEBUG":        "err-kerberos,err-ntlm",
@@ -118,6 +118,9 @@ func Default() Config {
 			},
 		},
 		Player: Binary{
+			ForcedGpu:  "prime-discrete",
+			Renderer:   "D3D11",
+			Channel:    bootstrapper.DefaultChannel,
 			DiscordRPC: true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
@@ -127,6 +130,9 @@ func Default() Config {
 			},
 		},
 		Studio: Binary{
+			Channel:   bootstrapper.DefaultChannel,
+			ForcedGpu: "prime-discrete",
+			Renderer:  "D3D11",
 			// TODO: fill with studio fflag/env goodies
 			FFlags: make(roblox.FFlags),
 			Env:    make(Environment),

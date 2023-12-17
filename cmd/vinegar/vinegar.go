@@ -198,7 +198,7 @@ func (b *Binary) Main(args ...string) {
 			b.Config.Renderer = "OpenGL"
 		} else if b.Config.Renderer == "Vulkan" {
 			b.Splash.Dialog(DialogNoVulkanTitle, DialogNoVulkanMsg, false)
-			log.Fatal("vulkan is not supported")
+			log.Println("vulkan is not supported")
 		}
 	}
 

@@ -343,7 +343,6 @@ func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package)
 	donePkgs := 0
 	pkgsLen := len(pm.Packages)
 	eg := new(errgroup.Group)
-	eg.SetLimit((pkgsLen / 2) + 3)
 
 	for _, p := range pm.Packages {
 		p := p

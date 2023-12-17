@@ -34,6 +34,7 @@ func (ui *Splash) IsClosed() bool {
 
 func (ui *Splash) Dialog(title, msg string, yesNo bool) bool {
 	log.Printf("splash: dialog(%d): %s %s", yesNo, title, msg)
+	return false
 }
 
 func New(cfg *Config) *Splash {

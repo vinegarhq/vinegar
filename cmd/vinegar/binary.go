@@ -37,8 +37,8 @@ const (
 	DialogNoWineMsg       = "Wine is required to run Roblox on Linux"
 	DialogNoAVXTitle      = "Minimum requirements aren't met"
 	DialogNoAVXMsg        = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
-	DialogNoVulkanTitle   = "Your GPU does not support Vulkan 1.1 or later"
-	DialogNoVulkanMsg     = "You have to set OpenGL as your renderer."
+	DialogNoVulkanTitle   = "Vulkan >=1.1 unsupported"
+	DialogNoVulkanMsg     = "Your GPU does not support Vulkan 1.1 or later, You need to have 'OpenGL' as your renderer."
 )
 
 type Binary struct {
@@ -403,27 +403,27 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	dxvk_version := b.GlobalConfig.DxvkVersion
-	if dxvk_version == "last_supported" {
+	ver := b.GlobalConfig.DxvkVersion
+	if ver == "" {
 		if strings.Split(b.Prefix.VulkanVersion(), ".")[1] >= "3" {
-			dxvk_version = "2.3"
+			ver = "2.3"
 		} else {
-			dxvk_version = "1.10.3"
+			ver = "1.10.3"
 		}
 	}
 
 	b.Splash.SetProgress(0.0)
 	dxvk.Setenv()
 
-	if dxvk_version == b.State.DxvkVersion {
+	if ver == b.State.DxvkVersion {
 		return nil
 	}
 
 	// This would only get saved if Install succeeded
-	b.State.DxvkVersion = dxvk_version
+	b.State.DxvkVersion = ver
 
 	b.Splash.SetMessage("Installing DXVK")
-	return dxvk.Install(dxvk_version, b.Prefix)
+	return dxvk.Install(ver, b.Prefix)
 }
 
 func (b *Binary) Command(args ...string) (*wine.Cmd, error) {

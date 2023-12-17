@@ -34,6 +34,7 @@ type WineVulkan struct {
 	ICD               ICD    `json:"ICD"`
 }
 
+// Installable Client Driver info containing the library path and API version.
 type ICD struct {
 	LibraryPath string `json:"library_path"`
 	ApiVersion  string `json:"api_version"`
@@ -63,22 +64,27 @@ func (p *Prefix) Dir() string {
 func (p *Prefix) VulkanVersion() string {
 	winevk_info := filepath.Join(p.Dir(), "drive_c", "windows", "syswow64", "winevulkan.json")
 
-	tf, err := os.ReadFile(winevk_info)
+	f, err := os.ReadFile(winevk_info)
 	if err != nil {
 		return ""
 	}
 
-	winevulkan := WineVulkan{}
-	err = json.Unmarshal(tf, &winevulkan)
-	if err != nil {
+	wv := WineVulkan{}
+	if err := json.Unmarshal(f, &wv); err != nil {
 		return ""
 	}
 
-	return winevulkan.ICD.ApiVersion
+	return wv.ICD.ApiVersion
 }
 
 func (p *Prefix) VulkanSupported() bool {
-	return strings.Split(p.VulkanVersion(), ".")[1] >= "1"
+	vulkan_version := p.VulkanVersion()
+
+	if vulkan_version == "" {
+		return false
+	}
+
+	return strings.Split(vulkan_version, ".")[1] >= "1"
 }
 
 // Wine makes a new Cmd with wine as the named program.

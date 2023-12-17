@@ -20,16 +20,16 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 [discord_img]: https://img.shields.io/discord/1069506340973707304?style=flat-square
 
 # Features
-+ Automatic DXVK Installer and uninstaller without touching wineprefix DLLs
-+ Automatic Wineprefix killer when Roblox has quit
-+ Multiple instances of Roblox open simultaneously
 + Discord Rich Presence & BloxstrapRPC support
 * Automatic GPU selection for PRIME systems
 + Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
++ Multiple instances of Roblox open simultaneously
++ Automatic Wineprefix killer when Roblox has quit
 + Logging for both Vinegar, Wine and Roblox
-+ Automatic removal of outdated cached packages and versions of Roblox
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
++ Automatic DXVK Installer and uninstaller
 + Fast Multi-threaded installation and extraction of Roblox
++ Automatic removal of outdated cached packages and versions of Roblox
 + FPS Unlocking for Player by default, without rbxfpsunlocker
 + Custom execution of wine program within wineprefix
 + Set different environment variables and FFlags for both Player and Studio, with Global to override

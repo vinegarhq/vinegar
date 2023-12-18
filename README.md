@@ -21,7 +21,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 
 # Features
 + Discord Rich Presence & BloxstrapRPC support
-* Automatic GPU selection for PRIME systems
++ Automatic GPU selection for PRIME systems
 + Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
 + Multiple instances of Roblox open simultaneously
 + Automatic Wineprefix killer when Roblox has quit

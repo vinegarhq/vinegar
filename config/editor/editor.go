@@ -80,7 +80,7 @@ func fillTemplate(name string) error {
 	}
 
 	template := "# See how to configure Vinegar on the documentation website:\n" +
-		"# https://vinegarhq.github.io/Configuration\n\n"
+		"# https://vinegarhq.org/Configuration\n\n"
 
 	log.Println("Writing Configuration template")
 

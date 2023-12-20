@@ -10,47 +10,6 @@ import (
 	"github.com/vinegarhq/vinegar/roblox"
 )
 
-func TestGlobal(t *testing.T) {
-	c := Config{
-		env: Environment{
-			"MEOW": "DEPRECATED",
-		},
-		Global: Binary{
-			Launcher: "meow",
-			Dxvk:     true,
-			Env: Environment{
-				"MEOW": "GLOBAL",
-			},
-		},
-		Player: Binary{
-			Dxvk: false,
-			Env: Environment{
-				"MEOW": "PLAYER",
-			},
-		},
-	}
-
-	if err := c.globalize(); err != nil {
-		t.Fatal(err)
-	}
-
-	if c.Global.Env["MEOW"] != "DEPRECATED" {
-		t.Error("expected env overrides global env")
-	}
-
-	if c.Player.Launcher != "meow" {
-		t.Error("expected binary applies global launcher")
-	}
-
-	if c.Player.Env["MEOW"] != "DEPRECATED" {
-		t.Error("expected global env overrides binary env")
-	}
-
-	if !c.Player.Dxvk {
-		t.Error("expected global dxvk overrides binary dxvk")
-	}
-}
-
 func TestBinarySetup(t *testing.T) {
 	b := Binary{
 		FFlags: make(roblox.FFlags),

@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"dario.cat/mergo"
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
@@ -41,10 +40,9 @@ type Config struct {
 	DxvkVersion       string      `toml:"dxvk_version"`
 	MultipleInstances bool        `toml:"multiple_instances"`
 	SanitizeEnv       bool        `toml:"sanitize_env"`
-	Global            Binary      `toml:"global"`
 	Player            Binary      `toml:"player"`
 	Studio            Binary      `toml:"studio"`
-	env               Environment `toml:"env"` // kept for compatibilty
+	Env               Environment `toml:"env"`
 
 	Splash splash.Config `toml:"splash"`
 }
@@ -77,49 +75,25 @@ func Load(name string) (Config, error) {
 	return cfg, cfg.setup()
 }
 
-func (c *Config) globalize() error {
-	// for compatibility
-	if err := mergo.Merge(&c.Global.Env, c.env, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
-		return err
-	}
-
-	if err := mergo.Merge(&c.Player, c.Global, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
-		return err
-	}
-
-	if err := mergo.Merge(&c.Studio, c.Global, mergo.WithAppendSlice, mergo.WithOverride); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // Default returns a sane default configuration for Vinegar.
 func Default() Config {
 	return Config{
 		DxvkVersion: "2.3",
 
-		// Global should only be used to set booleans here,
-		// since if a user sets something in player or studio
-		// that global overrides that is not already a string,
-		// there will be unexpected behavior from the user-end.
-		Global: Binary{
-			Dxvk:     true,
-			GameMode: true,
-			Env: Environment{
-				"WINEARCH":         "win64",
-				"WINEDEBUG":        "err-kerberos,err-ntlm",
-				"WINEESYNC":        "1",
-				"WINEDLLOVERRIDES": "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
-
-				"DXVK_LOG_LEVEL": "warn",
-				"DXVK_LOG_PATH":  "none",
-
-				"MESA_GL_VERSION_OVERRIDE":    "4.4",
-				"__GL_THREADED_OPTIMIZATIONS": "1",
-			},
+		Env: Environment{
+			"WINEARCH":                    "win64",
+			"WINEDEBUG":                   "err-kerberos,err-ntlm",
+			"WINEESYNC":                   "1",
+			"WINEDLLOVERRIDES":            "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
+			"DXVK_LOG_LEVEL":              "warn",
+			"DXVK_LOG_PATH":               "none",
+			"MESA_GL_VERSION_OVERRIDE":    "4.4",
+			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
+
 		Player: Binary{
+			Dxvk:       true,
+			GameMode:   true,
 			ForcedGpu:  "prime-discrete",
 			Renderer:   "D3D11",
 			Channel:    bootstrapper.DefaultChannel,
@@ -132,6 +106,8 @@ func Default() Config {
 			},
 		},
 		Studio: Binary{
+			Dxvk:      true,
+			GameMode:  true,
 			Channel:   bootstrapper.DefaultChannel,
 			ForcedGpu: "prime-discrete",
 			Renderer:  "D3D11",
@@ -176,10 +152,6 @@ func (b *Binary) setup() error {
 }
 
 func (c *Config) setup() error {
-	if err := c.globalize(); err != nil {
-		return err
-	}
-
 	if c.SanitizeEnv {
 		util.SanitizeEnv()
 	}
@@ -196,7 +168,7 @@ func (c *Config) setup() error {
 			return fmt.Errorf("%w: %s", ErrWineRootInvalid, err)
 		}
 
-		c.Global.Env["PATH"] = bin + ":" + os.Getenv("PATH")
+		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
 		os.Unsetenv("WINEDLLPATH")
 	}
 
@@ -208,7 +180,7 @@ func (c *Config) setup() error {
 		return fmt.Errorf("studio: %w", err)
 	}
 
-	c.Global.Env.Setenv()
+	c.Env.Setenv()
 
 	return nil
 }

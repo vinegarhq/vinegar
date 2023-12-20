@@ -10,7 +10,6 @@ require (
 )
 
 require (
-	dario.cat/mergo v1.0.0
 	gioui.org v0.4.1
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
 	github.com/godbus/dbus/v5 v5.1.0
@@ -27,6 +26,7 @@ require (
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 retract (

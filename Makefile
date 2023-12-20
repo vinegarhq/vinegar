@@ -9,7 +9,7 @@ GO = go
 GO_LDFLAGS = -s -w
 
 VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
-VINEGAR_GOFLAGS = --tags nowayland,novulkan 
+VINEGAR_GOFLAGS = $(GO_GOFLAGS)
 
 ROBLOX_ICONS = \
 	assets/icons/128/roblox-player.png assets/icons/128/roblox-studio.png \

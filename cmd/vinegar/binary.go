@@ -262,6 +262,7 @@ func (b *Binary) Setup() error {
 				log.Printf("Failed to merlin: %s", err)
 			}
 		}
+		b.State.Merlined = true
 	}
 
 	if err := b.FetchDeployment(); err != nil {

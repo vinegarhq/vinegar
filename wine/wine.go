@@ -39,12 +39,12 @@ func WineLook() bool {
 	return err == nil
 }
 
-// Dir retrieves the Prefix's directory.
+// Dir retrieves the [Prefix]'s directory on the filesystem.
 func (p *Prefix) Dir() string {
 	return p.dir
 }
 
-// Wine makes a new Cmd with wine as the named program.
+// Wine makes a new Cmd with [Wine] as the named program.
 func (p *Prefix) Wine(exe string, arg ...string) *Cmd {
 	arg = append([]string{exe}, arg...)
 

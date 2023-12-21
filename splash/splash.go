@@ -205,4 +205,3 @@ func (ui *Splash) Run() error {
 
 	return nil
 }
-package splash

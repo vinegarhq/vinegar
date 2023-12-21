@@ -30,7 +30,7 @@ import (
 const (
 	DialogUseBrowser = "WebView/InternalBrowser is broken, please use the browser for the action that you were doing."
 	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
-	DialogFailure    = "Vinegar experienced an error: %s"
+	DialogFailure    = "Vinegar experienced an error:\n%s"
 	DialogReqChannel = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
 	DialogNoWine     = "Wine is required to run Roblox on Linux, please install it appropiate to your distribution."
 	DialogNoAVX      = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."

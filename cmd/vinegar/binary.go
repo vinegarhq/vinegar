@@ -34,13 +34,14 @@ const (
 	DialogReqChannel = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
 	DialogNoWine     = "Wine is required to run Roblox on Linux, please install it appropiate to your distribution."
 	DialogNoAVX      = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
-	DialogMerlin     = `VinegarHQ is running an automated survey (just like Steam Hardware Survey) to get an idea of users' basic system details. These are:
+	DialogMerlin     = `VinegarHQ is running an automated survey to better understand users' system details. These include:
 • CPU make and model
 • GPU make and model
 • Kernel version
 • Distro name
 
-No personal information is sent, and the source code of the web server can be found on our GitHub under the "Merlin" repository.
+No personally identifiable information is sent, and the source code of the web server can be found on our GitHub under the "Merlin" repository.
+
 We would greatly appreciate your contribution! This message won't show again after closing it.
 
 Thank you for using Vinegar.`

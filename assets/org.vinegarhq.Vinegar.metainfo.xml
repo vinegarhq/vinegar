@@ -23,6 +23,15 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.6.0" date="2023-12-22">
+			<description>
+				<ul>
+					<li>Vinegar will ask the user if they would like to submit hardware information to Merlin via dialog</li>
+					<li>Dropped Global configuration directive</li>
+					<li>Fix Discord RPC on Flatpak</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.5.9" date="2023-12-09">
 			<description>
 				<ul>

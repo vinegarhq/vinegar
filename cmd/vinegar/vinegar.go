@@ -183,13 +183,13 @@ func (b *Binary) Main(args ...string) {
 
 	if firstRun {
 		if !sysinfo.CPU.AVX {
-			b.Splash.Dialog(DialogNoAVXTitle, DialogNoAVXMsg, false)
+			b.Splash.Dialog(DialogNoAVX, false)
 			log.Fatal("avx is required to run roblox")
 		}
 	}
 
 	if !wine.WineLook() {
-		b.Splash.Dialog(DialogNoWineTitle, DialogNoWineMsg, false)
+		b.Splash.Dialog(DialogNoWine, false)
 		log.Fatal("wine is required to run roblox")
 	}
 
@@ -219,7 +219,7 @@ func (b *Binary) Main(args ...string) {
 		log.Println(err)
 		b.Splash.LogPath = logFile.Name()
 		b.Splash.Invalidate()
-		b.Splash.Dialog(DialogFailure, err.Error(), false)
+		b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false)
 		os.Exit(1)
 	}
 
@@ -248,11 +248,10 @@ func (b *Binary) Main(args ...string) {
 		}
 
 		if c[1] != "" && c[1] != b.Config.Channel {
-			r := b.Splash.Dialog(DialogReqChannelTitle,
-				fmt.Sprintf(DialogReqChannelMsg, c[1], b.Config.Channel),
+			r := b.Splash.Dialog(
+				fmt.Sprintf(DialogReqChannel, c[1], b.Config.Channel),
 				true,
 			)
-			log.Println(r)
 			if r {
 				log.Println("Switching user channel temporarily to", c[1])
 				b.Config.Channel = c[1]

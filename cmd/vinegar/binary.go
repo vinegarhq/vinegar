@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -27,16 +28,22 @@ import (
 )
 
 const (
-	DialogNoWebviewTitle  = "WebView/InternalBrowser is broken"
-	DialogUseBrowserMsg   = "Use the browser for whatever you were doing just now."
-	DialogQuickLoginMsg   = "Use Quick Log In to authenticate ('Log In With Another Device' button)"
-	DialogFailure         = "Vinegar experienced an error"
-	DialogReqChannelTitle = "Roblox requested a deployment channel"
-	DialogReqChannelMsg   = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
-	DialogNoWineTitle     = "Wine is not installed"
-	DialogNoWineMsg       = "Wine is required to run Roblox on Linux"
-	DialogNoAVXTitle      = "Minimum requirements aren't met"
-	DialogNoAVXMsg        = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
+	DialogUseBrowser = "WebView/InternalBrowser is broken, please use the browser for the action that you were doing."
+	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
+	DialogFailure    = "Vinegar experienced an error: %s"
+	DialogReqChannel = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
+	DialogNoWine     = "Wine is required to run Roblox on Linux, please install it appropiate to your distribution."
+	DialogNoAVX      = "Your machine's CPU doesn't have AVX extensions, which is a requirement for running Roblox on Linux."
+	DialogMerlin     = `VinegarHQ is running an automated survey (just like Steam Hardware Survey) to get an idea of users' basic system details. These are:
+• CPU make and model
+• GPU make and model
+• Kernel version
+• Distro name
+
+No personal information is sent, and the source code of the web server can be found on our GitHub under the "Merlin" repository.
+We would greatly appreciate your contribution! This message won't show again after closing it.
+
+Thank you for using Vinegar.`
 )
 
 type Binary struct {
@@ -203,12 +210,12 @@ func (b *Binary) HandleRobloxLog(line string) {
 	}
 
 	if strings.Contains(line, "InternalBrowser") {
-		msg := DialogUseBrowserMsg
+		msg := DialogUseBrowser
 		if !b.Auth {
-			msg = DialogQuickLoginMsg
+			msg = DialogQuickLogin
 		}
 
-		b.Splash.Dialog(DialogNoWebviewTitle, msg, false)
+		b.Splash.Dialog(msg, false)
 		return
 	}
 
@@ -245,6 +252,16 @@ func (b *Binary) Setup() error {
 		return err
 	}
 	b.State = &s
+
+	// Randomly decide if the user should get Merlined
+	if rand.Intn(16) == 7 && !b.State.Merlined {
+		r := b.Splash.Dialog(DialogMerlin, true)
+		if r {
+			if err := SubmitMerlin(); err != nil {
+				log.Printf("Failed to merlin: %s", err)
+			}
+		}
+	}
 
 	if err := b.FetchDeployment(); err != nil {
 		return err

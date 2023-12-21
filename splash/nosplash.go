@@ -32,8 +32,8 @@ func (ui *Splash) IsClosed() bool {
 	return true
 }
 
-func (ui *Splash) Dialog(title, msg string, yesNo bool) bool {
-	log.Printf("splash: dialog(%d): %s %s", yesNo, title, msg)
+func (ui *Splash) Dialog(txt string, user bool) bool {
+	log.Printf("splash: dialog(%d, false): %s", user, txt)
 	return false
 }
 

@@ -18,23 +18,14 @@ import (
 )
 
 // Make a new application window using vinegar's existing properties to
-// simulate a dialog. YesNo parameter dictates if Dialog returns a boolean
+// simulate a dialog. user parameter dictates if Dialog returns a boolean
 // based on if the user clicked 'Yes' or 'No' on the dialog, otherwise it will
 // only make an 'Okay' button.
-func (ui *Splash) Dialog(title, msg string, YesNo bool) (r bool) {
+//
+// The dialog window size will automatically resize itself vertically
+// according to how many lines the text takes.
+func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 	var ops op.Ops
-	width, height := 384, 152
-
-	if YesNo {
-		width, height = 400, 176
-	}
-
-	w := window(unit.Dp(width), unit.Dp(height))
-
-	if !ui.Config.Enabled {
-		log.Printf("Dialog: %s %s", title, msg)
-		return
-	}
 
 	// This is required for time when Dialog is called before the main
 	// window is ready for retrieving events.
@@ -47,9 +38,31 @@ func (ui *Splash) Dialog(title, msg string, YesNo bool) (r bool) {
 		ContrastFg: rgb(ui.Config.InfoColor),
 	}
 
+	width := 384
+	height := func() int {
+		l := material.Body2(th, txt)
+		gtx := layout.Context{
+			Ops: &ops,
+			Constraints: layout.Constraints{
+				Min: image.Point{X: 64, Y: 38},
+				Max: image.Point{X: width, Y: width*2},
+			},
+		}
+		defer ops.Reset()
+
+		return l.Layout(gtx).Size.Y + (18 * 4)
+	}()
+
+	w := window(unit.Dp(width), unit.Dp(height))
+
+	if !ui.Config.Enabled {
+		log.Printf("Dialog: %s", txt)
+		return
+	}
+
 	msgState := new(widget.Selectable)
 
-	var yesButton widget.Clickable // Okay if !YesNo
+	var yesButton widget.Clickable // Okay if !user
 	var noButton widget.Clickable
 
 	for {
@@ -72,10 +85,8 @@ func (ui *Splash) Dialog(title, msg string, YesNo bool) (r bool) {
 				return layout.Flex{
 					Axis: layout.Vertical,
 				}.Layout(gtx,
-					layout.Rigid(material.Body1(th, title).Layout),
-					layout.Rigid(layout.Spacer{Height: unit.Dp(4)}.Layout),
 					layout.Rigid(func(gtx C) D {
-						m := material.Body2(th, msg)
+						m := material.Body2(th, txt)
 						m.State = msgState
 						return m.Layout(gtx)
 					}),
@@ -91,7 +102,7 @@ func (ui *Splash) Dialog(title, msg string, YesNo bool) (r bool) {
 							Spacing: layout.SpaceStart,
 						}.Layout(gtx,
 							layout.Rigid(func(gtx C) D {
-								if !YesNo {
+								if !user {
 									return button(th, &yesButton, "Okay").Layout(gtx)
 								}
 
@@ -100,7 +111,7 @@ func (ui *Splash) Dialog(title, msg string, YesNo bool) (r bool) {
 								})
 							}),
 							layout.Rigid(func(gtx C) D {
-								if !YesNo {
+								if !user {
 									return D{}
 								}
 								btn := button(ui.Theme, &noButton, "No")

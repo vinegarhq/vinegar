@@ -1,5 +1,3 @@
-//go:build !nogui && !nosplash
-
 package splash
 
 import (

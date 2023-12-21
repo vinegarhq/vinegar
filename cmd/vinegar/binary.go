@@ -42,7 +42,7 @@ const (
 
 No personally identifiable information is sent, and the source code of the web server can be found on our GitHub under the "Merlin" repository.
 
-We would greatly appreciate your contribution! This message won't show again after closing it.
+If you would like to help us understand our community better, please participate in our hardware survey! This message won't show again after closing it.
 
 Thank you for using Vinegar.`
 )

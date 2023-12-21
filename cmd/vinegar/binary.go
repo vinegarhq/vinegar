@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math/rand"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -254,8 +253,7 @@ func (b *Binary) Setup() error {
 	}
 	b.State = &s
 
-	// Randomly decide if the user should get Merlined
-	if rand.Intn(16) == 7 && !b.State.Merlined {
+	if !b.State.Merlined {
 		r := b.Splash.Dialog(DialogMerlin, true)
 		if r {
 			if err := SubmitMerlin(); err != nil {

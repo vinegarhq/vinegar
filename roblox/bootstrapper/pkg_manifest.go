@@ -24,15 +24,17 @@ var (
 )
 
 func channelPath(channel string) string {
-	// Roblox CDN only accepts no channel if its the default channel
-	if channel == DefaultChannel {
-		return "/"
-	}
-
 	// Ensure that the channel is lowercased, since internally in
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
 
+	// Roblox CDN only accepts no channel if its the default channel.
+	// DefaultChannel is in all caps, and since channel is lowercased above,
+	// make it lowercased too in this check.
+	if channel == strings.ToLower(DefaultChannel) {
+		return "/"
+	}
+	
 	return "/channel/" + channel + "/"
 }
 

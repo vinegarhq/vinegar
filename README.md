@@ -5,6 +5,7 @@
 [![Flathub        ][flathub_img     ]][flathub     ]
 [![Report Card    ][goreportcard_img]][goreportcard]
 [![Discord Server ][discord_img     ]][discord     ]
+[![Matrix Room    ][matrix_img      ]][matrix      ]
 
 An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
 
@@ -17,7 +18,9 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 [goreportcard]:     https://goreportcard.com/report/github.com/vinegarhq/vinegar
 [goreportcard_img]: https://goreportcard.com/badge/github.com/vinegarhq/vinegar?style=flat-square
 [discord]:     https://discord.gg/dzdzZ6Pps2
-[discord_img]: https://img.shields.io/discord/1069506340973707304?style=flat-square
+[discord_img]: https://img.shields.io/discord/1069506340973707304?style=flat-square&label=discord
+[matrix]:      https://matrix.to/#/#vinegarhq:matrix.org
+[matrix_img]:  https://img.shields.io/matrix/vinegarhq:matrix.org?style=flat-square&label=matrix
 
 # Features
 + Discord Rich Presence & BloxstrapRPC support
@@ -41,8 +44,8 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 + Splash window during setup, with error dialog support
 
 # See Also
-+ [Discord Server](https://discord.gg/dzdzZ6Pps2)
-+ [Matrix Room](https://matrix.to/#/#vinegarhq:matrix.org)
++ [Discord server](https://discord.gg/dzdzZ6Pps2)
++ [Matrix room](https://matrix.to/#/#vinegarhq:matrix.org)
 + [Documentation](https://vinegarhq.github.io)
 + [Roblox-Studio-Mod-Manager](https://github.com/MaximumADHD/Roblox-Studio-Mod-Manager)
 + [Bloxstrap](https://github.com/pizzaboxer/bloxstrap)

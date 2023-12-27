@@ -42,6 +42,7 @@ An open-source, minimal, configurable, fast bootstrapper for running Roblox on L
 
 # See Also
 + [Discord Server](https://discord.gg/dzdzZ6Pps2)
++ [Matrix Room](https://matrix.to/#/#vinegarhq:matrix.org)
 + [Documentation](https://vinegarhq.github.io)
 + [Roblox-Studio-Mod-Manager](https://github.com/MaximumADHD/Roblox-Studio-Mod-Manager)
 + [Bloxstrap](https://github.com/pizzaboxer/bloxstrap)

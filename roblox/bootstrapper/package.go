@@ -48,7 +48,7 @@ func (p *Package) Download(dest, deployURL string) error {
 
 	log.Printf("Failed to fetch package %s, retrying...", p.Name)
 
-	if err := util.Download(deployURL+"-"+p.Name, dest); err == nil {
+	if err := util.Download(deployURL+"-"+p.Name, dest); err != nil {
 		return fmt.Errorf("download package %s: %w", p.Name, err)
 	}
 

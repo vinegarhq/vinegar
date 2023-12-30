@@ -25,6 +25,9 @@ type Prefix struct {
 }
 
 // New returns a new Prefix.
+//
+// dir must be an absolute path and has correct permissions
+// to modify.
 func New(dir string, out io.Writer) Prefix {
 	return Prefix{
 		Output: out,

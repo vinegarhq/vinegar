@@ -42,7 +42,8 @@ func main() {
 
 	cmd := flag.Arg(0)
 	args := flag.Args()
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
+	wine.Wine = "wine64"
 
 	switch cmd {
 	// These commands don't require a configuration
@@ -191,7 +192,7 @@ func (b *Binary) Main(args ...string) {
 
 	if !wine.WineLook() {
 		b.Splash.Dialog(DialogNoWine, false)
-		log.Fatal("wine is required to run roblox")
+		log.Fatal("wine64 is required to run roblox")
 	}
 
 	go func() {

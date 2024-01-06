@@ -1,15 +1,14 @@
-//go:build linux
-
 package sysinfo
 
 import (
 	"strings"
-	"syscall"
+
+	"golang.org/x/sys/unix"
 )
 
 func getKernel() string {
-	var un syscall.Utsname
-	_ = syscall.Uname(&un)
+	var un unix.Utsname
+	_ = unix.Uname(&un)
 
 	var sb strings.Builder
 	for _, b := range un.Release[:] {

@@ -14,6 +14,7 @@ import (
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
 // LogoPath is set at build-time to set the logo icon path, which is
@@ -49,8 +50,8 @@ type Config struct {
 
 var (
 	ErrNeedDXVKRenderer = errors.New("dxvk is only valid with d3d renderers")
-	ErrWineRootAbs      = errors.New("ensure that the wine root given is an absolute path")
-	ErrWineRootInvalid  = errors.New("invalid wine root given")
+	ErrWineRootAbs      = errors.New("wine root path is not an absolute path")
+	ErrWineRootInvalid  = errors.New("no wine binary present in wine root")
 )
 
 // Load will load the named file to a Config; if it doesn't exist, it
@@ -163,13 +164,15 @@ func (c *Config) setup() error {
 			return ErrWineRootAbs
 		}
 
-		_, err := os.Stat(filepath.Join(bin, "wine"))
-		if err != nil {
-			return fmt.Errorf("%w: %s", ErrWineRootInvalid, err)
-		}
-
 		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
 		os.Unsetenv("WINEDLLPATH")
+	}
+
+	c.Env.Setenv()
+
+	// system wine handled by vinegar
+	if c.WineRoot != "" && !wine.WineLook() {
+		return ErrWineRootInvalid
 	}
 
 	if err := c.Player.setup(); err != nil {
@@ -179,8 +182,6 @@ func (c *Config) setup() error {
 	if err := c.Studio.setup(); err != nil {
 		return fmt.Errorf("studio: %w", err)
 	}
-
-	c.Env.Setenv()
 
 	return nil
 }

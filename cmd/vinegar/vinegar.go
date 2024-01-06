@@ -192,7 +192,7 @@ func (b *Binary) Main(args ...string) {
 
 	if !wine.WineLook() {
 		b.Splash.Dialog(DialogNoWine, false)
-		log.Fatal("wine64 is required to run roblox")
+		log.Fatalf("%s is required to run roblox", wine.Wine)
 	}
 
 	go func() {

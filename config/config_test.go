@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
 func TestBinarySetup(t *testing.T) {
@@ -50,12 +51,24 @@ func TestBinarySetup(t *testing.T) {
 
 func TestSetup(t *testing.T) {
 	wr := t.TempDir()
-	c := Config{
-		WineRoot: wr,
-	}
+	c := Default()
+	c.WineRoot = wr
 
 	if err := c.setup(); !errors.Is(err, ErrWineRootInvalid) {
 		t.Error("expected wine root wine check")
+	}
+
+	if err := os.Mkdir(filepath.Join(wr, "bin"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err := os.OpenFile(filepath.Join(wr, "bin", wine.Wine), os.O_CREATE, 0o755)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := c.setup(); err != nil {
+		t.Error("valid wine root is invalid")
 	}
 
 	c.WineRoot = filepath.Join(".", wr)

@@ -15,20 +15,21 @@ import (
 )
 
 const (
-	GameJoiningEntry               = "[FLog::Output] ! Joining game"
-	GameJoiningPrivateServerEntry  = "[FLog::GameJoinUtil] GameJoinUtil::joinGamePostPrivateServer"
-	GameJoiningReservedServerEntry = "[FLog::GameJoinUtil] GameJoinUtil::initiateTeleportToReservedServer"
-	GameJoiningUDMUXEntry          = "[FLog::Network] UDMUX Address = "
-	GameJoinedEntry                = "[FLog::Network] serverId:"
-	GameDisconnectedEntry          = "[FLog::Network] Time to disconnect replication data:"
-	GameTeleportingEntry           = "[FLog::SingleSurfaceApp] initiateTeleport"
-	GameMessageEntry               = "[FLog::Output] [BloxstrapRPC]"
+	GameJoinReportEntry = "[FLog::GameJoinLoadTime] Report game_join_loadtime:"
+	GameJoiningEntry    = "[FLog::Output] ! Joining game"
+	GameJoinedEntry     = "[FLog::Output] Connection accepted from"
+
+	GameJoinPrivateServerEntry   = "[FLog::GameJoinUtil] GameJoinUtil::joinGamePostPrivateServer"
+	GameTeleportingReservedEntry = "[FLog::GameJoinUtil] GameJoinUtil::initiateTeleportToReservedServer"
+
+	GameDisconnectedEntry = "[FLog::Network] Time to disconnect replication data:"
+	GameTeleportingEntry  = "[FLog::SingleSurfaceApp] initiateTeleport"
+	GameMessageEntry      = "[FLog::Output] [BloxstrapRPC]"
 )
 
 var (
-	GameJoiningEntryPattern = regexp.MustCompile(`! Joining game '([0-9a-f\-]{36})' place ([0-9]+) at ([0-9\.]+)`)
-	GameJoiningUDMUXPattern = regexp.MustCompile(`UDMUX Address = ([0-9\.]+), Port = [0-9]+ \| RCC Server Address = ([0-9\.]+), Port = [0-9]+`)
-	GameJoinedEntryPattern  = regexp.MustCompile(`serverId: ([0-9\.]+)\|[0-9]+`)
+	GameJoinReportEntryPattern = regexp.MustCompile(`Report game_join_loadtime: placeid:([0-9]+).*universeid:([0-9]+)`)
+	GameJoiningEntryPattern    = regexp.MustCompile(`! Joining game '([0-9a-f\-]{36})'`) // for JobID
 )
 
 type ServerType int
@@ -40,136 +41,114 @@ const (
 )
 
 type Activity struct {
-	presence            drpc.Activity
-	drpcClient          *drpc.Client
-	timeStartedUniverse time.Time
+	presence drpc.Activity
+	client   *drpc.Client
 
-	currentUniverseID string
-	ingame            bool
-	teleported        bool
-	server            ServerType
-	placeID           string
-	jobID             string
-	mac               string
-	teleport          bool
-	reservedteleport  bool
+	gameTime    time.Time
+	teleporting bool
+	server      ServerType
+
+	universeID string
+	placeID    string
+	jobID      string
 }
 
 func New() Activity {
 	c, _ := drpc.New(RPCAppID)
 	return Activity{
-		drpcClient: c,
+		client: c,
 	}
 }
 
 func (a *Activity) HandleRobloxLog(line string) error {
-	if !a.ingame && a.placeID == "" {
-		if strings.Contains(line, GameJoiningPrivateServerEntry) {
+	entries := map[string]func(string) error{
+		GameJoiningEntry:      a.handleGameJoining,
+		GameJoinReportEntry:   a.handleGameJoinReport,
+		GameJoinedEntry:       func(_ string) error { return a.handleGameJoined() },
+		GameMessageEntry:      a.handleGameMessage,
+		GameDisconnectedEntry: func(_ string) error { return a.handleGameDisconnect() },
+
+		GameTeleportingEntry: func(_ string) error {
+			log.Println("Got Teleporting Game!")
+			a.teleporting = true
+			return nil
+		},
+		GameJoinPrivateServerEntry: func(_ string) error {
+			log.Println("Got Private Game!")
 			a.server = Private
 			return nil
-		}
-
-		if strings.Contains(line, GameJoiningEntry) {
-			a.handleGameJoining(line)
+		},
+		GameTeleportingReservedEntry: func(_ string) error {
+			log.Println("Got Teleporting Reserved Game!")
+			a.server = Reserved
+			a.teleporting = true
 			return nil
-		}
+		},
 	}
 
-	if !a.ingame && a.placeID != "" {
-		if strings.Contains(line, GameJoiningUDMUXEntry) {
-			a.handleUDMUX(line)
-			return nil
-		}
-
-		if strings.Contains(line, GameJoinedEntry) {
-			a.handleGameJoined(line)
-			return a.SetCurrentGame()
-		}
-	}
-
-	if a.ingame && a.placeID != "" {
-		if strings.Contains(line, GameDisconnectedEntry) {
-			log.Printf("Disconnected From Game (%s/%s/%s)", a.placeID, a.jobID, a.mac)
-			a.Clear()
-			return a.SetCurrentGame()
-		}
-
-		if strings.Contains(line, GameTeleportingEntry) {
-			log.Printf("Teleporting to server (%s/%s/%s)", a.placeID, a.jobID, a.mac)
-			a.teleport = true
-			return nil
-		}
-
-		if a.teleport && strings.Contains(line, GameJoiningReservedServerEntry) {
-			log.Printf("Teleporting to reserved server")
-			a.reservedteleport = true
-			return nil
-		}
-
-		if strings.Contains(line, GameMessageEntry) {
-			m, err := ParseMessage(line)
-			if err != nil {
-				return fmt.Errorf("parse bloxstraprpc message: %w", err)
-			}
-
-			a.ProcessMessage(&m)
-			return a.UpdatePresence()
+	for e, h := range entries {
+		if strings.Contains(line, e) {
+			return h(line)
 		}
 	}
 
 	return nil
 }
 
-func (a *Activity) handleUDMUX(line string) {
-	m := GameJoiningUDMUXPattern.FindStringSubmatch(line)
-	if len(m) != 3 || m[2] != a.mac {
-		return
-	}
-
-	a.mac = m[1]
-	log.Printf("Got game join UDMUX: %s", a.mac)
-}
-
-func (a *Activity) handleGameJoining(line string) {
-	m := GameJoiningEntryPattern.FindStringSubmatch(line)
-	if len(m) != 4 {
-		return
-	}
-
-	a.ingame = false
-	a.jobID = m[1]
-	a.placeID = m[2]
-	a.mac = m[3]
-
-	if a.teleport {
-		a.teleported = true
-		a.teleport = false
-	}
-
-	if a.reservedteleport {
-		a.server = Reserved
-		a.reservedteleport = false
-	}
-
-	log.Printf("Joining Game (%s/%s/%s)", a.jobID, a.placeID, a.mac)
-}
-
-func (a *Activity) handleGameJoined(line string) {
-	m := GameJoinedEntryPattern.FindStringSubmatch(line)
-	if len(m) != 2 || m[1] != a.mac {
-		return
-	}
-
-	a.ingame = true
-	log.Printf("Joined Game (%s/%s/%s)", a.placeID, a.jobID, a.mac)
-}
-
-func (a *Activity) Clear() {
-	a.teleported = false
-	a.ingame = false
+func (a *Activity) handleGameDisconnect() error {
+	log.Println("Disconnected from game!")
+	a.teleporting = false
 	a.placeID = ""
 	a.jobID = ""
-	a.mac = ""
 	a.server = Public
 	a.presence = drpc.Activity{}
+
+	return a.SetCurrentGame()
+}
+
+func (a *Activity) handleGameMessage(line string) error {
+	m, err := ParseMessage(line)
+	if err != nil {
+		return fmt.Errorf("parse bloxstraprpc message: %w", err)
+	}
+	a.ProcessMessage(&m)
+
+	return a.UpdatePresence()
+}
+
+func (a *Activity) handleGameJoinReport(line string) error {
+	m := GameJoinReportEntryPattern.FindStringSubmatch(line)
+	if len(m) != 3 {
+		return fmt.Errorf("game join report entry is invalid!")
+	}
+
+	a.placeID = m[1]
+	a.universeID = m[2]
+
+	log.Printf("Got Universe %s Place %s!", a.universeID, a.placeID)
+	return nil
+}
+
+func (a *Activity) handleGameJoining(line string) error {
+	m := GameJoiningEntryPattern.FindStringSubmatch(line)
+	if len(m) != 2 {
+		return fmt.Errorf("game joining entry is invalid!")
+	}
+
+	a.jobID = m[1]
+
+	log.Printf("Got Job %s!", a.jobID)
+	return nil
+}
+
+func (a *Activity) handleGameJoined() error {
+	if !a.teleporting {
+		log.Println("Updating time!")
+		a.gameTime = time.Now()
+	}
+
+	a.teleporting = false
+
+	log.Println("Game Joined!")
+	return a.SetCurrentGame()
 }

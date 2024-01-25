@@ -15,23 +15,18 @@ const RPCAppID = "1005469189907173486"
 func (a *Activity) Connect() error {
 	log.Println("Connecting to Discord RPC")
 
-	return a.drpcClient.Connect()
+	return a.client.Connect()
 }
 
 func (a *Activity) Close() error {
 	log.Println("Closing Discord RPC")
 
-	return a.drpcClient.Close()
+	return a.client.Close()
 }
 
 func (a *Activity) SetCurrentGame() error {
-	if !a.ingame {
-		log.Println("Not in game, clearing presence")
-		a.presence = drpc.Activity{}
-	} else {
-		if err := a.SetPresence(); err != nil {
-			return err
-		}
+	if err := a.SetPresence(); err != nil {
+		return err
 	}
 
 	return a.UpdatePresence()
@@ -39,27 +34,14 @@ func (a *Activity) SetCurrentGame() error {
 
 func (a *Activity) SetPresence() error {
 	var status string
-	log.Printf("Setting presence for Place ID %s", a.placeID)
 
-	uid, err := api.GetUniverseID(a.placeID)
-	if err != nil {
-		return err
-	}
-	log.Printf("Got Universe ID as %s", uid)
-
-	if !a.teleported || uid != a.currentUniverseID {
-		a.timeStartedUniverse = time.Now()
-	}
-
-	a.currentUniverseID = uid
-
-	gd, err := api.GetGameDetails(uid)
+	gd, err := api.GetGameDetails(a.universeID)
 	if err != nil {
 		return err
 	}
 	log.Println("Got Game details")
 
-	tn, err := api.GetGameIcon(uid, "PlaceHolder", "512x512", "Png", false)
+	tn, err := api.GetGameIcon(a.universeID, "PlaceHolder", "512x512", "Png", false)
 	if err != nil {
 		return err
 	}
@@ -94,7 +76,7 @@ func (a *Activity) SetPresence() error {
 			SmallText:  "Roblox",
 		},
 		Timestamps: &drpc.Timestamps{
-			Start: a.timeStartedUniverse,
+			Start: a.gameTime,
 		},
 		Buttons: buttons,
 	}
@@ -149,5 +131,5 @@ func (a *Activity) ProcessMessage(m *Message) {
 
 func (a *Activity) UpdatePresence() error {
 	log.Printf("Updating presence: %+v", a.presence)
-	return a.drpcClient.SetActivity(a.presence)
+	return a.client.SetActivity(a.presence)
 }

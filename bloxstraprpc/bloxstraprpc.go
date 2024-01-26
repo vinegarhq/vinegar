@@ -15,21 +15,18 @@ import (
 )
 
 const (
-	GameJoinReportEntry = "[FLog::GameJoinLoadTime] Report game_join_loadtime:"
-	GameJoiningEntry    = "[FLog::Output] ! Joining game"
-	GameJoinedEntry     = "[FLog::Output] Connection accepted from"
-
-	GameJoinPrivateServerEntry   = "[FLog::GameJoinUtil] GameJoinUtil::joinGamePostPrivateServer"
-	GameTeleportingReservedEntry = "[FLog::GameJoinUtil] GameJoinUtil::initiateTeleportToReservedServer"
-
-	GameDisconnectedEntry = "[FLog::Network] Time to disconnect replication data:"
-	GameTeleportingEntry  = "[FLog::SingleSurfaceApp] initiateTeleport"
-	GameMessageEntry      = "[FLog::Output] [BloxstrapRPC]"
+	GameJoinRequestEntry = "[FLog::GameJoinUtil] GameJoinUtil::makePlaceLauncherRequest"
+	GameJoiningEntry     = "[FLog::Output] ! Joining game"
+	GameJoinReportEntry  = "[FLog::GameJoinLoadTime] Report game_join_loadtime:"
+	GameJoinedEntry      = "[FLog::Output] Connection accepted from"
+	GameMessageEntry     = "[FLog::Output] [BloxstrapRPC]"
+	GameLeaveEntry       = "[FLog::SingleSurfaceApp] leaveUGCGameInternal"
 )
 
 var (
-	GameJoinReportEntryPattern = regexp.MustCompile(`Report game_join_loadtime: placeid:([0-9]+).*universeid:([0-9]+)`)
-	GameJoiningEntryPattern    = regexp.MustCompile(`! Joining game '([0-9a-f\-]{36})'`) // for JobID
+	GameJoinRequestEntryPattern = regexp.MustCompile(`makePlaceLauncherRequest(ForTeleport)?: requestCount: [0-9], url: https:\/\/gamejoin\.roblox\.com\/v1\/([^\s\/]+)`)
+	GameJoiningEntryPattern     = regexp.MustCompile(`! Joining game '([0-9a-f\-]{36})'`)
+	GameJoinReportEntryPattern  = regexp.MustCompile(`Report game_join_loadtime: placeid:([0-9]+).*universeid:([0-9]+)`)
 )
 
 type ServerType int
@@ -62,28 +59,13 @@ func New() Activity {
 
 func (a *Activity) HandleRobloxLog(line string) error {
 	entries := map[string]func(string) error{
-		GameJoiningEntry:      a.handleGameJoining,
-		GameJoinReportEntry:   a.handleGameJoinReport,
-		GameJoinedEntry:       func(_ string) error { return a.handleGameJoined() },
-		GameMessageEntry:      a.handleGameMessage,
-		GameDisconnectedEntry: func(_ string) error { return a.handleGameDisconnect() },
-
-		GameTeleportingEntry: func(_ string) error {
-			log.Println("Got Teleporting Game!")
-			a.teleporting = true
-			return nil
-		},
-		GameJoinPrivateServerEntry: func(_ string) error {
-			log.Println("Got Private Game!")
-			a.server = Private
-			return nil
-		},
-		GameTeleportingReservedEntry: func(_ string) error {
-			log.Println("Got Teleporting Reserved Game!")
-			a.server = Reserved
-			a.teleporting = true
-			return nil
-		},
+		// In order of which it should appear in log file
+		GameJoinRequestEntry: a.handleGameJoinRequest,                              // For game join type is private, reserved
+		GameJoiningEntry:     a.handleGameJoining,                                  // For JobID (server ID, to join from Discord)
+		GameJoinReportEntry:  a.handleGameJoinReport,                               // For PlaceID and UniverseID
+		GameJoinedEntry:      func(_ string) error { return a.handleGameJoined() }, // Sets presence and time
+		GameMessageEntry:     a.handleGameMessage,                                  // BloxstrapRPC
+		GameLeaveEntry:       func(_ string) error { return a.handleGameLeave() },  // Clears presence and time
 	}
 
 	for e, h := range entries {
@@ -95,49 +77,52 @@ func (a *Activity) HandleRobloxLog(line string) error {
 	return nil
 }
 
-func (a *Activity) handleGameDisconnect() error {
-	log.Println("Disconnected from game!")
-	a.teleporting = false
-	a.placeID = ""
-	a.jobID = ""
-	a.server = Public
-	a.presence = drpc.Activity{}
-
-	return a.SetCurrentGame()
-}
-
-func (a *Activity) handleGameMessage(line string) error {
-	m, err := ParseMessage(line)
-	if err != nil {
-		return fmt.Errorf("parse bloxstraprpc message: %w", err)
-	}
-	a.ProcessMessage(&m)
-
-	return a.UpdatePresence()
-}
-
-func (a *Activity) handleGameJoinReport(line string) error {
-	m := GameJoinReportEntryPattern.FindStringSubmatch(line)
+func (a *Activity) handleGameJoinRequest(line string) error {
+	m := GameJoinRequestEntryPattern.FindStringSubmatch(line)
+	// There are multiple outputs for makePlaceLauncherRequest
 	if len(m) != 3 {
-		return fmt.Errorf("game join report entry is invalid!")
+		return nil
 	}
 
-	a.placeID = m[1]
-	a.universeID = m[2]
+	if m[1] == "ForTeleport" {
+		a.teleporting = true
+	}
 
-	log.Printf("Got Universe %s Place %s!", a.universeID, a.placeID)
+	// Keep up to date from upstream Roblox GameJoin API
+	a.server = map[string]ServerType{
+		"join-private-game":       Private,
+		"join-reserved-game":      Reserved,
+		"join-game":               Public,
+		"join-game-instance":      Public,
+		"join-play-together-game": Public,
+	}[m[2]]
+
+	log.Printf("Got Game type %d teleporting %t!", a.server, a.teleporting)
 	return nil
 }
 
 func (a *Activity) handleGameJoining(line string) error {
 	m := GameJoiningEntryPattern.FindStringSubmatch(line)
 	if len(m) != 2 {
-		return fmt.Errorf("game joining entry is invalid!")
+		return fmt.Errorf("log game joining entry is invalid!")
 	}
 
 	a.jobID = m[1]
 
 	log.Printf("Got Job %s!", a.jobID)
+	return nil
+}
+
+func (a *Activity) handleGameJoinReport(line string) error {
+	m := GameJoinReportEntryPattern.FindStringSubmatch(line)
+	if len(m) != 3 {
+		return fmt.Errorf("log game join report entry is invalid!")
+	}
+
+	a.placeID = m[1]
+	a.universeID = m[2]
+
+	log.Printf("Got Universe %s Place %s!", a.universeID, a.placeID)
 	return nil
 }
 
@@ -150,5 +135,29 @@ func (a *Activity) handleGameJoined() error {
 	a.teleporting = false
 
 	log.Println("Game Joined!")
-	return a.SetCurrentGame()
+	return a.updateGamePresence()
+}
+
+func (a *Activity) handleGameMessage(line string) error {
+	m, err := NewMessage(line)
+	if err != nil {
+		return fmt.Errorf("parse bloxstraprpc message: %w", err)
+	}
+	m.ApplyPresence(&a.presence)
+
+	return a.updateGamePresence()
+}
+
+func (a *Activity) handleGameLeave() error {
+	log.Println("Left game, clearing presence!")
+
+	a.presence = drpc.Activity{}
+	a.gameTime = time.Time{}
+	a.teleporting = false
+	a.server = Public
+	a.universeID = ""
+	a.placeID = ""
+	a.jobID = ""
+
+	return a.client.SetActivity(a.presence)
 }

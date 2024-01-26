@@ -40,14 +40,16 @@ func (a *Activity) updateGamePresence() error {
 	}}
 
 	joinurl := "roblox://experiences/start?placeId=" + a.placeID + "&gameInstanceId=" + a.jobID
+	
+	gd, err := api.GetGameDetails(a.universeID)
+	if err != nil {
+		return err
+	}
+
+	status := "by " + gd.Creator.Name
+
 	switch a.server {
 	case Public:
-		gd, err := api.GetGameDetails(a.universeID)
-		if err != nil {
-			return err
-		}
-
-		status = "by " + gd.Creator.Name
 		buttons = append(buttons, drpc.Button{
 			Label: "Join server",
 			URL:   joinurl,

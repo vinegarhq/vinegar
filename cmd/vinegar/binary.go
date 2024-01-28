@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"errors"
 	"fmt"
 	"io"
@@ -12,7 +11,10 @@ import (
 	"regexp"
 	"strings"
 	"syscall"
+	"time"
 
+	"github.com/fsnotify/fsnotify"
+	"github.com/nxadm/tail"
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/bus"
@@ -24,6 +26,8 @@ import (
 	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 )
+
+const timeout = 6 * time.Second
 
 const (
 	DialogUseBrowser = "WebView/InternalBrowser is broken, please use the browser for the action that you were doing."
@@ -213,14 +217,7 @@ func (b *Binary) Run(args ...string) error {
 		}
 	}
 
-	// REQUIRED for HandleRobloxLog to function.
-	os.Setenv("WINEDEBUG", os.Getenv("WINEDEBUG")+",warn+debugstr")
-
 	cmd, err := b.Command(args...)
-	if err != nil {
-		return err
-	}
-	o, err := cmd.OutputPipe()
 	if err != nil {
 		return err
 	}
@@ -244,95 +241,112 @@ func (b *Binary) Run(args ...string) error {
 		signal.Stop(c)
 	}()
 
-	go b.HandleOutput(o)
-
 	log.Printf("Launching %s (%s)", b.Name, cmd)
 	b.Splash.SetMessage("Launching " + b.Alias)
 
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("roblox process: %w", err)
-	}
-
-	if b.Config.GameMode {
-		if err := b.BusSession.GamemodeRegister(int32(cmd.Process.Pid)); err != nil {
-			log.Println("Attempted to register to Gamemode daemon")
+	go func() {
+		// Wait for process to start
+		for {
+			if cmd.Process != nil {
+				break
+			}
 		}
-	}
 
-	defer func() {
-		// may or may not prevent a race condition in procfs
-		syscall.Sync()
-
-		if util.CommFound("Roblox") {
-			log.Println("Another Roblox instance is already running, not killing wineprefix")
+		// If the log file wasn't found, assume failure
+		// and don't perform post-launch roblox functions.
+		lf, err := RobloxLogFile(b.Prefix)
+		if err != nil {
+			log.Println(err)
 			return
 		}
 
-		b.Prefix.Kill()
+		b.Splash.Close()
+
+		if b.Config.GameMode {
+			if err := b.BusSession.GamemodeRegister(int32(cmd.Process.Pid)); err != nil {
+				log.Println("Attempted to register to Gamemode daemon")
+			}
+		}
+
+		// Blocks and tails file forever until roblox is dead
+		if err := b.Tail(lf); err != nil {
+			log.Println(err)
+		}
 	}()
 
-	err = cmd.Wait()
-	if err == nil {
+	if err := cmd.Run(); err != nil {
+		if strings.Contains(err.Error(), "signal:") {
+			log.Println("WARNING: Roblox exited with", err)
+			return nil
+		}
+
+		return fmt.Errorf("roblox process: %w", err)
+	}
+
+	// may or may not prevent a race condition in procfs
+	syscall.Sync()
+
+	if util.CommFound("Roblox") {
+		log.Println("Another Roblox instance is already running, not killing wineprefix")
 		return nil
 	}
 
-	// Roblox was sent a signal, do not consider it an error.
-	if strings.Contains(err.Error(), "signal:") {
-		log.Println("WARNING: Roblox exited with", err)
-		return nil
-	}
+	b.Prefix.Kill()
 
-	return fmt.Errorf("roblox: %w", err)
+	return nil
 }
 
-func (b *Binary) HandleOutput(wr io.Reader) {
-	s := bufio.NewScanner(wr)
-	closed := false
+func RobloxLogFile(pfx *wine.Prefix) (string, error) {
+	ad, err := pfx.AppDataDir()
+	if err != nil {
+		return "", err
+	}
 
-	for s.Scan() {
-		txt := s.Text()
+	dir := filepath.Join(ad, "Local", "Roblox", "logs")
 
-		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
-		if len(txt) >= 39 && txt[19:37] == "OutputDebugStringA" {
-			// As soon as a singular Roblox log has been hit, close the splash window
-			if !closed {
-				b.Splash.Close()
+	w, err := fsnotify.NewWatcher()
+	if err != nil {
+		return "", err
+	}
+	defer w.Close()
+
+	if err := w.Add(dir); err != nil {
+		return "", err
+	}
+
+	t := time.NewTimer(timeout)
+
+	for {
+		select {
+		case <-t.C:
+			return "", fmt.Errorf("roblox log file not found after %s", timeout)
+		case e := <-w.Events:
+			if e.Has(fsnotify.Create) {
+				return e.Name, nil
 			}
-
-			// length of roblox Flog message
-			if len(txt) >= 90 {
-				b.HandleRobloxLog(txt[39 : len(txt)-1])
-			}
-			continue
+		case err := <-w.Errors:
+			log.Println("fsnotify watcher:", err)
 		}
-
-		fmt.Fprintln(b.Prefix.Output, txt)
 	}
 }
 
-func (b *Binary) HandleRobloxLog(line string) {
-	fmt.Fprintln(b.Prefix.Output, line)
-
-	if strings.Contains(line, "DID_LOG_IN") {
-		b.Auth = true
-		return
+func (b *Binary) Tail(name string) error {
+	t, err := tail.TailFile(name, tail.Config{Follow: true})
+	if err != nil {
+		return err
 	}
 
-	if strings.Contains(line, "InternalBrowser") {
-		msg := DialogUseBrowser
-		if !b.Auth {
-			msg = DialogQuickLogin
-		}
+	for line := range t.Lines {
+		fmt.Fprintln(b.Prefix.Output, line.Text)
 
-		b.Splash.Dialog(msg, false)
-		return
-	}
-
-	if b.Config.DiscordRPC {
-		if err := b.Activity.HandleRobloxLog(line); err != nil {
-			log.Printf("Failed to handle Discord RPC: %s", err)
+		if b.Config.DiscordRPC {
+			if err := b.Activity.HandleRobloxLog(line.Text); err != nil {
+				log.Printf("Failed to handle Discord RPC: %s", err)
+			}
 		}
 	}
+
+	return nil
 }
 
 func (b *Binary) Command(args ...string) (*wine.Cmd, error) {

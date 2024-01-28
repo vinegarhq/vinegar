@@ -12,7 +12,9 @@ require (
 require (
 	gioui.org v0.4.1
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
+	github.com/nxadm/tail v1.4.11
 	golang.org/x/sys v0.15.0
 )
 
@@ -26,6 +28,7 @@ require (
 	golang.org/x/image v0.14.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
+	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

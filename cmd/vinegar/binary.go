@@ -2,28 +2,27 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"sort"
+	"regexp"
 	"strings"
 	"syscall"
 
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/bus"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
+	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
-	"github.com/vinegarhq/vinegar/wine/dxvk"
-	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -91,6 +90,116 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Bina
 		Prefix: pfx,
 
 		BusSession: bus.New(),
+	}
+}
+
+func (b *Binary) Main(args ...string) {
+	b.Config.Env.Setenv()
+
+	logFile, err := LogFile(b.Type.String())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logFile.Close()
+
+	logOutput := io.MultiWriter(logFile, os.Stderr)
+	b.Prefix.Output = logOutput
+	log.SetOutput(logOutput)
+
+	firstRun := false
+	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
+		firstRun = true
+	}
+
+	if firstRun && !sysinfo.CPU.AVX {
+		c := b.Splash.Dialog(DialogNoAVX, true)
+		if !c {
+			log.Fatal("avx is (may be) required to run roblox")
+		}
+		log.Println("WARNING: Running roblox without AVX!")
+	}
+
+	if !wine.WineLook() {
+		b.Splash.Dialog(DialogNoWine, false)
+		log.Fatalf("%s is required to run roblox", wine.Wine)
+	}
+
+	go func() {
+		err := b.Splash.Run()
+		if errors.Is(splash.ErrClosed, err) {
+			log.Printf("Splash window closed!")
+
+			// Will tell Run() to immediately kill Roblox, as it handles INT/TERM.
+			// Otherwise, it will just with the same appropiate signal.
+			syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+			return
+		}
+
+		// The splash window didn't close cleanly (ErrClosed), an
+		// internal error occured.
+		if err != nil {
+			log.Fatalf("splash: %s", err)
+		}
+	}()
+
+	errHandler := func(err error) {
+		if !b.GlobalConfig.Splash.Enabled || b.Splash.IsClosed() {
+			log.Fatal(err)
+		}
+
+		log.Println(err)
+		b.Splash.LogPath = logFile.Name()
+		b.Splash.Invalidate()
+		b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false)
+		os.Exit(1)
+	}
+
+	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
+	// automatically create the Wineprefix.
+	if firstRun {
+		log.Printf("Initializing wineprefix at %s", b.Prefix.Dir())
+		b.Splash.SetMessage("Initializing wineprefix")
+
+		if err := b.Prefix.SetDPI(97); err != nil {
+			b.Splash.SetMessage(err.Error())
+			errHandler(err)
+		}
+	}
+
+	// If the launch uri contains a channel key with a value
+	// that isn't empty, Roblox requested a specific channel
+	func() {
+		if len(args) < 1 {
+			return
+		}
+
+		c := regexp.MustCompile(`channel:([^+]*)`).FindStringSubmatch(args[0])
+		if len(c) < 1 {
+			return
+		}
+
+		if c[1] != "" && c[1] != b.Config.Channel {
+			r := b.Splash.Dialog(
+				fmt.Sprintf(DialogReqChannel, c[1], b.Config.Channel),
+				true,
+			)
+			if r {
+				log.Println("Switching user channel temporarily to", c[1])
+				b.Config.Channel = c[1]
+			}
+		}
+	}()
+
+	b.Splash.SetDesc(b.Config.Channel)
+
+	if err := b.Setup(); err != nil {
+		b.Splash.SetMessage("Failed to setup Roblox")
+		errHandler(err)
+	}
+
+	if err := b.Run(args...); err != nil {
+		b.Splash.SetMessage("Failed to run Roblox")
+		errHandler(err)
 	}
 }
 
@@ -224,202 +333,6 @@ func (b *Binary) HandleRobloxLog(line string) {
 			log.Printf("Failed to handle Discord RPC: %s", err)
 		}
 	}
-}
-
-func (b *Binary) FetchDeployment() error {
-	b.Splash.SetMessage("Fetching " + b.Alias)
-
-	if b.Config.ForcedVersion != "" {
-		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
-
-		d := boot.NewDeployment(b.Type, b.Config.Channel, b.Config.ForcedVersion)
-		b.Deploy = &d
-		return nil
-	}
-
-	d, err := boot.FetchDeployment(b.Type, b.Config.Channel)
-	if err != nil {
-		return err
-	}
-
-	b.Deploy = &d
-	return nil
-}
-
-func (b *Binary) Setup() error {
-	s, err := state.Load()
-	if err != nil {
-		return err
-	}
-	b.State = &s
-
-	if err := b.FetchDeployment(); err != nil {
-		return err
-	}
-
-	b.Dir = filepath.Join(dirs.Versions, b.Deploy.GUID)
-	b.Splash.SetDesc(fmt.Sprintf("%s %s", b.Deploy.GUID, b.Deploy.Channel))
-
-	stateVer := b.State.Version(b.Type)
-	if stateVer != b.Deploy.GUID {
-		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, b.Deploy.GUID)
-
-		if err := b.Install(); err != nil {
-			return err
-		}
-	} else {
-		log.Printf("%s is up to date (%s)", b.Name, b.Deploy.GUID)
-	}
-
-	b.Config.Env.Setenv()
-
-	log.Println("Using Renderer:", b.Config.Renderer)
-	if err := b.Config.FFlags.Apply(b.Dir); err != nil {
-		return err
-	}
-
-	if err := dirs.OverlayDir(b.Dir); err != nil {
-		return err
-	}
-
-	if err := b.SetupDxvk(); err != nil {
-		return err
-	}
-
-	b.Splash.SetProgress(1.0)
-	return b.State.Save()
-}
-
-func (b *Binary) Install() error {
-	b.Splash.SetMessage("Installing " + b.Alias)
-
-	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
-		return err
-	}
-
-	pm, err := boot.FetchPackageManifest(b.Deploy)
-	if err != nil {
-		return err
-	}
-
-	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
-		return err
-	}
-
-	// Prioritize smaller files first, to have less pressure
-	// on network and extraction
-	//
-	// *Theoretically*, this should be better
-	sort.SliceStable(pm.Packages, func(i, j int) bool {
-		return pm.Packages[i].ZipSize < pm.Packages[j].ZipSize
-	})
-
-	b.Splash.SetMessage("Downloading " + b.Alias)
-	if err := b.DownloadPackages(&pm); err != nil {
-		return err
-	}
-
-	b.Splash.SetMessage("Extracting " + b.Alias)
-	if err := b.ExtractPackages(&pm); err != nil {
-		return err
-	}
-
-	if b.Type == roblox.Studio {
-		brokenFont := filepath.Join(b.Dir, "StudioFonts", "SourceSansPro-Black.ttf")
-
-		log.Printf("Removing broken font %s", brokenFont)
-		if err := os.RemoveAll(brokenFont); err != nil {
-			log.Printf("Failed to remove font: %s", err)
-		}
-	}
-
-	if err := boot.WriteAppSettings(b.Dir); err != nil {
-		return err
-	}
-
-	b.State.AddBinary(&pm)
-
-	if err := b.State.CleanPackages(); err != nil {
-		return err
-	}
-
-	return b.State.CleanVersions()
-}
-
-func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package) error) error {
-	donePkgs := 0
-	pkgsLen := len(pm.Packages)
-	eg := new(errgroup.Group)
-
-	for _, p := range pm.Packages {
-		p := p
-		eg.Go(func() error {
-			err := fn(p)
-			if err != nil {
-				return err
-			}
-
-			donePkgs++
-			b.Splash.SetProgress(float32(donePkgs) / float32(pkgsLen))
-
-			return nil
-		})
-	}
-
-	return eg.Wait()
-}
-
-func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
-	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
-
-	return b.PerformPackages(pm, func(pkg boot.Package) error {
-		return pkg.Download(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
-	})
-}
-
-func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
-	log.Printf("Extracting %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
-
-	pkgDirs := boot.BinaryDirectories(b.Type)
-
-	return b.PerformPackages(pm, func(pkg boot.Package) error {
-		dest, ok := pkgDirs[pkg.Name]
-
-		if !ok {
-			return fmt.Errorf("unhandled package: %s", pkg.Name)
-		}
-
-		return pkg.Extract(filepath.Join(dirs.Downloads, pkg.Checksum), filepath.Join(b.Dir, dest))
-	})
-}
-
-func (b *Binary) SetupDxvk() error {
-	if b.State.DxvkVersion != "" && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
-		b.Splash.SetMessage("Uninstalling DXVK")
-		if err := dxvk.Remove(b.Prefix); err != nil {
-			return err
-		}
-
-		b.State.DxvkVersion = ""
-		return nil
-	}
-
-	if !b.Config.Dxvk {
-		return nil
-	}
-
-	b.Splash.SetProgress(0.0)
-	dxvk.Setenv()
-
-	if b.GlobalConfig.DxvkVersion == b.State.DxvkVersion {
-		return nil
-	}
-
-	// This would only get saved if Install succeeded
-	b.State.DxvkVersion = b.GlobalConfig.DxvkVersion
-
-	b.Splash.SetMessage("Installing DXVK")
-	return dxvk.Install(b.GlobalConfig.DxvkVersion, b.Prefix)
 }
 
 func (b *Binary) Command(args ...string) (*wine.Cmd, error) {

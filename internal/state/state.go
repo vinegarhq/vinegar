@@ -26,7 +26,6 @@ type BinaryStates map[string]BinaryState
 // State holds various details about Vinegar's configuration
 type State struct {
 	DxvkVersion  string
-	Merlined     bool         // If the user has already submitted hardware information
 	Applications BinaryStates // called Applications to retain compatibility
 }
 

@@ -36,17 +36,6 @@ const (
 	DialogReqChannel = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
 	DialogNoWine     = "Wine is required to run Roblox on Linux, please install it appropiate to your distribution."
 	DialogNoAVX      = "Warning: Your CPU does not support AVX. While some people may be able to run without it, most are not able to. VinegarHQ cannot provide support for your installation. Continue?"
-	DialogMerlin     = `VinegarHQ is running an automated survey to better understand users' system details. These include:
-• CPU make and model
-• GPU make and model
-• Kernel version
-• Distro name
-
-No personally identifiable information is sent, and the source code of the web server can be found on our GitHub under the "Merlin" repository.
-
-If you would like to help us understand our community better, please participate in our hardware survey! This message won't show again after closing it.
-
-Thank you for using Vinegar.`
 )
 
 type Binary struct {

@@ -253,16 +253,6 @@ func (b *Binary) Setup() error {
 	}
 	b.State = &s
 
-	if !b.State.Merlined {
-		r := b.Splash.Dialog(DialogMerlin, true)
-		if r {
-			if err := SubmitMerlin(); err != nil {
-				log.Printf("Failed to merlin: %s", err)
-			}
-		}
-		b.State.Merlined = true
-	}
-
 	if err := b.FetchDeployment(); err != nil {
 		return err
 	}

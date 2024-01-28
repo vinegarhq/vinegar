@@ -47,16 +47,12 @@ func main() {
 
 	switch cmd {
 	// These commands don't require a configuration
-	case "delete", "edit", "submit", "version":
+	case "delete", "edit", "version":
 		switch cmd {
 		case "delete":
 			Delete()
 		case "edit":
 			if err := editor.Edit(*configPath); err != nil {
-				log.Fatal(err)
-			}
-		case "submit":
-			if err := SubmitMerlin(); err != nil {
 				log.Fatal(err)
 			}
 		case "version":

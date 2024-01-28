@@ -40,7 +40,7 @@ func (a *Activity) updateGamePresence() error {
 	}}
 
 	joinurl := "roblox://experiences/start?placeId=" + a.placeID + "&gameInstanceId=" + a.jobID
-	
+
 	gd, err := api.GetGameDetails(a.universeID)
 	if err != nil {
 		return err

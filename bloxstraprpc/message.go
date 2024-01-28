@@ -1,13 +1,13 @@
 package bloxstraprpc
 
 import (
-	"fmt"
 	"encoding/json"
-	"time"
 	"errors"
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/altfoxie/drpc"
 )
@@ -15,10 +15,10 @@ import (
 // RichPresenceImage holds game image information sent
 // from a BloxstrapRPC message
 type RichPresenceImage struct {
-	AssetID   int64 `json:"assetId"`
-	HoverText int64 `json:"hoverText"`
-	Clear     bool  `json:"clear"`
-	Reset     bool  `json:"reset"`
+	AssetID   int64  `json:"assetId"`
+	HoverText string `json:"hoverText"`
+	Clear     bool   `json:"clear"`
+	Reset     bool   `json:"reset"`
 }
 
 // Data holds game information sent from a BloxstrapRPC message
@@ -43,10 +43,7 @@ type Message struct {
 func NewMessage(line string) (Message, error) {
 	var m Message
 
-	msg, err := strconv.Unquote(`"` + line[strings.Index(line, GameMessageEntry)+len(GameMessageEntry)+1:] + `"`)
-	if err != nil {
-		return Message{}, fmt.Errorf("bloxstraprpc message: %w", err)
-	}
+	msg := line[strings.Index(line, BloxstrapRPCEntry)+len(BloxstrapRPCEntry)+1:]
 
 	if err := json.Unmarshal([]byte(msg), &m); err != nil {
 		return Message{}, fmt.Errorf("bloxstraprpc message: %w", err)
@@ -61,16 +58,10 @@ func NewMessage(line string) (Message, error) {
 		return Message{}, errors.New("bloxstraprpc message: details or state cannot be longer than 128 characters")
 	}
 
-	log.Printf("Received message: %+v", m)
-
 	return m, nil
 }
 
 func (m Message) ApplyPresence(p *drpc.Activity) {
-	if p == nil {
-		return
-	}
-
 	if m.Command != "SetRichPresence" {
 		log.Printf("WARNING: Game sent invalid BloxstrapRPC command: %s", m.Command)
 		return
@@ -107,7 +98,7 @@ func (m Message) ApplyPresence(p *drpc.Activity) {
 	}
 
 	if m.SmallImage.AssetID != 0 {
-		p.Assets.SmallImage = "https://assetdelivery.roblox.com/v1/asset/?id" +
+		p.Assets.SmallImage = "https://assetdelivery.roblox.com/v1/asset/?id=" +
 			strconv.FormatInt(m.SmallImage.AssetID, 10)
 	}
 
@@ -116,8 +107,7 @@ func (m Message) ApplyPresence(p *drpc.Activity) {
 	}
 
 	if m.LargeImage.AssetID != 0 {
-		p.Assets.LargeImage = "https://assetdelivery.roblox.com/v1/asset/?id" +
+		p.Assets.LargeImage = "https://assetdelivery.roblox.com/v1/asset/?id=" +
 			strconv.FormatInt(m.LargeImage.AssetID, 10)
 	}
 }
-

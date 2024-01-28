@@ -19,7 +19,7 @@ const (
 	GameJoiningEntry     = "[FLog::Output] ! Joining game"
 	GameJoinReportEntry  = "[FLog::GameJoinLoadTime] Report game_join_loadtime:"
 	GameJoinedEntry      = "[FLog::Output] Connection accepted from"
-	GameMessageEntry     = "[FLog::Output] [BloxstrapRPC]"
+	BloxstrapRPCEntry    = "[FLog::Output] [BloxstrapRPC]"
 	GameLeaveEntry       = "[FLog::SingleSurfaceApp] leaveUGCGameInternal"
 )
 
@@ -64,7 +64,7 @@ func (a *Activity) HandleRobloxLog(line string) error {
 		GameJoiningEntry:     a.handleGameJoining,                                  // For JobID (server ID, to join from Discord)
 		GameJoinReportEntry:  a.handleGameJoinReport,                               // For PlaceID and UniverseID
 		GameJoinedEntry:      func(_ string) error { return a.handleGameJoined() }, // Sets presence and time
-		GameMessageEntry:     a.handleGameMessage,                                  // BloxstrapRPC
+		BloxstrapRPCEntry:    a.handleGameMessage,                                  // BloxstrapRPC
 		GameLeaveEntry:       func(_ string) error { return a.handleGameLeave() },  // Clears presence and time
 	}
 
@@ -145,7 +145,7 @@ func (a *Activity) handleGameMessage(line string) error {
 	}
 	m.ApplyPresence(&a.presence)
 
-	return a.updateGamePresence()
+	return a.client.SetActivity(a.presence)
 }
 
 func (a *Activity) handleGameLeave() error {

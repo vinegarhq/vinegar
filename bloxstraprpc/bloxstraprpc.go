@@ -14,6 +14,8 @@ import (
 	"github.com/altfoxie/drpc"
 )
 
+const Reset = "<reset>"
+
 const (
 	GameJoinRequestEntry = "[FLog::GameJoinUtil] GameJoinUtil::makePlaceLauncherRequest"
 	GameJoiningEntry     = "[FLog::Output] ! Joining game"
@@ -51,7 +53,7 @@ type Activity struct {
 }
 
 func New() Activity {
-	c, _ := drpc.New(RPCAppID)
+	c, _ := drpc.New("1159891020956323923")
 	return Activity{
 		client: c,
 	}
@@ -135,7 +137,7 @@ func (a *Activity) handleGameJoined() error {
 	a.teleporting = false
 
 	log.Println("Game Joined!")
-	return a.updateGamePresence()
+	return a.UpdateGamePresence(true)
 }
 
 func (a *Activity) handleGameMessage(line string) error {
@@ -143,9 +145,9 @@ func (a *Activity) handleGameMessage(line string) error {
 	if err != nil {
 		return fmt.Errorf("parse bloxstraprpc message: %w", err)
 	}
-	m.ApplyPresence(&a.presence)
+	m.ApplyRichPresence(&a.presence)
 
-	return a.client.SetActivity(a.presence)
+	return a.UpdateGamePresence(false)
 }
 
 func (a *Activity) handleGameLeave() error {

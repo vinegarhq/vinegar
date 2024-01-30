@@ -1,8 +1,12 @@
 package bootstrapper
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"io"
 	"log"
+	"os"
 
 	"github.com/vinegarhq/vinegar/util"
 )
@@ -21,8 +25,20 @@ type Packages []Package
 func (p *Package) Verify(src string) error {
 	log.Printf("Verifying Package %s (%s)", p.Name, p.Checksum)
 
-	if err := util.VerifyFileMD5(src, p.Checksum); err != nil {
-		return fmt.Errorf("verify package %s: %w", p.Name, err)
+	f, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	h := md5.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return err
+	}
+	fsum := hex.EncodeToString(h.Sum(nil))
+
+	if p.Checksum != fsum {
+		return fmt.Errorf("package %s (%s) is corrupted, please re-download or delete package", p.Name, src)
 	}
 
 	return nil
@@ -62,5 +78,10 @@ func (p *Package) Extract(src, dest string) error {
 	}
 
 	log.Printf("Extracted Package %s (%s): %s", p.Name, p.Checksum, dest)
+	return nil
+}
+
+func verifyFileMD5(name string, sum string) error {
+
 	return nil
 }

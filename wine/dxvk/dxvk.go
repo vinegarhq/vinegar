@@ -11,7 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/internal/netutil"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -59,7 +59,7 @@ func Install(ver string, pfx *wine.Prefix) error {
 
 	log.Printf("Downloading DXVK %s (%s)", ver, url)
 
-	if err := util.Download(url, f.Name()); err != nil {
+	if err := netutil.Download(url, f.Name()); err != nil {
 		return fmt.Errorf("download dxvk %s: %w", ver, err)
 	}
 

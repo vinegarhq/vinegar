@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
 // Package is a representation of a Binary package.
@@ -58,13 +58,13 @@ func (p *Package) Download(dest, deployURL string) error {
 
 	log.Printf("Downloading Package %s (%s)", p.Name, dest)
 
-	if err := util.Download(deployURL+"-"+p.Name, dest); err == nil {
+	if err := netutil.Download(deployURL+"-"+p.Name, dest); err == nil {
 		return p.Verify(dest)
 	}
 
 	log.Printf("Failed to fetch package %s, retrying...", p.Name)
 
-	if err := util.Download(deployURL+"-"+p.Name, dest); err != nil {
+	if err := netutil.Download(deployURL+"-"+p.Name, dest); err != nil {
 		return fmt.Errorf("download package %s: %w", p.Name, err)
 	}
 

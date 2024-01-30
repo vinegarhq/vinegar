@@ -16,8 +16,8 @@ import (
 type RichPresenceImage struct {
 	AssetID   *int64  `json:"assetId"`
 	HoverText *string `json:"hoverText"`
-	Clear     bool   `json:"clear"`
-	Reset     bool   `json:"reset"`
+	Clear     bool    `json:"clear"`
+	Reset     bool    `json:"reset"`
 }
 
 // Data holds game information sent from a BloxstrapRPC message

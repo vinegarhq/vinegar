@@ -1,4 +1,5 @@
-package util
+// Package netutil provides shared utility networking functions.
+package netutil
 
 import (
 	"errors"

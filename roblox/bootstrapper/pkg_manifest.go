@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vinegarhq/vinegar/util"
+	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
 // PackageManifest is a representation of a Binary version's packages
@@ -49,7 +49,7 @@ func FetchPackageManifest(d *Deployment) (PackageManifest, error) {
 
 	log.Printf("Fetching manifest for %s (%s)", d.GUID, url)
 
-	smanif, err := util.Body(url)
+	smanif, err := netutil.Body(url)
 	if err != nil {
 		return PackageManifest{}, fmt.Errorf("fetch %s package manifest: %w", d.GUID, err)
 	}

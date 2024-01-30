@@ -55,7 +55,7 @@ func (p *Package) Download(dest, deployURL string) error {
 
 	log.Printf("Downloading Package %s (%s)", p.Name, dest)
 
-	if err := netutil.Download(deployURL+"-"+p.Name, dest); err == nil {
+	if err := netutil.Download(deployURL+"-"+p.Name, dest); err != nil {
 		return fmt.Errorf("download package %s: %w", p.Name, err)
 	}
 
@@ -69,10 +69,5 @@ func (p *Package) Extract(src, dest string) error {
 	}
 
 	log.Printf("Extracted Package %s (%s): %s", p.Name, p.Checksum, dest)
-	return nil
-}
-
-func verifyFileMD5(name string, sum string) error {
-
 	return nil
 }

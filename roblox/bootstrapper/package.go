@@ -47,9 +47,6 @@ func (p *Package) Verify(src string) error {
 // Download will download the package to the named dest destination
 // directory with the given deployURL deploy mirror; if the package
 // exists and has the correct checksum, it will return immediately.
-//
-// If downloading the package fails, it will attempt to re-download
-// only once.
 func (p *Package) Download(dest, deployURL string) error {
 	if err := p.Verify(dest); err == nil {
 		log.Printf("Package %s is already downloaded", p.Name)
@@ -59,12 +56,6 @@ func (p *Package) Download(dest, deployURL string) error {
 	log.Printf("Downloading Package %s (%s)", p.Name, dest)
 
 	if err := netutil.Download(deployURL+"-"+p.Name, dest); err == nil {
-		return p.Verify(dest)
-	}
-
-	log.Printf("Failed to fetch package %s, retrying...", p.Name)
-
-	if err := netutil.Download(deployURL+"-"+p.Name, dest); err != nil {
 		return fmt.Errorf("download package %s: %w", p.Name, err)
 	}
 

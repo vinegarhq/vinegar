@@ -13,7 +13,6 @@ import (
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
-	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -154,7 +153,7 @@ func (b *Binary) setup() error {
 
 func (c *Config) setup() error {
 	if c.SanitizeEnv {
-		util.SanitizeEnv()
+		SanitizeEnv()
 	}
 
 	if c.WineRoot != "" {
@@ -164,7 +163,7 @@ func (c *Config) setup() error {
 			return ErrWineRootAbs
 		}
 
-		c.Env["PATH"] = bin + ":" + os.Getenv("PATH")
+		os.Setenv("PATH", bin+":"+os.Getenv("PATH"))
 		os.Unsetenv("WINEDLLPATH")
 	}
 

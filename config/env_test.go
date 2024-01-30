@@ -18,3 +18,22 @@ func TestEnv(t *testing.T) {
 		t.Fatal("expected Setenv set global environment")
 	}
 }
+
+func TestSanitizeEnv(t *testing.T) {
+	AllowedEnv = []string{"ALLOWED"}
+	e := Environment{
+		"ALLOWED":  "im not impostor",
+		"IMPOSTOR": "im impostor",
+	}
+
+	e.Setenv()
+	SanitizeEnv()
+
+	if os.Getenv("ALLOWED") != e["ALLOWED"] {
+		t.Fatal("want allowed var, got sanitized")
+	}
+
+	if os.Getenv("IMPOSTOR") != "" {
+		t.Fatal("want sanitized impostor var, got value")
+	}
+}

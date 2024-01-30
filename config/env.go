@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strings"
 )
 
 // Environment is a map representation of a operating environment
@@ -22,5 +23,44 @@ func (e Environment) Set(key, value string) {
 func (e Environment) Setenv() {
 	for name, value := range e {
 		os.Setenv(name, value)
+	}
+}
+
+var AllowedEnv = []string{
+	"PATH",
+	"HOME", "USER", "LOGNAME",
+	"TZ",
+	"LANG", "LC_ALL",
+	"EDITOR",
+	"XDG_CACHE_HOME", "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_DATA_DIRS",
+	"XDG_RUNTIME_DIR", // Required by Wayland and Pipewire
+	"PULSE_SERVER", "PULSE_CLIENTCONFIG",
+	"DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY",
+	"WINEDLLPATH",
+	"SDL_GAMECONTROLLERCONFIG",
+	"__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS", // Flatpak
+}
+
+// SanitizeEnv modifies the global environment by removing
+// all environment variables that are not present in [AllowedEnv].
+func SanitizeEnv() {
+	for _, env := range os.Environ() {
+		parts := strings.SplitN(env, "=", 2)
+
+		if len(parts) != 2 {
+			continue
+		}
+
+		allowed := false
+
+		for _, aenv := range AllowedEnv {
+			if aenv == parts[0] {
+				allowed = true
+			}
+		}
+
+		if !allowed {
+			os.Unsetenv(parts[0])
+		}
 	}
 }

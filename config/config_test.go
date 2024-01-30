@@ -54,6 +54,9 @@ func TestSetup(t *testing.T) {
 	c := Default()
 	c.WineRoot = wr
 
+	// Required to not conflict with system environment
+	os.Setenv("PATH", "")
+
 	if err := c.setup(); !errors.Is(err, ErrWineRootInvalid) {
 		t.Error("expected wine root wine check")
 	}

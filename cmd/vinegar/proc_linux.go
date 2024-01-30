@@ -1,6 +1,6 @@
 //go:build linux
 
-package util
+package main
 
 import (
 	"os"

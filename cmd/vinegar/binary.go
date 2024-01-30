@@ -23,7 +23,6 @@ import (
 	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
-	"github.com/vinegarhq/vinegar/util"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -275,7 +274,7 @@ func (b *Binary) Run(args ...string) error {
 	// may or may not prevent a race condition in procfs
 	syscall.Sync()
 
-	if util.CommFound("Roblox") {
+	if CommFound("Roblox") {
 		log.Println("Another Roblox instance is already running, not killing wineprefix")
 		return nil
 	}

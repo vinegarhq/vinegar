@@ -21,7 +21,6 @@ import (
 	"gioui.org/unit"
 	"gioui.org/widget"
 	"gioui.org/widget/material"
-	"github.com/vinegarhq/vinegar/util"
 )
 
 //go:embed vinegar.png
@@ -187,7 +186,7 @@ func (ui *Splash) Run() error {
 
 			if ui.openLogButton.Clicked(gtx) {
 				log.Printf("Opening log file: %s", ui.LogPath)
-				err := util.XDGOpen(ui.LogPath).Start()
+				err := XDGOpen(ui.LogPath).Start()
 				if err != nil {
 					return err
 				}

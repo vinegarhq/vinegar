@@ -43,7 +43,7 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 			Ops: &ops,
 			Constraints: layout.Constraints{
 				Min: image.Point{X: 64, Y: 38},
-				Max: image.Point{X: width, Y: width*2},
+				Max: image.Point{X: width, Y: width * 2},
 			},
 		}
 		defer ops.Reset()

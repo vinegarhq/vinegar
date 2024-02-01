@@ -8,7 +8,7 @@ assignees: ""
 
 #### Describe the bug
 - [ ] I have searched open and closed issues to make sure that the bug has not yet been reported
-- [ ] I have read the [minimum requirements](https://vinegarhq.org/Requirements/index.html).
+- [ ] I have read the [minimum requirements](https://vinegarhq.org/Installation/index.html#requirements).
 
 A clear and concise description of what the bug is.
 

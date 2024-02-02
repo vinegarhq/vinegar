@@ -1,7 +1,6 @@
 package state
 
 import (
-	"log"
 	"os"
 	"reflect"
 	"testing"
@@ -30,7 +29,7 @@ func TestState(t *testing.T) {
 
 	v := bootstrapper.NewDeployment(roblox.Player, "", "version-meowmeowmrrp")
 	s.DxvkVersion = "6.9"
-	s.AddBinary(&bootstrapper.PackageManifest{
+	s.Player.Add(&bootstrapper.PackageManifest{
 		Deployment: &v,
 		Packages: bootstrapper.Packages{{
 			Checksum: "meow",
@@ -46,8 +45,7 @@ func TestState(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	log.Println(sExp)
-	if sExp.Version(roblox.Player) != v.GUID {
+	if sExp.Player.Version != v.GUID {
 		t.Fatal("want version stored state")
 	}
 

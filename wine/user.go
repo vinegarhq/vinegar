@@ -5,8 +5,7 @@ import (
 	"path/filepath"
 )
 
-// AppDataDir gets the current user and retrieves the user's AppData
-// in the Prefix's users directory
+// AppDataDir returns the current user's AppData within the Prefix.
 func (p *Prefix) AppDataDir() (string, error) {
 	user, err := user.Current()
 	if err != nil {

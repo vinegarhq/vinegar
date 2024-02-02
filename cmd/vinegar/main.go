@@ -5,17 +5,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
-	"runtime/debug"
 	"time"
 
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/roblox"
-	"github.com/vinegarhq/vinegar/sysinfo"
-	"github.com/vinegarhq/vinegar/wine"
 )
 
 var (
@@ -24,10 +20,10 @@ var (
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] exec prog args...")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] kill|winetricks|sysinfo")
-	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|submit|version")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio exec|run [args...]")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio kill|winetricks")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] sysinfo")
+	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|version")
 	os.Exit(1)
 }
 
@@ -38,10 +34,9 @@ func main() {
 	cmd := flag.Arg(0)
 	args := flag.Args()
 
-	wine.Wine = "wine64"
+	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
 
 	switch cmd {
-	// These commands don't require a configuration
 	case "delete", "edit", "version":
 		switch cmd {
 		case "delete":
@@ -53,42 +48,62 @@ func main() {
 		case "version":
 			fmt.Println("Vinegar", Version)
 		}
-	// These commands (except player & studio) don't require a configuration,
-	// but they require a wineprefix, hence wineroot of configuration is required.
-	case "sysinfo", "player", "studio", "exec", "kill", "winetricks":
+	case "player", "studio", "sysinfo":
 		cfg, err := config.Load(*configPath)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		pfx := wine.New(dirs.Prefix, os.Stderr)
-		// Always ensure its created, wine will complain if the root
-		// directory doesnt exist
-		if err := os.MkdirAll(dirs.Prefix, 0o755); err != nil {
+		if cmd == "sysinfo" {
+			PrintSysinfo(&cfg)
+			os.Exit(0)
+		}
+
+		var bt roblox.BinaryType
+		switch cmd {
+		case "player":
+			bt = roblox.Player
+		case "studio":
+			bt = roblox.Studio
+		}
+
+		b, err := NewBinary(bt, &cfg)
+		if err != nil {
 			log.Fatal(err)
 		}
 
-		switch cmd {
-		case "sysinfo":
-			Sysinfo(&pfx)
+		switch flag.Arg(1) {
 		case "exec":
 			if len(args) < 2 {
 				usage()
 			}
 
-			if err := pfx.Wine(args[1], args[2:]...).Run(); err != nil {
+			if err := b.Prefix.Wine(args[2], args[3:]...).Run(); err != nil {
 				log.Fatal(err)
 			}
 		case "kill":
-			pfx.Kill()
+			b.Prefix.Kill()
 		case "winetricks":
-			if err := pfx.Winetricks(); err != nil {
+			if err := b.Prefix.Winetricks(); err != nil {
 				log.Fatal(err)
 			}
-		case "player":
-			NewBinary(roblox.Player, &cfg, &pfx).Main(args[1:]...)
-		case "studio":
-			NewBinary(roblox.Studio, &cfg, &pfx).Main(args[1:]...)
+		case "run":
+			err := b.Main(args[2:]...)
+			if err == nil {
+				log.Println("Goodbye")
+				os.Exit(0)
+			}
+
+			if !cfg.Splash.Enabled || b.Splash.IsClosed() {
+				log.Fatal(err)
+			}
+
+			log.Println(err)
+			b.Splash.SetMessage("Oops!")
+			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false)
+			os.Exit(1)
+		default:
+			usage()
 		}
 	default:
 		usage()
@@ -99,41 +114,6 @@ func Delete() {
 	log.Println("Deleting Wineprefix")
 	if err := os.RemoveAll(dirs.Prefix); err != nil {
 		log.Fatal(err)
-	}
-}
-
-func Sysinfo(pfx *wine.Prefix) {
-	cmd := pfx.Wine("--version")
-	cmd.Stdout = nil // required for Output()
-	ver, err := cmd.Output()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var revision string
-	bi, _ := debug.ReadBuildInfo()
-	for _, bs := range bi.Settings {
-		if bs.Key == "vcs.revision" {
-			revision = fmt.Sprintf("(%s)", bs.Value)
-		}
-	}
-
-	info := `* Vinegar: %s %s
-* Distro: %s
-* Processor: %s
-  * Supports AVX: %t
-  * Supports split lock detection: %t
-* Kernel: %s
-* Wine: %s`
-
-	fmt.Printf(info, Version, revision, sysinfo.Distro, sysinfo.CPU.Name, sysinfo.CPU.AVX, sysinfo.CPU.SplitLockDetect, sysinfo.Kernel, ver)
-	if sysinfo.InFlatpak {
-		fmt.Println("* Flatpak: [x]")
-	}
-
-	fmt.Println("* Cards:")
-	for i, c := range sysinfo.Cards {
-		fmt.Printf("  * Card %d: %s %s %s\n", i, c.Driver, path.Base(c.Device), c.Path)
 	}
 }
 

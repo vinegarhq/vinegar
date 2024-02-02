@@ -8,7 +8,6 @@ import (
 	"sort"
 
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
@@ -36,12 +35,6 @@ func (b *Binary) FetchDeployment() error {
 }
 
 func (b *Binary) Setup() error {
-	s, err := state.Load()
-	if err != nil {
-		return err
-	}
-	b.State = &s
-
 	if err := b.FetchDeployment(); err != nil {
 		return err
 	}
@@ -49,9 +42,8 @@ func (b *Binary) Setup() error {
 	b.Dir = filepath.Join(dirs.Versions, b.Deploy.GUID)
 	b.Splash.SetDesc(fmt.Sprintf("%s %s", b.Deploy.GUID, b.Deploy.Channel))
 
-	stateVer := b.State.Version(b.Type)
-	if stateVer != b.Deploy.GUID {
-		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, b.Deploy.GUID)
+	if b.State.Version != b.Deploy.GUID {
+		log.Printf("Installing %s (%s -> %s)", b.Name, b.State.Version, b.Deploy.GUID)
 
 		if err := b.Install(); err != nil {
 			return err
@@ -76,7 +68,7 @@ func (b *Binary) Setup() error {
 	}
 
 	b.Splash.SetProgress(1.0)
-	return b.State.Save()
+	return b.GlobalState.Save()
 }
 
 func (b *Binary) Install() error {
@@ -126,13 +118,13 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	b.State.AddBinary(&pm)
+	b.State.Add(&pm)
 
-	if err := b.State.CleanPackages(); err != nil {
+	if err := b.GlobalState.CleanPackages(); err != nil {
 		return err
 	}
 
-	return b.State.CleanVersions()
+	return b.GlobalState.CleanVersions()
 }
 
 func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package) error) error {
@@ -183,7 +175,8 @@ func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
 }
 
 func (b *Binary) SetupDxvk() error {
-	if b.State.DxvkVersion != "" && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
+	if b.State.DxvkVersion != "" &&
+		(!b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk) {
 		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return err
@@ -200,13 +193,13 @@ func (b *Binary) SetupDxvk() error {
 	b.Splash.SetProgress(0.0)
 	dxvk.Setenv()
 
-	if b.GlobalConfig.DxvkVersion == b.State.DxvkVersion {
+	if b.Config.DxvkVersion == b.State.DxvkVersion {
 		return nil
 	}
 
 	// This would only get saved if Install succeeded
-	b.State.DxvkVersion = b.GlobalConfig.DxvkVersion
+	b.State.DxvkVersion = b.Config.DxvkVersion
 
 	b.Splash.SetMessage("Installing DXVK")
-	return dxvk.Install(b.GlobalConfig.DxvkVersion, b.Prefix)
+	return dxvk.Install(b.Config.DxvkVersion, b.Prefix)
 }

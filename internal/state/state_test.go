@@ -28,7 +28,6 @@ func TestState(t *testing.T) {
 	}
 
 	v := bootstrapper.NewDeployment(roblox.Player, "", "version-meowmeowmrrp")
-	s.DxvkVersion = "6.9"
 	s.Player.Add(&bootstrapper.PackageManifest{
 		Deployment: &v,
 		Packages: bootstrapper.Packages{{
@@ -47,10 +46,6 @@ func TestState(t *testing.T) {
 
 	if sExp.Player.Version != v.GUID {
 		t.Fatal("want version stored state")
-	}
-
-	if sExp.DxvkVersion != "6.9" {
-		t.Fatal("want dxvk version stored state")
 	}
 
 	if !reflect.DeepEqual(sExp.Packages(), []string{"meow"}) {

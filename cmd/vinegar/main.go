@@ -40,7 +40,11 @@ func main() {
 	case "delete", "edit", "version":
 		switch cmd {
 		case "delete":
-			Delete()
+			log.Println("Deleting Wineprefixes and Roblox Binary deployments!")
+
+			if err := os.RemoveAll(dirs.Prefixes); err != nil {
+				log.Fatal(err)
+			}
 		case "edit":
 			if err := editor.Edit(*configPath); err != nil {
 				log.Fatal(err)
@@ -49,6 +53,8 @@ func main() {
 			fmt.Println("Vinegar", Version)
 		}
 	case "player", "studio", "sysinfo":
+		DeleteOldPrefix() // Remove after a few releases
+
 		cfg, err := config.Load(*configPath)
 		if err != nil {
 			log.Fatal(err)
@@ -110,8 +116,14 @@ func main() {
 	}
 }
 
-func Delete() {
-	log.Println("Deleting Wineprefix")
+func DeleteOldPrefix() {
+	// The old prefix does not exist or has issues, return.
+	_, err := os.Stat(dirs.Prefix)
+	if err != nil {
+		return
+	}
+
+	log.Println("Deleting deprecated old Wineprefix!")
 	if err := os.RemoveAll(dirs.Prefix); err != nil {
 		log.Fatal(err)
 	}

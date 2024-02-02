@@ -111,7 +111,7 @@ func (b *Binary) Main(args ...string) error {
 
 	logFile, err := LogFile(b.Type.String())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to init log file: %w", err)
 	}
 	defer logFile.Close()
 
@@ -170,7 +170,7 @@ func (b *Binary) Main(args ...string) error {
 		}
 
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to init %s prefix: %w", b.Type, err)
 		}
 	}
 
@@ -223,7 +223,7 @@ func (b *Binary) Run(args ...string) error {
 
 	cmd, err := b.Command(args...)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s command: %w", b.Type, err)
 	}
 
 	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
@@ -272,10 +272,9 @@ func (b *Binary) Run(args ...string) error {
 			}
 		}
 
-		// Blocks and tails file forever until roblox is dead
-		if err := b.Tail(lf); err != nil {
-			log.Println(err)
-		}
+		// Blocks and tails file forever until roblox is dead, unless
+		// if finding the log file had failed.
+		b.Tail(lf)
 	}()
 
 	if err := cmd.Run(); err != nil {
@@ -324,10 +323,11 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 	}
 }
 
-func (b *Binary) Tail(name string) error {
+func (b *Binary) Tail(name string) {
 	t, err := tail.TailFile(name, tail.Config{Follow: true})
 	if err != nil {
-		return err
+		log.Printf("WARNING: failed to tail roblox log file: %s", err)
+		return
 	}
 
 	for line := range t.Lines {
@@ -339,8 +339,6 @@ func (b *Binary) Tail(name string) error {
 			}
 		}
 	}
-
-	return nil
 }
 
 func (b *Binary) Command(args ...string) (*exec.Cmd, error) {

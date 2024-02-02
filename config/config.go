@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
+	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
@@ -142,6 +143,12 @@ func (b *Binary) setup() error {
 
 	if b.Launcher != "" {
 		if _, err := b.LauncherPath(); err != nil {
+			return err
+		}
+	}
+
+	if b.WineRoot != "" {
+		if _, err := wine.Wine64(b.WineRoot); err != nil {
 			return err
 		}
 	}

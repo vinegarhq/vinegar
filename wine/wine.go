@@ -31,26 +31,33 @@ type Prefix struct {
 	dir  string
 }
 
+// Wine64 returns a path to the system or wineroot's 'wine64'.
+func Wine64(root string) (string, error) {
+	if root != "" && !filepath.IsAbs(root) {
+		return "", ErrWineRootAbs
+	}
+
+	bin := filepath.Join(root, "bin")
+	wine, err := exec.LookPath(filepath.Join(bin, "wine64"))
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		return "", ErrWineNotFound
+	} else if err != nil {
+		return "", errors.Unwrap(err)
+	}
+
+	return wine, nil
+}
+
 // New returns a new Prefix.
 //
-// Wine ('wine64') must be installed in the system, regardless if Root is specified.
+// [Wine64] will be used to verify the named root or if 
+// wine is installed.
 //
 // dir must be an absolute path and has correct permissions
 // to modify.
 func New(dir string, root string) (*Prefix, error) {
-	var bin string
-	if root != "" {
-		if !filepath.IsAbs(root) {
-			return nil, ErrWineRootAbs
-		}
-
-		bin = filepath.Join(root, "bin")
-	}
-
-	wine, err := exec.LookPath(filepath.Join(bin, "wine64"))
-	if err != nil && errors.Is(err, exec.ErrNotFound) {
-		return nil, ErrWineNotFound
-	} else if err != nil {
+	w, err := Wine64(root)
+	if err != nil {
 		return nil, err
 	}
 
@@ -64,7 +71,7 @@ func New(dir string, root string) (*Prefix, error) {
 		Root:   root,
 		Stderr: os.Stderr,
 		Stdout: os.Stdout,
-		wine:   wine,
+		wine:   w,
 		dir:    dir,
 	}, nil
 }

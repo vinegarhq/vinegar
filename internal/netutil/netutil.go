@@ -2,10 +2,10 @@
 package netutil
 
 import (
-	"log"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 )
@@ -54,7 +54,7 @@ func download(url, file string) error {
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("%w: %s", ErrBadStatus, resp.Status)
 	}
-	
+
 	_, err = io.Copy(out, resp.Body)
 	if err != nil {
 		return err

@@ -1,31 +1,25 @@
 package bloxstraprpc
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/altfoxie/drpc"
 	"github.com/vinegarhq/vinegar/roblox/api"
 )
 
 func (a *Activity) Connect() error {
-	log.Println("Connecting to Discord RPC")
+	slog.Info("Connecting to Discord RPC")
 
 	return a.client.Connect()
 }
 
 func (a *Activity) Close() error {
-	log.Println("Closing Discord RPC")
+	slog.Info("Closing Discord RPC")
 
 	return a.client.Close()
 }
 
 func (a *Activity) UpdateGamePresence(initial bool) error {
-	if a.universeID == "" {
-		log.Println("Not in game, clearing presence!")
-
-		return a.client.SetActivity(a.presence)
-	}
-
 	a.presence.Buttons = []drpc.Button{{
 		Label: "See game page",
 		URL:   "https://www.roblox.com/games/" + a.placeID,
@@ -94,6 +88,6 @@ func (a *Activity) UpdateGamePresence(initial bool) error {
 		}
 	}
 
-	log.Printf("Updating Discord presence: %#v", a.presence)
+	slog.Info("Updating Discord Rich Presence", "presence", a.presence)
 	return a.client.SetActivity(a.presence)
 }

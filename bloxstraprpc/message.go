@@ -3,7 +3,7 @@ package bloxstraprpc
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
@@ -68,7 +68,7 @@ func NewMessage(line string) (Message, error) {
 // [drpc.Activity] for use in Discord's Rich Presence.
 func (m Message) ApplyRichPresence(p *drpc.Activity) {
 	if m.Command != "SetRichPresence" {
-		log.Printf("WARNING: Game sent invalid BloxstrapRPC command: %s", m.Command)
+		slog.Warn("Game sent invalid BloxstrapRPC command", "command", m.Command)
 		return
 	}
 

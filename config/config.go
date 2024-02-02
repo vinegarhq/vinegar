@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/vinegarhq/vinegar/wine"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
+	"github.com/vinegarhq/vinegar/wine"
 )
 
 // LogoPath is set at build-time to set the logo icon path, which is

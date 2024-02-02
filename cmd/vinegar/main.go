@@ -3,10 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
+	"golang.org/x/term"
 
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
@@ -27,6 +28,11 @@ func usage() {
 	os.Exit(1)
 }
 
+func fatal(format string, args ...any) {
+	slog.Error(fmt.Errorf(format, args...).Error())
+	os.Exit(1)
+}
+
 func main() {
 	configPath := flag.String("config", filepath.Join(dirs.Config, "config.toml"), "config.toml file which should be used")
 	flag.Parse()
@@ -34,20 +40,18 @@ func main() {
 	cmd := flag.Arg(0)
 	args := flag.Args()
 
-	log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Llongfile)
-
 	switch cmd {
 	case "delete", "edit", "version":
 		switch cmd {
 		case "delete":
-			log.Println("Deleting Wineprefixes and Roblox Binary deployments!")
+			slog.Info("Deleting Wineprefixes and Roblox Binary deployments!")
 
 			if err := os.RemoveAll(dirs.Prefixes); err != nil {
-				log.Fatal(err)
+				fatal("remove %s: %w", dirs.Prefixes, err)
 			}
 		case "edit":
 			if err := editor.Edit(*configPath); err != nil {
-				log.Fatal(err)
+				fatal("edit %s: %w", *configPath, err)
 			}
 		case "version":
 			fmt.Println("Vinegar", Version)
@@ -57,7 +61,7 @@ func main() {
 
 		cfg, err := config.Load(*configPath)
 		if err != nil {
-			log.Fatal(err)
+			fatal("load config %s: %w", *configPath, err)
 		}
 
 		if cmd == "sysinfo" {
@@ -75,7 +79,7 @@ func main() {
 
 		b, err := NewBinary(bt, &cfg)
 		if err != nil {
-			log.Fatal(err)
+			fatal("new binary %s: %w", bt, err)
 		}
 
 		switch flag.Arg(1) {
@@ -85,26 +89,28 @@ func main() {
 			}
 
 			if err := b.Prefix.Wine(args[2], args[3:]...).Run(); err != nil {
-				log.Fatal(err)
+				fatal("exec prefix %s: %w", bt, err)
 			}
 		case "kill":
 			b.Prefix.Kill()
 		case "winetricks":
 			if err := b.Prefix.Winetricks(); err != nil {
-				log.Fatal(err)
+				fatal("exec winetricks: %w", bt, err)
 			}
 		case "run":
 			err := b.Main(args[2:]...)
 			if err == nil {
-				log.Println("Goodbye")
+				slog.Info("Goodbye")
 				os.Exit(0)
 			}
 
-			if !cfg.Splash.Enabled || b.Splash.IsClosed() {
-				log.Fatal(err)
+			// Only fatal print the error if we are in a terminal, otherwise
+			// display a dialog message.
+			if !cfg.Splash.Enabled || term.IsTerminal(int(os.Stderr.Fd())) {
+				fatal("%w", err)
 			}
 
-			log.Println(err)
+			slog.Error(err.Error())
 			b.Splash.SetMessage("Oops!")
 			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false)
 			os.Exit(1)
@@ -123,9 +129,9 @@ func DeleteOldPrefix() {
 		return
 	}
 
-	log.Println("Deleting deprecated old Wineprefix!")
+	slog.Info("Deleting deprecated old Wineprefix!")
 	if err := os.RemoveAll(dirs.Prefix); err != nil {
-		log.Fatal(err)
+		fatal("delete old prefix %s: %w", dirs.Prefix, err)
 	}
 }
 
@@ -142,7 +148,7 @@ func LogFile(name string) (*os.File, error) {
 		return nil, fmt.Errorf("failed to create %s log file: %w", name, err)
 	}
 
-	log.Printf("Logging to file: %s", path)
+	slog.Info("Logging to file", "path", path)
 
 	return file, nil
 }

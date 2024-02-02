@@ -15,7 +15,8 @@ require (
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/nxadm/tail v1.4.11
-	golang.org/x/sys v0.15.0
+	golang.org/x/sys v0.16.0
+	golang.org/x/term v0.16.0
 )
 
 require (

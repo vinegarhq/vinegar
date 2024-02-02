@@ -3,7 +3,7 @@ package bootstrapper
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -47,7 +47,7 @@ func FetchPackageManifest(d *Deployment) (PackageManifest, error) {
 	durl := cdn + channelPath(d.Channel) + d.GUID
 	url := durl + "-rbxPkgManifest.txt"
 
-	log.Printf("Fetching manifest for %s (%s)", d.GUID, url)
+	slog.Info("Fetching Package Manifest", "url", url)
 
 	smanif, err := netutil.Body(url)
 	if err != nil {

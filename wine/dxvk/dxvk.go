@@ -6,7 +6,7 @@ import (
 	"compress/gzip"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"path"
 	"path/filepath"
@@ -21,19 +21,19 @@ const Repo = "https://github.com/doitsujin/dxvk"
 //
 // This is required to call inorder to tell Wine to use DXVK.
 func Setenv() {
-	log.Printf("Enabling WINE DXVK DLL overrides")
+	slog.Info("Enabling WINE DXVK DLL overrides")
 
 	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+";d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
 func Remove(pfx *wine.Prefix) error {
-	log.Println("Deleting DXVK DLLs")
+	slog.Info("Deleting DXVK DLLs", "pfx", pfx)
 
 	for _, dir := range []string{"syswow64", "system32"} {
 		for _, dll := range []string{"d3d9", "d3d10core", "d3d11", "dxgi"} {
 			p := filepath.Join(pfx.Dir(), "drive_c", "windows", dir, dll+".dll")
 
-			log.Println("Removing DXVK overriden Wine DLL:", p)
+			slog.Info("Removing DXVK overriden Wine DLL", "path", p)
 
 			if err := os.Remove(p); err != nil {
 				return err
@@ -41,7 +41,7 @@ func Remove(pfx *wine.Prefix) error {
 		}
 	}
 
-	log.Println("Restoring Wineprefix DLLs")
+	slog.Info("Restoring Wineprefix DLLs", "pfx", pfx)
 
 	return pfx.Wine("wineboot", "-u").Run()
 }
@@ -57,7 +57,7 @@ func Install(ver string, pfx *wine.Prefix) error {
 	}
 	defer os.Remove(f.Name())
 
-	log.Printf("Downloading DXVK %s (%s)", ver, url)
+	slog.Info("Downloading DXVK tarball", "url", url, "path", f.Name())
 
 	if err := netutil.Download(url, f.Name()); err != nil {
 		return fmt.Errorf("download dxvk %s: %w", ver, err)
@@ -71,7 +71,7 @@ func Install(ver string, pfx *wine.Prefix) error {
 }
 
 func Extract(name string, pfx *wine.Prefix) error {
-	log.Printf("Extracting DXVK (%s)", name)
+	slog.Info("Extracting DXVK", "file", name, "pfx", pfx)
 
 	tf, err := os.Open(name)
 	if err != nil {
@@ -108,7 +108,7 @@ func Extract(name string, pfx *wine.Prefix) error {
 		}[filepath.Base(filepath.Dir(hdr.Name))]
 
 		if !ok {
-			log.Printf("Skipping DXVK unhandled file: %s", hdr.Name)
+			slog.Warn("Skipping DXVK unhandled file", "file", hdr.Name)
 			continue
 		}
 
@@ -123,7 +123,7 @@ func Extract(name string, pfx *wine.Prefix) error {
 			return err
 		}
 
-		log.Printf("Extracting DLL %s", p)
+		slog.Info("Extracting DXVK DLL", "path", p)
 
 		if _, err = io.Copy(f, tr); err != nil {
 			f.Close()
@@ -133,6 +133,6 @@ func Extract(name string, pfx *wine.Prefix) error {
 		f.Close()
 	}
 
-	log.Printf("Deleting DXVK tarball (%s)", name)
+	slog.Info("Deleting DXVK tarball", "path", name)
 	return os.RemoveAll(name)
 }

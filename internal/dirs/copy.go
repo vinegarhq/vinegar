@@ -2,7 +2,7 @@ package dirs
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"os"
 
 	cp "github.com/otiai10/copy"
@@ -16,7 +16,7 @@ func OverlayDir(dir string) error {
 		return err
 	}
 
-	log.Println("Copying Overlay directory's files")
+	slog.Info("Copying Overlay directory's files", "dir", dir)
 
 	return cp.Copy(Overlay, dir)
 }

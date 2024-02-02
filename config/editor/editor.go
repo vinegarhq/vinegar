@@ -2,7 +2,7 @@ package editor
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,7 +18,7 @@ func Editor() (string, error) {
 		return editor, nil
 	}
 
-	log.Println("no EDITOR set, falling back to nano")
+	slog.Warn("no $EDITOR set, falling back to nano")
 
 	return exec.LookPath("nano")
 }
@@ -36,7 +36,7 @@ func Edit(name string) error {
 	}
 
 	if err := fillTemplate(name); err != nil {
-		return err
+		return fmt.Errorf("fill template %s: %w", name, err)
 	}
 
 	for {
@@ -50,8 +50,8 @@ func Edit(name string) error {
 		}
 
 		if _, err := config.Load(name); err != nil {
-			log.Println(err)
-			log.Println("Press enter to re-edit configuration file")
+			slog.Error(err.Error())
+			slog.Info("Press enter to re-edit configuration file")
 			fmt.Scanln()
 
 			continue
@@ -82,7 +82,7 @@ func fillTemplate(name string) error {
 	template := "# See how to configure Vinegar on the documentation website:\n" +
 		"# https://vinegarhq.org/Configuration\n\n"
 
-	log.Println("Writing Configuration template")
+	slog.Info("Writing Configuration template", "path", name)
 
 	if _, err := f.WriteString(template); err != nil {
 		return err

@@ -6,7 +6,7 @@ package bloxstraprpc
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"regexp"
 	"strings"
 	"time"
@@ -66,7 +66,7 @@ func (a *Activity) HandleRobloxLog(line string) error {
 		GameJoiningEntry:     a.handleGameJoining,                                  // For JobID (server ID, to join from Discord)
 		GameJoinReportEntry:  a.handleGameJoinReport,                               // For PlaceID and UniverseID
 		GameJoinedEntry:      func(_ string) error { return a.handleGameJoined() }, // Sets presence and time
-		BloxstrapRPCEntry:    a.handleGameMessage,                                  // BloxstrapRPC
+		BloxstrapRPCEntry:    a.handleBloxstrapRPC,                                 // BloxstrapRPC
 		GameLeaveEntry:       func(_ string) error { return a.handleGameLeave() },  // Clears presence and time
 	}
 
@@ -99,7 +99,8 @@ func (a *Activity) handleGameJoinRequest(line string) error {
 		"join-play-together-game": Public,
 	}[m[2]]
 
-	log.Printf("Got Game type %d teleporting %t!", a.server, a.teleporting)
+	slog.Info("Handled GameJoinRequest", "server_type", a.server, "teleporting", a.teleporting)
+
 	return nil
 }
 
@@ -111,7 +112,8 @@ func (a *Activity) handleGameJoining(line string) error {
 
 	a.jobID = m[1]
 
-	log.Printf("Got Job %s!", a.jobID)
+	slog.Info("Handled GameJoining", "jobid", a.jobID)
+
 	return nil
 }
 
@@ -124,35 +126,36 @@ func (a *Activity) handleGameJoinReport(line string) error {
 	a.placeID = m[1]
 	a.universeID = m[2]
 
-	log.Printf("Got Universe %s Place %s!", a.universeID, a.placeID)
+	slog.Info("Handled GameJoinReport", "universeid", a.universeID, "placeid", a.placeID)
+
 	return nil
 }
 
 func (a *Activity) handleGameJoined() error {
 	if !a.teleporting {
-		log.Println("Updating time!")
 		a.gameTime = time.Now()
 	}
 
 	a.teleporting = false
 
-	log.Println("Game Joined!")
+	slog.Info("Handled GameJoined", "time", a.gameTime)
+
 	return a.UpdateGamePresence(true)
 }
 
-func (a *Activity) handleGameMessage(line string) error {
+func (a *Activity) handleBloxstrapRPC(line string) error {
 	m, err := NewMessage(line)
 	if err != nil {
 		return fmt.Errorf("parse bloxstraprpc message: %w", err)
 	}
 	m.ApplyRichPresence(&a.presence)
 
+	slog.Info("Handled BloxstrapRPC", "message", m)
+
 	return a.UpdateGamePresence(false)
 }
 
 func (a *Activity) handleGameLeave() error {
-	log.Println("Left game, clearing presence!")
-
 	a.presence = drpc.Activity{}
 	a.gameTime = time.Time{}
 	a.teleporting = false
@@ -160,6 +163,8 @@ func (a *Activity) handleGameLeave() error {
 	a.universeID = ""
 	a.placeID = ""
 	a.jobID = ""
+
+	slog.Info("Handled GameLeave")
 
 	return a.client.SetActivity(a.presence)
 }

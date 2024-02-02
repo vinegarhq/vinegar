@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -30,8 +29,6 @@ type FFlags map[string]interface{}
 func (f FFlags) Apply(versionDir string) error {
 	dir := filepath.Join(versionDir, "ClientSettings")
 	path := filepath.Join(dir, "ClientAppSettings.json")
-
-	log.Println("Applying custom FFlags:", path)
 
 	err := os.Mkdir(dir, 0o755)
 	if err != nil && !errors.Is(err, os.ErrExist) {

@@ -2,7 +2,7 @@ package bootstrapper
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"net/http"
 )
 
@@ -20,19 +20,19 @@ var (
 
 // CDN returns a CDN (from CDNs) that is available.
 func CDN() (string, error) {
-	log.Println("Finding an accessible Roblox deploy mirror")
+	slog.Info("Finding an accessible Roblox deploy mirror")
 
 	for _, cdn := range CDNs {
 		resp, err := http.Head(cdn + "/" + "version")
 		if err != nil {
-			log.Printf("deploy mirror %s: %s", cdn, errors.Unwrap(err))
+			slog.Error("Bad deploy mirror", "cdn", cdn, "error", err)
 
 			continue
 		}
 		resp.Body.Close()
 
 		if resp.StatusCode == 200 {
-			log.Printf("Found deploy mirror: %s", cdn)
+			slog.Info("Found deploy mirror", "cdn", cdn)
 
 			return cdn, nil
 		}

@@ -1,7 +1,7 @@
 package state
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -12,10 +12,8 @@ import (
 // CleanPackages removes all cached package downloads in dirs.Downloads
 // that aren't held in the state's Binary packages.
 func (s *State) CleanPackages() error {
-	log.Println("Checking for unused cached package files")
-
 	return walkDirExcluded(dirs.Downloads, s.Packages(), func(path string) error {
-		log.Printf("Removing unused package %s", path)
+		slog.Info("Cleaning up unused cached package", "path", path)
 		return os.Remove(path)
 	})
 }
@@ -23,10 +21,8 @@ func (s *State) CleanPackages() error {
 // CleanPackages removes all Binary versions that aren't
 // held in the state's Binary packages.
 func (s *State) CleanVersions() error {
-	log.Println("Checking for unused version directories")
-
 	return walkDirExcluded(dirs.Versions, s.Versions(), func(path string) error {
-		log.Printf("Removing unused version directory %s", path)
+		slog.Info("Cleaning up unused version directory", "path", path)
 		return os.RemoveAll(path)
 	})
 }

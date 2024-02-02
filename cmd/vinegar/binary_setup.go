@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
@@ -18,7 +18,7 @@ func (b *Binary) FetchDeployment() error {
 	b.Splash.SetMessage("Fetching " + b.Alias)
 
 	if b.Config.ForcedVersion != "" {
-		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
+		slog.Warn("Using forced deployment!", "guid", b.Config.ForcedVersion)
 
 		d := boot.NewDeployment(b.Type, b.Config.Channel, b.Config.ForcedVersion)
 		b.Deploy = &d
@@ -43,18 +43,18 @@ func (b *Binary) Setup() error {
 	b.Splash.SetDesc(fmt.Sprintf("%s %s", b.Deploy.GUID, b.Deploy.Channel))
 
 	if b.State.Version != b.Deploy.GUID {
-		log.Printf("Installing %s (%s -> %s)", b.Name, b.State.Version, b.Deploy.GUID)
+		slog.Info("Installing Binary", "name", b.Name,
+			"old_guid", b.State.Version, "new_guid", b.Deploy.GUID)
 
 		if err := b.Install(); err != nil {
 			return fmt.Errorf("install %s: %w", b.Deploy.GUID, err)
 		}
 	} else {
-		log.Printf("%s is up to date (%s)", b.Name, b.Deploy.GUID)
+		slog.Info("Binary is up to date!", "name", b.Name, "guid", b.Deploy.GUID)
 	}
 
 	b.Config.Env.Setenv()
 
-	log.Println("Using Renderer:", b.Config.Renderer)
 	if err := b.Config.FFlags.Apply(b.Dir); err != nil {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
@@ -108,9 +108,9 @@ func (b *Binary) Install() error {
 	if b.Type == roblox.Studio {
 		brokenFont := filepath.Join(b.Dir, "StudioFonts", "SourceSansPro-Black.ttf")
 
-		log.Printf("Removing broken font %s", brokenFont)
+		slog.Info("Removing broken font", "path", brokenFont)
 		if err := os.RemoveAll(brokenFont); err != nil {
-			log.Printf("Failed to remove font: %s", err)
+			return err
 		}
 	}
 
@@ -155,7 +155,7 @@ func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package)
 }
 
 func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
-	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
+	slog.Info("Downloading Packages", "guid", pm.Deployment.GUID, "count", len(pm.Packages))
 
 	return b.PerformPackages(pm, func(pkg boot.Package) error {
 		return pkg.Download(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
@@ -163,7 +163,7 @@ func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
 }
 
 func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
-	log.Printf("Extracting %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
+	slog.Info("Extracting Packages", "guid", pm.Deployment.GUID, "count", len(pm.Packages))
 
 	pkgDirs := boot.BinaryDirectories(b.Type)
 

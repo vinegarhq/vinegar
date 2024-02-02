@@ -31,6 +31,10 @@ type Prefix struct {
 	dir  string
 }
 
+func (p Prefix) String() string {
+	return p.dir
+}
+
 // Wine64 returns a path to the system or wineroot's 'wine64'.
 func Wine64(root string) (string, error) {
 	var bin string
@@ -52,7 +56,7 @@ func Wine64(root string) (string, error) {
 
 // New returns a new Prefix.
 //
-// [Wine64] will be used to verify the named root or if 
+// [Wine64] will be used to verify the named root or if
 // wine is installed.
 //
 // dir must be an absolute path and has correct permissions

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -131,15 +132,15 @@ func (b *Binary) Main(args ...string) error {
 	if firstRun && !sysinfo.CPU.AVX {
 		c := b.Splash.Dialog(DialogNoAVX, true)
 		if !c {
-			log.Fatal("avx is (may be) required to run roblox")
+			fatal("avx is (may be) required to run roblox")
 		}
-		log.Println("WARNING: Running roblox without AVX!")
+		slog.Warn("Running roblox without AVX!")
 	}
 
 	go func() {
 		err := b.Splash.Run()
 		if errors.Is(splash.ErrClosed, err) {
-			log.Printf("Splash window closed!")
+			slog.Warn("Splash window closed!")
 
 			// Will tell Run() to immediately kill Roblox, as it handles INT/TERM.
 			// Otherwise, it will just with the same appropiate signal.
@@ -150,12 +151,12 @@ func (b *Binary) Main(args ...string) error {
 		// The splash window didn't close cleanly (ErrClosed), an
 		// internal error occured.
 		if err != nil {
-			log.Fatalf("splash: %s", err)
+			fatal("splash: %w", err)
 		}
 	}()
 
 	if firstRun {
-		log.Printf("Initializing wineprefix at %s", b.Prefix.Dir())
+		slog.Info("Initializing wineprefix", "dir", b.Prefix.Dir())
 		b.Splash.SetMessage("Initializing wineprefix")
 
 		var err error
@@ -192,7 +193,7 @@ func (b *Binary) Main(args ...string) error {
 				true,
 			)
 			if r {
-				log.Println("Switching user channel temporarily to", c[1])
+				slog.Warn("Switching user channel temporarily", "channel", c[1])
 				b.Config.Channel = c[1]
 			}
 		}
@@ -214,11 +215,22 @@ func (b *Binary) Main(args ...string) error {
 func (b *Binary) Run(args ...string) error {
 	if b.Config.DiscordRPC {
 		if err := b.Activity.Connect(); err != nil {
-			log.Printf("WARNING: Could not initialize Discord RPC: %s, disabling...", err)
+			slog.Error("Could not connect to Discord RPC", "error", err)
 			b.Config.DiscordRPC = false
 		} else {
 			defer b.Activity.Close()
 		}
+	}
+
+	if b.GlobalConfig.MultipleInstances {
+		slog.Info("Running robloxmutexer")
+
+		mutexer := b.Prefix.Wine(filepath.Join(BinPrefix, "robloxmutexer.exe"))
+		if err := mutexer.Start(); err != nil {
+			return fmt.Errorf("start robloxmutexer: %w", err)
+		}
+
+		defer mutexer.Process.Kill()
 	}
 
 	cmd, err := b.Command(args...)
@@ -232,10 +244,13 @@ func (b *Binary) Run(args ...string) error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		<-c
+		s := <-c
+
+		slog.Warn("Recieved signal", "signal", s)
 
 		// Only kill Roblox if it hasn't exited
 		if cmd.ProcessState == nil {
+			slog.Warn("Killing Roblox", "pid", cmd.Process.Pid)
 			// This way, cmd.Run() will return and the wineprefix killer will be ran.
 			cmd.Process.Kill()
 		}
@@ -245,7 +260,7 @@ func (b *Binary) Run(args ...string) error {
 		signal.Stop(c)
 	}()
 
-	log.Printf("Launching %s (%s)", b.Name, cmd)
+	slog.Info("Running Binary", "name", b.Name, "cmd", cmd)
 	b.Splash.SetMessage("Launching " + b.Alias)
 
 	go func() {
@@ -260,7 +275,7 @@ func (b *Binary) Run(args ...string) error {
 		// and don't perform post-launch roblox functions.
 		lf, err := RobloxLogFile(b.Prefix)
 		if err != nil {
-			log.Println(err)
+			slog.Error("Failed to find Roblox log file", "error", err.Error())
 			return
 		}
 
@@ -268,7 +283,7 @@ func (b *Binary) Run(args ...string) error {
 
 		if b.Config.GameMode {
 			if err := b.BusSession.GamemodeRegister(int32(cmd.Process.Pid)); err != nil {
-				log.Println("Attempted to register to Gamemode daemon")
+				slog.Error("Attempted to register to Gamemode daemon")
 			}
 		}
 
@@ -278,11 +293,6 @@ func (b *Binary) Run(args ...string) error {
 	}()
 
 	if err := cmd.Run(); err != nil {
-		if strings.Contains(err.Error(), "signal:") {
-			log.Println("WARNING: Roblox exited with", err)
-			return nil
-		}
-
 		return fmt.Errorf("roblox process: %w", err)
 	}
 
@@ -318,7 +328,7 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 				return e.Name, nil
 			}
 		case err := <-w.Errors:
-			log.Println("fsnotify watcher:", err)
+			slog.Error("Recieved fsnotify watcher error", "error", err)
 		}
 	}
 }
@@ -326,16 +336,16 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 func (b *Binary) Tail(name string) {
 	t, err := tail.TailFile(name, tail.Config{Follow: true})
 	if err != nil {
-		log.Printf("WARNING: failed to tail roblox log file: %s", err)
+		slog.Error("Could not tail Roblox log file", "error", err)
 		return
 	}
 
 	for line := range t.Lines {
-		fmt.Fprintln(os.Stderr, line.Text)
+		// fmt.Fprintln(os.Stderr, line.Text)
 
 		if b.Config.DiscordRPC {
 			if err := b.Activity.HandleRobloxLog(line.Text); err != nil {
-				log.Printf("Failed to handle Discord RPC: %s", err)
+				slog.Error("Activity Roblox log handle failed", "error", err)
 			}
 		}
 	}
@@ -345,17 +355,7 @@ func (b *Binary) Command(args ...string) (*exec.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = []string{"-protocolString", args[0]}
 	}
-
-	if b.GlobalConfig.MultipleInstances {
-		log.Println("Launching robloxmutexer in background")
-
-		mutexer := b.Prefix.Wine(filepath.Join(BinPrefix, "robloxmutexer.exe"))
-		err := mutexer.Start()
-		if err != nil {
-			return nil, fmt.Errorf("robloxmutexer: %w", err)
-		}
-	}
-
+	
 	cmd := b.Prefix.Wine(filepath.Join(b.Dir, b.Type.Executable()), args...)
 
 	launcher := strings.Fields(b.Config.Launcher)

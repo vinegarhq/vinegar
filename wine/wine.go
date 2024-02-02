@@ -33,11 +33,13 @@ type Prefix struct {
 
 // Wine64 returns a path to the system or wineroot's 'wine64'.
 func Wine64(root string) (string, error) {
+	var bin string
+
 	if root != "" && !filepath.IsAbs(root) {
+		bin = filepath.Join(root, "bin")
 		return "", ErrWineRootAbs
 	}
 
-	bin := filepath.Join(root, "bin")
 	wine, err := exec.LookPath(filepath.Join(bin, "wine64"))
 	if err != nil && errors.Is(err, os.ErrNotExist) {
 		return "", ErrWineNotFound

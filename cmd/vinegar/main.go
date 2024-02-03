@@ -43,11 +43,11 @@ func main() {
 			slog.Info("Deleting Wineprefixes and Roblox Binary deployments!")
 
 			if err := os.RemoveAll(dirs.Prefixes); err != nil {
-				log.Fatal("remove %s: %w", dirs.Prefixes, err)
+				log.Fatalf("remove %s: %s", dirs.Prefixes, err)
 			}
 		case "edit":
 			if err := editor.Edit(*configPath); err != nil {
-				log.Fatal("edit %s: %w", *configPath, err)
+				log.Fatalf("edit %s: %s", *configPath, err)
 			}
 		case "version":
 			fmt.Println("Vinegar", Version)
@@ -63,7 +63,7 @@ func main() {
 
 		cfg, err := config.Load(*configPath)
 		if err != nil {
-			log.Fatalf("load config %s: %w", *configPath, err)
+			log.Fatalf("load config %s: %s", *configPath, err)
 		}
 
 		if cmd == "sysinfo" {

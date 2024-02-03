@@ -12,7 +12,10 @@ const APIURL = "https://%s.roblox.com/%s"
 
 var httpClient = &http.Client{}
 
-var ErrBadStatus = errors.New("bad status")
+var (
+	ErrBadStatus = errors.New("bad status")
+	ErrNoData    = errors.New("no data")
+)
 
 // SetClient sets the http.Client used to make API requests.
 func SetClient(client *http.Client) {

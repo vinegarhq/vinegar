@@ -66,17 +66,15 @@ func main() {
 			log.Fatalf("load config %s: %s", *configPath, err)
 		}
 
-		if cmd == "sysinfo" {
-			PrintSysinfo(&cfg)
-			os.Exit(0)
-		}
-
 		var bt roblox.BinaryType
 		switch cmd {
 		case "player":
 			bt = roblox.Player
 		case "studio":
 			bt = roblox.Studio
+		case "sysinfo":
+			PrintSysinfo(&cfg)
+			os.Exit(0)
 		}
 
 		b, err := NewBinary(bt, &cfg)

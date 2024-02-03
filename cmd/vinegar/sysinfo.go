@@ -4,22 +4,21 @@ import (
 	"fmt"
 	"log"
 	"path"
-	"path/filepath"
 	"runtime/debug"
 
 	"github.com/vinegarhq/vinegar/config"
-	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
 func PrintSysinfo(cfg *config.Config) {
-	playerPfx, err := wine.New(filepath.Join(dirs.Prefixes, "player"), cfg.Player.WineRoot)
+	playerPfx, err := wine.New(BinaryPrefixDir(roblox.Player), cfg.Player.WineRoot)
 	if err != nil {
 		log.Fatalf("player prefix: %s", err)
 	}
 
-	studioPfx, err := wine.New(filepath.Join(dirs.Prefixes, "studio"), cfg.Studio.WineRoot)
+	studioPfx, err := wine.New(BinaryPrefixDir(roblox.Studio), cfg.Studio.WineRoot)
 	if err != nil {
 		log.Fatalf("studio prefix: %s", err)
 	}

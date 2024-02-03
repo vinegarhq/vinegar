@@ -40,6 +40,7 @@ const (
 )
 
 type Binary struct {
+	// Only initialized in Main
 	Splash *splash.Splash
 
 	GlobalState *state.State
@@ -63,6 +64,10 @@ type Binary struct {
 	BusSession *bus.SessionBus
 }
 
+func BinaryPrefixDir(bt roblox.BinaryType) string {
+	return filepath.Join(dirs.Prefixes, strings.ToLower(bt.String()))
+}
+
 func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 	var bcfg *config.Binary
 	var bstate *state.Binary
@@ -81,16 +86,13 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 		bstate = &s.Studio
 	}
 
-	name := strings.ToLower(bt.String())
-	path := filepath.Join(dirs.Prefixes, name)
-	pfx, err := wine.New(path, bcfg.WineRoot)
+	pfx, err := wine.New(BinaryPrefixDir(bt), bcfg.WineRoot)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("new prefix %s: %w", bt, err)
 	}
 
 	return &Binary{
 		Activity: bsrpc.New(),
-		Splash:   splash.New(&cfg.Splash),
 
 		GlobalState: &s,
 		State:       bstate,
@@ -108,6 +110,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 }
 
 func (b *Binary) Main(args ...string) error {
+	b.Splash = splash.New(&b.GlobalConfig.Splash)
 	b.Config.Env.Setenv()
 
 	logFile, err := LogFile(b.Type.String())
@@ -132,7 +135,7 @@ func (b *Binary) Main(args ...string) error {
 	if firstRun && !sysinfo.CPU.AVX {
 		c := b.Splash.Dialog(DialogNoAVX, true)
 		if !c {
-			fatal("avx is (may be) required to run roblox")
+			return errors.New("avx is (may be) required to run roblox")
 		}
 		slog.Warn("Running roblox without AVX!")
 	}
@@ -151,7 +154,7 @@ func (b *Binary) Main(args ...string) error {
 		// The splash window didn't close cleanly (ErrClosed), an
 		// internal error occured.
 		if err != nil {
-			fatal("splash: %w", err)
+			log.Fatalf("splash: %s", err)
 		}
 	}()
 
@@ -355,7 +358,7 @@ func (b *Binary) Command(args ...string) (*exec.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = []string{"-protocolString", args[0]}
 	}
-	
+
 	cmd := b.Prefix.Wine(filepath.Join(b.Dir, b.Type.Executable()), args...)
 
 	launcher := strings.Fields(b.Config.Launcher)

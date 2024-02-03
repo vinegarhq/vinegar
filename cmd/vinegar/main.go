@@ -3,11 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
+	"golang.org/x/term"
+	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
-	"golang.org/x/term"
 
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
@@ -28,11 +29,6 @@ func usage() {
 	os.Exit(1)
 }
 
-func fatal(format string, args ...any) {
-	slog.Error(fmt.Errorf(format, args...).Error())
-	os.Exit(1)
-}
-
 func main() {
 	configPath := flag.String("config", filepath.Join(dirs.Config, "config.toml"), "config.toml file which should be used")
 	flag.Parse()
@@ -47,21 +43,27 @@ func main() {
 			slog.Info("Deleting Wineprefixes and Roblox Binary deployments!")
 
 			if err := os.RemoveAll(dirs.Prefixes); err != nil {
-				fatal("remove %s: %w", dirs.Prefixes, err)
+				log.Fatal("remove %s: %w", dirs.Prefixes, err)
 			}
 		case "edit":
 			if err := editor.Edit(*configPath); err != nil {
-				fatal("edit %s: %w", *configPath, err)
+				log.Fatal("edit %s: %w", *configPath, err)
 			}
 		case "version":
 			fmt.Println("Vinegar", Version)
 		}
 	case "player", "studio", "sysinfo":
-		DeleteOldPrefix() // Remove after a few releases
+		// Remove after a few releases
+		if _, err := os.Stat(dirs.Prefix); err == nil {
+			slog.Info("Deleting deprecated old Wineprefix!")
+			if err := os.RemoveAll(dirs.Prefix); err != nil {
+				log.Fatalf("delete old prefix %s: %s", dirs.Prefix, err)
+			}
+		}
 
 		cfg, err := config.Load(*configPath)
 		if err != nil {
-			fatal("load config %s: %w", *configPath, err)
+			log.Fatalf("load config %s: %w", *configPath, err)
 		}
 
 		if cmd == "sysinfo" {
@@ -79,7 +81,7 @@ func main() {
 
 		b, err := NewBinary(bt, &cfg)
 		if err != nil {
-			fatal("new binary %s: %w", bt, err)
+			log.Fatal(err)
 		}
 
 		switch flag.Arg(1) {
@@ -89,16 +91,16 @@ func main() {
 			}
 
 			if err := b.Prefix.Wine(args[2], args[3:]...).Run(); err != nil {
-				fatal("exec prefix %s: %w", bt, err)
+				log.Fatalf("exec prefix %s: %s", bt, err)
 			}
 		case "kill":
 			b.Prefix.Kill()
 		case "winetricks":
 			if err := b.Prefix.Winetricks(); err != nil {
-				fatal("exec winetricks: %w", bt, err)
+				log.Fatalf("exec winetricks %s: %s", bt, err)
 			}
 		case "run":
-			err := b.Main(args[2:]...)
+			err = b.Main(args[2:]...)
 			if err == nil {
 				slog.Info("Goodbye")
 				os.Exit(0)
@@ -107,7 +109,7 @@ func main() {
 			// Only fatal print the error if we are in a terminal, otherwise
 			// display a dialog message.
 			if !cfg.Splash.Enabled || term.IsTerminal(int(os.Stderr.Fd())) {
-				fatal("%w", err)
+				log.Fatal(err)
 			}
 
 			slog.Error(err.Error())
@@ -123,16 +125,7 @@ func main() {
 }
 
 func DeleteOldPrefix() {
-	// The old prefix does not exist or has issues, return.
-	_, err := os.Stat(dirs.Prefix)
-	if err != nil {
-		return
-	}
 
-	slog.Info("Deleting deprecated old Wineprefix!")
-	if err := os.RemoveAll(dirs.Prefix); err != nil {
-		fatal("delete old prefix %s: %w", dirs.Prefix, err)
-	}
 }
 
 func LogFile(name string) (*os.File, error) {

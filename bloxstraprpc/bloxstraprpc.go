@@ -1,7 +1,8 @@
 // Package bloxstraprpc implements the BloxstrapRPC protocol.
 //
-// This package remains undocumented as it is modeled after Bloxstrap's
-// implementation protocol.
+// For more information regarding the protocol, view [Bloxstrap's BloxstrapRPC wiki page]
+//
+// [Bloxstrap's BloxstrapRPC wiki page]: https://github.com/pizzaboxer/bloxstrap/wiki/Integrating-Bloxstrap-functionality-into-your-game
 package bloxstraprpc
 
 import (
@@ -59,6 +60,8 @@ func New() Activity {
 	}
 }
 
+// HandleRobloxLog handles the given Roblox log entry, to set data
+// and call functions based on the log entry, declared as *Entry(Pattern) constants.
 func (a *Activity) HandleRobloxLog(line string) error {
 	entries := map[string]func(string) error{
 		// In order of which it should appear in log file
@@ -83,7 +86,7 @@ func (a *Activity) handleGameJoinRequest(line string) error {
 	m := GameJoinRequestEntryPattern.FindStringSubmatch(line)
 	// There are multiple outputs for makePlaceLauncherRequest
 	if len(m) != 3 {
-		return nil
+		return fmt.Errorf("log game join request entry is invalid")
 	}
 
 	if m[1] == "ForTeleport" {
@@ -107,7 +110,7 @@ func (a *Activity) handleGameJoinRequest(line string) error {
 func (a *Activity) handleGameJoining(line string) error {
 	m := GameJoiningEntryPattern.FindStringSubmatch(line)
 	if len(m) != 2 {
-		return fmt.Errorf("log game joining entry is invalid!")
+		return fmt.Errorf("log game joining entry is invalid")
 	}
 
 	a.jobID = m[1]
@@ -120,7 +123,7 @@ func (a *Activity) handleGameJoining(line string) error {
 func (a *Activity) handleGameJoinReport(line string) error {
 	m := GameJoinReportEntryPattern.FindStringSubmatch(line)
 	if len(m) != 3 {
-		return fmt.Errorf("log game join report entry is invalid!")
+		return fmt.Errorf("log game join report entry is invalid")
 	}
 
 	a.placeID = m[1]

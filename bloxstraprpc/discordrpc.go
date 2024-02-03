@@ -19,6 +19,9 @@ func (a *Activity) Close() error {
 	return a.client.Close()
 }
 
+// UpdateGamePresence sets the activity based on the current
+// game information present in Activity. 'initial' is used
+// to fetch game information required for rich presence.
 func (a *Activity) UpdateGamePresence(initial bool) error {
 	a.presence.Buttons = []drpc.Button{{
 		Label: "See game page",
@@ -89,5 +92,6 @@ func (a *Activity) UpdateGamePresence(initial bool) error {
 	}
 
 	slog.Info("Updating Discord Rich Presence", "presence", a.presence)
+
 	return a.client.SetActivity(a.presence)
 }

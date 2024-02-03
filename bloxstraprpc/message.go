@@ -11,8 +11,6 @@ import (
 	"github.com/altfoxie/drpc"
 )
 
-// RichPresenceImage holds game image information sent
-// from a BloxstrapRPC message
 type RichPresenceImage struct {
 	AssetID   *int64  `json:"assetId"`
 	HoverText *string `json:"hoverText"`
@@ -20,7 +18,6 @@ type RichPresenceImage struct {
 	Reset     bool    `json:"reset"`
 }
 
-// Data holds game information sent from a BloxstrapRPC message
 type Data struct {
 	Details        *string            `json:"details"`
 	State          *string            `json:"state"`
@@ -30,8 +27,6 @@ type Data struct {
 	LargeImage     *RichPresenceImage `json:"largeImage"`
 }
 
-// Message is a representation of a BloxstrapRPC message sent
-// from a Roblox game using the BloxstrapRPC SDK.
 type Message struct {
 	Command string `json:"command"`
 	Data    `json:"data"`
@@ -66,6 +61,9 @@ func NewMessage(line string) (Message, error) {
 
 // ApplyRichPresence applies/appends Message's properties to the given
 // [drpc.Activity] for use in Discord's Rich Presence.
+//
+// UpdateGamePresence should be called as some of the properties are specific
+// to BloxstrapRPC.
 func (m Message) ApplyRichPresence(p *drpc.Activity) {
 	if m.Command != "SetRichPresence" {
 		slog.Warn("Game sent invalid BloxstrapRPC command", "command", m.Command)

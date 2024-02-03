@@ -23,7 +23,7 @@ type Packages []Package
 
 // Verify checks the named package source file against it's checksum
 func (p *Package) Verify(src string) error {
-	slog.Info("Verifying Package", "name", p.Name, "file", src)
+	slog.Info("Verifying Package", "name", p.Name, "path", src)
 
 	f, err := os.Open(src)
 	if err != nil {
@@ -54,7 +54,7 @@ func (p *Package) Download(dest, deployURL string) error {
 	}
 
 	url := deployURL + "-" + p.Name
-	slog.Info("Downloading package", "url", url, "file", dest)
+	slog.Info("Downloading package", "url", url, "path", dest)
 
 	if err := netutil.Download(url, dest); err != nil {
 		return fmt.Errorf("download package %s: %w", p.Name, err)
@@ -69,6 +69,6 @@ func (p *Package) Extract(src, dest string) error {
 		return fmt.Errorf("extract package %s (%s): %w", p.Name, src, err)
 	}
 
-	slog.Info("Extracted package", "name", p.Name, "file", src, "dest", dest)
+	slog.Info("Extracted package", "name", p.Name, "path", src, "dest", dest)
 	return nil
 }

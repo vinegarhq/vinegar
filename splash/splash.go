@@ -113,6 +113,7 @@ func New(cfg *Config) *Splash {
 	if !cfg.Enabled {
 		return &Splash{
 			closed: true,
+			Config: cfg,
 		}
 	}
 

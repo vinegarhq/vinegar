@@ -133,11 +133,8 @@ func (b *Binary) Main(args ...string) error {
 	}
 
 	if firstRun && !sysinfo.CPU.AVX {
-		c := b.Splash.Dialog(DialogNoAVX, true)
-		if !c {
-			return errors.New("avx is (may be) required to run roblox")
-		}
-		slog.Warn("Running roblox without AVX!")
+		b.Splash.Dialog(DialogNoAVX, false)
+		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
 	}
 
 	go func() {

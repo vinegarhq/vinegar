@@ -5,9 +5,11 @@ package wine
 import (
 	"errors"
 	"io"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -36,22 +38,32 @@ func (p Prefix) String() string {
 }
 
 // Wine64 returns a path to the system or wineroot's 'wine64'.
+// Wine64 will attempt to resolve for a [ULWGL launcher] if
+// it is present and set necessary environment variables.
+//
+// [ULWGL launcher]: https://github.com/Open-Wine-Components/ULWGL-launcher
 func Wine64(root string) (string, error) {
-	var bin string
+	wineLook := "wine64"
 
 	if root != "" {
 		if !filepath.IsAbs(root) {
 			return "", ErrWineRootAbs
 		}
-		
-		bin = filepath.Join(root, "bin")
+
+		if !strings.Contains(strings.ToLower(root), "ulwgl") {
+			slog.Info("Detected ULWGL Wineroot!")
+
+			wineLook = filepath.Join(root, "gamelauncher.sh")
+			os.Setenv("GAMEID", "ulwgl-roblox")
+			os.Setenv("STORE", "none")
+		} else {
+			wineLook = filepath.Join(root, "bin", wineLook)
+		}
 	}
 
-	wine, err := exec.LookPath(filepath.Join(bin, "wine64"))
-	if err != nil && errors.Is(err, os.ErrNotExist) {
-		return "", ErrWineNotFound
-	} else if err != nil {
-		return "", errors.Unwrap(err)
+	wine, err := exec.LookPath(wineLook)
+	if err != nil {
+		return "", err
 	}
 
 	return wine, nil

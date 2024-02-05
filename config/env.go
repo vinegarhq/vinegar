@@ -39,6 +39,7 @@ var AllowedEnv = []string{
 	"WINEDLLPATH",
 	"SDL_GAMECONTROLLERCONFIG",
 	"__EGL_EXTERNAL_PLATFORM_CONFIG_DIRS", // Flatpak
+	"GAMEID", "STORE", "PROTONPATH",       // Required for ULWGL
 }
 
 // SanitizeEnv modifies the global environment by removing

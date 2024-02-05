@@ -39,9 +39,12 @@ func (p Prefix) String() string {
 func Wine64(root string) (string, error) {
 	var bin string
 
-	if root != "" && !filepath.IsAbs(root) {
+	if root != "" {
+		if !filepath.IsAbs(root) {
+			return "", ErrWineRootAbs
+		}
+		
 		bin = filepath.Join(root, "bin")
-		return "", ErrWineRootAbs
 	}
 
 	wine, err := exec.LookPath(filepath.Join(bin, "wine64"))

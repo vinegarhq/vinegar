@@ -54,7 +54,6 @@ func Wine64(root string) (string, error) {
 			slog.Info("Detected ULWGL Wineroot!")
 
 			wineLook = filepath.Join(root, "gamelauncher.sh")
-			os.Setenv("GAMEID", "ulwgl-roblox")
 			os.Setenv("STORE", "none")
 		} else {
 			wineLook = filepath.Join(root, "bin", wineLook)
@@ -107,8 +106,13 @@ func (p *Prefix) Dir() string {
 // The path of wine64 will either be from $PATH or from Prefix's Root.
 func (p *Prefix) Wine(exe string, arg ...string) *exec.Cmd {
 	arg = append([]string{exe}, arg...)
+	cmd := p.command(p.wine, arg...)
 
-	return p.command(p.wine, arg...)
+	if strings.Contains(strings.ToLower(p.wine), "ulwgl") {
+		cmd.Env = append(cmd.Environ(), "PROTON_VERB=runinprefix")
+	}
+
+	return cmd
 }
 
 // Kill kills the Prefix's processes.

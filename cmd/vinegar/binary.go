@@ -238,6 +238,8 @@ func (b *Binary) Run(args ...string) error {
 		return fmt.Errorf("%s command: %w", b.Type, err)
 	}
 
+	cmd.Env = append(cmd.Environ(), "GAMEID=ulwgl-roblox")
+
 	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
 	// Additionally, if Vinegar got TERM, it will also immediately exit, but roblox
 	// continues running if the signal holder was not present.

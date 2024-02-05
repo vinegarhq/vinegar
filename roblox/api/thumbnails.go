@@ -32,5 +32,9 @@ func GetGameIcon(universeID, returnPolicy, size, format string, isCircular bool)
 		return Thumbnail{}, err
 	}
 
+	if len(tnr.Data) == 0 {
+		return Thumbnail{}, fmt.Errorf("thumbnails: %w", ErrNoData)
+	}
+
 	return tnr.Data[0], nil
 }

@@ -1,7 +1,7 @@
 package bootstrapper
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/roblox/api"
@@ -38,14 +38,12 @@ func FetchDeployment(bt roblox.BinaryType, channel string) (Deployment, error) {
 		channel = DefaultChannel
 	}
 
-	log.Printf("Fetching latest version of %s for channel %s", bt.BinaryName(), channel)
+	slog.Info("Fetching Binary Deployment", "name", bt.BinaryName(), "channel", channel)
 
 	cv, err := api.GetClientVersion(bt.BinaryName(), channel)
 	if err != nil {
 		return Deployment{}, err
 	}
-
-	log.Printf("Fetched %s canonical version %s", bt.BinaryName(), cv.Version)
 
 	return NewDeployment(bt, channel, cv.ClientVersionUpload), nil
 }

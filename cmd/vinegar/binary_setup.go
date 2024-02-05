@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
 
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
@@ -19,7 +18,7 @@ func (b *Binary) FetchDeployment() error {
 	b.Splash.SetMessage("Fetching " + b.Alias)
 
 	if b.Config.ForcedVersion != "" {
-		log.Printf("WARNING: using forced version: %s", b.Config.ForcedVersion)
+		slog.Warn("Using forced deployment!", "guid", b.Config.ForcedVersion)
 
 		d := boot.NewDeployment(b.Type, b.Config.Channel, b.Config.ForcedVersion)
 		b.Deploy = &d
@@ -28,7 +27,7 @@ func (b *Binary) FetchDeployment() error {
 
 	d, err := boot.FetchDeployment(b.Type, b.Config.Channel)
 	if err != nil {
-		return err
+		return fmt.Errorf("fetch %s %s deployment: %w", b.Type, b.Config.Channel, err)
 	}
 
 	b.Deploy = &d
@@ -36,12 +35,6 @@ func (b *Binary) FetchDeployment() error {
 }
 
 func (b *Binary) Setup() error {
-	s, err := state.Load()
-	if err != nil {
-		return err
-	}
-	b.State = &s
-
 	if err := b.FetchDeployment(); err != nil {
 		return err
 	}
@@ -49,34 +42,37 @@ func (b *Binary) Setup() error {
 	b.Dir = filepath.Join(dirs.Versions, b.Deploy.GUID)
 	b.Splash.SetDesc(fmt.Sprintf("%s %s", b.Deploy.GUID, b.Deploy.Channel))
 
-	stateVer := b.State.Version(b.Type)
-	if stateVer != b.Deploy.GUID {
-		log.Printf("Installing %s (%s -> %s)", b.Name, stateVer, b.Deploy.GUID)
+	if b.State.Version != b.Deploy.GUID {
+		slog.Info("Installing Binary", "name", b.Name,
+			"old_guid", b.State.Version, "new_guid", b.Deploy.GUID)
 
 		if err := b.Install(); err != nil {
-			return err
+			return fmt.Errorf("install %s: %w", b.Deploy.GUID, err)
 		}
 	} else {
-		log.Printf("%s is up to date (%s)", b.Name, b.Deploy.GUID)
+		slog.Info("Binary is up to date!", "name", b.Name, "guid", b.Deploy.GUID)
 	}
 
 	b.Config.Env.Setenv()
 
-	log.Println("Using Renderer:", b.Config.Renderer)
 	if err := b.Config.FFlags.Apply(b.Dir); err != nil {
-		return err
+		return fmt.Errorf("apply fflags: %w", err)
 	}
 
 	if err := dirs.OverlayDir(b.Dir); err != nil {
-		return err
+		return fmt.Errorf("overlay dir: %w", err)
 	}
 
 	if err := b.SetupDxvk(); err != nil {
-		return err
+		return fmt.Errorf("setup dxvk: %w", err)
 	}
 
 	b.Splash.SetProgress(1.0)
-	return b.State.Save()
+	if err := b.GlobalState.Save(); err != nil {
+		return fmt.Errorf("save state: %w", err)
+	}
+
+	return nil
 }
 
 func (b *Binary) Install() error {
@@ -88,11 +84,7 @@ func (b *Binary) Install() error {
 
 	pm, err := boot.FetchPackageManifest(b.Deploy)
 	if err != nil {
-		return err
-	}
-
-	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
-		return err
+		return fmt.Errorf("fetch %s package manifest: %w", b.Deploy.GUID, err)
 	}
 
 	// Prioritize smaller files first, to have less pressure
@@ -105,34 +97,38 @@ func (b *Binary) Install() error {
 
 	b.Splash.SetMessage("Downloading " + b.Alias)
 	if err := b.DownloadPackages(&pm); err != nil {
-		return err
+		return fmt.Errorf("download %s packages: %w", b.Deploy.GUID, err)
 	}
 
 	b.Splash.SetMessage("Extracting " + b.Alias)
 	if err := b.ExtractPackages(&pm); err != nil {
-		return err
+		return fmt.Errorf("extract %s packages: %w", b.Deploy.GUID, err)
 	}
 
 	if b.Type == roblox.Studio {
 		brokenFont := filepath.Join(b.Dir, "StudioFonts", "SourceSansPro-Black.ttf")
 
-		log.Printf("Removing broken font %s", brokenFont)
+		slog.Info("Removing broken font", "path", brokenFont)
 		if err := os.RemoveAll(brokenFont); err != nil {
-			log.Printf("Failed to remove font: %s", err)
+			return err
 		}
 	}
 
 	if err := boot.WriteAppSettings(b.Dir); err != nil {
-		return err
+		return fmt.Errorf("appsettings: %w", err)
 	}
 
-	b.State.AddBinary(&pm)
+	b.State.Add(&pm)
 
-	if err := b.State.CleanPackages(); err != nil {
-		return err
+	if err := b.GlobalState.CleanPackages(); err != nil {
+		return fmt.Errorf("clean packages: %w", err)
 	}
 
-	return b.State.CleanVersions()
+	if err := b.GlobalState.CleanVersions(); err != nil {
+		return fmt.Errorf("clean versions: %w", err)
+	}
+
+	return nil
 }
 
 func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package) error) error {
@@ -159,7 +155,7 @@ func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package)
 }
 
 func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
-	log.Printf("Downloading %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
+	slog.Info("Downloading Packages", "guid", pm.Deployment.GUID, "count", len(pm.Packages))
 
 	return b.PerformPackages(pm, func(pkg boot.Package) error {
 		return pkg.Download(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
@@ -167,7 +163,7 @@ func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
 }
 
 func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
-	log.Printf("Extracting %d Packages for %s", len(pm.Packages), pm.Deployment.GUID)
+	slog.Info("Extracting Packages", "guid", pm.Deployment.GUID, "count", len(pm.Packages))
 
 	pkgDirs := boot.BinaryDirectories(b.Type)
 
@@ -183,10 +179,11 @@ func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
 }
 
 func (b *Binary) SetupDxvk() error {
-	if b.State.DxvkVersion != "" && !b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk {
+	if b.State.DxvkVersion != "" &&
+		(!b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk) {
 		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
-			return err
+			return fmt.Errorf("remove dxvk: %w", err)
 		}
 
 		b.State.DxvkVersion = ""
@@ -200,13 +197,13 @@ func (b *Binary) SetupDxvk() error {
 	b.Splash.SetProgress(0.0)
 	dxvk.Setenv()
 
-	if b.GlobalConfig.DxvkVersion == b.State.DxvkVersion {
+	if b.Config.DxvkVersion == b.State.DxvkVersion {
 		return nil
 	}
 
 	// This would only get saved if Install succeeded
-	b.State.DxvkVersion = b.GlobalConfig.DxvkVersion
+	b.State.DxvkVersion = b.Config.DxvkVersion
 
 	b.Splash.SetMessage("Installing DXVK")
-	return dxvk.Install(b.GlobalConfig.DxvkVersion, b.Prefix)
+	return dxvk.Install(b.Config.DxvkVersion, b.Prefix)
 }

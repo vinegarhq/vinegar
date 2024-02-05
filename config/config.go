@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -25,9 +24,11 @@ type Binary struct {
 	Channel       string        `toml:"channel"`
 	Launcher      string        `toml:"launcher"`
 	Renderer      string        `toml:"renderer"`
+	WineRoot      string        `toml:"wineroot"`
 	DiscordRPC    bool          `toml:"discord_rpc"`
 	ForcedVersion string        `toml:"forced_version"`
 	Dxvk          bool          `toml:"dxvk"`
+	DxvkVersion   string        `toml:"dxvk_version"`
 	FFlags        roblox.FFlags `toml:"fflags"`
 	Env           Environment   `toml:"env"`
 	ForcedGpu     string        `toml:"gpu"`
@@ -36,8 +37,6 @@ type Binary struct {
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
-	WineRoot          string      `toml:"wineroot"`
-	DxvkVersion       string      `toml:"dxvk_version"`
 	MultipleInstances bool        `toml:"multiple_instances"`
 	SanitizeEnv       bool        `toml:"sanitize_env"`
 	Player            Binary      `toml:"player"`
@@ -78,8 +77,6 @@ func Load(name string) (Config, error) {
 // Default returns a sane default configuration for Vinegar.
 func Default() Config {
 	return Config{
-		DxvkVersion: "2.3",
-
 		Env: Environment{
 			"WINEARCH":                    "win64",
 			"WINEDEBUG":                   "err-kerberos,err-ntlm",
@@ -92,12 +89,13 @@ func Default() Config {
 		},
 
 		Player: Binary{
-			Dxvk:       true,
-			GameMode:   true,
-			ForcedGpu:  "prime-discrete",
-			Renderer:   "D3D11",
-			Channel:    bootstrapper.DefaultChannel,
-			DiscordRPC: true,
+			Dxvk:        true,
+			DxvkVersion: "2.3",
+			GameMode:    true,
+			ForcedGpu:   "prime-discrete",
+			Renderer:    "D3D11",
+			Channel:     bootstrapper.DefaultChannel,
+			DiscordRPC:  true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
@@ -106,11 +104,12 @@ func Default() Config {
 			},
 		},
 		Studio: Binary{
-			Dxvk:      true,
-			GameMode:  true,
-			Channel:   bootstrapper.DefaultChannel,
-			ForcedGpu: "prime-discrete",
-			Renderer:  "D3D11",
+			Dxvk:        true,
+			DxvkVersion: "2.3",
+			GameMode:    true,
+			Channel:     bootstrapper.DefaultChannel,
+			ForcedGpu:   "prime-discrete",
+			Renderer:    "D3D11",
 			// TODO: fill with studio fflag/env goodies
 			FFlags: make(roblox.FFlags),
 			Env:    make(Environment),
@@ -148,6 +147,12 @@ func (b *Binary) setup() error {
 		}
 	}
 
+	if b.WineRoot != "" {
+		if _, err := wine.Wine64(b.WineRoot); err != nil {
+			return err
+		}
+	}
+
 	return b.pickCard()
 }
 
@@ -156,23 +161,7 @@ func (c *Config) setup() error {
 		SanitizeEnv()
 	}
 
-	if c.WineRoot != "" {
-		bin := filepath.Join(c.WineRoot, "bin")
-
-		if !filepath.IsAbs(c.WineRoot) {
-			return ErrWineRootAbs
-		}
-
-		os.Setenv("PATH", bin+":"+os.Getenv("PATH"))
-		os.Unsetenv("WINEDLLPATH")
-	}
-
 	c.Env.Setenv()
-
-	// system wine handled by vinegar
-	if c.WineRoot != "" && !wine.WineLook() {
-		return ErrWineRootInvalid
-	}
 
 	if err := c.Player.setup(); err != nil {
 		return fmt.Errorf("player: %w", err)

@@ -1,5 +1,7 @@
 package api
 
+import "fmt"
+
 // Creator is a representation of the Roblox GameCreator model.
 type Creator struct {
 	ID               int64  `json:"id"`
@@ -50,6 +52,10 @@ func GetGameDetails(universeID string) (GameDetail, error) {
 	err := Request("GET", "games", "v1/games?universeIds="+universeID, &gdr)
 	if err != nil {
 		return GameDetail{}, err
+	}
+
+	if len(gdr.Data) == 0 {
+		return GameDetail{}, fmt.Errorf("game details: %w", ErrNoData)
 	}
 
 	return gdr.Data[0], nil

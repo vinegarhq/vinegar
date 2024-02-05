@@ -60,21 +60,37 @@ type Splash struct {
 }
 
 func (ui *Splash) SetMessage(msg string) {
+	if ui.Window == nil {
+		return
+	}
+
 	ui.message = msg
 	ui.Invalidate()
 }
 
 func (ui *Splash) SetDesc(desc string) {
+	if ui.Window == nil {
+		return
+	}
+
 	ui.desc = desc
 	ui.Invalidate()
 }
 
 func (ui *Splash) SetProgress(progress float32) {
+	if ui.Window == nil {
+		return
+	}
+
 	ui.progress = progress
 	ui.Invalidate()
 }
 
 func (ui *Splash) Close() {
+	if ui.Window == nil {
+		return
+	}
+
 	ui.closed = true
 	ui.Perform(system.ActionClose)
 }
@@ -94,6 +110,13 @@ func window(width, height unit.Dp) *app.Window {
 }
 
 func New(cfg *Config) *Splash {
+	if !cfg.Enabled {
+		return &Splash{
+			closed: true,
+			Config: cfg,
+		}
+	}
+
 	s := Compact
 
 	if cfg.Style == "familiar" {
@@ -150,6 +173,10 @@ func (ui *Splash) loadLogo() error {
 }
 
 func (ui *Splash) Run() error {
+	if ui.closed {
+		return nil
+	}
+
 	drawfn := ui.drawCompact
 
 	if err := ui.loadLogo(); err != nil {
@@ -159,10 +186,6 @@ func (ui *Splash) Run() error {
 	defer func() {
 		ui.closed = true
 	}()
-
-	if !ui.Config.Enabled {
-		return nil
-	}
 
 	if ui.Style == Familiar {
 		drawfn = ui.drawFamiliar

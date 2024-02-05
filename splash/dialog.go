@@ -25,6 +25,11 @@ import (
 func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 	var ops op.Ops
 
+	if !ui.Config.Enabled {
+		log.Printf("Dialog: %s", txt)
+		return
+	}
+
 	// This is required for time when Dialog is called before the main
 	// window is ready for retrieving events.
 	th := material.NewTheme()
@@ -52,11 +57,6 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 	}()
 
 	w := window(unit.Dp(width), unit.Dp(height))
-
-	if !ui.Config.Enabled {
-		log.Printf("Dialog: %s", txt)
-		return
-	}
 
 	msgState := new(widget.Selectable)
 

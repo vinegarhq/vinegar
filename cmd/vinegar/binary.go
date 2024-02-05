@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"log/slog"
 	"os"
+	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"regexp"
@@ -18,6 +20,7 @@ import (
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/bus"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
@@ -33,13 +36,15 @@ const (
 	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
 	DialogFailure    = "Vinegar experienced an error:\n%s"
 	DialogReqChannel = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
-	DialogNoWine     = "Wine is required to run Roblox on Linux, please install it appropiate to your distribution."
 	DialogNoAVX      = "Warning: Your CPU does not support AVX. While some people may be able to run without it, most are not able to. VinegarHQ cannot provide support for your installation. Continue?"
 )
 
 type Binary struct {
+	// Only initialized in Main
 	Splash *splash.Splash
-	State  *state.State
+
+	GlobalState *state.State
+	State       *state.Binary
 
 	GlobalConfig *config.Config
 	Config       *config.Binary
@@ -59,22 +64,41 @@ type Binary struct {
 	BusSession *bus.SessionBus
 }
 
-func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Binary {
-	var bcfg config.Binary
+func BinaryPrefixDir(bt roblox.BinaryType) string {
+	return filepath.Join(dirs.Prefixes, strings.ToLower(bt.String()))
+}
+
+func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
+	var bcfg *config.Binary
+	var bstate *state.Binary
+
+	s, err := state.Load()
+	if err != nil {
+		return nil, err
+	}
 
 	switch bt {
 	case roblox.Player:
-		bcfg = cfg.Player
+		bcfg = &cfg.Player
+		bstate = &s.Player
 	case roblox.Studio:
-		bcfg = cfg.Studio
+		bcfg = &cfg.Studio
+		bstate = &s.Studio
+	}
+
+	pfx, err := wine.New(BinaryPrefixDir(bt), bcfg.WineRoot)
+	if err != nil {
+		return nil, fmt.Errorf("new prefix %s: %w", bt, err)
 	}
 
 	return &Binary{
 		Activity: bsrpc.New(),
-		Splash:   splash.New(&cfg.Splash),
+
+		GlobalState: &s,
+		State:       bstate,
 
 		GlobalConfig: cfg,
-		Config:       &bcfg,
+		Config:       bcfg,
 
 		Alias:  bt.String(),
 		Name:   bt.BinaryName(),
@@ -82,21 +106,26 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config, pfx *wine.Prefix) *Bina
 		Prefix: pfx,
 
 		BusSession: bus.New(),
-	}
+	}, nil
 }
 
-func (b *Binary) Main(args ...string) {
+func (b *Binary) Main(args ...string) error {
+	b.Splash = splash.New(&b.GlobalConfig.Splash)
 	b.Config.Env.Setenv()
 
 	logFile, err := LogFile(b.Type.String())
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("failed to init log file: %w", err)
 	}
 	defer logFile.Close()
 
-	logOutput := io.MultiWriter(logFile, os.Stderr)
-	b.Prefix.Output = logOutput
-	log.SetOutput(logOutput)
+	out := io.MultiWriter(os.Stderr, logFile)
+	b.Prefix.Stderr = out
+	b.Prefix.Stdout = out
+	log.SetOutput(out)
+	defer func() {
+		b.Splash.LogPath = logFile.Name()
+	}()
 
 	firstRun := false
 	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
@@ -104,22 +133,14 @@ func (b *Binary) Main(args ...string) {
 	}
 
 	if firstRun && !sysinfo.CPU.AVX {
-		c := b.Splash.Dialog(DialogNoAVX, true)
-		if !c {
-			log.Fatal("avx is (may be) required to run roblox")
-		}
-		log.Println("WARNING: Running roblox without AVX!")
-	}
-
-	if !wine.WineLook() {
-		b.Splash.Dialog(DialogNoWine, false)
-		log.Fatalf("%s is required to run roblox", wine.Wine)
+		b.Splash.Dialog(DialogNoAVX, false)
+		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
 	}
 
 	go func() {
 		err := b.Splash.Run()
 		if errors.Is(splash.ErrClosed, err) {
-			log.Printf("Splash window closed!")
+			slog.Warn("Splash window closed!")
 
 			// Will tell Run() to immediately kill Roblox, as it handles INT/TERM.
 			// Otherwise, it will just with the same appropiate signal.
@@ -134,27 +155,23 @@ func (b *Binary) Main(args ...string) {
 		}
 	}()
 
-	errHandler := func(err error) {
-		if !b.GlobalConfig.Splash.Enabled || b.Splash.IsClosed() {
-			log.Fatal(err)
-		}
-
-		log.Println(err)
-		b.Splash.LogPath = logFile.Name()
-		b.Splash.Invalidate()
-		b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false)
-		os.Exit(1)
-	}
-
-	// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
-	// automatically create the Wineprefix.
 	if firstRun {
-		log.Printf("Initializing wineprefix at %s", b.Prefix.Dir())
+		slog.Info("Initializing wineprefix", "dir", b.Prefix.Dir())
 		b.Splash.SetMessage("Initializing wineprefix")
 
-		if err := b.Prefix.SetDPI(97); err != nil {
-			b.Splash.SetMessage(err.Error())
-			errHandler(err)
+		var err error
+		switch b.Type {
+		case roblox.Player:
+			err = b.Prefix.Init()
+		case roblox.Studio:
+			// Studio accepts all DPIs except the default, which is 96.
+			// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
+			// automatically create the Wineprefix.
+			err = b.Prefix.SetDPI(97)
+		}
+
+		if err != nil {
+			return fmt.Errorf("failed to init %s prefix: %w", b.Type, err)
 		}
 	}
 
@@ -176,7 +193,7 @@ func (b *Binary) Main(args ...string) {
 				true,
 			)
 			if r {
-				log.Println("Switching user channel temporarily to", c[1])
+				slog.Warn("Switching user channel temporarily", "channel", c[1])
 				b.Config.Channel = c[1]
 			}
 		}
@@ -185,29 +202,40 @@ func (b *Binary) Main(args ...string) {
 	b.Splash.SetDesc(b.Config.Channel)
 
 	if err := b.Setup(); err != nil {
-		b.Splash.SetMessage("Failed to setup Roblox")
-		errHandler(err)
+		return fmt.Errorf("failed to setup roblox: %w", err)
 	}
 
 	if err := b.Run(args...); err != nil {
-		b.Splash.SetMessage("Failed to run Roblox")
-		errHandler(err)
+		return fmt.Errorf("failed to run roblox: %w", err)
 	}
+
+	return nil
 }
 
 func (b *Binary) Run(args ...string) error {
 	if b.Config.DiscordRPC {
 		if err := b.Activity.Connect(); err != nil {
-			log.Printf("WARNING: Could not initialize Discord RPC: %s, disabling...", err)
+			slog.Error("Could not connect to Discord RPC", "error", err)
 			b.Config.DiscordRPC = false
 		} else {
 			defer b.Activity.Close()
 		}
 	}
 
+	if b.GlobalConfig.MultipleInstances {
+		slog.Info("Running robloxmutexer")
+
+		mutexer := b.Prefix.Wine(filepath.Join(BinPrefix, "robloxmutexer.exe"))
+		if err := mutexer.Start(); err != nil {
+			return fmt.Errorf("start robloxmutexer: %w", err)
+		}
+
+		defer mutexer.Process.Kill()
+	}
+
 	cmd, err := b.Command(args...)
 	if err != nil {
-		return err
+		return fmt.Errorf("%s command: %w", b.Type, err)
 	}
 
 	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
@@ -216,10 +244,13 @@ func (b *Binary) Run(args ...string) error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		<-c
+		s := <-c
+
+		slog.Warn("Recieved signal", "signal", s)
 
 		// Only kill Roblox if it hasn't exited
 		if cmd.ProcessState == nil {
+			slog.Warn("Killing Roblox", "pid", cmd.Process.Pid)
 			// This way, cmd.Run() will return and the wineprefix killer will be ran.
 			cmd.Process.Kill()
 		}
@@ -229,7 +260,7 @@ func (b *Binary) Run(args ...string) error {
 		signal.Stop(c)
 	}()
 
-	log.Printf("Launching %s (%s)", b.Name, cmd)
+	slog.Info("Running Binary", "name", b.Name, "cmd", cmd)
 	b.Splash.SetMessage("Launching " + b.Alias)
 
 	go func() {
@@ -244,7 +275,7 @@ func (b *Binary) Run(args ...string) error {
 		// and don't perform post-launch roblox functions.
 		lf, err := RobloxLogFile(b.Prefix)
 		if err != nil {
-			log.Println(err)
+			slog.Error("Failed to find Roblox log file", "error", err.Error())
 			return
 		}
 
@@ -252,34 +283,18 @@ func (b *Binary) Run(args ...string) error {
 
 		if b.Config.GameMode {
 			if err := b.BusSession.GamemodeRegister(int32(cmd.Process.Pid)); err != nil {
-				log.Println("Attempted to register to Gamemode daemon")
+				slog.Error("Attempted to register to Gamemode daemon")
 			}
 		}
 
-		// Blocks and tails file forever until roblox is dead
-		if err := b.Tail(lf); err != nil {
-			log.Println(err)
-		}
+		// Blocks and tails file forever until roblox is dead, unless
+		// if finding the log file had failed.
+		b.Tail(lf)
 	}()
 
 	if err := cmd.Run(); err != nil {
-		if strings.Contains(err.Error(), "signal:") {
-			log.Println("WARNING: Roblox exited with", err)
-			return nil
-		}
-
 		return fmt.Errorf("roblox process: %w", err)
 	}
-
-	// may or may not prevent a race condition in procfs
-	syscall.Sync()
-
-	if CommFound("Roblox") {
-		log.Println("Another Roblox instance is already running, not killing wineprefix")
-		return nil
-	}
-
-	b.Prefix.Kill()
 
 	return nil
 }
@@ -313,43 +328,32 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 				return e.Name, nil
 			}
 		case err := <-w.Errors:
-			log.Println("fsnotify watcher:", err)
+			slog.Error("Recieved fsnotify watcher error", "error", err)
 		}
 	}
 }
 
-func (b *Binary) Tail(name string) error {
+func (b *Binary) Tail(name string) {
 	t, err := tail.TailFile(name, tail.Config{Follow: true})
 	if err != nil {
-		return err
+		slog.Error("Could not tail Roblox log file", "error", err)
+		return
 	}
 
 	for line := range t.Lines {
-		fmt.Fprintln(b.Prefix.Output, line.Text)
+		// fmt.Fprintln(os.Stderr, line.Text)
 
 		if b.Config.DiscordRPC {
 			if err := b.Activity.HandleRobloxLog(line.Text); err != nil {
-				log.Printf("Failed to handle Discord RPC: %s", err)
+				slog.Error("Activity Roblox log handle failed", "error", err)
 			}
 		}
 	}
-
-	return nil
 }
 
-func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
+func (b *Binary) Command(args ...string) (*exec.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = []string{"-protocolString", args[0]}
-	}
-
-	if b.GlobalConfig.MultipleInstances {
-		log.Println("Launching robloxmutexer in background")
-
-		mutexer := b.Prefix.Command("wine", filepath.Join(BinPrefix, "robloxmutexer.exe"))
-		err := mutexer.Start()
-		if err != nil {
-			return &wine.Cmd{}, fmt.Errorf("robloxmutexer: %w", err)
-		}
 	}
 
 	cmd := b.Prefix.Wine(filepath.Join(b.Dir, b.Type.Executable()), args...)
@@ -359,7 +363,7 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 		cmd.Args = append(launcher, cmd.Args...)
 		p, err := b.Config.LauncherPath()
 		if err != nil {
-			return &wine.Cmd{}, err
+			return nil, err
 		}
 		cmd.Path = p
 	}

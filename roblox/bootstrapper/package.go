@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/vinegarhq/vinegar/internal/netutil"
@@ -23,7 +23,7 @@ type Packages []Package
 
 // Verify checks the named package source file against it's checksum
 func (p *Package) Verify(src string) error {
-	log.Printf("Verifying Package %s (%s)", p.Name, p.Checksum)
+	slog.Info("Verifying Package", "name", p.Name, "path", src)
 
 	f, err := os.Open(src)
 	if err != nil {
@@ -38,7 +38,7 @@ func (p *Package) Verify(src string) error {
 	fsum := hex.EncodeToString(h.Sum(nil))
 
 	if p.Checksum != fsum {
-		return fmt.Errorf("package %s (%s) is corrupted, please re-download or delete package", p.Name, src)
+		return fmt.Errorf("package %s is corrupted, please re-download or delete package", p.Name)
 	}
 
 	return nil
@@ -49,13 +49,14 @@ func (p *Package) Verify(src string) error {
 // exists and has the correct checksum, it will return immediately.
 func (p *Package) Download(dest, deployURL string) error {
 	if err := p.Verify(dest); err == nil {
-		log.Printf("Package %s is already downloaded", p.Name)
+		slog.Info("Package is already downloaded", "name", p.Name, "file", dest)
 		return nil
 	}
 
-	log.Printf("Downloading Package %s (%s)", p.Name, dest)
+	url := deployURL + "-" + p.Name
+	slog.Info("Downloading package", "url", url, "path", dest)
 
-	if err := netutil.Download(deployURL+"-"+p.Name, dest); err != nil {
+	if err := netutil.Download(url, dest); err != nil {
 		return fmt.Errorf("download package %s: %w", p.Name, err)
 	}
 
@@ -68,6 +69,6 @@ func (p *Package) Extract(src, dest string) error {
 		return fmt.Errorf("extract package %s (%s): %w", p.Name, src, err)
 	}
 
-	log.Printf("Extracted Package %s (%s): %s", p.Name, p.Checksum, dest)
+	slog.Info("Extracted package", "name", p.Name, "path", src, "dest", dest)
 	return nil
 }

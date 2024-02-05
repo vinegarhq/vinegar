@@ -1,12 +1,13 @@
 // Package bloxstraprpc implements the BloxstrapRPC protocol.
 //
-// This package remains undocumented as it is modeled after Bloxstrap's
-// implementation protocol.
+// For more information regarding the protocol, view [Bloxstrap's BloxstrapRPC wiki page]
+//
+// [Bloxstrap's BloxstrapRPC wiki page]: https://github.com/pizzaboxer/bloxstrap/wiki/Integrating-Bloxstrap-functionality-into-your-game
 package bloxstraprpc
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"regexp"
 	"strings"
 	"time"
@@ -59,6 +60,8 @@ func New() Activity {
 	}
 }
 
+// HandleRobloxLog handles the given Roblox log entry, to set data
+// and call functions based on the log entry, declared as *Entry(Pattern) constants.
 func (a *Activity) HandleRobloxLog(line string) error {
 	entries := map[string]func(string) error{
 		// In order of which it should appear in log file
@@ -66,7 +69,7 @@ func (a *Activity) HandleRobloxLog(line string) error {
 		GameJoiningEntry:     a.handleGameJoining,                                  // For JobID (server ID, to join from Discord)
 		GameJoinReportEntry:  a.handleGameJoinReport,                               // For PlaceID and UniverseID
 		GameJoinedEntry:      func(_ string) error { return a.handleGameJoined() }, // Sets presence and time
-		BloxstrapRPCEntry:    a.handleGameMessage,                                  // BloxstrapRPC
+		BloxstrapRPCEntry:    a.handleBloxstrapRPC,                                 // BloxstrapRPC
 		GameLeaveEntry:       func(_ string) error { return a.handleGameLeave() },  // Clears presence and time
 	}
 
@@ -83,7 +86,7 @@ func (a *Activity) handleGameJoinRequest(line string) error {
 	m := GameJoinRequestEntryPattern.FindStringSubmatch(line)
 	// There are multiple outputs for makePlaceLauncherRequest
 	if len(m) != 3 {
-		return nil
+		return fmt.Errorf("log game join request entry is invalid")
 	}
 
 	if m[1] == "ForTeleport" {
@@ -99,60 +102,63 @@ func (a *Activity) handleGameJoinRequest(line string) error {
 		"join-play-together-game": Public,
 	}[m[2]]
 
-	log.Printf("Got Game type %d teleporting %t!", a.server, a.teleporting)
+	slog.Info("Handled GameJoinRequest", "server_type", a.server, "teleporting", a.teleporting)
+
 	return nil
 }
 
 func (a *Activity) handleGameJoining(line string) error {
 	m := GameJoiningEntryPattern.FindStringSubmatch(line)
 	if len(m) != 2 {
-		return fmt.Errorf("log game joining entry is invalid!")
+		return fmt.Errorf("log game joining entry is invalid")
 	}
 
 	a.jobID = m[1]
 
-	log.Printf("Got Job %s!", a.jobID)
+	slog.Info("Handled GameJoining", "jobid", a.jobID)
+
 	return nil
 }
 
 func (a *Activity) handleGameJoinReport(line string) error {
 	m := GameJoinReportEntryPattern.FindStringSubmatch(line)
 	if len(m) != 3 {
-		return fmt.Errorf("log game join report entry is invalid!")
+		return fmt.Errorf("log game join report entry is invalid")
 	}
 
 	a.placeID = m[1]
 	a.universeID = m[2]
 
-	log.Printf("Got Universe %s Place %s!", a.universeID, a.placeID)
+	slog.Info("Handled GameJoinReport", "universeid", a.universeID, "placeid", a.placeID)
+
 	return nil
 }
 
 func (a *Activity) handleGameJoined() error {
 	if !a.teleporting {
-		log.Println("Updating time!")
 		a.gameTime = time.Now()
 	}
 
 	a.teleporting = false
 
-	log.Println("Game Joined!")
+	slog.Info("Handled GameJoined", "time", a.gameTime)
+
 	return a.UpdateGamePresence(true)
 }
 
-func (a *Activity) handleGameMessage(line string) error {
+func (a *Activity) handleBloxstrapRPC(line string) error {
 	m, err := NewMessage(line)
 	if err != nil {
 		return fmt.Errorf("parse bloxstraprpc message: %w", err)
 	}
 	m.ApplyRichPresence(&a.presence)
 
+	slog.Info("Handled BloxstrapRPC", "message", m)
+
 	return a.UpdateGamePresence(false)
 }
 
 func (a *Activity) handleGameLeave() error {
-	log.Println("Left game, clearing presence!")
-
 	a.presence = drpc.Activity{}
 	a.gameTime = time.Time{}
 	a.teleporting = false
@@ -160,6 +166,8 @@ func (a *Activity) handleGameLeave() error {
 	a.universeID = ""
 	a.placeID = ""
 	a.jobID = ""
+
+	slog.Info("Handled GameLeave")
 
 	return a.client.SetActivity(a.presence)
 }

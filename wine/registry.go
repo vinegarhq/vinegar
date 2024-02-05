@@ -4,8 +4,8 @@ import (
 	"errors"
 )
 
-// RegistryType is the type of registry that the wine reg program
-// can accept
+// RegistryType is the type of registry that the wine 'reg' program
+// can accept.
 type RegistryType string
 
 const (
@@ -18,8 +18,7 @@ const (
 	REG_NONE      RegistryType = "REG_NONE"
 )
 
-// RegistryAdd uses a Wine command with 'reg' as the named program, to add a new
-// registry key with the named key, value, type, and data
+// RegistryAdd adds a new registry key to the Prefix with the named key, value, type, and data.
 func (p *Prefix) RegistryAdd(key, value string, rtype RegistryType, data string) error {
 	if key == "" {
 		return errors.New("no registry key given")

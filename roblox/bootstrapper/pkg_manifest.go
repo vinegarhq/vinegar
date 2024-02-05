@@ -3,7 +3,7 @@ package bootstrapper
 import (
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strconv"
 	"strings"
 
@@ -28,7 +28,7 @@ func channelPath(channel string) string {
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
 
-	// Roblox CDN only accepts no channel if its the default channel.
+	// Roblox deployment mirrors only accepts no channel if its the default channel.
 	// DefaultChannel is in all caps, and since channel is lowercased above,
 	// make it lowercased too in this check.
 	if channel == strings.ToLower(DefaultChannel) {
@@ -40,14 +40,15 @@ func channelPath(channel string) string {
 
 // FetchPackageManifest retrieves a package manifest for the given binary deployment.
 func FetchPackageManifest(d *Deployment) (PackageManifest, error) {
-	cdn, err := CDN()
+	m, err := Mirror()
 	if err != nil {
 		return PackageManifest{}, err
 	}
-	durl := cdn + channelPath(d.Channel) + d.GUID
+
+	durl := m + channelPath(d.Channel) + d.GUID
 	url := durl + "-rbxPkgManifest.txt"
 
-	log.Printf("Fetching manifest for %s (%s)", d.GUID, url)
+	slog.Info("Fetching Package Manifest", "url", url)
 
 	smanif, err := netutil.Body(url)
 	if err != nil {

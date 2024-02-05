@@ -4,36 +4,40 @@
 package main
 
 import (
-	"errors"
-	"log"
+	"os"
+	"log/slog"
 
 	"golang.org/x/sys/windows"
 )
 
-func main() {
-	log.SetPrefix("robloxmutexer: ")
-	log.SetFlags(log.Lmsgprefix | log.LstdFlags)
+const mutex = "ROBLOX_singletonMutex"
 
-	name, err := windows.UTF16PtrFromString("ROBLOX_singletonMutex")
+func main() {
+	if err := lock(); err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
+	slog.Info("Locked", "mutex", mutex)
+
+	_, _ = windows.WaitForSingleObject(windows.CurrentProcess(), windows.INFINITE)
+}
+
+func lock() error {
+	name, err := windows.UTF16PtrFromString(mutex)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	handle, err := windows.CreateMutex(nil, false, name)
 	if err != nil {
-		if errors.Is(err, windows.ERROR_ALREADY_EXISTS) {
-			log.Fatal("Roblox's Mutex is already locked!")
-		} else {
-			log.Fatal(err)
-		}
+		return err
 	}
 
 	_, err = windows.WaitForSingleObject(handle, 0)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
-	log.Println("Locked Roblox singleton Mutex")
-
-	_, _ = windows.WaitForSingleObject(windows.CurrentProcess(), windows.INFINITE)
+	return nil
 }

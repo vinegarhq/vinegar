@@ -91,7 +91,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 		return nil, fmt.Errorf("new prefix %s: %w", bt, err)
 	}
 
-	os.Setenv("GAMEID=ulwgl-roblox")
+	os.Setenv("GAMEID", "ulwgl-roblox")
 
 	return &Binary{
 		Activity: bsrpc.New(),
@@ -240,8 +240,6 @@ func (b *Binary) Run(args ...string) error {
 		return fmt.Errorf("%s command: %w", b.Type, err)
 	}
 
-
-
 	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
 	// Additionally, if Vinegar got TERM, it will also immediately exit, but roblox
 	// continues running if the signal holder was not present.
@@ -310,6 +308,12 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 	}
 
 	dir := filepath.Join(ad, "Local", "Roblox", "logs")
+
+	// This is required due to fsnotify requiring the directory
+	// to watch to exist before adding it.
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", fmt.Errorf("create roblox log dir: %w", err)
+	}
 
 	w, err := fsnotify.NewWatcher()
 	if err != nil {

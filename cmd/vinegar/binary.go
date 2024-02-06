@@ -74,7 +74,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 
 	s, err := state.Load()
 	if err != nil {
-		return nil, fmt.Errorf("load state: %w")
+		return nil, fmt.Errorf("load state: %w", err)
 	}
 
 	switch bt {

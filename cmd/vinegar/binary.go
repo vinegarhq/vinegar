@@ -91,6 +91,8 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 		return nil, fmt.Errorf("new prefix %s: %w", bt, err)
 	}
 
+	os.Setenv("GAMEID=ulwgl-roblox")
+
 	return &Binary{
 		Activity: bsrpc.New(),
 
@@ -238,7 +240,7 @@ func (b *Binary) Run(args ...string) error {
 		return fmt.Errorf("%s command: %w", b.Type, err)
 	}
 
-	cmd.Env = append(cmd.Environ(), "GAMEID=ulwgl-roblox")
+
 
 	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
 	// Additionally, if Vinegar got TERM, it will also immediately exit, but roblox

@@ -74,7 +74,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 
 	s, err := state.Load()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("load state: %w")
 	}
 
 	switch bt {
@@ -115,7 +115,7 @@ func (b *Binary) Main(args ...string) error {
 
 	logFile, err := LogFile(b.Type.String())
 	if err != nil {
-		return fmt.Errorf("failed to init log file: %w", err)
+		return fmt.Errorf("create log file: %w", err)
 	}
 	defer logFile.Close()
 
@@ -304,19 +304,19 @@ func (b *Binary) Run(args ...string) error {
 func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 	ad, err := pfx.AppDataDir()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("get appdata: %w", err)
 	}
 
 	dir := filepath.Join(ad, "Local", "Roblox", "logs")
 
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("make fsnotify watcher: %w", err)
 	}
 	defer w.Close()
 
 	if err := w.Add(dir); err != nil {
-		return "", err
+		return "", fmt.Errorf("watch roblox log dir: %w", err)
 	}
 
 	t := time.NewTimer(timeout)
@@ -365,7 +365,7 @@ func (b *Binary) Command(args ...string) (*exec.Cmd, error) {
 		cmd.Args = append(launcher, cmd.Args...)
 		p, err := b.Config.LauncherPath()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("bad launcher: %w", err)
 		}
 		cmd.Path = p
 	}

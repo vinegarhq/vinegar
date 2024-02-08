@@ -4,6 +4,7 @@ package wine
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -71,20 +72,21 @@ func Wine64(root string) (string, error) {
 // New returns a new Prefix.
 //
 // [Wine64] will be used to verify the named root or if
-// wine is installed.
+// wine is installed; it will be looked in $PATH only once -
+// if the wine executable changes it will not be re-looked.
 //
 // dir must be an absolute path and has correct permissions
 // to modify.
 func New(dir string, root string) (*Prefix, error) {
 	w, err := Wine64(root)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("bad wine: %w", err)
 	}
 
 	// Always ensure its created, wine will complain if the root
 	// directory doesnt exist
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create prefix: %s", err)
 	}
 
 	return &Prefix{

@@ -342,7 +342,7 @@ func (b *Binary) Tail(name string) {
 	}
 
 	for line := range t.Lines {
-		fmt.Fprintln(os.Stderr, line.Text)
+		fmt.Fprintln(b.Prefix.Stderr, line.Text)
 
 		if b.Config.DiscordRPC {
 			if err := b.Activity.HandleRobloxLog(line.Text); err != nil {

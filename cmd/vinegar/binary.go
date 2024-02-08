@@ -16,10 +16,10 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/godbus/dbus/v5"
 	"github.com/nxadm/tail"
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
-	"github.com/vinegarhq/vinegar/internal/bus"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
@@ -59,9 +59,6 @@ type Binary struct {
 	// Logging
 	Auth     bool
 	Activity bsrpc.Activity
-
-	// DBUS session
-	BusSession *bus.SessionBus
 }
 
 func BinaryPrefixDir(bt roblox.BinaryType) string {
@@ -106,8 +103,6 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 		Name:   bt.BinaryName(),
 		Type:   bt,
 		Prefix: pfx,
-
-		BusSession: bus.New(),
 	}, nil
 }
 
@@ -284,9 +279,7 @@ func (b *Binary) Run(args ...string) error {
 		b.Splash.Close()
 
 		if b.Config.GameMode {
-			if err := b.BusSession.GamemodeRegister(int32(cmd.Process.Pid)); err != nil {
-				slog.Error("Attempted to register to Gamemode daemon")
-			}
+			b.RegisterGameMode(int32(cmd.Process.Pid))
 		}
 
 		// Blocks and tails file forever until roblox is dead, unless
@@ -377,4 +370,20 @@ func (b *Binary) Command(args ...string) (*exec.Cmd, error) {
 	}
 
 	return cmd, nil
+}
+
+func (b *Binary) RegisterGameMode(pid int32) {
+	conn, err := dbus.ConnectSessionBus()
+	if err != nil {
+		slog.Error("Failed to connect to D-Bus", "error", err)
+		return
+	}
+
+	desktop := conn.Object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop")
+
+	call := desktop.Call("org.freedesktop.portal.GameMode.RegisterGame", 0, pid)
+	if call.Err != nil && !errors.Is(call.Err, dbus.ErrMsgNoObject) {
+		slog.Error("Failed to register to GameMode", "error", err)
+		return
+	}
 }

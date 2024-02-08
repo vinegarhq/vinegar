@@ -132,27 +132,35 @@ func (b *Binary) LauncherPath() (string, error) {
 	return exec.LookPath(strings.Fields(b.Launcher)[0])
 }
 
-func (b *Binary) setup() error {
-	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
-		return err
-	}
-
+func (b *Binary) validate() error {
 	if !strings.HasPrefix(b.Renderer, "D3D11") && b.Dxvk {
 		return ErrNeedDXVKRenderer
 	}
 
 	if b.Launcher != "" {
 		if _, err := b.LauncherPath(); err != nil {
-			return err
+			return fmt.Errorf("bad launcher: %s", err)
 		}
 	}
 
 	if b.WineRoot != "" {
 		if _, err := wine.Wine64(b.WineRoot); err != nil {
-			return err
+			return fmt.Errorf("bad wineroot: %s", err)
 		}
 	}
 
+	return nil
+}
+
+func (b *Binary) setup() error {
+	if err := b.validate(); err != nil {
+		return fmt.Errorf("invalid: %w", err)
+	}
+
+	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
+		return err
+	}
+	
 	return b.pickCard()
 }
 

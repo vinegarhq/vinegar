@@ -139,13 +139,13 @@ func (b *Binary) validate() error {
 
 	if b.Launcher != "" {
 		if _, err := b.LauncherPath(); err != nil {
-			return fmt.Errorf("bad launcher: %s", err)
+			return fmt.Errorf("bad launcher: %w", err)
 		}
 	}
 
 	if b.WineRoot != "" {
 		if _, err := wine.Wine64(b.WineRoot); err != nil {
-			return fmt.Errorf("bad wineroot: %s", err)
+			return fmt.Errorf("bad wineroot: %w", err)
 		}
 	}
 

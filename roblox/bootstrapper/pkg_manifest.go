@@ -29,9 +29,8 @@ func channelPath(channel string) string {
 	channel = strings.ToLower(channel)
 
 	// Roblox deployment mirrors only accepts no channel if its the default channel.
-	// DefaultChannel is in all caps, and since channel is lowercased above,
-	// make it lowercased too in this check.
-	if channel == strings.ToLower(DefaultChannel) {
+	// Considered default, kept for backwards compatibility.
+	if channel == "live" {
 		return "/"
 	}
 

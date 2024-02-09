@@ -10,7 +10,6 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/roblox"
-	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/wine"
 )
@@ -94,7 +93,7 @@ func Default() Config {
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "D3D11",
-			Channel:     bootstrapper.DefaultChannel,
+			Channel:     "", // Default upstream
 			DiscordRPC:  true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
@@ -107,7 +106,7 @@ func Default() Config {
 			Dxvk:        true,
 			DxvkVersion: "2.3",
 			GameMode:    true,
-			Channel:     bootstrapper.DefaultChannel,
+			Channel:     "", // Default upstream
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "D3D11",
 			// TODO: fill with studio fflag/env goodies
@@ -160,7 +159,7 @@ func (b *Binary) setup() error {
 	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
 		return err
 	}
-	
+
 	return b.pickCard()
 }
 

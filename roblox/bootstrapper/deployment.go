@@ -7,11 +7,10 @@ import (
 	"github.com/vinegarhq/vinegar/roblox/api"
 )
 
-// DefaultChannel is the default channel used for when
-// no named channel argument has been given.
-const DefaultChannel = "LIVE"
-
 // Version is a representation of a Binary's deployment or version.
+//
+// Channel can either be a given channel, or empty - in which Roblox 
+// will consider the 'default' channel.
 type Deployment struct {
 	Type    roblox.BinaryType
 	Channel string
@@ -20,10 +19,6 @@ type Deployment struct {
 
 // NewDeployment returns a new Deployment.
 func NewDeployment(bt roblox.BinaryType, channel string, GUID string) Deployment {
-	if channel == "" {
-		channel = DefaultChannel
-	}
-
 	return Deployment{
 		Type:    bt,
 		Channel: channel,
@@ -34,10 +29,6 @@ func NewDeployment(bt roblox.BinaryType, channel string, GUID string) Deployment
 // FetchDeployment returns the latest Version for the given roblox Binary type
 // with the given deployment channel through [api.GetClientVersion].
 func FetchDeployment(bt roblox.BinaryType, channel string) (Deployment, error) {
-	if channel == "" {
-		channel = DefaultChannel
-	}
-
 	slog.Info("Fetching Binary Deployment", "name", bt.BinaryName(), "channel", channel)
 
 	cv, err := api.GetClientVersion(bt.BinaryName(), channel)

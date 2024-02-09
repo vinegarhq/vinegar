@@ -10,7 +10,6 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -172,28 +171,38 @@ func (b *Binary) Main(args ...string) error {
 		}
 	}
 
-	// If the launch uri contains a channel key with a value
-	// that isn't empty, Roblox requested a specific channel
+	// Modify and handle the protocol uri channel
 	func() {
 		if len(args) < 1 {
 			return
 		}
 
-		c := regexp.MustCompile(`channel:([^+]*)`).FindStringSubmatch(args[0])
-		if len(c) < 1 {
+		puri := boot.ParseProtocolURI(args[0])
+		// This is not a valid protocol uri
+		if _, ok := puri["roblox-player"]; !ok {
 			return
 		}
+		c := puri["channel"]
 
-		if c[1] != "" && c[1] != b.Config.Channel {
+		if c != "" && c != b.Config.Channel {
+			cDisp := b.Config.Channel
+			if cDisp == "" {
+				cDisp = "(default)"
+			}
+
 			r := b.Splash.Dialog(
-				fmt.Sprintf(DialogReqChannel, c[1], b.Config.Channel),
+				fmt.Sprintf(DialogReqChannel, c, cDisp),
 				true,
 			)
 			if r {
-				slog.Warn("Switching user channel temporarily", "channel", c[1])
-				b.Config.Channel = c[1]
+				slog.Warn("Switching user channel temporarily", "channel", c)
+				b.Config.Channel = c
+				return
 			}
 		}
+
+		puri["channel"] = b.Config.Channel
+		args[0] = puri.String()
 	}()
 
 	b.Splash.SetDesc(b.Config.Channel)

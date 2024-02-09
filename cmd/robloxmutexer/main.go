@@ -74,7 +74,7 @@ func robloxRunning() (bool, error) {
 			}
 			return false, err
 		}
-		if windows.UTF16ToString(pe.ExeFile[:]) == "RobloxPlayerBeta" {
+		if windows.UTF16ToString(pe.ExeFile[:]) == "RobloxPlayerBeta.exe" {
 			return true, nil
 		}
 	}

@@ -172,38 +172,9 @@ func (b *Binary) Main(args ...string) error {
 	}
 
 	// Modify and handle the protocol uri channel
-	func() {
-		if len(args) < 1 {
-			return
-		}
-
-		puri := boot.ParseProtocolURI(args[0])
-		// This is not a valid protocol uri
-		if _, ok := puri["roblox-player"]; !ok {
-			return
-		}
-		c := puri["channel"]
-
-		if c != "" && c != b.Config.Channel {
-			cDisp := b.Config.Channel
-			if cDisp == "" {
-				cDisp = "(default)"
-			}
-
-			r := b.Splash.Dialog(
-				fmt.Sprintf(DialogReqChannel, c, cDisp),
-				true,
-			)
-			if r {
-				slog.Warn("Switching user channel temporarily", "channel", c)
-				b.Config.Channel = c
-				return
-			}
-		}
-
-		puri["channel"] = b.Config.Channel
-		args[0] = puri.String()
-	}()
+	if len(args) == 1 {
+		b.HandleProtocolURI(&args[0])
+	}
 
 	b.Splash.SetDesc(b.Config.Channel)
 
@@ -216,6 +187,35 @@ func (b *Binary) Main(args ...string) error {
 	}
 
 	return nil
+}
+
+func (b *Binary) HandleProtocolURI(mime *string) {
+	puri := boot.ParseProtocolURI(*mime)
+	if _, ok := puri["roblox-player"]; !ok {
+		return
+	}
+
+	c := puri["channel"]
+
+	if c != "" && c != b.Config.Channel {
+		cDisp := b.Config.Channel
+		if cDisp == "" {
+			cDisp = "(default)"
+		}
+
+		r := b.Splash.Dialog(
+			fmt.Sprintf(DialogReqChannel, c, cDisp),
+			true,
+		)
+		if r {
+			slog.Warn("Switching user channel temporarily", "channel", c)
+			b.Config.Channel = c
+			return
+		}
+	}
+
+	puri["channel"] = b.Config.Channel
+	*mime = puri.String()
 }
 
 func (b *Binary) Run(args ...string) error {

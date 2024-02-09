@@ -42,18 +42,20 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 	}
 
 	width := 384
+	// DOES NOT ACCOUNT FOR SCALING FACTORS
+	// PLZ FIX GIO
 	height := func() int {
 		l := material.Body2(th, txt)
 		gtx := layout.Context{
 			Ops: &ops,
 			Constraints: layout.Constraints{
-				Min: image.Point{X: 64, Y: 38},
-				Max: image.Point{X: width, Y: width * 2},
+				Min: image.Point{X: width, Y: 0},
+				Max: image.Point{X: width, Y: width * 4},
 			},
 		}
 		defer ops.Reset()
 
-		return l.Layout(gtx).Size.Y + (18 * 4)
+		return l.Layout(gtx).Size.Y + (18 * 2) + 57 + 4
 	}()
 
 	w := window(unit.Dp(width), unit.Dp(height))

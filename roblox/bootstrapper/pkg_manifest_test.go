@@ -111,7 +111,7 @@ func TestExcludedPackage(t *testing.T) {
 }
 
 func TestChannelPath(t *testing.T) {
-	if channelPath(DefaultChannel) != "/" {
+	if channelPath("") != "/" {
 		t.Fatal("expected default channel empty path")
 	}
 

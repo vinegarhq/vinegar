@@ -24,15 +24,13 @@ var (
 )
 
 func channelPath(channel string) string {
+	if channel == "" {
+		return "/"
+	}
+
 	// Ensure that the channel is lowercased, since internally in
 	// ClientSettings it will be lowercased, but not on the deploy mirror.
 	channel = strings.ToLower(channel)
-
-	// Roblox deployment mirrors only accepts no channel if its the default channel.
-	// Considered default, kept for backwards compatibility.
-	if channel == "live" {
-		return "/"
-	}
 
 	return "/channel/" + channel + "/"
 }

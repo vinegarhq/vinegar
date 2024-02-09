@@ -11,6 +11,11 @@ import (
 //
 // Channel can either be a given channel, or empty - in which Roblox 
 // will consider the 'default' channel.
+//
+// In all things related to the Roblox API, the default channel is empty,
+// or 'live'/'LIVE' on clientsettings. On the Client/Studio, the default channel
+// is (or can be) 'production'. This behavior is undocumented, so it's best to 
+// just use an empty channel i guess.
 type Deployment struct {
 	Type    roblox.BinaryType
 	Channel string

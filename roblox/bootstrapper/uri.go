@@ -8,7 +8,8 @@ import (
 // URI which is sent to Player using MIME as a command line argument.
 //
 // Example:
-// 	roblox-player:1+channel:live
+// 	roblox-player:1+channel:ganesh
+// 	roblox-player:1+channel:
 type ProtocolURI map[string]string
 
 // ParseProtocolURI returns the given MIME protocol URI in [ProtocolURI] form.

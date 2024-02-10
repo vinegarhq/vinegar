@@ -235,8 +235,6 @@ func (b *Binary) Run(args ...string) error {
 		if err := mutexer.Start(); err != nil {
 			return fmt.Errorf("start robloxmutexer: %w", err)
 		}
-
-		defer mutexer.Process.Kill()
 	}
 
 	cmd, err := b.Command(args...)

@@ -122,10 +122,6 @@ func main() {
 	}
 }
 
-func DeleteOldPrefix() {
-
-}
-
 func LogFile(name string) (*os.File, error) {
 	if err := dirs.Mkdirs(dirs.Logs); err != nil {
 		return nil, err

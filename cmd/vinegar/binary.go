@@ -365,6 +365,28 @@ func (b *Binary) Command(args ...string) (*exec.Cmd, error) {
 	}
 
 	cmd := b.Prefix.Wine(filepath.Join(b.Dir, b.Type.Executable()), args...)
+	cmd.Stderr = nil
+	cmd.Stdout = nil
+
+	// There was a long discussion in #winehq regarding starting wine from 
+	// Go with os/exec when it's stderr and stdout was set to a file. This
+	// behavior causes wineserver to start alongside the process instead of
+	// the background, creating issues such as Wineserver waiting for processes
+	// alongside Roblox - having timeout issues, etc. A pipe is required to
+	// mitigate this behavior..
+	//
+	// Please help me. I've been going insane.
+	cmdErrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, fmt.Errorf("stderr pipe: %w", err)
+	}
+
+	cmdOutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, fmt.Errorf("stdout pipe: %w", err)
+	}
+
+	go io.Copy(b.Prefix.Stderr, io.MultiReader(cmdErrPipe, cmdOutPipe))
 
 	launcher := strings.Fields(b.Config.Launcher)
 	if len(launcher) >= 1 {

@@ -54,7 +54,7 @@ func Wine64(root string) (string, error) {
 		if strings.Contains(strings.ToLower(root), "ulwgl") {
 			slog.Info("Detected ULWGL Wineroot!")
 
-			wineLook = filepath.Join(root, "gamelauncher.sh")
+			wineLook = filepath.Join(root, "ulwgl-run")
 			os.Setenv("STORE", "none")
 		} else {
 			wineLook = filepath.Join(root, "bin", wineLook)

@@ -21,6 +21,16 @@ func main() {
 }
 
 func lock() error {
+	ok, err := running(os.Args[0])
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		log.Println("another robloxmutexer is already running, exiting...")
+		return nil
+	}
+
 	name, err := windows.UTF16PtrFromString("ROBLOX_singletonMutex")
 	if err != nil {
 		return err
@@ -41,7 +51,7 @@ func lock() error {
 
 	for {
 		time.Sleep(5 * time.Second)
-		r, err := robloxRunning()
+		r, err := running("RobloxPlayerBeta.exe")
 		if err != nil {
 			return err
 		}
@@ -55,7 +65,7 @@ func lock() error {
 	return nil
 }
 
-func robloxRunning() (bool, error) {
+func running(exe string) (bool, error) {
 	snap, err := windows.CreateToolhelp32Snapshot(windows.TH32CS_SNAPPROCESS, 0)
 	if err != nil {
 		return false, err
@@ -74,7 +84,7 @@ func robloxRunning() (bool, error) {
 			}
 			return false, err
 		}
-		if windows.UTF16ToString(pe.ExeFile[:]) == "RobloxPlayerBeta.exe" {
+		if windows.UTF16ToString(pe.ExeFile[:]) == exe {
 			return true, nil
 		}
 	}

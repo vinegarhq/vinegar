@@ -4,10 +4,10 @@
 package main
 
 import (
-	"os"
 	"log"
-	"unsafe"
+	"os"
 	"time"
+	"unsafe"
 
 	"golang.org/x/sys/windows"
 )

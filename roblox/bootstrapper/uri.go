@@ -13,8 +13,9 @@ import (
 // The order may matter, but it seems that the client parses it normal.
 //
 // Example:
-// 	roblox-player:1+channel:ganesh
-// 	roblox-player:1+channel:
+//
+//	roblox-player:1+channel:ganesh
+//	roblox-player:1+channel:
 type ProtocolURI map[string]string
 
 // ParseProtocolURI returns the given MIME protocol URI in [ProtocolURI] form.

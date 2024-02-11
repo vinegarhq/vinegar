@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"golang.org/x/term"
 	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
+
+	"golang.org/x/term"
 
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"

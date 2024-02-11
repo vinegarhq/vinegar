@@ -6,7 +6,7 @@ import (
 
 // Winetricks runs winetricks within the Prefix.
 func (p *Prefix) Winetricks() error {
-	return p.command("winetricks").Run()
+	return p.Command("winetricks").Run()
 }
 
 // SetDPI sets the Prefix's DPI to the named DPI.

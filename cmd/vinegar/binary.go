@@ -7,7 +7,6 @@ import (
 	"log"
 	"log/slog"
 	"os"
-	"os/exec"
 	"os/signal"
 	"path/filepath"
 	"strings"
@@ -242,9 +241,7 @@ func (b *Binary) Run(args ...string) error {
 		return fmt.Errorf("%s command: %w", b.Type, err)
 	}
 
-	// Act as the signal holder, as roblox/wine will not do anything with the INT signal.
-	// Additionally, if Vinegar got TERM, it will also immediately exit, but roblox
-	// continues running if the signal holder was not present.
+	// Roblox will keep running if it was sent SIGINT; requiring acting as the signal holder.
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -255,7 +252,7 @@ func (b *Binary) Run(args ...string) error {
 		// Only kill Roblox if it hasn't exited
 		if cmd.ProcessState == nil {
 			slog.Warn("Killing Roblox", "pid", cmd.Process.Pid)
-			// This way, cmd.Run() will return and the wineprefix killer will be ran.
+			// This way, cmd.Run() will return and vinegar (should) exit.
 			cmd.Process.Kill()
 		}
 
@@ -359,34 +356,12 @@ func (b *Binary) Tail(name string) {
 	}
 }
 
-func (b *Binary) Command(args ...string) (*exec.Cmd, error) {
+func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = []string{"-protocolString", args[0]}
 	}
 
 	cmd := b.Prefix.Wine(filepath.Join(b.Dir, b.Type.Executable()), args...)
-	cmd.Stderr = nil
-	cmd.Stdout = nil
-
-	// There was a long discussion in #winehq regarding starting wine from 
-	// Go with os/exec when it's stderr and stdout was set to a file. This
-	// behavior causes wineserver to start alongside the process instead of
-	// the background, creating issues such as Wineserver waiting for processes
-	// alongside Roblox - having timeout issues, etc. A pipe is required to
-	// mitigate this behavior..
-	//
-	// Please help me. I've been going insane.
-	cmdErrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return nil, fmt.Errorf("stderr pipe: %w", err)
-	}
-
-	cmdOutPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return nil, fmt.Errorf("stdout pipe: %w", err)
-	}
-
-	go io.Copy(b.Prefix.Stderr, io.MultiReader(cmdErrPipe, cmdOutPipe))
 
 	launcher := strings.Fields(b.Config.Launcher)
 	if len(launcher) >= 1 {

@@ -103,12 +103,10 @@ func (p *Prefix) Dir() string {
 	return p.dir
 }
 
-// Wine returns a new [exec.Cmd] with wine64 as the named program.
-//
-// The path of wine64 will either be from $PATH or from Prefix's Root.
-func (p *Prefix) Wine(exe string, arg ...string) *exec.Cmd {
+// Wine returns a new Cmd with the prefix's Wine as the named program.
+func (p *Prefix) Wine(exe string, arg ...string) *Cmd {
 	arg = append([]string{exe}, arg...)
-	cmd := p.command(p.wine, arg...)
+	cmd := p.Command(p.wine, arg...)
 
 	if strings.Contains(strings.ToLower(p.wine), "ulwgl") {
 		cmd.Env = append(cmd.Environ(), "PROTON_VERB=runinprefix")
@@ -130,18 +128,6 @@ func (p *Prefix) Init() error {
 // Update updates the wineprefix directory.
 func (p *Prefix) Update() error {
 	return p.Wine("wineboot", "-u").Run()
-}
-
-func (p *Prefix) command(name string, arg ...string) *exec.Cmd {
-	cmd := exec.Command(name, arg...)
-	cmd.Env = append(cmd.Environ(),
-		"WINEPREFIX="+p.dir,
-	)
-
-	cmd.Stderr = p.Stderr
-	cmd.Stdout = p.Stdout
-
-	return cmd
 }
 
 // Version returns the wineprefix's Wine version.

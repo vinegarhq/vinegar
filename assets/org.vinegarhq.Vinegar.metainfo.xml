@@ -35,7 +35,7 @@
 					<li>Refactored BloxstrapRPC, implemented full BloxstrapRPC protocol support</li>
 					<li>Added ULWGL support</li>
 					<li>Wineprefix is not killed after Roblox - robloxmutexer runs in background, dying when there are no roblox processes</li>
-				<ul>
+				</ul>
 			</description>
 		</release>
 		<release version="1.6.1" date="2024-1-18">

@@ -4,9 +4,9 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"time"
-	"errors"
 	"unsafe"
 
 	"golang.org/x/sys/windows"

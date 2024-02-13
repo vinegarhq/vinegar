@@ -33,7 +33,6 @@ const (
 	DialogUseBrowser = "WebView/InternalBrowser is broken, please use the browser for the action that you were doing."
 	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
 	DialogFailure    = "Vinegar experienced an error:\n%s"
-	DialogReqChannel = "Roblox is attempting to set your channel to %[1]s, however the current preferred channel is %s.\n\nWould you like to set the channel to %[1]s temporarily?"
 	DialogNoAVX      = "Warning: Your CPU does not support AVX. While some people may be able to run without it, most are not able to. VinegarHQ cannot provide support for your installation. Continue?"
 )
 
@@ -172,7 +171,7 @@ func (b *Binary) Main(args ...string) error {
 
 	// Modify and handle the protocol uri channel
 	if len(args) == 1 {
-		b.HandleProtocolURI(&args[0])
+		b.HandleProtocolURI(args[0])
 	}
 
 	b.Splash.SetDesc(b.Config.Channel)
@@ -188,33 +187,21 @@ func (b *Binary) Main(args ...string) error {
 	return nil
 }
 
-func (b *Binary) HandleProtocolURI(mime *string) {
-	puri := boot.ParseProtocolURI(*mime)
-	if _, ok := puri["roblox-player"]; !ok {
-		return
-	}
+func (b *Binary) HandleProtocolURI(mime string) {
+	uris := strings.Split(mime, "+")
+	for _, uri := range uris {
+		kv := strings.Split(uri, ":")
 
-	c := puri["channel"]
+		if len(kv) == 2 && kv[0] == "channel" {
+			c := kv[1]
+			if c == "" {
+				continue
+			}
 
-	if c != "" && c != b.Config.Channel {
-		cDisp := b.Config.Channel
-		if cDisp == "" {
-			cDisp = "(default)"
-		}
-
-		r := b.Splash.Dialog(
-			fmt.Sprintf(DialogReqChannel, c, cDisp),
-			true,
-		)
-		if r {
-			slog.Warn("Switching user channel temporarily", "channel", c)
+			slog.Warn("Roblox has requested a user channel, changing...", "channel", c)
 			b.Config.Channel = c
-			return
 		}
 	}
-
-	puri["channel"] = b.Config.Channel
-	*mime = puri.String()
 }
 
 func (b *Binary) Run(args ...string) error {

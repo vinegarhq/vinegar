@@ -5,8 +5,8 @@ package main
 
 import (
 	"log"
-	"os"
 	"time"
+	"errors"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -22,16 +22,6 @@ func main() {
 }
 
 func lock() error {
-	ok, err := running(os.Args[0])
-	if err != nil {
-		return err
-	}
-
-	if !ok {
-		log.Println("another robloxmutexer is already running, exiting...")
-		return nil
-	}
-
 	name, err := windows.UTF16PtrFromString("ROBLOX_singletonMutex")
 	if err != nil {
 		return err
@@ -39,6 +29,9 @@ func lock() error {
 
 	mutex, err := windows.CreateMutex(nil, false, name)
 	if err != nil {
+		if errors.Is(err, windows.ERROR_ALREADY_EXISTS) {
+			return errors.New("Roblox's Mutex is already locked!")
+		}
 		return err
 	}
 	defer windows.CloseHandle(mutex)

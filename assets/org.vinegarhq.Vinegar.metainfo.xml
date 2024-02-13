@@ -23,6 +23,25 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.7.0" date="2024-2-13">
+			<description>
+				<ul>
+					<li>Multi-prefix support, Player and Studio have their own indivisual wineprefix, the old shared one being removed upon run - Backup your files!</li>
+					<li>Refactored BloxstrapRPC, implemented full BloxstrapRPC protocol support</li>
+					<li>Added ULWGL support</li>
+					<li>Wineprefix is not killed after Roblox - robloxmutexer runs in background, dying when there are no roblox processes</li>
+				<ul>
+			</description>
+		</release>
+		<release version="1.6.1" date="2024-1-18">
+			<description>
+				<ul>
+					<li>Fixed default channel check for manifest path</li>
+					<li>Fixed package downloading</li>
+					<li>AVX block is now a warning</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.6.0" date="2023-12-22">
 			<description>
 				<ul>

@@ -227,13 +227,19 @@ func (b *Binary) Run(args ...string) error {
 		}
 	}
 
-	if b.GlobalConfig.MultipleInstances {
+	// Studio can run in multiple instances, not Player
+	if b.GlobalConfig.MultipleInstances && b.Type == roblox.Player {
 		slog.Info("Running robloxmutexer")
 
 		mutexer := b.Prefix.Wine(filepath.Join(BinPrefix, "robloxmutexer.exe"))
 		if err := mutexer.Start(); err != nil {
 			return fmt.Errorf("start robloxmutexer: %w", err)
 		}
+		go func() {
+			if err := mutexer.Wait(); err != nil {
+				slog.Error("robloxmutexer returned too early", "error", err)
+			}
+		}()
 	}
 
 	cmd, err := b.Command(args...)
@@ -346,7 +352,7 @@ func (b *Binary) Tail(name string) {
 	}
 
 	for line := range t.Lines {
-		fmt.Fprintln(b.Prefix.Stderr, line.Text)
+		// fmt.Fprintln(b.Prefix.Stderr, line.Text)
 
 		if b.Config.DiscordRPC {
 			if err := b.Activity.HandleRobloxLog(line.Text); err != nil {

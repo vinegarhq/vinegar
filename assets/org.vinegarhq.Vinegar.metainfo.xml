@@ -23,6 +23,11 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.7.2" date="2024-2-13">
+			<description>
+				Fixed Critical Roblox Protocol MIME URI handling
+			</description>
+		</release>
 		<release version="1.7.1" date="2024-2-13">
 			<description>
 				Fixed desktop files

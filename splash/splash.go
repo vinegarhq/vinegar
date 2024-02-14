@@ -145,7 +145,6 @@ func New(cfg *Config) *Splash {
 		Window:        w,
 		exitButton:    eb,
 		openLogButton: olb,
-		closed:        true,
 	}
 }
 

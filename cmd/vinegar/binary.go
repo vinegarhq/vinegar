@@ -167,6 +167,10 @@ func (b *Binary) Main(args ...string) error {
 		if err != nil {
 			return fmt.Errorf("failed to init %s prefix: %w", b.Type, err)
 		}
+
+		if err := b.InstallWebView(); err != nil {
+			return fmt.Errorf("failed to install webview: %w", err)
+		}
 	}
 
 	// Modify and handle the protocol uri channel

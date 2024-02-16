@@ -9,18 +9,24 @@ import (
 	"path/filepath"
 	"time"
 
-	"golang.org/x/term"
-
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/roblox"
+	"golang.org/x/term"
 )
 
 var (
-	BinPrefix string
-	Version   string
+	BinPrefix  string
+	ConfigPath string
+	FirstRun   bool
+	Version    string
 )
+
+func init() {
+	flag.StringVar(&ConfigPath, "config", filepath.Join(dirs.Config, "config.toml"), "config.toml file which should be used")
+	flag.BoolVar(&FirstRun, "firstrun", false, "to trigger first run behavior")
+}
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] player|studio exec|run [args...]")
@@ -31,7 +37,6 @@ func usage() {
 }
 
 func main() {
-	configPath := flag.String("config", filepath.Join(dirs.Config, "config.toml"), "config.toml file which should be used")
 	flag.Parse()
 
 	cmd := flag.Arg(0)
@@ -47,8 +52,8 @@ func main() {
 				log.Fatalf("remove %s: %s", dirs.Prefixes, err)
 			}
 		case "edit":
-			if err := editor.Edit(*configPath); err != nil {
-				log.Fatalf("edit %s: %s", *configPath, err)
+			if err := editor.Edit(ConfigPath); err != nil {
+				log.Fatalf("edit %s: %s", ConfigPath, err)
 			}
 		case "version":
 			fmt.Println("Vinegar", Version)
@@ -62,9 +67,9 @@ func main() {
 			}
 		}
 
-		cfg, err := config.Load(*configPath)
+		cfg, err := config.Load(ConfigPath)
 		if err != nil {
-			log.Fatalf("load config %s: %s", *configPath, err)
+			log.Fatalf("load config %s: %s", ConfigPath, err)
 		}
 
 		var bt roblox.BinaryType

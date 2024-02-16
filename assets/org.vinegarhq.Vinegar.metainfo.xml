@@ -12,6 +12,9 @@
 		<name>VinegarHQ</name>
 	</developer>
 	<launchable type="desktop-id">org.vinegarhq.Vinegar.desktop</launchable>
+	<launchable type="desktop-id">org.vinegarhq.Vinegar.studio.desktop</launchable>
+	<launchable type="desktop-id">org.vinegarhq.Vinegar.app.desktop</launchable>
+	<launchable type="desktop-id">org.vinegarhq.Vinegar.player.desktop</launchable>
 	<provides>
 		<binary>vinegar</binary>
 	</provides>

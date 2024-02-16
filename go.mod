@@ -12,6 +12,7 @@ require (
 require (
 	gioui.org v0.4.1
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
+	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/nxadm/tail v1.4.11

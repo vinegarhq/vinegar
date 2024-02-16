@@ -149,7 +149,8 @@ func (b *Binary) Main(args ...string) error {
 		}
 	}()
 
-	if firstRun {
+	// Command-line flag vs wineprefix initialized
+	if firstRun || FirstRun {
 		slog.Info("Initializing wineprefix", "dir", b.Prefix.Dir())
 		b.Splash.SetMessage("Initializing wineprefix")
 

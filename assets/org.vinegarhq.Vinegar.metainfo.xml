@@ -8,7 +8,14 @@
 	<description>
 		<p>Vinegar is a fast and robust bootstrapper for Roblox that has many ease-of-use features.</p>
 	</description>
-	<developer_name>VinegarHQ</developer_name>
+	<developer id = "vinegarhq.org">
+		<name>VinegarHQ</name>
+	</developer>
+	<launchable type="desktop-id">org.vinegarhq.Vinegar.desktop</launchable>
+	<provides>
+		<binary>vinegar</binary>
+	</provides>
+
 	<categories>
 		<category>Game</category>
 	</categories>
@@ -23,95 +30,10 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
-		<release version="1.7.3" date="2024-2-14">
-			<description>
-				Fixed Splash window appearing
-			</description>
-		</release>
-		<release version="1.7.2" date="2024-2-13">
-			<description>
-				Fixed Critical Roblox Protocol MIME URI handling
-			</description>
-		</release>
-		<release version="1.7.1" date="2024-2-13">
-			<description>
-				Fixed desktop files
-			</description>
-		</release>
-		<release version="1.7.0" date="2024-2-13">
+		<release version="1.7.3" date="2024-2-13">
 			<description>
 				<ul>
-					<li>Multi-prefix support, Player and Studio have their own indivisual wineprefix, the old shared one being removed upon run - Backup your files!</li>
-					<li>Refactored BloxstrapRPC, implemented full BloxstrapRPC protocol support</li>
-					<li>Added ULWGL support</li>
-					<li>Wineprefix is not killed after Roblox - robloxmutexer runs in background, dying when there are no roblox processes</li>
-				</ul>
-			</description>
-		</release>
-		<release version="1.6.1" date="2024-1-18">
-			<description>
-				<ul>
-					<li>Fixed default channel check for manifest path</li>
-					<li>Fixed package downloading</li>
-					<li>AVX block is now a warning</li>
-				</ul>
-			</description>
-		</release>
-		<release version="1.6.0" date="2023-12-22">
-			<description>
-				<ul>
-					<li>Vinegar will ask the user if they would like to submit hardware information to Merlin via dialog</li>
-					<li>Dropped Global configuration directive</li>
-					<li>Fix Discord RPC on Flatpak</li>
-				</ul>
-			</description>
-		</release>
-		<release version="1.5.9" date="2023-12-09">
-			<description>
-				<ul>
-					<li>Set binary environment during vinegar run-time (fixed #265)</li>
-					<li>Set env OBS_VKCAPTURE by default for player by Jrelvas</li>
-					<li>Add new "GameMode" option which implements org.freedesktop.portal.GameMode by Jrelvas</li>
-					<li>Use card PCI discriminator for PRIME</li>
-					<li>Removed vinegar install-webview2</li>
-					<li>Set Roblox renderer during configuration initialization for Binaries, fixes nil map panics</li>
-					<li>Fix setting Studio Environment or FFlags</li>
-					<li>Introduce Merlin hardware data submission with vinegar submit</li>
-				</ul>
-			</description>
-		</release>
-		<release version="1.5.8" date="2023-11-03">
-			<description>
-				<ul>
-					<li>Fixes "player: dxvk is only valid with d3d renderers" bug</li>
-					<li>Allow multi-gpu systems to use PRIME properly</li>
-				</ul>
-			</description>
-		</release>
-		<release version="1.5.7" date="2023-11-03">
-			<description>
-				<ul>
-					<li>Fixed panic on multiple-card systems</li>
-					<li>Added error checking for if DXVK is enabled and using non-dxvk compatible renderer</li>
-				</ul>
-			</description>
-		</release>
-		<release version="1.5.6" date="2023-11-01">
-			<description>
-				<ul>
-					<li>Added automatic GPU handling (such as PRIME)</li>
-					<li>Added a new Splash style</li>
-					<li>Added system information grabbing</li>
-					<li>Klill Wineprefix when splash window is ordered to exit before launching Roblox</li>
-				</ul>
-			</description>
-		</release>
-		<release version="1.5.4" date="2023-10-13">
-			<description>
-				<ul>
-					<li>Added Discord rich presence with BloxstrapRPC</li>
-					<li>Fix Studio's bold fonts</li>
-					<li>Merged Roblox's logs with Vinegar</li>
+					<li>Fixed splash window bug</li>
 				</ul>
 			</description>
 		</release>

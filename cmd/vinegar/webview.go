@@ -36,9 +36,12 @@ func (b *Binary) InstallWebView() error {
 		if err := b.DownloadWebView(); err != nil {
 			return err
 		}
+	} else if err == nil {
+		slog.Info("WebView installer cached, skipping download", "path", WebViewInstallerPath)
 	}
 
 	b.Splash.SetMessage("Installing WebView")
+	b.Splash.SetProgress(1.0)
 	slog.Info("Running WebView installer", "path", WebViewInstallerPath)
 
 	return b.Prefix.Wine(WebViewInstallerPath,

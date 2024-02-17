@@ -7,11 +7,11 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
 	"golang.org/x/term"
 )
@@ -46,10 +46,8 @@ func main() {
 	case "delete", "edit", "version":
 		switch cmd {
 		case "delete":
-			slog.Info("Deleting Wineprefixes and Roblox Binary deployments!")
-
-			if err := os.RemoveAll(dirs.Prefixes); err != nil {
-				log.Fatalf("remove %s: %s", dirs.Prefixes, err)
+			if err := Delete(); err != nil {
+				log.Fatal(err)
 			}
 		case "edit":
 			if err := editor.Edit(ConfigPath); err != nil {
@@ -128,20 +126,24 @@ func main() {
 	}
 }
 
-func LogFile(name string) (*os.File, error) {
-	if err := dirs.Mkdirs(dirs.Logs); err != nil {
-		return nil, err
+func Delete() error {
+	slog.Info("Deleting Wineprefixes!")
+
+	if err := os.RemoveAll(dirs.Prefixes); err != nil {
+		return fmt.Errorf("remove prefixes: %w", err)
 	}
 
-	// name-2006-01-02T15:04:05Z07:00.log
-	path := filepath.Join(dirs.Logs, name+"-"+time.Now().Format(time.RFC3339)+".log")
-
-	file, err := os.Create(path)
+	s, err := state.Load()
 	if err != nil {
-		return nil, fmt.Errorf("failed to create %s log file: %w", name, err)
+		return fmt.Errorf("load state: %w", err)
 	}
 
-	slog.Info("Logging to file", "path", path)
+	s.Player.DxvkVersion = ""
+	s.Studio.DxvkVersion = ""
 
-	return file, nil
+	if err := s.Save(); err != nil {
+		return fmt.Errorf("save state: %w", err)
+	}
+
+	return nil
 }

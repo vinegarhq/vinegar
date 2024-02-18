@@ -25,6 +25,7 @@ import (
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
+	"golang.org/x/term"
 )
 
 const (
@@ -106,13 +107,11 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 	}, nil
 }
 
-func (b *Binary) Main(args ...string) error {
-	b.Splash = splash.New(&b.GlobalConfig.Splash)
-	b.Config.Env.Setenv()
-
+func (b *Binary) Main(args ...string) int {
 	logFile, err := LogFile(b.Type.String())
 	if err != nil {
-		return fmt.Errorf("create log file: %w", err)
+		slog.Error(fmt.Sprintf("create log file: %w", err))
+		return 1
 	}
 	defer logFile.Close()
 
@@ -120,19 +119,9 @@ func (b *Binary) Main(args ...string) error {
 	b.Prefix.Stderr = out
 	b.Prefix.Stdout = out
 	log.SetOutput(out)
-	defer func() {
-		b.Splash.LogPath = logFile.Name()
-	}()
 
-	firstRun := false
-	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
-		firstRun = true
-	}
-
-	if firstRun && !sysinfo.CPU.AVX {
-		b.Splash.Dialog(DialogNoAVX, false)
-		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
-	}
+	b.Splash = splash.New(&b.GlobalConfig.Splash)
+	b.Config.Env.Setenv()
 
 	go func() {
 		err := b.Splash.Run()
@@ -146,11 +135,62 @@ func (b *Binary) Main(args ...string) error {
 		}
 
 		// The splash window didn't close cleanly (ErrClosed), an
-		// internal error occured.
+		// internal error occured, and vinegar cannot continue.
 		if err != nil {
-			log.Fatalf("splash: %s", err)
+			slog.Error(fmt.Sprintf("splash: %w", err))
+			logFile.Close()
+			os.Exit(1)
 		}
 	}()
+
+	err = b.Run(args...)
+	if err != nil {
+		slog.Error(err.Error())
+
+		if b.GlobalConfig.Splash.Enabled && !term.IsTerminal(int(os.Stderr.Fd())) {
+			b.Splash.LogPath = logFile.Name()
+			b.Splash.SetMessage("Oops!")
+			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false) // blocks
+		}
+
+		return 1
+	}
+
+	return 0
+}
+
+func (b *Binary) Run(args ...string) error {
+	if err := b.Init(); err != nil {
+		return fmt.Errorf("init %s: %w", b.Type, err)
+	}
+
+	if len(args) == 1 && args[0] == "roblox-" {
+		b.HandleProtocolURI(args[0])
+	}
+
+	b.Splash.SetDesc(b.Config.Channel)
+
+	if err := b.Setup(); err != nil {
+		return fmt.Errorf("failed to setup roblox: %w", err)
+	}
+
+	if err := b.Execute(args...); err != nil {
+		return fmt.Errorf("failed to run roblox: %w", err)
+	}
+
+	return nil
+}
+
+func (b *Binary) Init() error {
+	firstRun := false
+	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
+		firstRun = true
+	}
+
+	if firstRun && !sysinfo.CPU.AVX {
+		b.Splash.Dialog(DialogNoAVX, false)
+		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
+	}
 
 	// Command-line flag vs wineprefix initialized
 	if firstRun || FirstRun {
@@ -177,21 +217,6 @@ func (b *Binary) Main(args ...string) error {
 		}
 	}
 
-	// Modify and handle the protocol uri channel
-	if len(args) == 1 {
-		b.HandleProtocolURI(args[0])
-	}
-
-	b.Splash.SetDesc(b.Config.Channel)
-
-	if err := b.Setup(); err != nil {
-		return fmt.Errorf("failed to setup roblox: %w", err)
-	}
-
-	if err := b.Run(args...); err != nil {
-		return fmt.Errorf("failed to run roblox: %w", err)
-	}
-
 	return nil
 }
 
@@ -212,7 +237,7 @@ func (b *Binary) HandleProtocolURI(mime string) {
 	}
 }
 
-func (b *Binary) Run(args ...string) error {
+func (b *Binary) Execute(args ...string) error {
 	if b.Config.DiscordRPC {
 		if err := b.Activity.Connect(); err != nil {
 			slog.Error("Could not connect to Discord RPC", "error", err)

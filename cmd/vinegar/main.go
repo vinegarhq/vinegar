@@ -13,7 +13,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/roblox"
-	"golang.org/x/term"
 )
 
 var (
@@ -102,22 +101,9 @@ func main() {
 				log.Fatalf("exec winetricks %s: %s", bt, err)
 			}
 		case "run":
-			err = b.Main(args[2:]...)
-			if err == nil {
-				slog.Info("Goodbye")
-				os.Exit(0)
+			if code := b.Main(args[2:]...); code > 0 {
+				os.Exit(code)
 			}
-
-			// Only fatal print the error if we are in a terminal, otherwise
-			// display a dialog message.
-			if !cfg.Splash.Enabled || term.IsTerminal(int(os.Stderr.Fd())) {
-				log.Fatal(err)
-			}
-
-			slog.Error(err.Error())
-			b.Splash.SetMessage("Oops!")
-			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false)
-			os.Exit(1)
 		default:
 			usage()
 		}

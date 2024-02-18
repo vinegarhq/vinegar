@@ -1,12 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
-	"errors"
 	"strings"
 
 	cp "github.com/otiai10/copy"

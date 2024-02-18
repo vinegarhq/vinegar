@@ -295,6 +295,12 @@ func (b *Binary) Run(args ...string) error {
 	}()
 
 	if err := cmd.Run(); err != nil {
+		// thanks for your time, fizzie on #go-nuts
+		// Killed, not an error (in most cases)
+		if cmd.ProcessState.ExitCode() == -1 {
+			slog.Warn("Roblox was killed!")
+			return nil
+		}
 		return fmt.Errorf("roblox process: %w", err)
 	}
 

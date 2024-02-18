@@ -27,7 +27,10 @@ import (
 	"github.com/vinegarhq/vinegar/wine"
 )
 
-const timeout = 6 * time.Second
+const (
+	LogTimeout = 6 * time.Second
+	DieTimeout = 3 * time.Second
+)
 
 const (
 	DialogUseBrowser = "WebView/InternalBrowser is broken, please use the browser for the action that you were doing."
@@ -240,8 +243,10 @@ func (b *Binary) Run(args ...string) error {
 	}
 
 	// Roblox will keep running if it was sent SIGINT; requiring acting as the signal holder.
+	// SIGUSR1 is used in Tail() to force kill roblox, used to differenciate between
+	// a user-sent signal and a self sent signal.
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGUSR1)
 	go func() {
 		s := <-c
 
@@ -320,12 +325,12 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 		return "", fmt.Errorf("watch roblox log dir: %w", err)
 	}
 
-	t := time.NewTimer(timeout)
+	t := time.NewTimer(LogTimeout)
 
 	for {
 		select {
 		case <-t.C:
-			return "", fmt.Errorf("roblox log file not found after %s", timeout)
+			return "", fmt.Errorf("roblox log file not found after %s", LogTimeout)
 		case e := <-w.Events:
 			if e.Has(fsnotify.Create) {
 				return e.Name, nil
@@ -345,6 +350,16 @@ func (b *Binary) Tail(name string) {
 
 	for line := range t.Lines {
 		fmt.Fprintln(b.Prefix.Stderr, line.Text)
+
+		// Roblox shut down, give it atleast a few seconds, and then send an
+		// internal signal to kill it.
+		// This is due to Roblox occasionally refusing to die. We must kill it.
+		if strings.Contains(line.Text, "[FLog::SingleSurfaceApp] shutDown:") {
+			go func() {
+				time.Sleep(DieTimeout)
+				syscall.Kill(syscall.Getpid(), syscall.SIGUSR1)
+			}()
+		}
 
 		if b.Config.DiscordRPC {
 			if err := b.Activity.HandleRobloxLog(line.Text); err != nil {

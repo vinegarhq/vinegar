@@ -59,8 +59,8 @@ func (b *Binary) Setup() error {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
 
-	if err := dirs.OverlayDir(b.Dir); err != nil {
-		return fmt.Errorf("overlay dir: %w", err)
+	if err := dirs.OverlayDir(dirs.Overlay, b.Dir); err != nil {
+		return err
 	}
 
 	if err := b.SetupDxvk(); err != nil {

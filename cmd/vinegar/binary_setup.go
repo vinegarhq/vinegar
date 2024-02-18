@@ -6,7 +6,10 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"errors"
+	"strings"
 
+	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/roblox"
 	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
@@ -59,8 +62,16 @@ func (b *Binary) Setup() error {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
 
-	if err := dirs.OverlayDir(b.Dir); err != nil {
-		return fmt.Errorf("overlay dir: %w", err)
+	overlayDir := filepath.Join(dirs.Overlays, strings.ToLower(b.Type.String()))
+	_, err := os.Stat(overlayDir)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("stat overlay: %w", err)
+	} else if err == nil {
+		slog.Info("Copying Overlay directory's files", "src", overlayDir, "path", b.Dir)
+
+		if err := cp.Copy(overlayDir, b.Dir); err != nil {
+			return fmt.Errorf("overlay dir: %w", err)
+		}
 	}
 
 	if err := b.SetupDxvk(); err != nil {

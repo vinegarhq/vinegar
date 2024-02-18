@@ -223,6 +223,4 @@ func (ui *Splash) Run() error {
 			e.Frame(gtx.Ops)
 		}
 	}
-
-	return nil
 }

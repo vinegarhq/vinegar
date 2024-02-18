@@ -110,7 +110,7 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 func (b *Binary) Main(args ...string) int {
 	logFile, err := LogFile(b.Type.String())
 	if err != nil {
-		slog.Error(fmt.Sprintf("create log file: %w", err))
+		slog.Error(fmt.Sprintf("create log file: %s", err))
 		return 1
 	}
 	defer logFile.Close()
@@ -137,7 +137,7 @@ func (b *Binary) Main(args ...string) int {
 		// The splash window didn't close cleanly (ErrClosed), an
 		// internal error occured, and vinegar cannot continue.
 		if err != nil {
-			slog.Error(fmt.Sprintf("splash: %w", err))
+			slog.Error(fmt.Sprintf("splash: %s", err))
 			logFile.Close()
 			os.Exit(1)
 		}

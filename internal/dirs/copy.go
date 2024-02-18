@@ -2,7 +2,6 @@ package dirs
 
 import (
 	"errors"
-	"bytes"
 	"os"
 
 	"log/slog"
@@ -57,23 +56,6 @@ func OverlayDir(overlay, dir string) error {
 
 			if res, err := CompareLink(src, dest); err == nil && res {
 				return true, nil
-			}
-
-			destContent, err := os.ReadFile(dest)
-			if err != nil {
-				return false, nil
-			}
-
-			srcContent, err := os.ReadFile(src)
-			if err != nil {
-				return false, nil
-			}
-
-			if !bytes.Equal(srcContent, destContent) {
-				err = os.Remove(dest)
-				if err != nil {
-					return false, err
-				}
 			}
 
 			return false, nil

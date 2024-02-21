@@ -11,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/vinegarhq/vinegar/internal/netutil"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -26,6 +25,8 @@ func Setenv() {
 	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+";d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
 }
 
+// Remove removes the DXVK overridden DLLs from the given wineprefix, then
+// restores global wine DLLs.
 func Remove(pfx *wine.Prefix) error {
 	slog.Info("Deleting DXVK DLLs", "pfx", pfx)
 
@@ -46,30 +47,15 @@ func Remove(pfx *wine.Prefix) error {
 	return pfx.Wine("wineboot", "-u").Run()
 }
 
-// Install will download the DXVK tarball with the given version to a temporary
-// file dictated by os.CreateTemp. Afterwards, it will proceed by calling Extract
-// with the DXVK tarball, and then removing it.
-func Install(ver string, pfx *wine.Prefix) error {
-	url := fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
-	f, err := os.CreateTemp("", "dxvktarball.*.tar.gz")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(f.Name())
-
-	slog.Info("Downloading DXVK tarball", "url", url, "path", f.Name())
-
-	if err := netutil.Download(url, f.Name()); err != nil {
-		return fmt.Errorf("download dxvk %s: %w", ver, err)
-	}
-
-	if err := Extract(f.Name(), pfx); err != nil {
-		return fmt.Errorf("extract dxvk %s: %w", ver, err)
-	}
-
-	return nil
+// URL returns the DXVK tarball URL for the given version.
+func URL(ver string) string {
+	return fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
 }
 
+// Extract extracts DXVK's DLLs into the given wineprefix, given
+// the path to a DXVK tarball.
+//
+// DXVK DLLs override Wine's own D3D DLLs.
 func Extract(name string, pfx *wine.Prefix) error {
 	slog.Info("Extracting DXVK", "file", name, "pfx", pfx)
 

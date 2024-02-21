@@ -11,6 +11,7 @@ import (
 
 	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/netutil"
 	"github.com/vinegarhq/vinegar/roblox"
 	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/wine/dxvk"
@@ -190,8 +191,7 @@ func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
 }
 
 func (b *Binary) SetupDxvk() error {
-	if b.State.DxvkVersion != "" &&
-		(!b.GlobalConfig.Player.Dxvk && !b.GlobalConfig.Studio.Dxvk) {
+	if b.State.DxvkVersion != "" && !b.Config.Dxvk {
 		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return fmt.Errorf("remove dxvk: %w", err)
@@ -212,9 +212,27 @@ func (b *Binary) SetupDxvk() error {
 		return nil
 	}
 
-	// This would only get saved if Install succeeded
-	b.State.DxvkVersion = b.Config.DxvkVersion
+	dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+b.Config.DxvkVersion+".tar.gz")
 
+	if _, err := os.Stat(dxvkPath); err != nil {
+		url := dxvk.URL(b.Config.DxvkVersion)
+
+		b.Splash.SetMessage("Downloading DXVK")
+		slog.Info("Downloading DXVK tarball", "url", url, "path", dxvkPath)
+
+		if err := netutil.DownloadProgress(url, dxvkPath, b.Splash.SetProgress); err != nil {
+			return fmt.Errorf("download dxvk %s: %w", b.Config.DxvkVersion, err)
+		}
+
+	}
+
+	b.Splash.SetProgress(1.0)
 	b.Splash.SetMessage("Installing DXVK")
-	return dxvk.Install(b.Config.DxvkVersion, b.Prefix)
+
+	if err := dxvk.Extract(dxvkPath, b.Prefix); err != nil {
+		return fmt.Errorf("extract dxvk %s: %w", b.Config.DxvkVersion, err)
+	}
+
+	b.State.DxvkVersion = b.Config.DxvkVersion
+	return nil
 }

@@ -14,7 +14,6 @@ import (
 	"gioui.org/app"
 	"gioui.org/font/gofont"
 	"gioui.org/io/system"
-	"gioui.org/layout"
 	"gioui.org/op"
 	"gioui.org/op/paint"
 	"gioui.org/text"
@@ -194,7 +193,7 @@ func (ui *Splash) Run() error {
 	var ops op.Ops
 	for {
 		switch e := ui.NextEvent().(type) {
-		case system.DestroyEvent:
+		case app.DestroyEvent:
 			if ui.closed && e.Err == nil {
 				return nil
 			} else if e.Err == nil {
@@ -202,8 +201,8 @@ func (ui *Splash) Run() error {
 			} else {
 				return e.Err
 			}
-		case system.FrameEvent:
-			gtx := layout.NewContext(&ops, e)
+		case app.FrameEvent:
+			gtx := app.NewContext(&ops, e)
 			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
 
 			if ui.openLogButton.Clicked(gtx) {

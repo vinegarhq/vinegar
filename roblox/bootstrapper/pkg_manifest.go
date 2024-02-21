@@ -39,7 +39,7 @@ func channelPath(channel string) string {
 func FetchPackageManifest(d *Deployment) (PackageManifest, error) {
 	m, err := Mirror()
 	if err != nil {
-		return PackageManifest{}, err
+		return PackageManifest{}, fmt.Errorf("mirror: %w", err)
 	}
 
 	durl := m + channelPath(d.Channel) + d.GUID
@@ -49,7 +49,7 @@ func FetchPackageManifest(d *Deployment) (PackageManifest, error) {
 
 	smanif, err := netutil.Body(url)
 	if err != nil {
-		return PackageManifest{}, fmt.Errorf("fetch %s package manifest: %w", d.GUID, err)
+		return PackageManifest{}, err
 	}
 
 	// Because the manifest ends with also a newline, it has to be removed.
@@ -60,7 +60,7 @@ func FetchPackageManifest(d *Deployment) (PackageManifest, error) {
 
 	pkgs, err := parsePackages(manif)
 	if err != nil {
-		return PackageManifest{}, err
+		return PackageManifest{}, fmt.Errorf("parse: %w", err)
 	}
 
 	return PackageManifest{

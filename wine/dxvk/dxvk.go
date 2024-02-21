@@ -119,6 +119,5 @@ func Extract(name string, pfx *wine.Prefix) error {
 		f.Close()
 	}
 
-	slog.Info("Deleting DXVK tarball", "path", name)
-	return os.RemoveAll(name)
+	return nil
 }

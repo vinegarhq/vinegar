@@ -31,7 +31,7 @@ func usage() {
 	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] [-firstrun] player|studio run [args...]")
 	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] player|studio kill|winetricks")
 	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] sysinfo")
-	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|version")
+	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|uninstall|version")
 	os.Exit(1)
 }
 
@@ -42,7 +42,7 @@ func main() {
 	args := flag.Args()
 
 	switch cmd {
-	case "delete", "edit", "version":
+	case "delete", "edit", "uninstall", "version":
 		switch cmd {
 		case "delete":
 			if err := Delete(); err != nil {
@@ -51,6 +51,10 @@ func main() {
 		case "edit":
 			if err := editor.Edit(ConfigPath); err != nil {
 				log.Fatalf("edit %s: %s", ConfigPath, err)
+			}
+		case "uninstall":
+			if err := Uninstall(); err != nil {
+				log.Fatal(err)
 			}
 		case "version":
 			fmt.Println("Vinegar", Version)
@@ -126,6 +130,30 @@ func Delete() error {
 
 	s.Player.DxvkVersion = ""
 	s.Studio.DxvkVersion = ""
+
+	if err := s.Save(); err != nil {
+		return fmt.Errorf("save state: %w", err)
+	}
+
+	return nil
+}
+
+func Uninstall() error {
+	slog.Info("Deleting Roblox Binary deployments!")
+
+	if err := os.RemoveAll(dirs.Versions); err != nil {
+		return fmt.Errorf("remove versions: %w", err)
+	}
+
+	s, err := state.Load()
+	if err != nil {
+		return fmt.Errorf("load state: %w", err)
+	}
+
+	s.Player.Version = ""
+	s.Player.Packages = nil
+	s.Studio.Version = ""
+	s.Studio.Packages = nil
 
 	if err := s.Save(); err != nil {
 		return fmt.Errorf("save state: %w", err)

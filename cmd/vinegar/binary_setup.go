@@ -18,8 +18,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func (b *Binary) FetchDeployment() error {
-	b.Splash.SetMessage("Fetching " + b.Alias)
+func (b *Binary) SetDeployment() error {
+	if b.Config.Channel != "" {
+		slog.Warn("Channel is non-default! Only change the deployment channel if you know what you are doing!",
+			"channel", b.Config.Channel)
+	}
 
 	if b.Config.ForcedVersion != "" {
 		slog.Warn("Using forced deployment!", "guid", b.Config.ForcedVersion)
@@ -29,9 +32,11 @@ func (b *Binary) FetchDeployment() error {
 		return nil
 	}
 
+	b.Splash.SetMessage("Fetching " + b.Alias)
+
 	d, err := boot.FetchDeployment(b.Type, b.Config.Channel)
 	if err != nil {
-		return fmt.Errorf("fetch %s %s deployment: %w", b.Type, b.Config.Channel, err)
+		return err
 	}
 
 	b.Deploy = &d
@@ -39,8 +44,8 @@ func (b *Binary) FetchDeployment() error {
 }
 
 func (b *Binary) Setup() error {
-	if err := b.FetchDeployment(); err != nil {
-		return err
+	if err := b.SetDeployment(); err != nil {
+		return fmt.Errorf("set %s deployment: %w", b.Config.Channel, err)
 	}
 
 	b.Dir = filepath.Join(dirs.Versions, b.Deploy.GUID)
@@ -76,7 +81,7 @@ func (b *Binary) Setup() error {
 	}
 
 	if err := b.SetupDxvk(); err != nil {
-		return fmt.Errorf("setup dxvk: %w", err)
+		return fmt.Errorf("setup dxvk %s: %w", b.Config.DxvkVersion, err)
 	}
 
 	b.Splash.SetProgress(1.0)
@@ -96,7 +101,7 @@ func (b *Binary) Install() error {
 
 	pm, err := boot.FetchPackageManifest(b.Deploy)
 	if err != nil {
-		return fmt.Errorf("fetch %s package manifest: %w", b.Deploy.GUID, err)
+		return fmt.Errorf("fetch package manifest: %w", err)
 	}
 
 	// Prioritize smaller files first, to have less pressure
@@ -109,12 +114,12 @@ func (b *Binary) Install() error {
 
 	b.Splash.SetMessage("Downloading " + b.Alias)
 	if err := b.DownloadPackages(&pm); err != nil {
-		return fmt.Errorf("download %s packages: %w", b.Deploy.GUID, err)
+		return fmt.Errorf("download: %w", err)
 	}
 
 	b.Splash.SetMessage("Extracting " + b.Alias)
 	if err := b.ExtractPackages(&pm); err != nil {
-		return fmt.Errorf("extract %s packages: %w", b.Deploy.GUID, err)
+		return fmt.Errorf("extract: %w", err)
 	}
 
 	if b.Type == roblox.Studio {
@@ -221,16 +226,15 @@ func (b *Binary) SetupDxvk() error {
 		slog.Info("Downloading DXVK tarball", "url", url, "path", dxvkPath)
 
 		if err := netutil.DownloadProgress(url, dxvkPath, b.Splash.SetProgress); err != nil {
-			return fmt.Errorf("download dxvk %s: %w", b.Config.DxvkVersion, err)
+			return fmt.Errorf("download: %w", err)
 		}
-
 	}
 
 	b.Splash.SetProgress(1.0)
 	b.Splash.SetMessage("Installing DXVK")
 
 	if err := dxvk.Extract(dxvkPath, b.Prefix); err != nil {
-		return fmt.Errorf("extract dxvk %s: %w", b.Config.DxvkVersion, err)
+		return fmt.Errorf("extract: %w", err)
 	}
 
 	b.State.DxvkVersion = b.Config.DxvkVersion

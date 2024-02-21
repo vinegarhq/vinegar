@@ -7,7 +7,7 @@ body:
       value: |
         ### **Preliminary instructions**
         - Before opening an issue, please check the [troubleshooting page](https://vinegarhq.org/Troubleshooting/index.html) to see if your problem has been addressed there.
-          - If your problem is not present, please check if it [was already reported](https://github.com/vinegarhq/vinegar/issues)
+          - If your problem is not present, please check if it [was already reported](https://github.com/vinegarhq/vinegar/issues), and contribute a solution if needed.
         - If more clarification on the issue is needed, and you don't respond after a month, then your issue will be closed as stale.
   - type: checkboxes
     id: terms
@@ -20,18 +20,12 @@ body:
     id: what-happened
     attributes:
       label: What problem did you encounter?
-      description: Provide a comprehensive description of the problem you're facing. Don't forget to attach any additional resources you may have, such as log files and screenshots.
+      description: Provide a comprehensive description of the problem you're facing. Don't forget to attach any additional resources you may have, such as log files and screenshots. Logs can be found in `~/.cache/vinegar/logs` or `~/.var/app/org.vinegarhq.Vinegar/cache/vinegar/logs/` for Flatpak.
     validations:
       required: true
   - type: textarea
     id: sysinfo
     attributes:
       label: System information
-      description: You can use `vinegar sysinfo` or `flatpak run org.vinegarhq.Vinegar sysinfo` to fill up this section.
-      render: shell
-  - type: textarea
-    id: logs
-    attributes:
-      label: Relevant log output
-      description: Please copy and paste any relevant log output, which can be found in `~/.cache/vinegar/logs` or `~/.var/app/org.vinegarhq.Vinegar/cache/vinegar/logs/` for Flatpak. This will be automatically formatted into code, so no need for backticks.
+      placeholder: Output of `vinegar sysinfo` or `flatpak run org.vinegarhq.Vinegar sysinfo`
       render: shell

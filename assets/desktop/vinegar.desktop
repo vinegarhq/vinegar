@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Vinegar
+Name=Configure Vinegar
 Exec=vinegar edit
 Terminal=true
 Categories=Game

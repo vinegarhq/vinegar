@@ -160,6 +160,10 @@ func (b *Binary) setup() error {
 		return err
 	}
 
+	if b.Channel == "LIVE" || b.Channel == "live" {
+		b.Channel = ""
+	}
+
 	return b.pickCard()
 }
 

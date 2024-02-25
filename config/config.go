@@ -4,6 +4,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -11,6 +12,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/splash"
+	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
@@ -170,6 +172,14 @@ func (b *Binary) setup() error {
 func (c *Config) setup() error {
 	if c.SanitizeEnv {
 		SanitizeEnv()
+	}
+
+	// On each Flatpak instance, each one has their own wineserver, which means
+	// if a new Vinegar flatpak instance is ran, with the intent of having two
+	// running Player instances, one of the wineservers in either sandboxed
+	// instance will die.
+	if c.MultipleInstances && sysinfo.InFlatpak {
+		slog.Warn("Multiple instances is broken on Flatpak! Please consider using a source installation!")
 	}
 
 	c.Env.Setenv()

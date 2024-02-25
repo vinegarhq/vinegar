@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"reflect"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -38,13 +39,13 @@ type Binary struct {
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
-	MultipleInstances bool        `toml:"multiple_instances"`
-	SanitizeEnv       bool        `toml:"sanitize_env"`
-	Player            Binary      `toml:"player"`
-	Studio            Binary      `toml:"studio"`
-	Env               Environment `toml:"env"`
-
-	Splash splash.Config `toml:"splash"`
+	MultipleInstances bool          `toml:"multiple_instances"`
+	SanitizeEnv       bool          `toml:"sanitize_env"`
+	Env               Environment   `toml:"env"`
+	Global            Binary        `toml:"global"`
+	Player            Binary        `toml:"player"`
+	Studio            Binary        `toml:"studio"`
+	Splash            splash.Config `toml:"splash"`
 }
 
 var (
@@ -52,6 +53,29 @@ var (
 	ErrWineRootAbs      = errors.New("wine root path is not an absolute path")
 	ErrWineRootInvalid  = errors.New("no wine binary present in wine root")
 )
+
+// Merges the Global binary config with either of the app binary configs.
+func Merge(global Binary, subbinary Binary, metadata toml.MetaData, name string) Binary {
+	values := reflect.ValueOf(global)
+	types := values.Type()
+
+	var merged = subbinary
+
+	mergedv := reflect.ValueOf(&merged).Elem()
+
+	for i := 0; i < values.NumField(); i++ {
+		field := types.Field(i)
+		tomlname := field.Tag.Get("toml")
+
+		if metadata.IsDefined("global", tomlname) && !metadata.IsDefined(name, tomlname) {
+			// TODO: merge environment and fflags instead of replacing them
+
+			mergedv.Field(i).Set(values.Field(i))
+		}
+	}
+
+	return merged
+}
 
 // Load will load the named file to a Config; if it doesn't exist, it
 // will fallback to the default configuration.
@@ -62,15 +86,20 @@ var (
 // Load is required for any initialization for Config, as it calls routines
 // to setup certain variables and verifies the configuration.
 func Load(name string) (Config, error) {
-	cfg := Default()
+	var cfg = Default()
 
 	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
 		return cfg, nil
 	}
 
-	if _, err := toml.DecodeFile(name, &cfg); err != nil {
+	metadata, err := toml.DecodeFile(name, &cfg)
+
+	if err != nil {
 		return cfg, err
 	}
+
+	cfg.Player = Merge(cfg.Global, cfg.Player, metadata, "player")
+	cfg.Studio = Merge(cfg.Global, cfg.Studio, metadata, "studio")
 
 	return cfg, cfg.setup()
 }
@@ -93,9 +122,9 @@ func Default() Config {
 			Dxvk:        true,
 			DxvkVersion: "2.3",
 			GameMode:    true,
+			Channel:     "", // Default upstream
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "D3D11",
-			Channel:     "", // Default upstream
 			DiscordRPC:  true,
 			FFlags: roblox.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,

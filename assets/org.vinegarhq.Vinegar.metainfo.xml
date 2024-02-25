@@ -33,10 +33,12 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
-		<release version="1.7.3" date="2024-2-13">
+		<release version="1.7.4" date="2024-2-13">
 			<description>
 				<ul>
-					<li>Fixed splash window bug</li>
+					<li>Introduced WebView installer</li>
+					<li>Kill Roblox if it is still running after it's window is closed</li>
+					<li>Fixed multi-prefix DXVK installations</li>
 				</ul>
 			</description>
 		</release>

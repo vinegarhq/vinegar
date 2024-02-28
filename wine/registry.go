@@ -24,5 +24,5 @@ func (p *Prefix) RegistryAdd(key, value string, rtype RegistryType, data string)
 		return errors.New("no registry key given")
 	}
 
-	return p.Wine("reg", "add", key, "/v", value, "/t", string(rtype), "/d", data, "/f").Run()
+	return p.Wine("reg", "add", key, "/v", value, "/t", string(rtype), "/d", data, "/f").Headless().Run()
 }

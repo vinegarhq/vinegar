@@ -120,14 +120,14 @@ func (p *Prefix) Kill() error {
 	return p.Wine("wineboot", "-k").Run()
 }
 
-// Init preforms initialization for first Wine instance.
+// Init performs initialization for first Wine instance.
 func (p *Prefix) Init() error {
-	return p.Wine("wineboot", "-i").Run()
+	return p.Wine("wineboot", "-i").Headless().Run()
 }
 
 // Update updates the wineprefix directory.
 func (p *Prefix) Update() error {
-	return p.Wine("wineboot", "-u").Run()
+	return p.Wine("wineboot", "-u").Headless().Run()
 }
 
 // Version returns the wineprefix's Wine version.

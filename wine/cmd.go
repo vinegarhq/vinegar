@@ -38,6 +38,16 @@ func (p *Prefix) Command(name string, arg ...string) *Cmd {
 	}
 }
 
+// Headless prevents command from showing windows
+func (c *Cmd) Headless() *Cmd {
+	c.Env = append(c.Environ(),
+		"DISPLAY=",
+		"WAYLAND_DISPLAY=",
+	)
+
+	return c
+}
+
 // Refer to [exec.Cmd.Run].
 func (c *Cmd) Run() error {
 	if err := c.Start(); err != nil {
@@ -45,7 +55,6 @@ func (c *Cmd) Run() error {
 	}
 	return c.Wait()
 }
-
 // Refer to [exec.Cmd.Start] and [Command].
 func (c *Cmd) Start() error {
 	if c.Process != nil {

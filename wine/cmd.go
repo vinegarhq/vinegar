@@ -44,7 +44,6 @@ func (c *Cmd) Headless() *Cmd {
 		"DISPLAY=",
 		"WAYLAND_DISPLAY=",
 	)
-
 	return c
 }
 

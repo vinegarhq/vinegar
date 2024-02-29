@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/lmittmann/tint"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
@@ -40,6 +41,8 @@ func main() {
 
 	cmd := flag.Arg(0)
 	args := flag.Args()
+
+	slog.SetDefault(slog.New(tint.NewHandler(os.Stderr, nil)))
 
 	switch cmd {
 	case "delete", "edit", "uninstall", "version":

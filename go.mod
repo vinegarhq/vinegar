@@ -15,7 +15,9 @@ require (
 	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
+	github.com/lmittmann/tint v1.0.4
 	github.com/nxadm/tail v1.4.11
+	github.com/samber/slog-multi v1.0.2
 	golang.org/x/sys v0.17.0
 	golang.org/x/term v0.17.0
 )
@@ -25,6 +27,7 @@ require (
 	gioui.org/shader v1.0.8 // indirect
 	github.com/go-text/typesetting v0.0.0-20231206174126-ce41cc83e028 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/samber/lo v1.38.1 // indirect
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
 	golang.org/x/exp/shiny v0.0.0-20240213143201-ec583247a57a // indirect
 	golang.org/x/image v0.15.0 // indirect

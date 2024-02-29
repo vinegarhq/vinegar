@@ -3,8 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -15,7 +13,9 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/godbus/dbus/v5"
+	"github.com/lmittmann/tint"
 	"github.com/nxadm/tail"
+	slogmulti "github.com/samber/slog-multi"
 	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
@@ -115,10 +115,10 @@ func (b *Binary) Main(args ...string) int {
 	}
 	defer logFile.Close()
 
-	out := io.MultiWriter(os.Stderr, logFile)
-	b.Prefix.Stderr = out
-	b.Prefix.Stdout = out
-	log.SetOutput(out)
+	slog.SetDefault(slog.New(slogmulti.Fanout(
+		tint.NewHandler(os.Stderr, nil),
+		tint.NewHandler(logFile, &tint.Options{NoColor: true}),
+	)))
 
 	b.Splash = splash.New(&b.GlobalConfig.Splash)
 	b.Config.Env.Setenv()

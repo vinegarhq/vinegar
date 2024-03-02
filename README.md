@@ -9,6 +9,12 @@
 
 An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
 
+## Status of Roblox on Linux
+As of the 2nd of March, 2024, Roblox has blocked the use of Wine to access the Roblox Player.
+More information can be found [here](https://vinegarhq.org/Home/rol_faq.html).
+
+Roblox Studio continues to be usable.
+
 [pipeline]:     https://github.com/vinegarhq/vinegar/actions/workflows/go.yml
 [pipeline_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/go.yml?style=flat-square&label=build%20%26%20tests
 [version]:     https://github.com/vinegarhq/vinegar/releases/latest

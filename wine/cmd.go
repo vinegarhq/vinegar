@@ -43,6 +43,7 @@ func (c *Cmd) Headless() *Cmd {
 	c.Env = append(c.Environ(),
 		"DISPLAY=",
 		"WAYLAND_DISPLAY=",
+		"WINEDEBUG=fixme-all,-winediag,-systray,-ole,-winediag,-ntoskrnl", //Suppress window-related errors
 	)
 	return c
 }

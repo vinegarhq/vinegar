@@ -112,14 +112,8 @@ func (b *Binary) Install() error {
 		return pm.Packages[i].ZipSize < pm.Packages[j].ZipSize
 	})
 
-	b.Splash.SetMessage("Downloading " + b.Alias)
-	if err := b.DownloadPackages(&pm); err != nil {
-		return fmt.Errorf("download: %w", err)
-	}
-
-	b.Splash.SetMessage("Extracting " + b.Alias)
-	if err := b.ExtractPackages(&pm); err != nil {
-		return fmt.Errorf("extract: %w", err)
+	if err := b.SetupPackages(&pm); err != nil {
+		return fmt.Errorf("setup: %w", err)
 	}
 
 	if b.Type == roblox.Studio {
@@ -148,51 +142,44 @@ func (b *Binary) Install() error {
 	return nil
 }
 
-func (b *Binary) PerformPackages(pm *boot.PackageManifest, fn func(boot.Package) error) error {
-	donePkgs := 0
-	pkgsLen := len(pm.Packages)
+func (b *Binary) SetupPackages(pm *boot.PackageManifest) error {
+	dests := boot.BinaryDirectories(b.Type)
+	d := 0
+	n := len(pm.Packages) * 2 // download & extraction
 	eg := new(errgroup.Group)
 
+	done := func() {
+		d++
+		b.Splash.SetProgress(float32(d) / float32(n))
+	}
+
+	slog.Info("Installing Packages", "guid", pm.Deployment.GUID, "count", n)
 	for _, p := range pm.Packages {
 		p := p
+
 		eg.Go(func() error {
-			err := fn(p)
-			if err != nil {
-				return err
+			dest, ok := dests[p.Name]
+			src := filepath.Join(dirs.Downloads, p.Checksum)
+
+			if !ok {
+				return fmt.Errorf("unhandled package: %s", p.Name)
 			}
 
-			donePkgs++
-			b.Splash.SetProgress(float32(donePkgs) / float32(pkgsLen))
+			if err := p.Download(src, pm.DeployURL); err != nil {
+				return err
+			}
+			done()
+
+			if err := p.Extract(src, filepath.Join(b.Dir, dest)); err != nil {
+				return err
+			}
+			done()
 
 			return nil
 		})
 	}
 
 	return eg.Wait()
-}
-
-func (b *Binary) DownloadPackages(pm *boot.PackageManifest) error {
-	slog.Info("Downloading Packages", "guid", pm.Deployment.GUID, "count", len(pm.Packages))
-
-	return b.PerformPackages(pm, func(pkg boot.Package) error {
-		return pkg.Download(filepath.Join(dirs.Downloads, pkg.Checksum), pm.DeployURL)
-	})
-}
-
-func (b *Binary) ExtractPackages(pm *boot.PackageManifest) error {
-	slog.Info("Extracting Packages", "guid", pm.Deployment.GUID, "count", len(pm.Packages))
-
-	pkgDirs := boot.BinaryDirectories(b.Type)
-
-	return b.PerformPackages(pm, func(pkg boot.Package) error {
-		dest, ok := pkgDirs[pkg.Name]
-
-		if !ok {
-			return fmt.Errorf("unhandled package: %s", pkg.Name)
-		}
-
-		return pkg.Extract(filepath.Join(dirs.Downloads, pkg.Checksum), filepath.Join(b.Dir, dest))
-	})
 }
 
 func (b *Binary) SetupDxvk() error {

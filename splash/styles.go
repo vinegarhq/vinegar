@@ -55,7 +55,9 @@ func (ui *Splash) drawCompact(gtx C) D {
 							}),
 							layout.Rigid(layout.Spacer{Height: unit.Dp(20)}.Layout),
 							layout.Rigid(func(gtx C) D {
-								pb := ProgressBar(ui.Theme, ui.progress)
+								pb := material.ProgressBar(ui.Theme, ui.progress)
+								pb.Height = unit.Dp(6)
+								pb.Radius = unit.Dp(4)
 								pb.TrackColor = rgb(ui.Config.TrackColor)
 								return pb.Layout(gtx)
 							}),
@@ -92,7 +94,9 @@ func (ui *Splash) drawFamiliar(gtx C) D {
 							Left:   unit.Dp(32),
 							Right:  unit.Dp(32),
 						}.Layout(gtx, func(gtx C) D {
-							pb := ProgressBar(ui.Theme, ui.progress)
+							pb := material.ProgressBar(ui.Theme, ui.progress)
+							pb.Height = unit.Dp(6)
+							pb.Radius = unit.Dp(4)
 							pb.TrackColor = rgb(ui.Config.TrackColor)
 							return pb.Layout(gtx)
 						})

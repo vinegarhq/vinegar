@@ -12,7 +12,7 @@ require (
 require (
 	gioui.org v0.5.0
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
-	github.com/apprehensions/rbxbin v0.0.0-20240308123713-798ca8013cd1
+	github.com/apprehensions/rbxbin v0.0.0-20240308151735-386fce3d14ac
 	github.com/apprehensions/rbxweb v0.0.0-20240308122818-8de3663e1d40
 	github.com/apprehensions/wine v0.0.0-20240308151754-d5e6446351dc
 	github.com/folbricht/pefile v0.1.0
@@ -22,7 +22,7 @@ require (
 	github.com/nxadm/tail v1.4.11
 	github.com/samber/slog-multi v1.0.2
 	golang.org/x/sys v0.18.0
-	golang.org/x/term v0.17.0
+	golang.org/x/term v0.18.0
 )
 
 require (
@@ -31,9 +31,9 @@ require (
 	github.com/go-text/typesetting v0.0.0-20231206174126-ce41cc83e028 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
-	github.com/samber/lo v1.38.1 // indirect
-	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
-	golang.org/x/exp/shiny v0.0.0-20240213143201-ec583247a57a // indirect
+	github.com/samber/lo v1.39.0 // indirect
+	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
+	golang.org/x/exp/shiny v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect

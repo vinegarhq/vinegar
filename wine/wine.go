@@ -30,10 +30,6 @@ type Prefix struct {
 	dir string // Path to wineprefix
 }
 
-func (p Prefix) String() string {
-	return p.dir
-}
-
 // New returns a new Prefix.
 //
 // dir must be an absolute path and has correct permissions
@@ -45,6 +41,11 @@ func New(dir string, root string) *Prefix {
 		Stdout: os.Stdout,
 		dir:    dir,
 	}
+}
+
+// String implements the Stringer interface.
+func (p Prefix) String() string {
+	return p.Dir()
 }
 
 // Dir returns the directory of the Prefix.

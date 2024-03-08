@@ -16,13 +16,7 @@ type Cmd struct {
 // Command returns the Cmd struct to execute the named program with the given arguments.
 // It is reccomended to use [Wine] to run wine as opposed to Command.
 //
-// There was a long discussion in #winehq regarding starting wine from
-// Go with os/exec when it's stderr and stdout was set to a file. This
-// behavior causes wineserver to start alongside the process instead of
-// the background, creating issues such as Wineserver waiting for processes
-// alongside the executable - having timeout issues, etc.
-// A stderr pipe will be made to mitigate this behavior in Start.
-//
+
 // For further information regarding Command, refer to [exec.Command].
 func (p *Prefix) Command(name string, arg ...string) *Cmd {
 	cmd := exec.Command(name, arg...)
@@ -47,6 +41,14 @@ func (c *Cmd) Run() error {
 }
 
 // Refer to [exec.Cmd.Start] and [Command].
+//
+// There was a long discussion in #winehq regarding starting wine from
+// Go with os/exec when it's stderr and stdout was set to a file. This
+// behavior causes wineserver to start alongside the process instead of
+// the background, creating issues such as Wineserver waiting for processes
+// alongside the executable - having timeout issues, etc.
+// A stderr pipe will be made to mitigate this behavior when and if
+// the prefix's stderr is non-nil or not os.Stderr.
 func (c *Cmd) Start() error {
 	if c.Process != nil {
 		return errors.New("exec: already started")
@@ -56,11 +58,6 @@ func (c *Cmd) Start() error {
 		return c.Err
 	}
 
-	// A pipe is made due to an unknown bug that i have found
-	// no solution to: which is that Wine does something weird
-	// then stderr is a file; which is why a pipe is used as
-	// oppose to just setting the stderr normally.
-	// TODO: find a solution to this problem, and why it happens
 	if c.Stderr != nil && c.Stderr != os.Stderr {
 		pfxStderr := c.Stderr
 		c.Stderr = nil

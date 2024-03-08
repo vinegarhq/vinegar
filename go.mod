@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/adrg/xdg v0.4.0
-	github.com/otiai10/copy v1.14.0
+	github.com/otiai10/copy v1.14.1-0.20240306081555-fd3129f2faa5
 	golang.org/x/sync v0.6.0
 )
 
@@ -18,7 +18,7 @@ require (
 	github.com/lmittmann/tint v1.0.4
 	github.com/nxadm/tail v1.4.11
 	github.com/samber/slog-multi v1.0.2
-	golang.org/x/sys v0.17.0
+	golang.org/x/sys v0.18.0
 	golang.org/x/term v0.17.0
 )
 
@@ -27,6 +27,7 @@ require (
 	gioui.org/shader v1.0.8 // indirect
 	github.com/go-text/typesetting v0.0.0-20231206174126-ce41cc83e028 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/samber/lo v1.38.1 // indirect
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
 	golang.org/x/exp/shiny v0.0.0-20240213143201-ec583247a57a // indirect

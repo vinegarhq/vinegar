@@ -260,7 +260,7 @@ func (b *Binary) Execute(args ...string) error {
 
 	cmd, err := b.Command(args...)
 	if err != nil {
-		return fmt.Errorf("%s command: %w", b.Type, err)
+		return err
 	}
 
 	// Roblox will keep running if it was sent SIGINT; requiring acting as the signal holder.
@@ -315,17 +315,17 @@ func (b *Binary) Execute(args ...string) error {
 		b.Tail(lf)
 	}()
 
-	if err := cmd.Run(); err != nil {
-		// thanks for your time, fizzie on #go-nuts
-		// Killed, not an error (in most cases)
-		if cmd.ProcessState.ExitCode() == -1 {
-			slog.Warn("Roblox was killed!")
-			return nil
-		}
-		return fmt.Errorf("roblox process: %w", err)
+	err = cmd.Run()
+	// thanks for your time, fizzie on #go-nuts
+	// ProcessState is non-nil if a process has been successfully started,
+	// check if it is non-nil and check if it was killed:
+	// ExitCode returns the exit code of the exited process, or -1
+	// if the process hasn't exited or was terminated by a signal.
+	if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
+		slog.Warn("Roblox was killed!")
+		return nil
 	}
-
-	return nil
+	return err
 }
 
 func RobloxLogFile(pfx *wine.Prefix) (string, error) {
@@ -403,6 +403,9 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 
 	exe := "Roblox" + b.Type.Short() + "Beta.exe"
 	cmd := b.Prefix.Wine(filepath.Join(b.Dir, exe), args...)
+	if cmd.Err != nil {
+		return nil, cmd.Err
+	}
 
 	launcher := strings.Fields(b.Config.Launcher)
 	if len(launcher) >= 1 {

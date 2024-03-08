@@ -4,14 +4,16 @@ package wine
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
 )
 
-var ErrWineNotFound = errors.New("wine64 not found in $PATH or wineroot")
+var (
+	ErrWineNotFound = errors.New("wine64 not found in $PATH or wineroot")
+	ErrPrefixNotAbs = errors.New("prefix directory is not an absolute path")
+)
 
 // Prefix is a representation of a wineprefix, which is where
 // WINE stores its data and is equivalent to a C:\ drive.
@@ -36,19 +38,13 @@ func (p Prefix) String() string {
 //
 // dir must be an absolute path and has correct permissions
 // to modify.
-func New(dir string, root string) (*Prefix, error) {
-	// Always ensure its created, wine will complain if the root
-	// directory doesnt exist
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return nil, fmt.Errorf("create prefix: %s", err)
-	}
-
+func New(dir string, root string) *Prefix {
 	return &Prefix{
 		Root:   root,
 		Stderr: os.Stderr,
 		Stdout: os.Stdout,
 		dir:    dir,
-	}, nil
+	}
 }
 
 // Dir returns the directory of the Prefix.
@@ -81,6 +77,17 @@ func (p *Prefix) Wine(exe string, arg ...string) *Cmd {
 
 	if cmd.Err != nil && errors.Is(cmd.Err, exec.ErrNotFound) {
 		cmd.Err = ErrWineNotFound
+	}
+
+	// Always ensure its created, wine will complain if the root
+	// directory doesnt exist
+	if err := os.MkdirAll(p.dir, 0o755); err != nil {
+		cmd.Err = err
+	}
+
+	// Wine requires a absolute path for the wineprefix
+	if !filepath.IsAbs(p.dir) {
+		cmd.Err = ErrPrefixNotAbs
 	}
 
 	if cmd.Args[0] == "ulwgl-run" {

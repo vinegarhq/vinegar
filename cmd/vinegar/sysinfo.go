@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"path"
 	"runtime/debug"
 
@@ -13,15 +12,8 @@ import (
 )
 
 func PrintSysinfo(cfg *config.Config) {
-	playerPfx, err := wine.New(BinaryPrefixDir(clientsettings.WindowsPlayer), cfg.Player.WineRoot)
-	if err != nil {
-		log.Fatalf("player prefix: %s", err)
-	}
-
-	studioPfx, err := wine.New(BinaryPrefixDir(clientsettings.WindowsStudio64), cfg.Studio.WineRoot)
-	if err != nil {
-		log.Fatalf("studio prefix: %s", err)
-	}
+	playerPfx := wine.New(BinaryPrefixDir(clientsettings.WindowsPlayer), cfg.Player.WineRoot)
+	studioPfx := wine.New(BinaryPrefixDir(clientsettings.WindowsStudio64), cfg.Studio.WineRoot)
 
 	var revision string
 	bi, _ := debug.ReadBuildInfo()

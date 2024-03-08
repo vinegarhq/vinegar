@@ -82,11 +82,7 @@ func NewBinary(bt clientsettings.BinaryType, cfg *config.Config) (*Binary, error
 		bstate = &s.Studio
 	}
 
-	pfx, err := wine.New(BinaryPrefixDir(bt), bcfg.WineRoot)
-	if err != nil {
-		return nil, fmt.Errorf("new prefix %s: %w", bt, err)
-	}
-
+	pfx := wine.New(BinaryPrefixDir(bt), bcfg.WineRoot)
 	os.Setenv("GAMEID", "ulwgl-roblox")
 
 	return &Binary{

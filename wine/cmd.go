@@ -52,6 +52,15 @@ func (c *Cmd) Start() error {
 		return errors.New("exec: already started")
 	}
 
+	if c.Err != nil {
+		return c.Err
+	}
+
+	// A pipe is made due to an unknown bug that i have found
+	// no solution to: which is that Wine does something weird
+	// then stderr is a file; which is why a pipe is used as
+	// oppose to just setting the stderr normally.
+	// TODO: find a solution to this problem, and why it happens
 	if c.Stderr != nil && c.Stderr != os.Stderr {
 		pfxStderr := c.Stderr
 		c.Stderr = nil

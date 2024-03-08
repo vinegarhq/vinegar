@@ -6,17 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strings"
 )
 
-var (
-	ErrWineRootAbs  = errors.New("wineroot is not absolute")
-	ErrWineNotFound = errors.New("wine64 not found in system or wineroot")
-)
+var ErrWineNotFound = errors.New("wine64 not found in $PATH or wineroot")
 
 // Prefix is a representation of a wineprefix, which is where
 // WINE stores its data and is equivalent to a C:\ drive.
@@ -30,59 +25,18 @@ type Prefix struct {
 	Stderr io.Writer
 	Stdout io.Writer
 
-	wine string
-	dir  string
+	dir string // Path to wineprefix
 }
 
 func (p Prefix) String() string {
 	return p.dir
 }
 
-// Wine64 returns a path to the system or wineroot's 'wine64'.
-// Wine64 will attempt to resolve for a [ULWGL launcher] if
-// it is present and set necessary environment variables.
-//
-// [ULWGL launcher]: https://github.com/Open-Wine-Components/ULWGL-launcher
-func Wine64(root string) (string, error) {
-	wineLook := "wine64"
-
-	if root != "" {
-		if !filepath.IsAbs(root) {
-			return "", ErrWineRootAbs
-		}
-
-		if strings.Contains(strings.ToLower(root), "ulwgl") {
-			slog.Info("Detected ULWGL Wineroot!")
-
-			wineLook = filepath.Join(root, "ulwgl-run")
-			os.Setenv("STORE", "none")
-		} else {
-			wineLook = filepath.Join(root, "bin", wineLook)
-		}
-	}
-
-	wine, err := exec.LookPath(wineLook)
-	if err != nil {
-		return "", err
-	}
-
-	return wine, nil
-}
-
 // New returns a new Prefix.
-//
-// [Wine64] will be used to verify the named root or if
-// wine is installed; it will be looked in $PATH only once -
-// if the wine executable changes it will not be re-looked.
 //
 // dir must be an absolute path and has correct permissions
 // to modify.
 func New(dir string, root string) (*Prefix, error) {
-	w, err := Wine64(root)
-	if err != nil {
-		return nil, fmt.Errorf("bad wine: %w", err)
-	}
-
 	// Always ensure its created, wine will complain if the root
 	// directory doesnt exist
 	if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -93,7 +47,6 @@ func New(dir string, root string) (*Prefix, error) {
 		Root:   root,
 		Stderr: os.Stderr,
 		Stdout: os.Stdout,
-		wine:   w,
 		dir:    dir,
 	}, nil
 }
@@ -104,11 +57,33 @@ func (p *Prefix) Dir() string {
 }
 
 // Wine returns a new Cmd with the prefix's Wine as the named program.
+//
+// The Wine executable used is a path to the system or Prefix's Root's 'wine64'
+// if present. an attempt to resolve for a [ULWGL launcher] will be made if
+// it is present and necessary environment variables will be set.
+//
+// [ULWGL launcher]: https://github.com/Open-Wine-Components/ULWGL-launcher
 func (p *Prefix) Wine(exe string, arg ...string) *Cmd {
-	arg = append([]string{exe}, arg...)
-	cmd := p.Command(p.wine, arg...)
+	wine := "wine64"
 
-	if strings.Contains(strings.ToLower(p.wine), "ulwgl") {
+	if p.Root != "" {
+		ulwgl, err := exec.LookPath(filepath.Join(p.Root, "ulwgl-run"))
+		if err == nil {
+			os.Setenv("STORE", "none")
+			wine = ulwgl
+		}
+
+		wine = filepath.Join(p.Root, "bin", "wine64")
+	}
+
+	arg = append([]string{exe}, arg...)
+	cmd := p.Command(wine, arg...)
+
+	if cmd.Err != nil && errors.Is(cmd.Err, exec.ErrNotFound) {
+		cmd.Err = ErrWineNotFound
+	}
+
+	if cmd.Args[0] == "ulwgl-run" {
 		cmd.Env = append(cmd.Environ(), "PROTON_VERB=runinprefix")
 	}
 

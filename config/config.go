@@ -7,13 +7,13 @@ import (
 	"log/slog"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/apprehensions/rbxbin"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
-	"github.com/vinegarhq/vinegar/wine"
 )
 
 // LogoPath is set at build-time to set the logo icon path, which is
@@ -145,8 +145,9 @@ func (b *Binary) validate() error {
 	}
 
 	if b.WineRoot != "" {
-		if _, err := wine.Wine64(b.WineRoot); err != nil {
-			return fmt.Errorf("bad wineroot: %w", err)
+		w := filepath.Join(b.WineRoot, "bin", "wine64")
+		if _, err := exec.LookPath(w); err != nil {
+			return fmt.Errorf("wine64 not present in wineroot")
 		}
 	}
 

@@ -6,12 +6,12 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/apprehensions/rbxbin"
 )
 
 func TestBinarySetup(t *testing.T) {
 	b := Binary{
-		FFlags: make(roblox.FFlags),
+		FFlags: make(rbxbin.FFlags),
 		Env: Environment{
 			"MEOW": "MEOW",
 		},
@@ -22,7 +22,7 @@ func TestBinarySetup(t *testing.T) {
 	}
 
 	b.Renderer = "Meow"
-	if err := b.setup(); !errors.Is(err, roblox.ErrInvalidRenderer) {
+	if err := b.setup(); !errors.Is(err, rbxbin.ErrInvalidRenderer) {
 		t.Error("expected renderer check")
 	}
 

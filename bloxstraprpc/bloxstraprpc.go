@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"log/slog"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/altfoxie/drpc"
+	"github.com/apprehensions/rbxweb/games"
 )
 
 const Reset = "<reset>"
@@ -48,7 +50,7 @@ type Activity struct {
 	teleporting bool
 	server      ServerType
 
-	universeID string
+	universeID games.UniverseID
 	placeID    string
 	jobID      string
 }
@@ -126,8 +128,13 @@ func (a *Activity) handleGameJoinReport(line string) error {
 		return fmt.Errorf("log game join report entry is invalid")
 	}
 
+	uid, err := strconv.ParseInt(m[2], 10, 64)
+	if err != nil {
+		return err
+	}
+
 	a.placeID = m[1]
-	a.universeID = m[2]
+	a.universeID = games.UniverseID(uid)
 
 	slog.Info("Handled GameJoinReport", "universeid", a.universeID, "placeid", a.placeID)
 
@@ -163,7 +170,7 @@ func (a *Activity) handleGameLeave() error {
 	a.gameTime = time.Time{}
 	a.teleporting = false
 	a.server = Public
-	a.universeID = ""
+	a.universeID = games.UniverseID(0)
 	a.placeID = ""
 	a.jobID = ""
 

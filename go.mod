@@ -1,6 +1,6 @@
 module github.com/vinegarhq/vinegar
 
-go 1.21
+go 1.22.0
 
 require (
 	github.com/BurntSushi/toml v1.3.2
@@ -12,6 +12,8 @@ require (
 require (
 	gioui.org v0.5.0
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
+	github.com/apprehensions/rbxbin v0.0.0-20240308123713-798ca8013cd1
+	github.com/apprehensions/rbxweb v0.0.0-20240308122818-8de3663e1d40
 	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0

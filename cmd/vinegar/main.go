@@ -8,12 +8,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/apprehensions/rbxweb/clientsettings"
 	"github.com/lmittmann/tint"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
-	"github.com/vinegarhq/vinegar/roblox"
 )
 
 var (
@@ -76,12 +76,12 @@ func main() {
 			log.Fatalf("load config %s: %s", ConfigPath, err)
 		}
 
-		var bt roblox.BinaryType
+		var bt clientsettings.BinaryType
 		switch cmd {
 		case "player":
-			bt = roblox.Player
+			bt = clientsettings.WindowsPlayer
 		case "studio":
-			bt = roblox.Studio
+			bt = clientsettings.WindowsStudio64
 		case "sysinfo":
 			PrintSysinfo(&cfg)
 			os.Exit(0)

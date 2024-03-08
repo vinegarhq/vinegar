@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/apprehensions/rbxbin"
+	"github.com/apprehensions/rbxweb/clientsettings"
 	"github.com/fsnotify/fsnotify"
 	"github.com/godbus/dbus/v5"
 	"github.com/lmittmann/tint"
@@ -20,8 +22,6 @@ import (
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
-	"github.com/vinegarhq/vinegar/roblox"
-	boot "github.com/vinegarhq/vinegar/roblox/bootstrapper"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
@@ -50,23 +50,21 @@ type Binary struct {
 	GlobalConfig *config.Config
 	Config       *config.Binary
 
-	Alias  string
-	Name   string
 	Dir    string
 	Prefix *wine.Prefix
-	Type   roblox.BinaryType
-	Deploy *boot.Deployment
+	Type   clientsettings.BinaryType
+	Deploy *rbxbin.Deployment
 
 	// Logging
 	Auth     bool
 	Activity bsrpc.Activity
 }
 
-func BinaryPrefixDir(bt roblox.BinaryType) string {
-	return filepath.Join(dirs.Prefixes, strings.ToLower(bt.String()))
+func BinaryPrefixDir(bt clientsettings.BinaryType) string {
+	return filepath.Join(dirs.Prefixes, strings.ToLower(bt.Short()))
 }
 
-func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
+func NewBinary(bt clientsettings.BinaryType, cfg *config.Config) (*Binary, error) {
 	var bcfg *config.Binary
 	var bstate *state.Binary
 
@@ -76,10 +74,10 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 	}
 
 	switch bt {
-	case roblox.Player:
+	case clientsettings.WindowsPlayer:
 		bcfg = &cfg.Player
 		bstate = &s.Player
-	case roblox.Studio:
+	case clientsettings.WindowsStudio64:
 		bcfg = &cfg.Studio
 		bstate = &s.Studio
 	}
@@ -100,15 +98,13 @@ func NewBinary(bt roblox.BinaryType, cfg *config.Config) (*Binary, error) {
 		GlobalConfig: cfg,
 		Config:       bcfg,
 
-		Alias:  bt.String(),
-		Name:   bt.BinaryName(),
 		Type:   bt,
 		Prefix: pfx,
 	}, nil
 }
 
 func (b *Binary) Main(args ...string) int {
-	logFile, err := LogFile(b.Type.String())
+	logFile, err := LogFile(b.Type.Short())
 	if err != nil {
 		slog.Error(fmt.Sprintf("create log file: %s", err))
 		return 1
@@ -199,9 +195,9 @@ func (b *Binary) Init() error {
 
 		var err error
 		switch b.Type {
-		case roblox.Player:
+		case clientsettings.WindowsPlayer:
 			err = b.Prefix.Init()
-		case roblox.Studio:
+		case clientsettings.WindowsStudio64:
 			// Studio accepts all DPIs except the default, which is 96.
 			// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
 			// automatically create the Wineprefix.
@@ -248,7 +244,7 @@ func (b *Binary) Execute(args ...string) error {
 	}
 
 	// Studio can run in multiple instances, not Player
-	if b.GlobalConfig.MultipleInstances && b.Type == roblox.Player {
+	if b.GlobalConfig.MultipleInstances && b.Type == clientsettings.WindowsPlayer {
 		slog.Info("Running robloxmutexer")
 
 		mutexer := b.Prefix.Wine(filepath.Join(BinPrefix, "robloxmutexer.exe"))
@@ -289,8 +285,8 @@ func (b *Binary) Execute(args ...string) error {
 		signal.Stop(c)
 	}()
 
-	slog.Info("Running Binary", "name", b.Name, "cmd", cmd)
-	b.Splash.SetMessage("Launching " + b.Alias)
+	slog.Info("Running Binary", "name", b.Type, "cmd", cmd)
+	b.Splash.SetMessage("Launching " + b.Type.Short())
 
 	go func() {
 		// Wait for process to start
@@ -405,7 +401,8 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 		args = []string{"-protocolString", args[0]}
 	}
 
-	cmd := b.Prefix.Wine(filepath.Join(b.Dir, b.Type.Executable()), args...)
+	exe := "Roblox" + b.Type.Short() + "Beta.exe"
+	cmd := b.Prefix.Wine(filepath.Join(b.Dir, exe), args...)
 
 	launcher := strings.Fields(b.Config.Launcher)
 	if len(launcher) >= 1 {

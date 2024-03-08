@@ -4,7 +4,8 @@ import (
 	"log/slog"
 
 	"github.com/altfoxie/drpc"
-	"github.com/vinegarhq/vinegar/roblox/api"
+	"github.com/apprehensions/rbxweb/games"
+	"github.com/apprehensions/rbxweb/thumbnails"
 )
 
 func (a *Activity) Connect() error {
@@ -43,7 +44,7 @@ func (a *Activity) UpdateGamePresence(initial bool) error {
 	if initial || (a.presence.Details == Reset ||
 		a.presence.State == Reset ||
 		a.presence.Assets.LargeText == Reset) {
-		gd, err := api.GetGameDetails(a.universeID)
+		gd, err := games.GetGameDetail(a.universeID)
 		if err != nil {
 			return err
 		}
@@ -69,7 +70,7 @@ func (a *Activity) UpdateGamePresence(initial bool) error {
 	}
 
 	if initial || a.presence.Assets.LargeImage == Reset {
-		tn, err := api.GetGameIcon(a.universeID, "PlaceHolder", "512x512", "Png", false)
+		tn, err := thumbnails.GetGameIcon(a.universeID, "PlaceHolder", "512x512", "Png", false)
 		if err != nil {
 			return err
 		}

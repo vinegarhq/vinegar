@@ -6,19 +6,19 @@ import (
 	"path"
 	"runtime/debug"
 
+	"github.com/apprehensions/rbxweb/clientsettings"
 	"github.com/vinegarhq/vinegar/config"
-	"github.com/vinegarhq/vinegar/roblox"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
 )
 
 func PrintSysinfo(cfg *config.Config) {
-	playerPfx, err := wine.New(BinaryPrefixDir(roblox.Player), cfg.Player.WineRoot)
+	playerPfx, err := wine.New(BinaryPrefixDir(clientsettings.WindowsPlayer), cfg.Player.WineRoot)
 	if err != nil {
 		log.Fatalf("player prefix: %s", err)
 	}
 
-	studioPfx, err := wine.New(BinaryPrefixDir(roblox.Studio), cfg.Studio.WineRoot)
+	studioPfx, err := wine.New(BinaryPrefixDir(clientsettings.WindowsStudio64), cfg.Studio.WineRoot)
 	if err != nil {
 		log.Fatalf("studio prefix: %s", err)
 	}

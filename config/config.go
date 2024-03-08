@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/vinegarhq/vinegar/roblox"
+	"github.com/apprehensions/rbxbin"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
 	"github.com/vinegarhq/vinegar/wine"
@@ -30,7 +30,7 @@ type Binary struct {
 	ForcedVersion string        `toml:"forced_version"`
 	Dxvk          bool          `toml:"dxvk"`
 	DxvkVersion   string        `toml:"dxvk_version"`
-	FFlags        roblox.FFlags `toml:"fflags"`
+	FFlags        rbxbin.FFlags `toml:"fflags"`
 	Env           Environment   `toml:"env"`
 	ForcedGpu     string        `toml:"gpu"`
 	GameMode      bool          `toml:"gamemode"`
@@ -97,7 +97,7 @@ func Default() Config {
 			Renderer:    "D3D11",
 			Channel:     "", // Default upstream
 			DiscordRPC:  true,
-			FFlags: roblox.FFlags{
+			FFlags: rbxbin.FFlags{
 				"DFIntTaskSchedulerTargetFps": 640,
 			},
 			Env: Environment{
@@ -112,7 +112,7 @@ func Default() Config {
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "D3D11",
 			// TODO: fill with studio fflag/env goodies
-			FFlags: make(roblox.FFlags),
+			FFlags: make(rbxbin.FFlags),
 			Env:    make(Environment),
 		},
 

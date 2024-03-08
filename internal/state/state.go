@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/roblox/bootstrapper"
 )
 
 var path = filepath.Join(dirs.Data, "state.json")
@@ -69,14 +68,6 @@ func (s *State) Save() error {
 	}
 
 	return nil
-}
-
-// Add formats the given package manifest into a Binary form.
-func (bs *Binary) Add(pm *bootstrapper.PackageManifest) {
-	bs.Version = pm.Deployment.GUID
-	for _, pkg := range pm.Packages {
-		bs.Packages = append(bs.Packages, pkg.Checksum)
-	}
 }
 
 // Packages returns all the available Binary packages from the state.

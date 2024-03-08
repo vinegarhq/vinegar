@@ -15,10 +15,10 @@ github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53 h1:NcI4SrGv7yDhMRFc6
 github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53/go.mod h1:vV4ApNpKIGN4PT5NYmWqw1IEIsFzqj0pspTUSltS+gk=
 github.com/apprehensions/rbxbin v0.0.0-20240308123713-798ca8013cd1 h1:GCQRCWzCeD7nkKSUMN9/4wizq7u7TtawCi3ntWqSiNg=
 github.com/apprehensions/rbxbin v0.0.0-20240308123713-798ca8013cd1/go.mod h1:FPEDrVuql3rsAsGTXnaIvl3GXQPDxvoSeuyaQKsIFsU=
-github.com/apprehensions/rbxweb v0.0.0-20240308083857-a3d7205c6de9 h1:eOEtS+YksEplRdlZSKYSzDHfpDWA7UKFVlbdTHUxzFo=
-github.com/apprehensions/rbxweb v0.0.0-20240308083857-a3d7205c6de9/go.mod h1:F7WKRLrQxuRgfXxhwnlFJ059ZBMRxkXxvIhUxP4Qc5g=
 github.com/apprehensions/rbxweb v0.0.0-20240308122818-8de3663e1d40 h1:YFMJMX3x/8B0VXbwA1M6JmkhtEt35VprZvj40AGRxkk=
 github.com/apprehensions/rbxweb v0.0.0-20240308122818-8de3663e1d40/go.mod h1:F7WKRLrQxuRgfXxhwnlFJ059ZBMRxkXxvIhUxP4Qc5g=
+github.com/apprehensions/wine v0.0.0-20240308151754-d5e6446351dc h1:2/DdPTGUz7xuFsVUg+n4Rc/ETlbHELCRZZb3TKh7KEg=
+github.com/apprehensions/wine v0.0.0-20240308151754-d5e6446351dc/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/folbricht/pefile v0.1.0 h1:y9aMwgNlPO/iyp8Izll3Au4XNp7Fi7uDH8OKZ1Nl+lw=

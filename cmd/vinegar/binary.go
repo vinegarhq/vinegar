@@ -24,7 +24,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/state"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
-	"github.com/vinegarhq/vinegar/wine"
+	"github.com/apprehensions/wine"
 	"golang.org/x/term"
 )
 

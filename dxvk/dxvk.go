@@ -11,7 +11,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/vinegarhq/vinegar/wine"
+	"github.com/apprehensions/wine"
 )
 
 const Repo = "https://github.com/doitsujin/dxvk"

@@ -8,7 +8,7 @@ import (
 	"github.com/apprehensions/rbxweb/clientsettings"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/sysinfo"
-	"github.com/vinegarhq/vinegar/wine"
+	"github.com/apprehensions/wine"
 )
 
 func PrintSysinfo(cfg *config.Config) {

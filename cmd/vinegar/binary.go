@@ -230,15 +230,6 @@ func (b *Binary) HandleProtocolURI(mime string) {
 }
 
 func (b *Binary) Execute(args ...string) error {
-	if b.Config.DiscordRPC {
-		if err := b.Activity.Connect(); err != nil {
-			slog.Error("Could not connect to Discord RPC", "error", err)
-			b.Config.DiscordRPC = false
-		} else {
-			defer b.Activity.Close()
-		}
-	}
-
 	// Studio can run in multiple instances, not Player
 	if b.GlobalConfig.MultipleInstances && b.Type == clientsettings.WindowsPlayer {
 		slog.Info("Running robloxmutexer")

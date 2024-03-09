@@ -6,9 +6,9 @@ import (
 	"runtime/debug"
 
 	"github.com/apprehensions/rbxweb/clientsettings"
+	"github.com/apprehensions/wine"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/sysinfo"
-	"github.com/apprehensions/wine"
 )
 
 func PrintSysinfo(cfg *config.Config) {

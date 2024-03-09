@@ -20,7 +20,7 @@ type RichPresenceImage struct {
 	Reset     bool    `json:"reset"`
 }
 
-type Data struct {
+type MessageData struct {
 	Details        *string            `json:"details"`
 	State          *string            `json:"state"`
 	TimestampStart *Timestamp         `json:"timeStart"`
@@ -30,16 +30,16 @@ type Data struct {
 }
 
 type Message struct {
-	Command string `json:"command"`
-	Data    `json:"data"`
+	Command string      `json:"command"`
+	Data    MessageData `json:"data"`
 }
 
 // NewMessage constructs a new Message from a BloxstrapRPC message
 // log entry from the Roblox client.
-func NewMessage(line string) (*Message, error) {
+func ParseMessage(line string) (*Message, error) {
 	var m Message
 
-	msg := line[strings.Index(line, BloxstrapRPCEntry)+len(BloxstrapRPCEntry)+1:]
+	msg := line[strings.Index(line, bloxstrapRPCEntry)+len(bloxstrapRPCEntry)+1:]
 
 	if err := json.Unmarshal([]byte(msg), &m); err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func NewMessage(line string) (*Message, error) {
 }
 
 // ApplyRichPresence applies/appends Message's properties to the given
-// [drpc.Activity] for use in Discord's Rich Presence.
+// [drpc.BloxstrapRPC] for use in Discord's Rich Presence.
 //
 // UpdateGamePresence should be called as some of the properties are specific
 // to BloxstrapRPC.
@@ -80,10 +80,10 @@ func (m *Message) ApplyRichPresence(p *drpc.Activity) {
 		p.State = *m.Data.State
 	}
 
-	m.TimestampStart.ApplyRichPresence(&p.Timestamps.Start)
-	m.TimestampEnd.ApplyRichPresence(&p.Timestamps.End)
-	m.SmallImage.ApplyRichPresence(&p.Assets.SmallImage, &p.Assets.SmallText)
-	m.LargeImage.ApplyRichPresence(&p.Assets.LargeImage, &p.Assets.LargeText)
+	m.Data.TimestampStart.ApplyRichPresence(&p.Timestamps.Start)
+	m.Data.TimestampEnd.ApplyRichPresence(&p.Timestamps.End)
+	m.Data.SmallImage.ApplyRichPresence(&p.Assets.SmallImage, &p.Assets.SmallText)
+	m.Data.LargeImage.ApplyRichPresence(&p.Assets.LargeImage, &p.Assets.LargeText)
 }
 
 // ApplyRichPresence applies/appends the Timestamp to the given drpc timestamp.
@@ -109,8 +109,8 @@ func (i *RichPresenceImage) ApplyRichPresence(drpcImage, drpcText *string) {
 	}
 
 	if i.Reset {
-		*drpcImage = Reset
-		*drpcText = Reset
+		*drpcImage = reset
+		*drpcText = reset
 	}
 
 	if i.AssetID != nil {
@@ -122,4 +122,3 @@ func (i *RichPresenceImage) ApplyRichPresence(drpcImage, drpcText *string) {
 		*drpcText = *i.HoverText
 	}
 }
-

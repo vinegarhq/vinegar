@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -13,24 +14,31 @@ import (
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
+	"github.com/apprehensions/wine"
 	"github.com/fsnotify/fsnotify"
 	"github.com/godbus/dbus/v5"
 	"github.com/lmittmann/tint"
 	"github.com/nxadm/tail"
 	slogmulti "github.com/samber/slog-multi"
-	bsrpc "github.com/vinegarhq/vinegar/bloxstraprpc"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
+	"github.com/vinegarhq/vinegar/richpresence"
+	"github.com/vinegarhq/vinegar/richpresence/bloxstraprpc"
+	"github.com/vinegarhq/vinegar/richpresence/studiorpc"
 	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
-	"github.com/apprehensions/wine"
 	"golang.org/x/term"
 )
 
 const (
 	LogTimeout = 6 * time.Second
 	DieTimeout = 3 * time.Second
+)
+
+const (
+	// TODO: find better entries
+	PlayerShutdownEntry = "[FLog::SingleSurfaceApp] shutDown:"
 )
 
 const (
@@ -57,7 +65,7 @@ type Binary struct {
 
 	// Logging
 	Auth     bool
-	Activity bsrpc.Activity
+	Presence richpresence.BinaryRichPresence
 }
 
 func BinaryPrefixDir(bt clientsettings.BinaryType) string {
@@ -67,6 +75,7 @@ func BinaryPrefixDir(bt clientsettings.BinaryType) string {
 func NewBinary(bt clientsettings.BinaryType, cfg *config.Config) (*Binary, error) {
 	var bcfg *config.Binary
 	var bstate *state.Binary
+	var rp richpresence.BinaryRichPresence
 
 	s, err := state.Load()
 	if err != nil {
@@ -77,16 +86,18 @@ func NewBinary(bt clientsettings.BinaryType, cfg *config.Config) (*Binary, error
 	case clientsettings.WindowsPlayer:
 		bcfg = &cfg.Player
 		bstate = &s.Player
+		rp = bloxstraprpc.New()
 	case clientsettings.WindowsStudio64:
 		bcfg = &cfg.Studio
 		bstate = &s.Studio
+		rp = studiorpc.New()
 	}
 
 	pfx := wine.New(BinaryPrefixDir(bt), bcfg.WineRoot)
 	os.Setenv("GAMEID", "ulwgl-roblox")
 
 	return &Binary{
-		Activity: bsrpc.New(),
+		Presence: rp,
 
 		GlobalState: &s,
 		State:       bstate,
@@ -113,6 +124,7 @@ func (b *Binary) Main(args ...string) int {
 	)))
 
 	b.Splash = splash.New(&b.GlobalConfig.Splash)
+	b.Prefix.Stderr = io.MultiWriter(os.Stderr, logFile)
 	b.Config.Env.Setenv()
 
 	go func() {
@@ -368,7 +380,7 @@ func (b *Binary) Tail(name string) {
 		// Roblox shut down, give it atleast a few seconds, and then send an
 		// internal signal to kill it.
 		// This is due to Roblox occasionally refusing to die. We must kill it.
-		if strings.Contains(line.Text, "[FLog::SingleSurfaceApp] shutDown:") {
+		if strings.Contains(line.Text, PlayerShutdownEntry) {
 			go func() {
 				time.Sleep(DieTimeout)
 				syscall.Kill(syscall.Getpid(), syscall.SIGUSR1)
@@ -376,8 +388,8 @@ func (b *Binary) Tail(name string) {
 		}
 
 		if b.Config.DiscordRPC {
-			if err := b.Activity.HandleRobloxLog(line.Text); err != nil {
-				slog.Error("Activity Roblox log handle failed", "error", err)
+			if err := b.Presence.Handle(line.Text); err != nil {
+				slog.Error("Presence handling failed", "error", err)
 			}
 		}
 	}

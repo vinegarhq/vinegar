@@ -108,9 +108,10 @@ func Default() Config {
 			Dxvk:        true,
 			DxvkVersion: "2.3",
 			GameMode:    true,
-			Channel:     "", // Default upstream
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "D3D11",
+			Channel:     "", // Default upstream
+			DiscordRPC:  true,
 			// TODO: fill with studio fflag/env goodies
 			FFlags: make(rbxbin.FFlags),
 			Env:    make(Environment),

@@ -12,9 +12,9 @@ import (
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
 	cp "github.com/otiai10/copy"
+	"github.com/vinegarhq/vinegar/dxvk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/netutil"
-	"github.com/vinegarhq/vinegar/dxvk"
 	"golang.org/x/sync/errgroup"
 )
 

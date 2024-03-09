@@ -13,7 +13,7 @@ require (
 	gioui.org v0.5.0
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
 	github.com/apprehensions/rbxbin v0.0.0-20240308151735-386fce3d14ac
-	github.com/apprehensions/rbxweb v0.0.0-20240308122818-8de3663e1d40
+	github.com/apprehensions/rbxweb v0.0.0-20240309193157-ac2821c3a715
 	github.com/apprehensions/wine v0.0.0-20240308151754-d5e6446351dc
 	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.7.0
@@ -45,5 +45,3 @@ retract (
 	[v1.0.0, v1.1.3]
 	v0.0.1
 )
-
-replace github.com/apprehensions/rbxweb => ../rbxweb

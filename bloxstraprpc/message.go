@@ -11,6 +11,8 @@ import (
 	"github.com/altfoxie/drpc"
 )
 
+type Timestamp int64
+
 type RichPresenceImage struct {
 	AssetID   *int64  `json:"assetId"`
 	HoverText *string `json:"hoverText"`
@@ -21,8 +23,8 @@ type RichPresenceImage struct {
 type Data struct {
 	Details        *string            `json:"details"`
 	State          *string            `json:"state"`
-	TimestampStart *int64             `json:"timeStart"`
-	TimestampEnd   *int64             `json:"timeEnd"`
+	TimestampStart *Timestamp         `json:"timeStart"`
+	TimestampEnd   *Timestamp         `json:"timeEnd"`
 	SmallImage     *RichPresenceImage `json:"smallImage"`
 	LargeImage     *RichPresenceImage `json:"largeImage"`
 }
@@ -34,29 +36,29 @@ type Message struct {
 
 // NewMessage constructs a new Message from a BloxstrapRPC message
 // log entry from the Roblox client.
-func NewMessage(line string) (Message, error) {
+func NewMessage(line string) (*Message, error) {
 	var m Message
 
 	msg := line[strings.Index(line, BloxstrapRPCEntry)+len(BloxstrapRPCEntry)+1:]
 
 	if err := json.Unmarshal([]byte(msg), &m); err != nil {
-		return Message{}, err
+		return nil, err
 	}
 
 	if m.Command == "" {
-		return Message{}, errors.New("command is empty")
+		return nil, errors.New("command is empty")
 	}
 
 	// discord RPC implementation requires a limit of 128 characters
 	if m.Data.Details != nil && len(*m.Data.Details) > 128 {
-		return Message{}, errors.New("details must be less than 128 characters")
+		return nil, errors.New("details must be less than 128 characters")
 	}
 
 	if m.Data.State != nil && len(*m.Data.State) > 128 {
-		return Message{}, errors.New("state must be less than 128 characters")
+		return nil, errors.New("state must be less than 128 characters")
 	}
 
-	return m, nil
+	return &m, nil
 }
 
 // ApplyRichPresence applies/appends Message's properties to the given
@@ -64,7 +66,7 @@ func NewMessage(line string) (Message, error) {
 //
 // UpdateGamePresence should be called as some of the properties are specific
 // to BloxstrapRPC.
-func (m Message) ApplyRichPresence(p *drpc.Activity) {
+func (m *Message) ApplyRichPresence(p *drpc.Activity) {
 	if m.Command != "SetRichPresence" {
 		slog.Warn("Game sent invalid BloxstrapRPC command", "command", m.Command)
 		return
@@ -78,58 +80,46 @@ func (m Message) ApplyRichPresence(p *drpc.Activity) {
 		p.State = *m.Data.State
 	}
 
-	if m.TimestampStart != nil {
-		if *m.TimestampStart == 0 {
-			p.Timestamps.Start = time.Time{}
-		} else {
-			p.Timestamps.Start = time.UnixMilli(*m.TimestampStart)
-		}
-	}
-	if m.TimestampEnd != nil {
-		if *m.TimestampEnd == 0 {
-			p.Timestamps.End = time.Time{}
-		} else {
-			p.Timestamps.End = time.UnixMilli(*m.TimestampEnd)
-		}
+	m.TimestampStart.ApplyRichPresence(&p.Timestamps.Start)
+	m.TimestampEnd.ApplyRichPresence(&p.Timestamps.End)
+	m.SmallImage.ApplyRichPresence(&p.Assets.SmallImage, &p.Assets.SmallText)
+	m.LargeImage.ApplyRichPresence(&p.Assets.LargeImage, &p.Assets.LargeText)
+}
+
+// ApplyRichPresence applies/appends the Timestamp to the given drpc timestamp.
+func (t Timestamp) ApplyRichPresence(drpcTimestamp *time.Time) {
+	if drpcTimestamp == nil {
+		return
 	}
 
-	if m.SmallImage != nil {
-		if m.SmallImage.Clear {
-			p.Assets.SmallImage = ""
-		}
-
-		if m.SmallImage.Reset {
-			p.Assets.SmallImage = Reset
-			*m.SmallImage.HoverText = Reset
-		}
-
-		if m.SmallImage.AssetID != nil {
-			p.Assets.SmallImage = "https://assetdelivery.roblox.com/v1/asset/?id=" +
-				strconv.FormatInt(*m.SmallImage.AssetID, 10)
-		}
-
-		if m.SmallImage.HoverText != nil {
-			p.Assets.SmallText = *m.SmallImage.HoverText
-		}
-	}
-
-	if m.LargeImage != nil {
-		if m.LargeImage.Clear {
-			p.Assets.LargeImage = ""
-		}
-
-		if m.LargeImage.Reset {
-			p.Assets.LargeImage = Reset
-			*m.LargeImage.HoverText = Reset
-		}
-
-		if m.LargeImage.AssetID != nil {
-			p.Assets.LargeImage = "https://assetdelivery.roblox.com/v1/asset/?id=" +
-				strconv.FormatInt(*m.LargeImage.AssetID, 10)
-		}
-
-		if m.LargeImage.HoverText != nil {
-			p.Assets.SmallText = *m.LargeImage.HoverText
-		}
+	*drpcTimestamp = time.Time{}
+	if t != 0 {
+		*drpcTimestamp = time.UnixMilli(int64(t))
 	}
 }
+
+// ApplyRichPresence applies/appends the Timestamp to the given drpc Asset.
+func (i *RichPresenceImage) ApplyRichPresence(drpcImage, drpcText *string) {
+	if drpcImage == nil || drpcText == nil {
+		return
+	}
+
+	if i.Clear {
+		*drpcImage = ""
+	}
+
+	if i.Reset {
+		*drpcImage = Reset
+		*drpcText = Reset
+	}
+
+	if i.AssetID != nil {
+		*drpcImage = "https://assetdelivery.roblox.com/v1/asset/?id=" +
+			strconv.FormatInt(*i.AssetID, 10)
+	}
+
+	if i.HoverText != nil {
+		*drpcText = *i.HoverText
+	}
+}
+

@@ -8,21 +8,10 @@ import (
 	"github.com/apprehensions/rbxweb/thumbnails"
 )
 
-func (a *Activity) Connect() error {
-	slog.Info("Connecting to Discord RPC")
-
-	return a.client.Connect()
-}
-
-func (a *Activity) Close() error {
-	slog.Info("Closing Discord RPC")
-
-	return a.client.Close()
-}
-
 // UpdateGamePresence sets the activity based on the current
 // game information present in Activity. 'initial' is used
-// to fetch game information required for rich presence.
+// to fetch game information required for rich presence, regardless
+// if the Activity properties have been set to Reset.
 func (a *Activity) UpdateGamePresence(initial bool) error {
 	a.presence.Buttons = []drpc.Button{{
 		Label: "See game page",
@@ -70,7 +59,8 @@ func (a *Activity) UpdateGamePresence(initial bool) error {
 	}
 
 	if initial || a.presence.Assets.LargeImage == Reset {
-		tn, err := thumbnails.GetGameIcon(a.universeID, "PlaceHolder", "512x512", "Png", false)
+		tn, err := thumbnails.GetGameIcon(a.universeID,
+			thumbnails.PlaceHolder, "512x512", thumbnails.Png, false)
 		if err != nil {
 			return err
 		}

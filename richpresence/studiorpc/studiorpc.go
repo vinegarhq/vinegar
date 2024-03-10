@@ -15,7 +15,7 @@ import (
 
 const (
 	gameOpenEntry  = "[FLog::LifecycleManager] Entered PlaceSessionScope:"
-	gameCloseEntry = "[FLog::Output] RobloxIDEDoc::doClose"
+	gameCloseEntry = "[FLog::LifecycleManager] Exited PlaceSessionScope:"
 )
 
 var gameOpenEntryPattern = regexp.MustCompile(`Entered PlaceSessionScope:'([0-9]+)'`)

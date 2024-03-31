@@ -12,9 +12,9 @@ require (
 require (
 	gioui.org v0.5.0
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
-	github.com/apprehensions/rbxbin v0.0.0-20240308151735-386fce3d14ac
-	github.com/apprehensions/rbxweb v0.0.0-20240309193157-ac2821c3a715
-	github.com/apprehensions/wine v0.0.0-20240308151754-d5e6446351dc
+	github.com/apprehensions/rbxbin v0.0.0-20240331194455-628e3aed31ff
+	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
+	github.com/apprehensions/wine v0.0.0-20240312153031-d58fca03f2dc
 	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
@@ -31,9 +31,11 @@ require (
 	github.com/go-text/typesetting v0.0.0-20231206174126-ce41cc83e028 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
+	github.com/robloxapi/rbxdhist v0.6.0 // indirect
+	github.com/robloxapi/rbxver v0.3.0 // indirect
 	github.com/samber/lo v1.39.0 // indirect
-	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
-	golang.org/x/exp/shiny v0.0.0-20240222234643-814bf88cf225 // indirect
+	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
+	golang.org/x/exp/shiny v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/image v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect

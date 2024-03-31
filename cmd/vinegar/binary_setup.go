@@ -27,7 +27,7 @@ func (b *Binary) FetchDeployment() error {
 	if b.Config.ForcedVersion != "" {
 		slog.Warn("Using forced deployment!", "guid", b.Config.ForcedVersion)
 
-		b.Deploy = &rbxbin.Deployment{
+		b.Deploy = rbxbin.Deployment{
 			Type:    b.Type,
 			Channel: b.Config.Channel,
 			GUID:    b.Config.ForcedVersion,
@@ -115,13 +115,9 @@ func (b *Binary) Install() error {
 	if err != nil {
 		return fmt.Errorf("fetch mirror: %w", err)
 	}
-	manif, err := netutil.Body(m.PackageManifest(b.Deploy))
+	pkgs, err := m.GetPackages(b.Deploy)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
-	}
-	pkgs, err := rbxbin.ParsePackages([]byte(manif))
-	if err != nil {
-		return fmt.Errorf("parse packages: %w", err)
 	}
 
 	// Prioritize smaller files first, to have less pressure
@@ -193,7 +189,7 @@ func (b *Binary) SetupPackages(pkgs *[]rbxbin.Package, m *rbxbin.Mirror) error {
 			}
 
 			if err := p.Verify(src); err != nil {
-				url := m.Package(b.Deploy, p.Name)
+				url := m.PackageURL(b.Deploy, p.Name)
 				slog.Info("Downloading package", "url", url, "path", src)
 
 				if err := netutil.Download(url, src); err != nil {

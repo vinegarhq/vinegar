@@ -61,7 +61,7 @@ type Binary struct {
 	Dir    string
 	Prefix *wine.Prefix
 	Type   clientsettings.BinaryType
-	Deploy *rbxbin.Deployment
+	Deploy rbxbin.Deployment
 
 	// Logging
 	Auth     bool

@@ -8,7 +8,6 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/apprehensions/wine"
@@ -18,15 +17,16 @@ const Repo = "https://github.com/doitsujin/dxvk"
 
 // Setenv sets/appends WINEDLLOVERRIDES to tell Wine to use the DXVK DLLs.
 //
-// This is required to call inorder to tell Wine to use DXVK.
+// This is required to call inorder to tell Wine to use it's own DLLs,
+// which is presumably overwritten by Extract.
 func Setenv() {
 	slog.Info("Enabling WINE DXVK DLL overrides")
 
-	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+";d3d10core=n;d3d11=n;d3d9=n;dxgi=n")
+	os.Setenv("WINEDLLOVERRIDES", os.Getenv("WINEDLLOVERRIDES")+";d3d9,d3d10core,d3d11,dxgi=n")
 }
 
-// Remove removes the DXVK overridden DLLs from the given wineprefix, then
-// restores global wine DLLs.
+// Remove removes the DXVK overridden DLLs from the
+// given wineprefix, then restores global wine DLLs.
 func Remove(pfx *wine.Prefix) error {
 	slog.Info("Deleting DXVK DLLs", "pfx", pfx)
 
@@ -52,10 +52,8 @@ func URL(ver string) string {
 	return fmt.Sprintf("%s/releases/download/v%[2]s/dxvk-%[2]s.tar.gz", Repo, ver)
 }
 
-// Extract extracts DXVK's DLLs into the given wineprefix, given
-// the path to a DXVK tarball.
-//
-// DXVK DLLs override Wine's own D3D DLLs.
+// Extract extracts DXVK's DLLs into the given wineprefix -
+// overriding Wine's D3D DLLs, given the path to a DXVK tarball.
 func Extract(name string, pfx *wine.Prefix) error {
 	slog.Info("Extracting DXVK", "file", name, "pfx", pfx)
 
@@ -76,11 +74,10 @@ func Extract(name string, pfx *wine.Prefix) error {
 	for {
 		hdr, err := tr.Next()
 
-		if err == io.EOF {
-			break
-		}
-
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			return err
 		}
 
@@ -88,28 +85,35 @@ func Extract(name string, pfx *wine.Prefix) error {
 			continue
 		}
 
-		dir, ok := map[string]string{
-			"x64": filepath.Join(pfx.Dir(), "drive_c", "windows", "system32"),
-			"x32": filepath.Join(pfx.Dir(), "drive_c", "windows", "syswow64"),
-		}[filepath.Base(filepath.Dir(hdr.Name))]
+		// Theoretically this is unsafe becuase there is no standard to DLL
+		// tarballs other than it having a directory structure like
+		// x64, x32, x86, with each folder containing a set of dlls
+		// that can be installed to a folder.
+		//
+		// Oh well.
 
-		if !ok {
+		if filepath.Ext(hdr.Name) != ".dll" {
 			slog.Warn("Skipping DXVK unhandled file", "file", hdr.Name)
 			continue
 		}
 
-		p := filepath.Join(dir, path.Base(hdr.Name))
+		dir := "system32"
+		if filepath.Base(filepath.Dir(hdr.Name)) == "x32" {
+			dir = "syswow64"
+		}
 
-		if err := os.MkdirAll(dir, 0o755); err != nil {
+		dst := filepath.Join(pfx.Dir(), "drive_c", "windows", dir, filepath.Base(hdr.Name))
+
+		if err := os.MkdirAll(dst, 0o755); err != nil {
 			return err
 		}
 
-		f, err := os.Create(p)
+		f, err := os.Create(dst)
 		if err != nil {
 			return err
 		}
 
-		slog.Info("Extracting DXVK DLL", "path", p)
+		slog.Info("Extracting DXVK DLL", "dest", dst)
 
 		if _, err = io.Copy(f, tr); err != nil {
 			f.Close()

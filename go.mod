@@ -6,23 +6,23 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/adrg/xdg v0.4.0
 	github.com/otiai10/copy v1.14.1-0.20240306081555-fd3129f2faa5
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.7.0
 )
 
 require (
 	gioui.org v0.5.0
 	github.com/altfoxie/drpc v0.0.0-20231214171500-0a4e3a3b1c53
-	github.com/apprehensions/rbxbin v0.0.0-20240331194455-628e3aed31ff
+	github.com/apprehensions/rbxbin v0.0.0-20240404181314-22a2e8ae7079
 	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
-	github.com/apprehensions/wine v0.0.0-20240312153031-d58fca03f2dc
+	github.com/apprehensions/wine v0.0.0-20240402112551-874f01f9e84d
 	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.7.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/lmittmann/tint v1.0.4
 	github.com/nxadm/tail v1.4.11
 	github.com/samber/slog-multi v1.0.2
-	golang.org/x/sys v0.18.0
-	golang.org/x/term v0.18.0
+	golang.org/x/sys v0.19.0
+	golang.org/x/term v0.19.0
 )
 
 require (

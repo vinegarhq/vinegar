@@ -104,7 +104,7 @@ func Extract(name string, pfx *wine.Prefix) error {
 
 		dst := filepath.Join(pfx.Dir(), "drive_c", "windows", dir, filepath.Base(hdr.Name))
 
-		if err := os.MkdirAll(dst, 0o755); err != nil {
+		if err := os.MkdirAll(filepath.Dir(dst), 0o755); err != nil {
 			return err
 		}
 

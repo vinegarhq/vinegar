@@ -1,0 +1,3 @@
+echo 2024 vinegar fix
+curl https://software.download.prss.microsoft.com/dbazure/Win11_23H2_English_x64v2.iso\?t\=a9233366-dec0-4aa1-b776-c240e83a7fe5\&P1\=1717103502\&P2\=601\&P3\=2\&P4\=q3%2fsICPFsEA7xTYqtAv%2b8yv2b%2bL1DdQd4POc3cccG5%2f0KWGNl%2b6N%2fAM0B8raZbrui1%2fxyq0Y%2fde546sE8i8uNBGp9StRkFaUg4HI4lK1IcMND0ybgiEbdoM6RmBMNgJxhUFPk8dKEXNi1CHD6Q4jtoJYLSMpjaoF8jUIiZFFjGdiMLBhbQEeSs30OZ1pMq7f2JxvOxMo9fhlZtwYD%2fc4FyFsZCb7tkJfBZ7OLmJrEIc3taR6MYelL6gRONbV147Uq8OGUMApnW9jNCF%2bYLRLdlSbNgoTjWcjKEdh0EkEbxoP3Ol0%2bimW5K9qIAG%2fGhkBnx6ftjFZ2oZYU6l1sQ8%2ftA%3d%3d --output
+win11.iso

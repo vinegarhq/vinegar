@@ -1,7 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Roblox App
-Icon=org.vinegarhq.Vinegar.player
-Exec=vinegar player run -app
-Terminal=false
-Categories=Game

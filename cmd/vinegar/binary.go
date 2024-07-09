@@ -213,11 +213,11 @@ func (b *Binary) Init() error {
 		}
 
 		if err != nil {
-			return fmt.Errorf("failed to init %s prefix: %w", b.Type, err)
+			return err
 		}
 
 		if err := b.InstallWebView(); err != nil {
-			return fmt.Errorf("failed to install webview: %w", err)
+			return fmt.Errorf("webview: %w", err)
 		}
 	}
 
@@ -248,7 +248,7 @@ func (b *Binary) Execute(args ...string) error {
 
 		mutexer := b.Prefix.Wine(filepath.Join(BinPrefix, "robloxmutexer.exe"))
 		if err := mutexer.Start(); err != nil {
-			return fmt.Errorf("start robloxmutexer: %w", err)
+			return fmt.Errorf("run robloxmutexer: %w", err)
 		}
 		go func() {
 			if err := mutexer.Wait(); err != nil {

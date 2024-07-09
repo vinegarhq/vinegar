@@ -99,13 +99,15 @@ func (ui *Splash) IsClosed() bool {
 }
 
 func window(width, height unit.Dp) *app.Window {
-	return app.NewWindow(
+	w := new(app.Window)
+	w.Option(
 		app.Decorated(false),
 		app.Size(width, height),
 		app.MinSize(width, height),
 		app.MaxSize(width, height),
 		app.Title("Vinegar"),
 	)
+	return w
 }
 
 func New(cfg *Config) *Splash {
@@ -123,7 +125,7 @@ func New(cfg *Config) *Splash {
 	}
 
 	w := window(s.Size())
-	w.Perform(system.ActionCenter)
+	
 
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
@@ -190,9 +192,10 @@ func (ui *Splash) Run() error {
 	}
 
 	ui.closed = false
+	post := false
 	var ops op.Ops
 	for {
-		switch e := ui.NextEvent().(type) {
+		switch e := ui.Event().(type) {
 		case app.DestroyEvent:
 			if ui.closed && e.Err == nil {
 				return nil
@@ -204,6 +207,10 @@ func (ui *Splash) Run() error {
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
 			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
+
+			if !post {
+				ui.Perform(system.ActionCenter)
+			}
 
 			if ui.openLogButton.Clicked(gtx) {
 				log.Printf("Opening log file: %s", ui.LogPath)

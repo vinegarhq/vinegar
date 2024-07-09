@@ -67,7 +67,7 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 	var noButton widget.Clickable
 
 	for {
-		switch e := w.NextEvent().(type) {
+		switch e := w.Event().(type) {
 		case app.DestroyEvent:
 			return r
 		case app.FrameEvent:

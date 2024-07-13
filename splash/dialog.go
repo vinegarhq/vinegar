@@ -23,7 +23,7 @@ import (
 //
 // The dialog window size will automatically resize itself vertically
 // according to how many lines the text takes.
-func (ui *Splash) Dialog(txt string, user bool) (r bool) {
+func (ui *Splash) Dialog(txt string, user bool, xdg string) (r bool) {
 	var ops op.Ops
 
 	if !ui.Config.Enabled {
@@ -65,6 +65,7 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 
 	var yesButton widget.Clickable // Okay if !user
 	var noButton widget.Clickable
+	var xdgButton widget.Clickable
 
 	for {
 		switch e := w.Event().(type) {
@@ -80,6 +81,11 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 			}
 			if noButton.Clicked(gtx) {
 				w.Perform(system.ActionClose)
+			}
+			if xdgButton.Clicked(gtx) {
+				if err := XDGOpen(xdg).Start(); err != nil {
+					log.Printf("Dialog: xdg-open: %s", err)
+				}
 			}
 
 			layout.UniformInset(18).Layout(gtx, func(gtx C) D {
@@ -104,7 +110,13 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 						}.Layout(gtx,
 							layout.Rigid(func(gtx C) D {
 								if !user {
-									return button(th, &yesButton, "Okay").Layout(gtx)
+									r := unit.Dp(16)
+									if xdg == "" {
+										r = 0
+									}
+									return layout.Inset{Right: r}.Layout(gtx, func(gtx C) D {
+										return button(th, &yesButton, "Okay").Layout(gtx)
+									})
 								}
 
 								return layout.Inset{Right: unit.Dp(16)}.Layout(gtx, func(gtx C) D {
@@ -119,6 +131,13 @@ func (ui *Splash) Dialog(txt string, user bool) (r bool) {
 								btn.Color = ui.Theme.Palette.Fg
 								btn.Background = rgb(ui.Config.CancelColor)
 								return btn.Layout(gtx)
+							}),
+							layout.Rigid(func(gtx C) D {
+								if user || xdg == "" {
+									return D{}
+								}
+
+								return button(th, &xdgButton, "More Info").Layout(gtx)
 							}),
 						)
 					}),

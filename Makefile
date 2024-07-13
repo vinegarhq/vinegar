@@ -1,4 +1,4 @@
-VERSION = v1.7.4
+VERSION = v1.7.5
 
 PREFIX     = /usr
 BINPREFIX  = $(PREFIX)/libexec/vinegar

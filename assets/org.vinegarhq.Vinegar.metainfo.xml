@@ -33,6 +33,15 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.7.5" date="2024-07-13">
+			<description>
+				<ul>
+					<li>Implemented Studio Rich Presence</li>
+					<li>Updated go modules, fixing CVE-2024-24792</li>
+					<li>Add warning message for running Player after the wine block on first run </li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.7.4" date="2024-2-13">
 			<description>
 				<ul>

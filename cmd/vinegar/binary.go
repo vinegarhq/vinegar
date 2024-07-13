@@ -46,6 +46,7 @@ const (
 	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
 	DialogFailure    = "Vinegar experienced an error:\n%s"
 	DialogNoAVX      = "Warning: Your CPU does not support AVX. While some people may be able to run without it, most are not able to. VinegarHQ cannot provide support for your installation. Continue?"
+	DialogWineBlock  = "As of the 2nd of March, 2024, Roblox has blocked the use of Wine to access the Roblox Player."
 )
 
 type Binary struct {
@@ -154,7 +155,7 @@ func (b *Binary) Main(args ...string) int {
 		if b.GlobalConfig.Splash.Enabled && !term.IsTerminal(int(os.Stderr.Fd())) {
 			b.Splash.LogPath = logFile.Name()
 			b.Splash.SetMessage("Oops!")
-			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false) // blocks
+			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false, "") // blocks
 		}
 
 		return 1
@@ -192,7 +193,7 @@ func (b *Binary) Init() error {
 	}
 
 	if firstRun && !sysinfo.CPU.AVX {
-		b.Splash.Dialog(DialogNoAVX, false)
+		b.Splash.Dialog(DialogNoAVX, false, "")
 		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
 	}
 
@@ -204,6 +205,7 @@ func (b *Binary) Init() error {
 		var err error
 		switch b.Type {
 		case clientsettings.WindowsPlayer:
+			b.Splash.Dialog(DialogWineBlock, false, "https://vinegarhq.org/Home/rol_faq.html")
 			err = b.Prefix.Init()
 		case clientsettings.WindowsStudio64:
 			// Studio accepts all DPIs except the default, which is 96.

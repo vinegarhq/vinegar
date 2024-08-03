@@ -37,6 +37,9 @@ func Remove(pfx *wine.Prefix) error {
 			slog.Info("Removing DXVK overriden Wine DLL", "path", p)
 
 			if err := os.Remove(p); err != nil {
+				if errors.Is(err, os.ErrNotExist) {
+					continue
+				}
 				return err
 			}
 		}

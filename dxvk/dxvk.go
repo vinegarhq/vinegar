@@ -36,6 +36,12 @@ func Remove(pfx *wine.Prefix) error {
 
 			slog.Info("Removing DXVK overriden Wine DLL", "path", p)
 
+                        // Checks to see if the given file exists, if not, skips it and continues removal process
+                        if _, err := os.Stat(p); os.IsNotExist(err) {
+                                slog.Info("File does not exist, skipping", "path", p)
+                                continue
+                        }
+
 			if err := os.Remove(p); err != nil {
 				return err
 			}

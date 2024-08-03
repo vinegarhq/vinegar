@@ -4,6 +4,7 @@ package dxvk
 import (
 	"archive/tar"
 	"compress/gzip"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"

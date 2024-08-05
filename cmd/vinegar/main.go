@@ -17,7 +17,6 @@ import (
 )
 
 var (
-	BinPrefix  string
 	ConfigPath string
 	FirstRun   bool
 	Version    string

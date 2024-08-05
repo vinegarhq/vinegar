@@ -1,15 +1,11 @@
 VERSION = v1.7.5
 
 PREFIX     = /usr
-BINPREFIX  = $(PREFIX)/libexec/vinegar
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
-GO = go
-GO_LDFLAGS = -s -w
-
-VINEGAR_LDFLAGS = $(GO_LDFLAGS) -X main.BinPrefix=$(BINPREFIX) -X main.Version=$(VERSION)
-VINEGAR_GOFLAGS = $(GO_GOFLAGS)
+GO         = go
+GO_LDFLAGS = -s -w -X main.Version=$(VERSION)
 
 ROBLOX_ICONS = \
 	assets/icons/128/roblox-player.png assets/icons/128/roblox-studio.png \
@@ -20,15 +16,12 @@ ROBLOX_ICONS = \
 
 VINEGAR_ICON = splash/vinegar.png
 
-all: vinegar robloxmutexer.exe
+all: vinegar
 icons: $(ROBLOX_ICONS) $(VINEGAR_ICON)
-install: install-vinegar install-robloxmutexer install-desktop install-icons
+install: install-vinegar install-desktop install-icons
 
 vinegar:
-	$(GO) build $(VINEGAR_GOFLAGS) $(GOFLAGS) -ldflags="$(VINEGAR_LDFLAGS)" ./cmd/vinegar
-
-robloxmutexer.exe:
-	GOOS=windows $(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/robloxmutexer
+	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
 
 $(ROBLOX_ICONS): assets/roblox-player.svg assets/roblox-studio.svg
 	rm -rf assets/icons
@@ -46,9 +39,6 @@ $(VINEGAR_ICON): assets/vinegar.svg
 install-vinegar: vinegar assets/org.vinegarhq.Vinegar.metainfo.xml
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 	install -Dm644 assets/org.vinegarhq.Vinegar.metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
-
-install-robloxmutexer: robloxmutexer.exe
-	install -Dm755 robloxmutexer.exe $(DESTDIR)$(BINPREFIX)/robloxmutexer.exe
 
 install-desktop:
 	install -Dm644 assets/desktop/vinegar.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
@@ -72,7 +62,6 @@ install-icons: icons
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar
 	rm -f $(DESTDIR)$(PREFIX)/share/metainfo/org.vinegarhq.Vinegar.metainfo.xml
-	rm -f $(DESTDIR)$(BINPREFIX)/robloxmutexer.exe
 	rm -f $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.app.desktop
 	rm -f $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.player.desktop
@@ -89,7 +78,6 @@ uninstall:
 	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/org.vinegarhq.Vinegar.player.png
 	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/org.vinegarhq.Vinegar.studio.png
 
-	
 mime:
 	xdg-mime default org.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox-player
 	xdg-mime default org.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox
@@ -102,6 +90,6 @@ tests:
 	$(GO) test $(GOFLAGS) ./...
 
 clean:
-	rm -f vinegar robloxmutexer.exe
+	rm -f vinegar
 
-.PHONY: all install install-vinegar install-robloxmutexer install-desktop install-icons uninstall icons mime tests clean
+.PHONY: all install install-vinegar install-desktop install-icons uninstall icons mime tests clean

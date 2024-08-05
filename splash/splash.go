@@ -125,7 +125,6 @@ func New(cfg *Config) *Splash {
 	}
 
 	w := window(s.Size())
-	
 
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))

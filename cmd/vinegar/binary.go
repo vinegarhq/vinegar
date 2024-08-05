@@ -244,21 +244,6 @@ func (b *Binary) HandleProtocolURI(mime string) {
 }
 
 func (b *Binary) Execute(args ...string) error {
-	// Studio can run in multiple instances, not Player
-	if b.GlobalConfig.MultipleInstances && b.Type == clientsettings.WindowsPlayer {
-		slog.Info("Running robloxmutexer")
-
-		mutexer := b.Prefix.Wine(filepath.Join(BinPrefix, "robloxmutexer.exe"))
-		if err := mutexer.Start(); err != nil {
-			return fmt.Errorf("run robloxmutexer: %w", err)
-		}
-		go func() {
-			if err := mutexer.Wait(); err != nil {
-				slog.Error("robloxmutexer returned too early", "error", err)
-			}
-		}()
-	}
-
 	cmd, err := b.Command(args...)
 	if err != nil {
 		return err

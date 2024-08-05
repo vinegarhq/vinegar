@@ -77,7 +77,6 @@ func Extract(name string, pfx *wine.Prefix) error {
 
 	for {
 		hdr, err := tr.Next()
-
 		if err != nil {
 			if err == io.EOF {
 				break

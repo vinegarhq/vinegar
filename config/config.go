@@ -4,7 +4,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -13,7 +12,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/apprehensions/rbxbin"
 	"github.com/vinegarhq/vinegar/splash"
-	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 // LogoPath is set at build-time to set the logo icon path, which is
@@ -38,11 +36,10 @@ type Binary struct {
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
-	MultipleInstances bool        `toml:"multiple_instances"`
-	SanitizeEnv       bool        `toml:"sanitize_env"`
-	Player            Binary      `toml:"player"`
-	Studio            Binary      `toml:"studio"`
-	Env               Environment `toml:"env"`
+	SanitizeEnv bool        `toml:"sanitize_env"`
+	Player      Binary      `toml:"player"`
+	Studio      Binary      `toml:"studio"`
+	Env         Environment `toml:"env"`
 
 	Splash splash.Config `toml:"splash"`
 }
@@ -174,14 +171,6 @@ func (b *Binary) setup() error {
 func (c *Config) setup() error {
 	if c.SanitizeEnv {
 		SanitizeEnv()
-	}
-
-	// On each Flatpak instance, each one has their own wineserver, which means
-	// if a new Vinegar flatpak instance is ran, with the intent of having two
-	// running Player instances, one of the wineservers in either sandboxed
-	// instance will die.
-	if c.MultipleInstances && sysinfo.InFlatpak {
-		slog.Warn("Multiple instances is broken on Flatpak! Please consider using a source installation!")
 	}
 
 	c.Env.Setenv()

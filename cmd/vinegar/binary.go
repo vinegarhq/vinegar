@@ -33,12 +33,12 @@ import (
 
 const (
 	LogTimeout = 6 * time.Second
-	DieTimeout = 3 * time.Second
+	KillWait   = 3 * time.Second
 )
 
 const (
-	// TODO: find better entries
-	PlayerShutdownEntry = "[FLog::SingleSurfaceApp] shutDown:"
+	// Works for both studio and player
+	ShutdownEntry = "[FLog::Output] Fmod Closed."
 )
 
 const (
@@ -253,7 +253,7 @@ func (b *Binary) Execute(args ...string) error {
 	// SIGUSR1 is used in Tail() to force kill roblox, used to differenciate between
 	// a user-sent signal and a self sent signal.
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGUSR1)
+	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		s := <-c
 
@@ -364,13 +364,14 @@ func (b *Binary) Tail(name string) {
 	for line := range t.Lines {
 		fmt.Fprintln(b.Prefix.Stderr, line.Text)
 
-		// Roblox shut down, give it atleast a few seconds, and then send an
-		// internal signal to kill it.
-		// This is due to Roblox occasionally refusing to die. We must kill it.
-		if strings.Contains(line.Text, PlayerShutdownEntry) {
+		// Occasionally, Roblox may not close its window and hogs up memory
+		// as a result.
+		if strings.Contains(line.Text, ShutdownEntry) {
 			go func() {
-				time.Sleep(DieTimeout)
-				syscall.Kill(syscall.Getpid(), syscall.SIGUSR1)
+				// Studio takes some time to cleanup its resources.
+				time.Sleep(KillWait)
+
+				syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
 			}()
 		}
 

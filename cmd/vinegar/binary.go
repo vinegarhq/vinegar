@@ -32,8 +32,7 @@ import (
 )
 
 const (
-	LogTimeout = 6 * time.Second
-	KillWait   = 3 * time.Second
+	KillWait = 3 * time.Second
 )
 
 const (
@@ -338,12 +337,8 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 		return "", fmt.Errorf("watch roblox log dir: %w", err)
 	}
 
-	t := time.NewTimer(LogTimeout)
-
 	for {
 		select {
-		case <-t.C:
-			return "", fmt.Errorf("roblox log file not found after %s", LogTimeout)
 		case e := <-w.Events:
 			if e.Has(fsnotify.Create) {
 				return e.Name, nil

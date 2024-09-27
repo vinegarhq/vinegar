@@ -301,13 +301,12 @@ func (b *Binary) Execute(args ...string) error {
 	}()
 
 	err = cmd.Run()
-	// thanks for your time, fizzie on #go-nuts
-	// ProcessState is non-nil if a process has been successfully started,
-	// check if it is non-nil and check if it was killed:
-	// ExitCode returns the exit code of the exited process, or -1
-	// if the process hasn't exited or was terminated by a signal.
+	// Thanks for your time, fizzie on #go-nuts.
+	// Signal errors are not handled as errors since they are
+	// used internally to kill Roblox as well.
 	if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
-		slog.Warn("Roblox was killed!")
+		signal := cmd.ProcessState.Sys().(syscall.WaitStatus).Signal()
+		slog.Warn("Roblox was killed!", "signal", signal)
 		return nil
 	}
 	return err

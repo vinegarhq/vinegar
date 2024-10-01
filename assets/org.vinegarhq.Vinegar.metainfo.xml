@@ -33,6 +33,14 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.7.6" date="2024-10-01">
+			<description>
+				<ul>
+					<li>Updated Roblox Studios new package manifest dictionary</li>
+					<li>Fixed forced system process termination of Roblox</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.7.5" date="2024-07-13">
 			<description>
 				<ul>

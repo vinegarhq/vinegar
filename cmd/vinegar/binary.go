@@ -36,8 +36,10 @@ const (
 )
 
 const (
-	// Works for both studio and player
-	ShutdownEntry = "[FLog::Output] Fmod Closed."
+	// Randomly chosen log entry in cases where Studios process
+	// continues to run. Due to a lack of bug reports, it is unknown
+	// specifically which entry to use for these types of cases.
+	StudioShutdownEntry = "[FLog::LifecycleManager] Exited ApplicationScope"
 )
 
 const (
@@ -358,13 +360,9 @@ func (b *Binary) Tail(name string) {
 	for line := range t.Lines {
 		fmt.Fprintln(b.Prefix.Stderr, line.Text)
 
-		// Occasionally, Roblox may not close its window and hogs up memory
-		// as a result.
-		if strings.Contains(line.Text, ShutdownEntry) {
+		if strings.Contains(line.Text, StudioShutdownEntry) {
 			go func() {
-				// Studio takes some time to cleanup its resources.
 				time.Sleep(KillWait)
-
 				syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
 			}()
 		}

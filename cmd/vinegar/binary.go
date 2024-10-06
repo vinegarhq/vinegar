@@ -47,7 +47,7 @@ const (
 	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
 	DialogFailure    = "Vinegar experienced an error:\n%s"
 	DialogNoAVX      = "Warning: Your CPU does not support AVX. While some people may be able to run without it, most are not able to. VinegarHQ cannot provide support for your installation. Continue?"
-	DialogWineBlock  = "As of the 2nd of March, 2024, Roblox has blocked the use of Wine to access the Roblox Player."
+	DialogWineBlock  = "As of the 2nd of March, 2024, Roblox has blocked the use of Wine to access the Roblox Player. Use Sober instead to play Roblox on Linux."
 )
 
 type Binary struct {
@@ -198,6 +198,11 @@ func (b *Binary) Init() error {
 		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
 	}
 
+
+	if b.Type == clientsettings.WindowsPlayer {
+		b.Splash.Dialog(DialogWineBlock, false, "https://sober.vinegarhq.org/")
+	}
+
 	// Command-line flag vs wineprefix initialized
 	if firstRun || FirstRun {
 		slog.Info("Initializing wineprefix", "dir", b.Prefix.Dir())
@@ -206,7 +211,6 @@ func (b *Binary) Init() error {
 		var err error
 		switch b.Type {
 		case clientsettings.WindowsPlayer:
-			b.Splash.Dialog(DialogWineBlock, false, "https://vinegarhq.org/Home/rol_faq.html")
 			err = b.Prefix.Init()
 		case clientsettings.WindowsStudio64:
 			// Studio accepts all DPIs except the default, which is 96.

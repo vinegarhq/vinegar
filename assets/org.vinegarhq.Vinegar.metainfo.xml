@@ -33,6 +33,14 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.7.7" date="2024-10-09">
+			<description>
+				<ul>
+					<li>Always remind the user upon Player usage of the Wine block</li>
+					<li>Fixed log entry used for process termination of Studio</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.7.6" date="2024-10-01">
 			<description>
 				<ul>

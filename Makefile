@@ -1,4 +1,4 @@
-VERSION = v1.7.6
+VERSION = v1.7.7
 
 PREFIX     = /usr
 APPPREFIX  = $(PREFIX)/share/applications

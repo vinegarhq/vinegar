@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync/atomic"
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
@@ -111,25 +112,8 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	m, err := rbxbin.GetMirror()
-	if err != nil {
-		return fmt.Errorf("fetch mirror: %w", err)
-	}
-	pkgs, err := m.GetPackages(b.Deploy)
-	if err != nil {
-		return fmt.Errorf("fetch packages: %w", err)
-	}
-
-	// Prioritize smaller files first, to have less pressure
-	// on network and extraction
-	//
-	// *Theoretically*, this should be better
-	sort.SliceStable(pkgs, func(i, j int) bool {
-		return pkgs[i].ZipSize < pkgs[j].ZipSize
-	})
-
-	if err := b.SetupPackages(&pkgs, &m); err != nil {
-		return fmt.Errorf("setup: %w", err)
+	if err := b.SetupPackages(); err != nil {
+		return err
 	}
 
 	if b.Type == clientsettings.WindowsStudio64 {
@@ -145,11 +129,6 @@ func (b *Binary) Install() error {
 		return fmt.Errorf("appsettings: %w", err)
 	}
 
-	b.State.Version = b.Deploy.GUID
-	for _, pkg := range pkgs {
-		b.State.Packages = append(b.State.Packages, pkg.Checksum)
-	}
-
 	if err := b.GlobalState.CleanPackages(); err != nil {
 		return fmt.Errorf("clean packages: %w", err)
 	}
@@ -161,19 +140,38 @@ func (b *Binary) Install() error {
 	return nil
 }
 
-func (b *Binary) SetupPackages(pkgs *[]rbxbin.Package, m *rbxbin.Mirror) error {
-	dsts := rbxbin.BinaryDirectories(b.Type)
-	d := 0
-	n := len(*pkgs) * 2 // download & extraction
-	eg := new(errgroup.Group)
-
-	done := func() {
-		d++
-		b.Splash.SetProgress(float32(d) / float32(n))
+func (b *Binary) SetupPackages() error {
+	m, err := rbxbin.GetMirror()
+	if err != nil {
+		return fmt.Errorf("fetch mirror: %w", err)
 	}
 
-	slog.Info("Installing Packages", "guid", b.Deploy.GUID, "count", n)
-	for _, p := range *pkgs {
+	pkgs, err := m.GetPackages(b.Deploy)
+	if err != nil {
+		return fmt.Errorf("fetch packages: %w", err)
+	}
+
+	// Prioritize smaller files first, to have less pressure
+	// on network and extraction
+	//
+	// *Theoretically*, this should be better
+	sort.SliceStable(pkgs, func(i, j int) bool {
+		return pkgs[i].ZipSize < pkgs[j].ZipSize
+	})
+
+	slog.Info("Fetching package directories")
+
+	pd, err := m.BinaryDirectories(b.Deploy)
+	if err != nil {
+		return fmt.Errorf("fetch package dirs: %w", err)
+	}
+
+	total := len(pkgs) * 2 // download & extraction
+	var done atomic.Uint32
+	eg := new(errgroup.Group)
+
+	slog.Info("Installing Packages", "count", len(pkgs))
+	for _, p := range pkgs {
 		p := p
 
 		if p.Name == "RobloxPlayerLauncher.exe" {
@@ -182,15 +180,19 @@ func (b *Binary) SetupPackages(pkgs *[]rbxbin.Package, m *rbxbin.Mirror) error {
 
 		eg.Go(func() error {
 			src := filepath.Join(dirs.Downloads, p.Checksum)
-			dst, ok := dsts[p.Name]
-
+			dst, ok := pd[p.Name]
 			if !ok {
 				return fmt.Errorf("unhandled package: %s", p.Name)
 			}
 
+			defer func() {
+				done.Add(1)
+				b.Splash.SetProgress(float32(done.Load()) / float32(total))
+			}()
+
 			if err := p.Verify(src); err != nil {
 				url := m.PackageURL(b.Deploy, p.Name)
-				slog.Info("Downloading package", "url", url, "path", src)
+				slog.Info("Downloading Package", "name", p.Name)
 
 				if err := netutil.Download(url, src); err != nil {
 					return err
@@ -200,20 +202,26 @@ func (b *Binary) SetupPackages(pkgs *[]rbxbin.Package, m *rbxbin.Mirror) error {
 					return err
 				}
 			} else {
-				slog.Info("Package is already downloaded", "name", p.Name, "file", src)
+				slog.Info("Package is already downloaded", "name", p.Name)
 			}
-			done()
 
 			if err := p.Extract(src, filepath.Join(b.Dir, dst)); err != nil {
 				return err
 			}
-			done()
 
 			return nil
 		})
 	}
 
-	return eg.Wait()
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	b.State.Version = b.Deploy.GUID
+	for _, pkg := range pkgs {
+		b.State.Packages = append(b.State.Packages, pkg.Checksum)
+	}
+	return nil
 }
 
 func (b *Binary) SetupDxvk() error {

@@ -198,7 +198,6 @@ func (b *Binary) Init() error {
 		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
 	}
 
-
 	if b.Type == clientsettings.WindowsPlayer {
 		b.Splash.Dialog(DialogWineBlock, false, "https://sober.vinegarhq.org/")
 	}

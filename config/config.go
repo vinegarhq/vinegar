@@ -143,7 +143,7 @@ func (b *Binary) validate() error {
 	}
 
 	if b.WineRoot != "" {
-		w := wine.New("", "/tmp").Wine("")
+		w := wine.New("", b.WineRoot).Wine("")
 		if w.Err != nil {
 			return fmt.Errorf("wineroot: %w", w.Err)
 		}

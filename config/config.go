@@ -4,6 +4,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/wine"
 	"github.com/vinegarhq/vinegar/splash"
+	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 // LogoPath is set at build-time to set the logo icon path, which is
@@ -143,9 +145,13 @@ func (b *Binary) validate() error {
 	}
 
 	if b.WineRoot != "" {
-		w := wine.New("", b.WineRoot).Wine("")
+		pfx := wine.New("", b.WineRoot)
+		w := pfx.Wine("")
 		if w.Err != nil {
 			return fmt.Errorf("wineroot: %w", w.Err)
+		}
+		if pfx.IsProton() && w.Args[0] != "umu-run" && !sysinfo.InFlatpak {
+			slog.Warn("wineroot: umu-run reccomended for Proton usage!")
 		}
 	}
 

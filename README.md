@@ -32,6 +32,7 @@ Roblox Studio continues to be usable.
 + Discord Rich Presence & BloxstrapRPC support
 + Automatic GPU selection for PRIME systems
 + Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
++ Optional [UMU](https://github.com/Open-Wine-Components/umu-launcher) Proton support
 + Multiple instances of Roblox open simultaneously
 + Automatic Wineprefix killer when Roblox has quit
 + Logging for both Vinegar, Wine and Roblox

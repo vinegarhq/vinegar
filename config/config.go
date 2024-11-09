@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/BurntSushi/toml"
 	"github.com/apprehensions/rbxbin"
+	"github.com/apprehensions/wine"
 	"github.com/vinegarhq/vinegar/splash"
 )
 
@@ -143,9 +143,9 @@ func (b *Binary) validate() error {
 	}
 
 	if b.WineRoot != "" {
-		w := filepath.Join(b.WineRoot, "bin", "wine64")
-		if _, err := exec.LookPath(w); err != nil {
-			return fmt.Errorf("wine64 not present in wineroot")
+		w := wine.New("", "/tmp").Wine("")
+		if w.Err != nil {
+			return fmt.Errorf("wineroot: %w", w.Err)
 		}
 	}
 
@@ -154,7 +154,7 @@ func (b *Binary) validate() error {
 
 func (b *Binary) setup() error {
 	if err := b.validate(); err != nil {
-		return fmt.Errorf("invalid: %w", err)
+		return err
 	}
 
 	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {

@@ -14,7 +14,7 @@ require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/apprehensions/rbxbin v0.0.0-20241108182759-6d92e1ecbfab
 	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
-	github.com/apprehensions/wine v0.0.0-20240402112551-874f01f9e84d
+	github.com/apprehensions/wine v0.0.0-20241109121733-f99088878030
 	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/godbus/dbus/v5 v5.1.0

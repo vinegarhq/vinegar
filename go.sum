@@ -25,6 +25,10 @@ github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942 h1:pNRoIKlv32
 github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942/go.mod h1:F7WKRLrQxuRgfXxhwnlFJ059ZBMRxkXxvIhUxP4Qc5g=
 github.com/apprehensions/wine v0.0.0-20240402112551-874f01f9e84d h1:gf4oF5BVh6GEAfjVlt5/0HJ+2pohrbf+5LZAh29fyY0=
 github.com/apprehensions/wine v0.0.0-20240402112551-874f01f9e84d/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20241109115212-21fe280585b5 h1:u4mK0UyuGXrXNcR4zrR0rv2d5wtx+S71yYnMbIwTOo8=
+github.com/apprehensions/wine v0.0.0-20241109115212-21fe280585b5/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20241109121733-f99088878030 h1:p9wQhjrCVORRZStMXw3IBjiQ7yS5fd6ugvxFCbZngEs=
+github.com/apprehensions/wine v0.0.0-20241109121733-f99088878030/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/folbricht/pefile v0.1.0 h1:y9aMwgNlPO/iyp8Izll3Au4XNp7Fi7uDH8OKZ1Nl+lw=

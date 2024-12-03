@@ -79,8 +79,6 @@ uninstall:
 	rm -f $(DESTDIR)$(ICONPREFIX)/128x128/apps/org.vinegarhq.Vinegar.studio.png
 
 mime:
-	xdg-mime default org.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox-player
-	xdg-mime default org.vinegarhq.Vinegar.player.desktop x-scheme-handler/roblox
 	xdg-mime default org.vinegarhq.Vinegar.studio.desktop x-scheme-handler/roblox-studio
 	xdg-mime default org.vinegarhq.Vinegar.studio.desktop x-scheme-handler/roblox-studio-auth
 	xdg-mime default org.vinegarhq.Vinegar.studio.desktop application/x-roblox-rbxl

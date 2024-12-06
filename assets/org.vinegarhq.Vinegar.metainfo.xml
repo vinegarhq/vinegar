@@ -33,6 +33,15 @@
 	  </screenshot>
 	</screenshots>
 	<releases>
+		<release version="1.7.8" date="2024-12-06">
+			<description>
+				<ul>
+					<li>Updated Roblox Studios new package manifest dictionary</li>
+					<li>Initial Proton and UMU support</li>
+					<li>Hide Roblox App and Player desktop entries</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.7.7" date="2024-10-09">
 			<description>
 				<ul>

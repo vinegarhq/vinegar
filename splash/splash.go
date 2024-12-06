@@ -205,6 +205,7 @@ func (ui *Splash) Run() error {
 			}
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
+			gtx.Execute(op.InvalidateCmd{})
 			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
 
 			if !post {

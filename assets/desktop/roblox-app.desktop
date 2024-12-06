@@ -4,4 +4,5 @@ Name=Roblox App
 Icon=org.vinegarhq.Vinegar.player
 Exec=vinegar player run -app
 Terminal=false
+Hidden=true
 Categories=Game

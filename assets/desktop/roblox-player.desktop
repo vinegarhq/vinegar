@@ -5,5 +5,6 @@ NoDisplay=true
 Icon=org.vinegarhq.Vinegar.player
 Exec=vinegar player run %u
 Terminal=false
+Hidden=true
 MimeType=x-scheme-handler/roblox;x-scheme-handler/roblox-player
 Categories=Game

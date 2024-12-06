@@ -182,7 +182,12 @@ func (b *Binary) SetupPackages() error {
 			src := filepath.Join(dirs.Downloads, p.Checksum)
 			dst, ok := pd[p.Name]
 			if !ok {
-				return fmt.Errorf("unhandled package: %s", p.Name)
+				slog.Warn("A package was not handled - this likely needs to be fixed!")
+				fmt.Errorf("unhandled package: %s", p.Name) // TODO(i3vie): This is a HUGE crowbar fix
+														   // that will probably bite someone in the
+														   // ass in the future, but it gets Studio
+														   // working for now.
+														   // See issue #454.
 			}
 
 			defer func() {

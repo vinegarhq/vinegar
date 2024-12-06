@@ -5,6 +5,7 @@ import (
 	"bytes"
 	_ "embed"
 	"errors"
+	"time"
 	"image"
 	_ "image/png"
 	"io"
@@ -205,7 +206,7 @@ func (ui *Splash) Run() error {
 			}
 		case app.FrameEvent:
 			gtx := app.NewContext(&ops, e)
-			gtx.Execute(op.InvalidateCmd{})
+			gtx.Execute(op.InvalidateCmd{At: gtx.Now.Add(time.Millisecond * 64)})
 			paint.Fill(gtx.Ops, ui.Theme.Palette.Bg)
 
 			if !post {

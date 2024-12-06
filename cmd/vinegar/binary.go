@@ -96,7 +96,6 @@ func NewBinary(bt clientsettings.BinaryType, cfg *config.Config) (*Binary, error
 	}
 
 	pfx := wine.New(BinaryPrefixDir(bt), bcfg.WineRoot)
-	os.Setenv("GAMEID", "ulwgl-roblox")
 
 	return &Binary{
 		Presence: rp,
@@ -193,6 +192,10 @@ func (b *Binary) Init() error {
 		firstRun = true
 	}
 
+	if c := b.Prefix.Wine(""); c.Err != nil {
+		return fmt.Errorf("wine: %w", c.Err)
+	}
+
 	if firstRun && !sysinfo.CPU.AVX {
 		b.Splash.Dialog(DialogNoAVX, false, "")
 		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
@@ -219,7 +222,7 @@ func (b *Binary) Init() error {
 		}
 
 		if err != nil {
-			return err
+			return fmt.Errorf("pfx init: %w", err)
 		}
 
 		if err := b.InstallWebView(); err != nil {

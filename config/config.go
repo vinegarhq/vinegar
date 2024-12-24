@@ -151,7 +151,7 @@ func (b *Binary) validate() error {
 			return fmt.Errorf("wineroot: %w", w.Err)
 		}
 		if pfx.IsProton() && w.Args[0] != "umu-run" && !sysinfo.InFlatpak {
-			slog.Warn("wineroot: umu-run reccomended for Proton usage!")
+			slog.Warn("wineroot: umu-run recommended for Proton usage!")
 		}
 	}
 

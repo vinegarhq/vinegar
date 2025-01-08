@@ -5,7 +5,7 @@ go 1.22.0
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/adrg/xdg v0.5.3
-	github.com/otiai10/copy v1.14.1-0.20240925044834-49b0b590f1e1
+	github.com/otiai10/copy v1.14.1
 	golang.org/x/sync v0.10.0
 )
 
@@ -14,15 +14,15 @@ require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/apprehensions/rbxbin v0.0.0-20241108182759-6d92e1ecbfab
 	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
-	github.com/apprehensions/wine v0.0.0-20241206051250-b2edbb93a8ad
+	github.com/apprehensions/wine v0.0.0-20250108060616-9d416603ffde
 	github.com/folbricht/pefile v0.1.0
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/godbus/dbus/v5 v5.1.0
-	github.com/lmittmann/tint v1.0.5
+	github.com/lmittmann/tint v1.0.6
 	github.com/nxadm/tail v1.4.11
-	github.com/samber/slog-multi v1.2.4
-	golang.org/x/sys v0.28.0
-	golang.org/x/term v0.27.0
+	github.com/samber/slog-multi v1.3.3
+	golang.org/x/sys v0.29.0
+	golang.org/x/term v0.28.0
 )
 
 require (

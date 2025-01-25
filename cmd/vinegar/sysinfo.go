@@ -5,15 +5,12 @@ import (
 	"path"
 	"runtime/debug"
 
-	"github.com/apprehensions/rbxweb/clientsettings"
-	"github.com/apprehensions/wine"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 func PrintSysinfo(cfg *config.Config) {
-	playerPfx := wine.New(BinaryPrefixDir(clientsettings.WindowsPlayer), cfg.Player.WineRoot)
-	studioPfx := wine.New(BinaryPrefixDir(clientsettings.WindowsStudio64), cfg.Studio.WineRoot)
+	b, _ := NewBinary(cfg)
 
 	var revision string
 	bi, _ := debug.ReadBuildInfo()
@@ -26,21 +23,16 @@ func PrintSysinfo(cfg *config.Config) {
 	info := `* Vinegar: %s %s
 * Distro: %s
 * Processor: %s
-  * Supports AVX: %t
-  * Supports split lock detection: %t
 * Kernel: %s
-* Wine (Player): %s
-* Wine (Studio): %s
+* Wine: %s
 `
 
 	fmt.Printf(info,
 		Version, revision,
 		sysinfo.Distro,
 		sysinfo.CPU.Name,
-		sysinfo.CPU.AVX, sysinfo.CPU.SplitLockDetect,
 		sysinfo.Kernel,
-		playerPfx.Version(),
-		studioPfx.Version(),
+		b.Prefix.Version(),
 	)
 
 	if sysinfo.InFlatpak {

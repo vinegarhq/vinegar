@@ -11,7 +11,6 @@ import (
 	"sync/atomic"
 
 	"github.com/apprehensions/rbxbin"
-	"github.com/apprehensions/rbxweb/clientsettings"
 	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/dxvk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
@@ -20,25 +19,25 @@ import (
 )
 
 func (b *Binary) FetchDeployment() error {
-	if b.Config.Channel != "" {
+	if b.Config.Studio.Channel != "" {
 		slog.Warn("Channel is non-default! Only change the deployment channel if you know what you are doing!",
-			"channel", b.Config.Channel)
+			"channel", b.Config.Studio.Channel)
 	}
 
-	if b.Config.ForcedVersion != "" {
-		slog.Warn("Using forced deployment!", "guid", b.Config.ForcedVersion)
+	if b.Config.Studio.ForcedVersion != "" {
+		slog.Warn("Using forced deployment!", "guid", b.Config.Studio.ForcedVersion)
 
 		b.Deploy = rbxbin.Deployment{
-			Type:    b.Type,
-			Channel: b.Config.Channel,
-			GUID:    b.Config.ForcedVersion,
+			Type:    Studio,
+			Channel: b.Config.Studio.Channel,
+			GUID:    b.Config.Studio.ForcedVersion,
 		}
 		return nil
 	}
 
-	b.Splash.SetMessage("Fetching " + b.Type.Short())
+	b.Splash.SetMessage("Fetching " + Studio.Short())
 
-	d, err := rbxbin.GetDeployment(b.Type, b.Config.Channel)
+	d, err := rbxbin.GetDeployment(Studio, b.Config.Studio.Channel)
 	if err != nil {
 		return err
 	}
@@ -48,6 +47,15 @@ func (b *Binary) FetchDeployment() error {
 }
 
 func (b *Binary) Setup() error {
+	// Player is no longer supported by Vinegar, remove unnecessary data
+	if b.State.Player.Version != "" || b.State.Player.DxvkVersion != "" {
+		os.RemoveAll(filepath.Join(dirs.Versions, b.State.Player.Version))
+		os.RemoveAll(filepath.Join(dirs.Prefixes, "player"))
+		b.State.Player.DxvkVersion = ""
+		b.State.Player.Version = ""
+		b.State.Player.Packages = nil
+	}
+
 	if err := b.FetchDeployment(); err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
@@ -55,33 +63,33 @@ func (b *Binary) Setup() error {
 	b.Dir = filepath.Join(dirs.Versions, b.Deploy.GUID)
 	b.Splash.SetDesc(fmt.Sprintf("%s %s", b.Deploy.GUID, b.Deploy.Channel))
 
-	if b.State.Version != b.Deploy.GUID {
-		slog.Info("Installing Binary", "name", b.Type,
-			"old_guid", b.State.Version, "new_guid", b.Deploy.GUID)
+	if b.State.Studio.Version != b.Deploy.GUID {
+		slog.Info("Installing Binary", "name", Studio,
+			"old_guid", b.State.Studio.Version, "new_guid", b.Deploy.GUID)
 
 		if err := b.Install(); err != nil {
 			return fmt.Errorf("install %s: %w", b.Deploy.GUID, err)
 		}
 	} else {
-		slog.Info("Binary is up to date!", "name", b.Type, "guid", b.Deploy.GUID)
+		slog.Info("Binary is up to date!", "name", Studio, "guid", b.Deploy.GUID)
 	}
 
-	b.Config.Env.Setenv()
+	b.Config.Studio.Env.Setenv()
 
 	if err := b.SetupOverlay(); err != nil {
 		return fmt.Errorf("setup overlay: %w", err)
 	}
 
-	if err := b.Config.FFlags.Apply(b.Dir); err != nil {
+	if err := b.Config.Studio.FFlags.Apply(b.Dir); err != nil {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
 
 	if err := b.SetupDxvk(); err != nil {
-		return fmt.Errorf("setup dxvk %s: %w", b.Config.DxvkVersion, err)
+		return fmt.Errorf("setup dxvk %s: %w", b.Config.Studio.DxvkVersion, err)
 	}
 
 	b.Splash.SetProgress(1.0)
-	if err := b.GlobalState.Save(); err != nil {
+	if err := b.State.Save(); err != nil {
 		return fmt.Errorf("save state: %w", err)
 	}
 
@@ -89,7 +97,7 @@ func (b *Binary) Setup() error {
 }
 
 func (b *Binary) SetupOverlay() error {
-	dir := filepath.Join(dirs.Overlays, strings.ToLower(b.Type.Short()))
+	dir := filepath.Join(dirs.Overlays, strings.ToLower(Studio.Short()))
 
 	// Don't copy Overlay if it doesn't exist
 	_, err := os.Stat(dir)
@@ -106,7 +114,7 @@ func (b *Binary) SetupOverlay() error {
 }
 
 func (b *Binary) Install() error {
-	b.Splash.SetMessage("Installing " + b.Type.Short())
+	b.Splash.SetMessage("Installing " + Studio.Short())
 
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
@@ -116,24 +124,22 @@ func (b *Binary) Install() error {
 		return err
 	}
 
-	if b.Type == clientsettings.WindowsStudio64 {
-		brokenFont := filepath.Join(b.Dir, "StudioFonts", "SourceSansPro-Black.ttf")
+	brokenFont := filepath.Join(b.Dir, "StudioFonts", "SourceSansPro-Black.ttf")
 
-		slog.Info("Removing broken font", "path", brokenFont)
-		if err := os.RemoveAll(brokenFont); err != nil {
-			return err
-		}
+	slog.Info("Removing broken font", "path", brokenFont)
+	if err := os.RemoveAll(brokenFont); err != nil {
+		return err
 	}
 
 	if err := rbxbin.WriteAppSettings(b.Dir); err != nil {
 		return fmt.Errorf("appsettings: %w", err)
 	}
 
-	if err := b.GlobalState.CleanPackages(); err != nil {
+	if err := b.State.CleanPackages(); err != nil {
 		return fmt.Errorf("clean packages: %w", err)
 	}
 
-	if err := b.GlobalState.CleanVersions(); err != nil {
+	if err := b.State.CleanVersions(); err != nil {
 		return fmt.Errorf("clean versions: %w", err)
 	}
 
@@ -174,10 +180,6 @@ func (b *Binary) SetupPackages() error {
 	for _, p := range pkgs {
 		p := p
 
-		if p.Name == "RobloxPlayerLauncher.exe" {
-			continue
-		}
-
 		eg.Go(func() error {
 			src := filepath.Join(dirs.Downloads, p.Checksum)
 			dst, ok := pd[p.Name]
@@ -217,40 +219,40 @@ func (b *Binary) SetupPackages() error {
 		return err
 	}
 
-	b.State.Version = b.Deploy.GUID
+	b.State.Studio.Version = b.Deploy.GUID
 	for _, pkg := range pkgs {
-		b.State.Packages = append(b.State.Packages, pkg.Checksum)
+		b.State.Studio.Packages = append(b.State.Studio.Packages, pkg.Checksum)
 	}
 	return nil
 }
 
 func (b *Binary) SetupDxvk() error {
-	if b.State.DxvkVersion != "" && !b.Config.Dxvk {
+	if b.State.Studio.DxvkVersion != "" && !b.Config.Studio.Dxvk {
 		b.Splash.SetMessage("Uninstalling DXVK")
 		if err := dxvk.Remove(b.Prefix); err != nil {
 			return fmt.Errorf("remove dxvk: %w", err)
 		}
 
-		b.State.DxvkVersion = ""
+		b.State.Studio.DxvkVersion = ""
 		return nil
 	}
 
-	if !b.Config.Dxvk {
+	if !b.Config.Studio.Dxvk {
 		return nil
 	}
 
 	b.Splash.SetProgress(0.0)
 	dxvk.Setenv()
 
-	if b.Config.DxvkVersion == b.State.DxvkVersion {
-		slog.Info("DXVK up to date!", "version", b.State.DxvkVersion)
+	if b.Config.Studio.DxvkVersion == b.State.Studio.DxvkVersion {
+		slog.Info("DXVK up to date!", "version", b.State.Studio.DxvkVersion)
 		return nil
 	}
 
-	dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+b.Config.DxvkVersion+".tar.gz")
+	dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+b.Config.Studio.DxvkVersion+".tar.gz")
 
 	if _, err := os.Stat(dxvkPath); err != nil {
-		url := dxvk.URL(b.Config.DxvkVersion)
+		url := dxvk.URL(b.Config.Studio.DxvkVersion)
 
 		b.Splash.SetMessage("Downloading DXVK")
 		slog.Info("Downloading DXVK tarball", "url", url, "path", dxvkPath)
@@ -267,6 +269,6 @@ func (b *Binary) SetupDxvk() error {
 		return fmt.Errorf("extract: %w", err)
 	}
 
-	b.State.DxvkVersion = b.Config.DxvkVersion
+	b.State.Studio.DxvkVersion = b.Config.Studio.DxvkVersion
 	return nil
 }

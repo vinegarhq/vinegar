@@ -23,13 +23,12 @@ import (
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
-	"github.com/vinegarhq/vinegar/richpresence"
-	"github.com/vinegarhq/vinegar/richpresence/bloxstraprpc"
-	"github.com/vinegarhq/vinegar/richpresence/studiorpc"
 	"github.com/vinegarhq/vinegar/splash"
-	"github.com/vinegarhq/vinegar/sysinfo"
+	"github.com/vinegarhq/vinegar/studiorpc"
 	"golang.org/x/term"
 )
+
+var Studio = clientsettings.WindowsStudio64
 
 const (
 	KillWait = 3 * time.Second
@@ -46,73 +45,50 @@ const (
 	DialogUseBrowser = "WebView/InternalBrowser is broken, please use the browser for the action that you were doing."
 	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
 	DialogFailure    = "Vinegar experienced an error:\n%s"
-	DialogNoAVX      = "Warning: Your CPU does not support AVX. While some people may be able to run without it, most are not able to. VinegarHQ cannot provide support for your installation. Continue?"
-	DialogWineBlock  = "As of the 2nd of March, 2024, Roblox has blocked the use of Wine to access the Roblox Player. Use Sober instead to play Roblox on Linux."
 )
 
 type Binary struct {
 	// Only initialized in Main
 	Splash *splash.Splash
 
-	GlobalState *state.State
-	State       *state.Binary
-
-	GlobalConfig *config.Config
-	Config       *config.Binary
+	State  *state.State
+	Config *config.Config
 
 	Dir    string
 	Prefix *wine.Prefix
-	Type   clientsettings.BinaryType
 	Deploy rbxbin.Deployment
 
 	// Logging
 	Auth     bool
-	Presence richpresence.BinaryRichPresence
+	Presence *studiorpc.StudioRPC
 }
 
 func BinaryPrefixDir(bt clientsettings.BinaryType) string {
 	return filepath.Join(dirs.Prefixes, strings.ToLower(bt.Short()))
 }
 
-func NewBinary(bt clientsettings.BinaryType, cfg *config.Config) (*Binary, error) {
-	var bcfg *config.Binary
-	var bstate *state.Binary
-	var rp richpresence.BinaryRichPresence
-
+func NewBinary(cfg *config.Config) (*Binary, error) {
 	s, err := state.Load()
 	if err != nil {
 		return nil, fmt.Errorf("load state: %w", err)
 	}
 
-	switch bt {
-	case clientsettings.WindowsPlayer:
-		bcfg = &cfg.Player
-		bstate = &s.Player
-		rp = bloxstraprpc.New()
-	case clientsettings.WindowsStudio64:
-		bcfg = &cfg.Studio
-		bstate = &s.Studio
-		rp = studiorpc.New()
-	}
-
-	pfx := wine.New(BinaryPrefixDir(bt), bcfg.WineRoot)
+	rp := studiorpc.New()
+	path := filepath.Join(dirs.Prefixes, "studio")
+	pfx := wine.New(path, cfg.Studio.WineRoot)
 
 	return &Binary{
 		Presence: rp,
 
-		GlobalState: &s,
-		State:       bstate,
+		State:  &s,
+		Config: cfg,
 
-		GlobalConfig: cfg,
-		Config:       bcfg,
-
-		Type:   bt,
 		Prefix: pfx,
 	}, nil
 }
 
 func (b *Binary) Main(args ...string) int {
-	logFile, err := LogFile(b.Type.Short())
+	logFile, err := LogFile("Studio")
 	if err != nil {
 		slog.Error(fmt.Sprintf("create log file: %s", err))
 		return 1
@@ -124,7 +100,7 @@ func (b *Binary) Main(args ...string) int {
 		tint.NewHandler(logFile, &tint.Options{NoColor: true}),
 	)))
 
-	b.Splash = splash.New(&b.GlobalConfig.Splash)
+	b.Splash = splash.New(&b.Config.Splash)
 	b.Prefix.Stderr = io.MultiWriter(os.Stderr, logFile)
 	b.Config.Env.Setenv()
 
@@ -152,7 +128,7 @@ func (b *Binary) Main(args ...string) int {
 	if err != nil {
 		slog.Error(err.Error())
 
-		if b.GlobalConfig.Splash.Enabled && !term.IsTerminal(int(os.Stderr.Fd())) {
+		if b.Config.Splash.Enabled && !term.IsTerminal(int(os.Stderr.Fd())) {
 			b.Splash.LogPath = logFile.Name()
 			b.Splash.SetMessage("Oops!")
 			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false, "") // blocks
@@ -166,14 +142,14 @@ func (b *Binary) Main(args ...string) int {
 
 func (b *Binary) Run(args ...string) error {
 	if err := b.Init(); err != nil {
-		return fmt.Errorf("init %s: %w", b.Type, err)
+		return fmt.Errorf("init: %w", err)
 	}
 
 	if len(args) == 1 && args[0] == "roblox-" {
 		b.HandleProtocolURI(args[0])
 	}
 
-	b.Splash.SetDesc(b.Config.Channel)
+	b.Splash.SetDesc(b.Config.Studio.Channel)
 
 	if err := b.Setup(); err != nil {
 		return fmt.Errorf("failed to setup roblox: %w", err)
@@ -196,31 +172,15 @@ func (b *Binary) Init() error {
 		return fmt.Errorf("wine: %w", c.Err)
 	}
 
-	if firstRun && !sysinfo.CPU.AVX {
-		b.Splash.Dialog(DialogNoAVX, false, "")
-		slog.Warn("Running roblox without AVX, Roblox will most likely fail to run!")
-	}
-
-	if b.Type == clientsettings.WindowsPlayer {
-		b.Splash.Dialog(DialogWineBlock, false, "https://sober.vinegarhq.org/")
-	}
-
 	// Command-line flag vs wineprefix initialized
 	if firstRun || FirstRun {
 		slog.Info("Initializing wineprefix", "dir", b.Prefix.Dir())
 		b.Splash.SetMessage("Initializing wineprefix")
 
-		var err error
-		switch b.Type {
-		case clientsettings.WindowsPlayer:
-			err = b.Prefix.Init()
-		case clientsettings.WindowsStudio64:
-			// Studio accepts all DPIs except the default, which is 96.
-			// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
-			// automatically create the Wineprefix.
-			err = b.Prefix.SetDPI(97)
-		}
-
+		// Studio accepts all DPIs except the default, which is 96.
+		// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
+		// automatically create the Wineprefix.
+		err := b.Prefix.SetDPI(97)
 		if err != nil {
 			return fmt.Errorf("pfx init: %w", err)
 		}
@@ -245,7 +205,7 @@ func (b *Binary) HandleProtocolURI(mime string) {
 			}
 
 			slog.Warn("Roblox has requested a user channel, changing...", "channel", c)
-			b.Config.Channel = c
+			b.Config.Studio.Channel = c
 		}
 	}
 }
@@ -278,8 +238,8 @@ func (b *Binary) Execute(args ...string) error {
 		signal.Stop(c)
 	}()
 
-	slog.Info("Running Binary", "name", b.Type, "cmd", cmd)
-	b.Splash.SetMessage("Launching " + b.Type.Short())
+	slog.Info("Running Studio", "cmd", cmd)
+	b.Splash.SetMessage("Launching Studio")
 
 	go func() {
 		// Wait for process to start
@@ -299,7 +259,7 @@ func (b *Binary) Execute(args ...string) error {
 
 		b.Splash.Close()
 
-		if b.Config.GameMode {
+		if b.Config.Studio.GameMode {
 			b.RegisterGameMode(int32(cmd.Process.Pid))
 		}
 
@@ -373,7 +333,7 @@ func (b *Binary) Tail(name string) {
 			}()
 		}
 
-		if b.Config.DiscordRPC {
+		if b.Config.Studio.DiscordRPC {
 			if err := b.Presence.Handle(line.Text); err != nil {
 				slog.Error("Presence handling failed", "error", err)
 			}
@@ -386,16 +346,15 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 		args = []string{"-protocolString", args[0]}
 	}
 
-	exe := "Roblox" + b.Type.Short() + "Beta.exe"
-	cmd := b.Prefix.Wine(filepath.Join(b.Dir, exe), args...)
+	cmd := b.Prefix.Wine(filepath.Join(b.Dir, "RobloxStudioBeta.exe"), args...)
 	if cmd.Err != nil {
 		return nil, cmd.Err
 	}
 
-	launcher := strings.Fields(b.Config.Launcher)
+	launcher := strings.Fields(b.Config.Studio.Launcher)
 	if len(launcher) >= 1 {
 		cmd.Args = append(launcher, cmd.Args...)
-		p, err := b.Config.LauncherPath()
+		p, err := b.Config.Studio.LauncherPath()
 		if err != nil {
 			return nil, fmt.Errorf("bad launcher: %w", err)
 		}

@@ -12,7 +12,7 @@ import (
 // CleanPackages removes all cached package downloads in dirs.Downloads
 // that aren't held in the state's Binary packages.
 func (s *State) CleanPackages() error {
-	return walkDirExcluded(dirs.Downloads, s.Packages(), func(path string) error {
+	return walkDirExcluded(dirs.Downloads, s.Studio.Packages, func(path string) error {
 		slog.Info("Cleaning up unused cached package", "path", path)
 		return os.Remove(path)
 	})
@@ -21,7 +21,7 @@ func (s *State) CleanPackages() error {
 // CleanPackages removes all Binary versions that aren't
 // held in the state's Binary packages.
 func (s *State) CleanVersions() error {
-	return walkDirExcluded(dirs.Versions, s.Versions(), func(path string) error {
+	return walkDirExcluded(dirs.Versions, []string{s.Studio.Version}, func(path string) error {
 		slog.Info("Cleaning up unused version directory", "path", path)
 		return os.RemoveAll(path)
 	})

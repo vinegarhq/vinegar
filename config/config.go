@@ -39,7 +39,6 @@ type Binary struct {
 // Config is a representation of the Vinegar configuration.
 type Config struct {
 	SanitizeEnv bool        `toml:"sanitize_env"`
-	Player      Binary      `toml:"player"`
 	Studio      Binary      `toml:"studio"`
 	Env         Environment `toml:"env"`
 
@@ -88,21 +87,6 @@ func Default() Config {
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
 
-		Player: Binary{
-			Dxvk:        true,
-			DxvkVersion: "2.3",
-			GameMode:    true,
-			ForcedGpu:   "prime-discrete",
-			Renderer:    "D3D11",
-			Channel:     "", // Default upstream
-			DiscordRPC:  true,
-			FFlags: rbxbin.FFlags{
-				"DFIntTaskSchedulerTargetFps": 640,
-			},
-			Env: Environment{
-				"OBS_VKCAPTURE": "1",
-			},
-		},
 		Studio: Binary{
 			Dxvk:        true,
 			DxvkVersion: "2.3",
@@ -180,10 +164,6 @@ func (c *Config) setup() error {
 	}
 
 	c.Env.Setenv()
-
-	if err := c.Player.setup(); err != nil {
-		return fmt.Errorf("player: %w", err)
-	}
 
 	if err := c.Studio.setup(); err != nil {
 		return fmt.Errorf("studio: %w", err)

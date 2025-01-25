@@ -8,7 +8,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/apprehensions/rbxweb/clientsettings"
 	"github.com/lmittmann/tint"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/config/editor"
@@ -28,9 +27,8 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] [-firstrun] player|studio run [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] player|studio kill|winetricks")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] sysinfo")
+	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] [-firstrun] run|exec [args...]")
+	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] sysinfo|kill|winetricks")
 	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|uninstall|version")
 	os.Exit(1)
 }
@@ -61,53 +59,48 @@ func main() {
 		case "version":
 			fmt.Println("Vinegar", Version)
 		}
-	case "player", "studio", "sysinfo":
-		// Remove after a few releases
-		if _, err := os.Stat(dirs.Prefix); err == nil {
-			slog.Info("Deleting deprecated old Wineprefix!")
-			if err := os.RemoveAll(dirs.Prefix); err != nil {
-				log.Fatalf("delete old prefix %s: %s", dirs.Prefix, err)
-			}
-		}
-
+	case "exec", "run", "kill", "winetricks", "sysinfo":
 		cfg, err := config.Load(ConfigPath)
 		if err != nil {
 			log.Fatalf("load config %s: %s", ConfigPath, err)
 		}
 
-		var bt clientsettings.BinaryType
-		switch cmd {
-		case "player":
-			bt = clientsettings.WindowsPlayer
-		case "studio":
-			bt = clientsettings.WindowsStudio64
-		case "sysinfo":
+		if cmd == "sysinfo" {
 			PrintSysinfo(&cfg)
 			os.Exit(0)
 		}
 
-		b, err := NewBinary(bt, &cfg)
+		b, err := NewBinary(&cfg)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		switch flag.Arg(1) {
+		// Player is no longer supported by Vinegar, remove unnecessary data
+		if b.State.Player.Version != "" || b.State.Player.DxvkVersion != "" {
+			os.RemoveAll(filepath.Join(dirs.Versions, b.State.Player.Version))
+			os.RemoveAll(filepath.Join(dirs.Prefixes, "player"))
+			b.State.Player.DxvkVersion = ""
+			b.State.Player.Version = ""
+			b.State.Player.Packages = nil
+		}
+
+		switch cmd {
 		case "exec":
 			if len(args) < 2 {
 				usage()
 			}
 
-			if err := b.Prefix.Wine(args[2], args[3:]...).Run(); err != nil {
-				log.Fatalf("exec prefix %s: %s", bt, err)
+			if err := b.Prefix.Wine(args[1], args[1:]...).Run(); err != nil {
+				log.Fatalf("exec prefix: %s", err)
 			}
 		case "kill":
 			b.Prefix.Kill()
 		case "winetricks":
 			if err := b.Prefix.Winetricks(); err != nil {
-				log.Fatalf("exec winetricks %s: %s", bt, err)
+				log.Fatalf("exec winetricks: %s", err)
 			}
 		case "run":
-			if code := b.Main(args[2:]...); code > 0 {
+			if code := b.Main(args[1:]...); code > 0 {
 				os.Exit(code)
 			}
 		default:
@@ -130,7 +123,6 @@ func Delete() error {
 		return fmt.Errorf("load state: %w", err)
 	}
 
-	s.Player.DxvkVersion = ""
 	s.Studio.DxvkVersion = ""
 
 	if err := s.Save(); err != nil {
@@ -152,8 +144,6 @@ func Uninstall() error {
 		return fmt.Errorf("load state: %w", err)
 	}
 
-	s.Player.Version = ""
-	s.Player.Packages = nil
 	s.Studio.Version = ""
 	s.Studio.Packages = nil
 

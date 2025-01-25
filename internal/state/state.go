@@ -20,8 +20,8 @@ type Binary struct {
 
 // State holds various details about Vinegar's current state.
 type State struct {
-	Player Binary
 	Studio Binary
+	Player Binary // Deprecated
 }
 
 // Load returns the state file's contents in State form.
@@ -68,22 +68,4 @@ func (s *State) Save() error {
 	}
 
 	return nil
-}
-
-// Packages returns all the available Binary packages from the state.
-func (s *State) Packages() (pkgs []string) {
-	for _, bs := range []Binary{s.Player, s.Studio} {
-		pkgs = append(pkgs, bs.Packages...)
-	}
-
-	return
-}
-
-// Packages returns all the available Binary versions from the state.
-func (s *State) Versions() (vers []string) {
-	for _, bs := range []Binary{s.Player, s.Studio} {
-		vers = append(vers, bs.Version)
-	}
-
-	return
 }

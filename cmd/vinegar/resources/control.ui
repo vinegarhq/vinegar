@@ -1,0 +1,144 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<interface>
+  <!-- interface-name bia.ui -->
+  <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <object class="AdwApplicationWindow" id="window">
+    <property name="default-height">512</property>
+    <property name="default-width">384</property>
+    <child>
+      <object class="AdwViewStack" id="stack">
+        <child>
+          <object class="AdwViewStackPage" id="control-page">
+            <property name="child">
+              <object class="AdwNavigationView">
+                <child>
+                  <object class="AdwNavigationPage">
+                    <property name="title">Vinegar</property>
+                    <child>
+                      <object class="AdwToolbarView">
+                        <child type="top">
+                          <object class="AdwHeaderBar">
+                            <child type="start">
+                              <object class="GtkButton">
+                                <property name="action-name">navigation.push</property>
+                                <property name="action-target">'configure'</property>
+                                <property name="icon-name">preferences-system-symbolic</property>
+                              </object>
+                            </child>
+                            <child type="end">
+                              <object class="GtkSpinner" id="spinner"/>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwPreferencesGroup">
+                            <property name="margin-bottom">24</property>
+                            <property name="margin-end">24</property>
+                            <property name="margin-start">24</property>
+                            <property name="margin-top">24</property>
+                            <property name="separate-rows">True</property>
+                            <child>
+                              <object class="AdwButtonRow" id="run-studio">
+                                <property name="action-name">app.run-studio</property>
+                                <property name="start-icon-name">media-playback-start-symbolic</property>
+                                <property name="title">Run Studio</property>
+                                <style>
+                                  <class name="suggested-action"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwButtonRow" id="run-winetricks">
+                                <property name="action-name">app.run-winetricks</property>
+                                <property name="start-icon-name">multimedia-player-symbolic</property>
+                                <property name="title">Manage Wine Components</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwButtonRow" id="delete-prefix">
+                                <property name="action-name">app.delete-prefix</property>
+                                <property name="start-icon-name">view-refresh-symbolic</property>
+                                <property name="title">Clear Data</property>
+                                <style>
+                                  <class name="destructive-action"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwButtonRow" id="uninstall">
+                                <property name="action-name">app.uninstall</property>
+                                <property name="start-icon-name">user-trash-symbolic</property>
+                                <property name="title">Uninstall Studio</property>
+                                <style>
+                                  <class name="destructive-action"/>
+                                </style>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <!-- Custom object fragments -->
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwNavigationPage">
+                    <property name="tag">configure</property>
+                    <property name="title">Configuration</property>
+                    <child>
+                      <object class="AdwToolbarView">
+                        <property name="content">
+                          <object class="GtkTextView" id="configuration">
+                            <property name="bottom-margin">24</property>
+                            <property name="left-margin">24</property>
+                            <property name="right-margin">24</property>
+                            <property name="top-margin">24</property>
+                            <style>
+                              <class name="terminal"/>
+                              <class name="monospace"/>
+                            </style>
+                          </object>
+                        </property>
+                        <child type="top">
+                          <object class="AdwHeaderBar"/>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+            <property name="name">control</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwViewStackPage" id="loading-page">
+            <property name="child">
+              <object class="GtkBox">
+                <property name="css-classes">medium</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">24</property>
+                <property name="valign">center</property>
+                <child>
+                  <object class="AdwSpinner">
+                    <property name="height-request">64</property>
+                    <property name="width-request">64</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="loading-label">
+                    <property name="css-classes">title-2</property>
+                    <property name="label">Performing Action</property>
+                  </object>
+                </child>
+              </object>
+            </property>
+            <property name="name">loading</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

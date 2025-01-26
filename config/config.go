@@ -12,13 +12,8 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/wine"
-	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
-
-// LogoPath is set at build-time to set the logo icon path, which is
-// used in [splash.Config] to set the icon path.
-var LogoPath string
 
 // Config is a representation of a Roblox binary Vinegar configuration.
 type Binary struct {
@@ -41,8 +36,6 @@ type Config struct {
 	SanitizeEnv bool        `toml:"sanitize_env"`
 	Studio      Binary      `toml:"studio"`
 	Env         Environment `toml:"env"`
-
-	Splash splash.Config `toml:"splash"`
 }
 
 var (
@@ -98,17 +91,6 @@ func Default() Config {
 			// TODO: fill with studio fflag/env goodies
 			FFlags: make(rbxbin.FFlags),
 			Env:    make(Environment),
-		},
-
-		Splash: splash.Config{
-			Enabled:     true,
-			LogoPath:    LogoPath,
-			BgColor:     0x242424,
-			FgColor:     0xfafafa,
-			CancelColor: 0xbc3c3c,
-			TrackColor:  0x303030,
-			AccentColor: 0x8fbc5e,
-			InfoColor:   0x777777,
 		},
 	}
 }

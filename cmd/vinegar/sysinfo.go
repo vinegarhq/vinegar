@@ -2,15 +2,18 @@ package main
 
 import (
 	"fmt"
-	"path"
+	"path/filepath"
 	"runtime/debug"
 
+	"github.com/apprehensions/wine"
 	"github.com/vinegarhq/vinegar/config"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-func PrintSysinfo(cfg *config.Config) {
-	b, _ := NewBinary(cfg)
+func printSysinfo(cfg *config.Config) {
+	path := filepath.Join(dirs.Prefixes, "studio")
+	pfx := wine.New(path, cfg.Studio.WineRoot)
 
 	var revision string
 	bi, _ := debug.ReadBuildInfo()
@@ -32,7 +35,7 @@ func PrintSysinfo(cfg *config.Config) {
 		sysinfo.Distro,
 		sysinfo.CPU.Name,
 		sysinfo.Kernel,
-		b.Prefix.Version(),
+		pfx.Version(),
 	)
 
 	if sysinfo.InFlatpak {
@@ -41,6 +44,6 @@ func PrintSysinfo(cfg *config.Config) {
 
 	fmt.Println("* Cards:")
 	for i, c := range sysinfo.Cards {
-		fmt.Printf("  * Card %d: %s %s %s\n", i, c.Driver, path.Base(c.Device), c.Path)
+		fmt.Printf("  * Card %d: %s %s %s\n", i, c.Driver, filepath.Base(c.Device), c.Path)
 	}
 }

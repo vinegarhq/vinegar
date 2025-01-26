@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -17,22 +16,18 @@ import (
 	"github.com/apprehensions/wine"
 	"github.com/fsnotify/fsnotify"
 	"github.com/godbus/dbus/v5"
-	"github.com/lmittmann/tint"
+	"github.com/jwijenbergh/puregotk/v4/adw"
+	"github.com/jwijenbergh/puregotk/v4/gdk"
+	"github.com/jwijenbergh/puregotk/v4/glib"
+	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/nxadm/tail"
-	slogmulti "github.com/samber/slog-multi"
-	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/state"
-	"github.com/vinegarhq/vinegar/splash"
 	"github.com/vinegarhq/vinegar/studiorpc"
-	"golang.org/x/term"
 )
 
 var Studio = clientsettings.WindowsStudio64
 
-const (
-	KillWait = 3 * time.Second
-)
+const KillWait = 3 * time.Second
 
 const (
 	// Randomly chosen log entry in cases where Studios process
@@ -41,106 +36,74 @@ const (
 	StudioShutdownEntry = "[FLog::LifecycleManager] Exited ApplicationScope"
 )
 
-const (
-	DialogUseBrowser = "WebView/InternalBrowser is broken, please use the browser for the action that you were doing."
-	DialogQuickLogin = "WebView/InternalBrowser is broken, use Quick Log In to authenticate ('Log In With Another Device' button)"
-	DialogFailure    = "Vinegar experienced an error:\n%s"
-)
+type bootstrapper struct {
+	*ui
+	builder *gtk.Builder
+	win     *adw.Window
 
-type Binary struct {
-	// Only initialized in Main
-	Splash *splash.Splash
+	pbar   gtk.ProgressBar
+	status gtk.Label
 
-	State  *state.State
-	Config *config.Config
+	dir string
+	pfx *wine.Prefix
+	bin rbxbin.Deployment
 
-	Dir    string
-	Prefix *wine.Prefix
-	Deploy rbxbin.Deployment
-
-	// Logging
-	Auth     bool
-	Presence *studiorpc.StudioRPC
+	rp *studiorpc.StudioRPC
 }
 
-func BinaryPrefixDir(bt clientsettings.BinaryType) string {
-	return filepath.Join(dirs.Prefixes, strings.ToLower(bt.Short()))
-}
-
-func NewBinary(cfg *config.Config) (*Binary, error) {
-	s, err := state.Load()
-	if err != nil {
-		return nil, fmt.Errorf("load state: %w", err)
+func (s *ui) NewBootstrapper() bootstrapper {
+	b := bootstrapper{
+		builder: gtk.NewBuilderFromString(resource("bootstrapper.ui"), -1),
+		ui:      s,
+		rp:      studiorpc.New(),
+		pfx: wine.New(
+			filepath.Join(dirs.Prefixes, "studio"),
+			s.cfg.Studio.WineRoot,
+		),
 	}
 
-	rp := studiorpc.New()
-	path := filepath.Join(dirs.Prefixes, "studio")
-	pfx := wine.New(path, cfg.Studio.WineRoot)
+	provider := gtk.NewCssProvider()
+	provider.LoadFromData(style, -1)
+	gtk.StyleContextAddProviderForDisplay(gdk.DisplayGetDefault(), provider,
+		uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
+	provider.Unref()
 
-	return &Binary{
-		Presence: rp,
+	var win adw.Window
+	b.builder.GetObject("bootstrapper").Cast(&win)
+	b.win = &win
+	b.win.SetApplication(&s.app.Application)
+	s.app.AddWindow(&b.win.Window)
 
-		State:  &s,
-		Config: cfg,
+	var logo gtk.Image
+	b.builder.GetObject("logo").Cast(&logo)
+	setLogoImage(&logo)
+	logo.Unref()
 
-		Prefix: pfx,
-	}, nil
+	b.builder.GetObject("status").Cast(&b.status)
+	b.builder.GetObject("progress").Cast(&b.pbar)
+	b.status.Unref()
+	b.pbar.Unref()
+
+	b.win.Present()
+	b.win.Unref()
+
+	return b
 }
 
-func (b *Binary) Main(args ...string) int {
-	logFile, err := LogFile("Studio")
-	if err != nil {
-		slog.Error(fmt.Sprintf("create log file: %s", err))
-		return 1
+func (b *bootstrapper) Start(args ...string) {
+	var idlecb glib.SourceFunc
+	idlecb = func(uintptr) bool {
+		go func() {
+			if err := b.Run(args...); err != nil {
+				b.presentError(err)
+			}
+		}()
+		return false
 	}
-	defer logFile.Close()
-
-	slog.SetDefault(slog.New(slogmulti.Fanout(
-		tint.NewHandler(os.Stderr, nil),
-		tint.NewHandler(logFile, &tint.Options{NoColor: true}),
-	)))
-
-	b.Splash = splash.New(&b.Config.Splash)
-	b.Prefix.Stderr = io.MultiWriter(os.Stderr, logFile)
-	b.Config.Env.Setenv()
-
-	go func() {
-		err := b.Splash.Run()
-		if errors.Is(splash.ErrClosed, err) {
-			slog.Warn("Splash window closed!")
-
-			// Will tell Run() to immediately kill Roblox, as it handles INT/TERM.
-			// Otherwise, it will just with the same appropiate signal.
-			syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-			return
-		}
-
-		// The splash window didn't close cleanly (ErrClosed), an
-		// internal error occured, and vinegar cannot continue.
-		if err != nil {
-			slog.Error(fmt.Sprintf("splash: %s", err))
-			logFile.Close()
-			os.Exit(1)
-		}
-	}()
-
-	err = b.Run(args...)
-	if err != nil {
-		slog.Error(err.Error())
-
-		if b.Config.Splash.Enabled && !term.IsTerminal(int(os.Stderr.Fd())) {
-			b.Splash.LogPath = logFile.Name()
-			b.Splash.SetMessage("Oops!")
-			b.Splash.Dialog(fmt.Sprintf(DialogFailure, err), false, "") // blocks
-		}
-
-		return 1
-	}
-
-	return 0
+	glib.IdleAdd(&idlecb, 0)
 }
 
-func (b *Binary) Run(args ...string) error {
+func (b *bootstrapper) Run(args ...string) error {
 	if err := b.Init(); err != nil {
 		return fmt.Errorf("init: %w", err)
 	}
@@ -148,8 +111,6 @@ func (b *Binary) Run(args ...string) error {
 	if len(args) == 1 && args[0] == "roblox-" {
 		b.HandleProtocolURI(args[0])
 	}
-
-	b.Splash.SetDesc(b.Config.Studio.Channel)
 
 	if err := b.Setup(); err != nil {
 		return fmt.Errorf("failed to setup roblox: %w", err)
@@ -162,25 +123,24 @@ func (b *Binary) Run(args ...string) error {
 	return nil
 }
 
-func (b *Binary) Init() error {
+func (b *bootstrapper) Init() error {
 	firstRun := false
-	if _, err := os.Stat(filepath.Join(b.Prefix.Dir(), "drive_c", "windows")); err != nil {
+	if _, err := os.Stat(filepath.Join(b.pfx.Dir(), "drive_c", "windows")); err != nil {
 		firstRun = true
 	}
 
-	if c := b.Prefix.Wine(""); c.Err != nil {
+	if c := b.pfx.Wine(""); c.Err != nil {
 		return fmt.Errorf("wine: %w", c.Err)
 	}
 
-	// Command-line flag vs wineprefix initialized
-	if firstRun || FirstRun {
-		slog.Info("Initializing wineprefix", "dir", b.Prefix.Dir())
-		b.Splash.SetMessage("Initializing wineprefix")
+	if firstRun {
+		slog.Info("Initializing wineprefix", "dir", b.pfx.Dir())
+		b.status.SetLabel("Initializing wineprefix")
 
 		// Studio accepts all DPIs except the default, which is 96.
 		// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
 		// automatically create the Wineprefix.
-		err := b.Prefix.SetDPI(97)
+		err := b.pfx.SetDPI(97)
 		if err != nil {
 			return fmt.Errorf("pfx init: %w", err)
 		}
@@ -193,7 +153,7 @@ func (b *Binary) Init() error {
 	return nil
 }
 
-func (b *Binary) HandleProtocolURI(mime string) {
+func (b *bootstrapper) HandleProtocolURI(mime string) {
 	uris := strings.Split(mime, "+")
 	for _, uri := range uris {
 		kv := strings.Split(uri, ":")
@@ -205,12 +165,12 @@ func (b *Binary) HandleProtocolURI(mime string) {
 			}
 
 			slog.Warn("Roblox has requested a user channel, changing...", "channel", c)
-			b.Config.Studio.Channel = c
+			b.cfg.Studio.Channel = c
 		}
 	}
 }
 
-func (b *Binary) Execute(args ...string) error {
+func (b *bootstrapper) Execute(args ...string) error {
 	cmd, err := b.Command(args...)
 	if err != nil {
 		return err
@@ -239,7 +199,7 @@ func (b *Binary) Execute(args ...string) error {
 	}()
 
 	slog.Info("Running Studio", "cmd", cmd)
-	b.Splash.SetMessage("Launching Studio")
+	b.status.SetLabel("Launching Studio")
 
 	go func() {
 		// Wait for process to start
@@ -251,15 +211,15 @@ func (b *Binary) Execute(args ...string) error {
 
 		// If the log file wasn't found, assume failure
 		// and don't perform post-launch roblox functions.
-		lf, err := RobloxLogFile(b.Prefix)
+		lf, err := RobloxLogFile(b.pfx)
 		if err != nil {
 			slog.Error("Failed to find Roblox log file", "error", err.Error())
 			return
 		}
 
-		b.Splash.Close()
+		b.win.Hide()
 
-		if b.Config.Studio.GameMode {
+		if b.cfg.Studio.GameMode {
 			b.RegisterGameMode(int32(cmd.Process.Pid))
 		}
 
@@ -277,6 +237,7 @@ func (b *Binary) Execute(args ...string) error {
 		slog.Warn("Roblox was killed!", "signal", signal)
 		return nil
 	}
+
 	return err
 }
 
@@ -316,7 +277,7 @@ func RobloxLogFile(pfx *wine.Prefix) (string, error) {
 	}
 }
 
-func (b *Binary) Tail(name string) {
+func (b *bootstrapper) Tail(name string) {
 	t, err := tail.TailFile(name, tail.Config{Follow: true})
 	if err != nil {
 		slog.Error("Could not tail Roblox log file", "error", err)
@@ -324,7 +285,7 @@ func (b *Binary) Tail(name string) {
 	}
 
 	for line := range t.Lines {
-		fmt.Fprintln(b.Prefix.Stderr, line.Text)
+		fmt.Fprintln(b.pfx.Stderr, line.Text)
 
 		if strings.Contains(line.Text, StudioShutdownEntry) {
 			go func() {
@@ -333,28 +294,28 @@ func (b *Binary) Tail(name string) {
 			}()
 		}
 
-		if b.Config.Studio.DiscordRPC {
-			if err := b.Presence.Handle(line.Text); err != nil {
+		if b.cfg.Studio.DiscordRPC {
+			if err := b.rp.Handle(line.Text); err != nil {
 				slog.Error("Presence handling failed", "error", err)
 			}
 		}
 	}
 }
 
-func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
+func (b *bootstrapper) Command(args ...string) (*wine.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = []string{"-protocolString", args[0]}
 	}
 
-	cmd := b.Prefix.Wine(filepath.Join(b.Dir, "RobloxStudioBeta.exe"), args...)
+	cmd := b.pfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
 	if cmd.Err != nil {
 		return nil, cmd.Err
 	}
 
-	launcher := strings.Fields(b.Config.Studio.Launcher)
+	launcher := strings.Fields(b.cfg.Studio.Launcher)
 	if len(launcher) >= 1 {
 		cmd.Args = append(launcher, cmd.Args...)
-		p, err := b.Config.Studio.LauncherPath()
+		p, err := b.cfg.Studio.LauncherPath()
 		if err != nil {
 			return nil, fmt.Errorf("bad launcher: %w", err)
 		}
@@ -364,7 +325,7 @@ func (b *Binary) Command(args ...string) (*wine.Cmd, error) {
 	return cmd, nil
 }
 
-func (b *Binary) RegisterGameMode(pid int32) {
+func (b *bootstrapper) RegisterGameMode(pid int32) {
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		slog.Error("Failed to connect to D-Bus", "error", err)
@@ -380,20 +341,18 @@ func (b *Binary) RegisterGameMode(pid int32) {
 	}
 }
 
-func LogFile(name string) (*os.File, error) {
+func LogFile() (*os.File, error) {
 	if err := dirs.Mkdirs(dirs.Logs); err != nil {
 		return nil, err
 	}
 
 	// name-2006-01-02T15:04:05Z07:00.log
-	path := filepath.Join(dirs.Logs, name+"-"+time.Now().Format(time.RFC3339)+".log")
+	path := filepath.Join(dirs.Logs, time.Now().Format(time.RFC3339)+".log")
 
 	file, err := os.Create(path)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create %s log file: %w", name, err)
+		return nil, fmt.Errorf("failed to create log file: %w", err)
 	}
-
-	slog.Info("Logging to file", "path", path)
 
 	return file, nil
 }

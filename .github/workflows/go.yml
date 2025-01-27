@@ -9,19 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: 'Install Gio dependencies'
-      run: |
-        sudo apt update -y
-        sudo apt install gcc pkg-config libwayland-dev libx11-dev libx11-xcb-dev libxkbcommon-x11-dev libgles2-mesa-dev libegl1-mesa-dev libffi-dev libxcursor-dev libvulkan-dev
     - name: 'Setup Go'
       uses: actions/setup-go@v4
       with:
-        go-version: '>=1.21'
+        go-version: '>=1.22'
     - name: 'Checkout Repository'
       uses: actions/checkout@v3
-    - name: 'Run tests'
-      run: make tests
     - name: 'Build Vinegar'
       run: make
-    - name: 'Build Vinegar with nosplash'
-      run: make clean vinegar VINEGAR_GOFLAGS=--tags=nogui

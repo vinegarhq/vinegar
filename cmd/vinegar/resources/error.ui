@@ -36,8 +36,10 @@
                 <child>
                   <object class="GtkTextView" id="log_output">
                     <property name="bottom-margin">12</property>
+                    <property name="cursor-visible">False</property>
                     <property name="editable">False</property>
                     <property name="hexpand">True</property>
+                    <property name="input-hints">none</property>
                     <property name="left-margin">12</property>
                     <property name="right-margin">12</property>
                     <property name="top-margin">12</property>

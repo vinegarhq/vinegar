@@ -90,8 +90,8 @@ func Default() Config {
 			Renderer:    "D3D11",
 			Channel:     "LIVE",
 			DiscordRPC:  true,
-			FFlags: make(rbxbin.FFlags),
-			Env:    make(Environment),
+			FFlags:      make(rbxbin.FFlags),
+			Env:         make(Environment),
 		},
 	}
 }

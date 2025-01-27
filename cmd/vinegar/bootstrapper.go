@@ -5,22 +5,17 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
-	"github.com/apprehensions/wine"
-	"github.com/fsnotify/fsnotify"
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gdk"
-	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
-	"github.com/nxadm/tail"
+	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/studiorpc"
 )
@@ -45,7 +40,6 @@ type bootstrapper struct {
 	status gtk.Label
 
 	dir string
-	pfx *wine.Prefix
 	bin rbxbin.Deployment
 
 	rp *studiorpc.StudioRPC
@@ -56,10 +50,6 @@ func (s *ui) NewBootstrapper() bootstrapper {
 		builder: gtk.NewBuilderFromString(resource("bootstrapper.ui"), -1),
 		ui:      s,
 		rp:      studiorpc.New(),
-		pfx: wine.New(
-			filepath.Join(dirs.Prefixes, "studio"),
-			s.cfg.Studio.WineRoot,
-		),
 	}
 
 	provider := gtk.NewCssProvider()
@@ -90,67 +80,90 @@ func (s *ui) NewBootstrapper() bootstrapper {
 	return b
 }
 
-func (b *bootstrapper) Start(args ...string) {
-	var idlecb glib.SourceFunc
-	idlecb = func(uintptr) bool {
-		go func() {
-			if err := b.Run(args...); err != nil {
-				b.presentError(err)
-			}
-		}()
-		return false
-	}
-	glib.IdleAdd(&idlecb, 0)
+func (b *bootstrapper) Run() error {
+	return b.RunArgs()
 }
 
-func (b *bootstrapper) Run(args ...string) error {
-	if err := b.Init(); err != nil {
-		return fmt.Errorf("init: %w", err)
-	}
-
+func (b *bootstrapper) RunArgs(args ...string) error {
 	if len(args) == 1 && args[0] == "roblox-" {
 		b.HandleProtocolURI(args[0])
 	}
 
 	if err := b.Setup(); err != nil {
-		return fmt.Errorf("failed to setup roblox: %w", err)
+		return fmt.Errorf("setup: %w", err)
 	}
 
 	if err := b.Execute(args...); err != nil {
-		return fmt.Errorf("failed to run roblox: %w", err)
+		return fmt.Errorf("run: %w", err)
 	}
 
 	return nil
 }
 
-func (b *bootstrapper) Init() error {
-	firstRun := false
-	if _, err := os.Stat(filepath.Join(b.pfx.Dir(), "drive_c", "windows")); err != nil {
-		firstRun = true
+func (b *bootstrapper) Setup() error {
+	b.removePlayer()
+
+	if err := b.SetupPrefix(); err != nil {
+		return fmt.Errorf("prefix: %w", err)
 	}
 
-	if c := b.pfx.Wine(""); c.Err != nil {
-		return fmt.Errorf("wine: %w", c.Err)
+	if err := b.SetupDeployment(); err != nil {
+		return err
 	}
 
-	if firstRun {
-		slog.Info("Initializing wineprefix", "dir", b.pfx.Dir())
-		b.status.SetLabel("Initializing wineprefix")
+	b.status.SetLabel("Applying environment variables")
+	b.cfg.Studio.Env.Setenv()
 
-		// Studio accepts all DPIs except the default, which is 96.
-		// Technically this is 'initializing wineprefix', as SetDPI calls Wine which
-		// automatically create the Wineprefix.
-		err := b.pfx.SetDPI(97)
-		if err != nil {
-			return fmt.Errorf("pfx init: %w", err)
-		}
+	if err := b.SetupOverlay(); err != nil {
+		return fmt.Errorf("setup overlay: %w", err)
+	}
 
-		if err := b.InstallWebView(); err != nil {
-			return fmt.Errorf("webview: %w", err)
-		}
+	b.status.SetLabel("Applying FFlags")
+	if err := b.cfg.Studio.FFlags.Apply(b.dir); err != nil {
+		return fmt.Errorf("apply fflags: %w", err)
+	}
+
+	if err := b.SetupDxvk(); err != nil {
+		return fmt.Errorf("setup dxvk %s: %w", b.cfg.Studio.DxvkVersion, err)
+	}
+
+	b.pbar.SetFraction(1.0)
+	b.status.SetLabel("Saving to state")
+	if err := b.state.Save(); err != nil {
+		return fmt.Errorf("save state: %w", err)
 	}
 
 	return nil
+}
+
+func (b *bootstrapper) SetupOverlay() error {
+	b.status.SetLabel("Applying overlays")
+
+	dir := filepath.Join(dirs.Overlays, strings.ToLower(Studio.Short()))
+
+	// Don't copy Overlay if it doesn't exist
+	_, err := os.Stat(dir)
+	if err != nil && errors.Is(err, os.ErrNotExist) {
+		return nil
+	} else if err != nil {
+		return err
+	}
+
+	slog.Info("Copying Overlay directory's files", "src", dir, "path", b.dir)
+	b.status.SetLabel("Copying Overlay")
+
+	return cp.Copy(dir, b.dir)
+}
+
+func (b *bootstrapper) removePlayer() {
+	// Player is no longer supported by Vinegar, remove unnecessary data
+	if b.state.Player.Version != "" || b.state.Player.DxvkVersion != "" {
+		os.RemoveAll(filepath.Join(dirs.Versions, b.state.Player.Version))
+		os.RemoveAll(filepath.Join(dirs.Prefixes, "player"))
+		b.state.Player.DxvkVersion = ""
+		b.state.Player.Version = ""
+		b.state.Player.Packages = nil
+	}
 }
 
 func (b *bootstrapper) HandleProtocolURI(mime string) {
@@ -168,161 +181,6 @@ func (b *bootstrapper) HandleProtocolURI(mime string) {
 			b.cfg.Studio.Channel = c
 		}
 	}
-}
-
-func (b *bootstrapper) Execute(args ...string) error {
-	cmd, err := b.Command(args...)
-	if err != nil {
-		return err
-	}
-
-	// Roblox will keep running if it was sent SIGINT; requiring acting as the signal holder.
-	// SIGUSR1 is used in Tail() to force kill roblox, used to differenciate between
-	// a user-sent signal and a self sent signal.
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		s := <-c
-
-		slog.Warn("Recieved signal", "signal", s)
-
-		// Only kill Roblox if it hasn't exited
-		if cmd.ProcessState == nil {
-			slog.Warn("Killing Roblox", "pid", cmd.Process.Pid)
-			// This way, cmd.Run() will return and vinegar (should) exit.
-			cmd.Process.Kill()
-		}
-
-		// Don't handle INT after it was recieved, this way if another signal was sent,
-		// Vinegar will immediately exit.
-		signal.Stop(c)
-	}()
-
-	slog.Info("Running Studio", "cmd", cmd)
-	b.status.SetLabel("Launching Studio")
-
-	go func() {
-		// Wait for process to start
-		for {
-			if cmd.Process != nil {
-				break
-			}
-		}
-
-		// If the log file wasn't found, assume failure
-		// and don't perform post-launch roblox functions.
-		lf, err := RobloxLogFile(b.pfx)
-		if err != nil {
-			slog.Error("Failed to find Roblox log file", "error", err.Error())
-			return
-		}
-
-		b.win.Hide()
-
-		if b.cfg.Studio.GameMode {
-			b.RegisterGameMode(int32(cmd.Process.Pid))
-		}
-
-		// Blocks and tails file forever until roblox is dead, unless
-		// if finding the log file had failed.
-		b.Tail(lf)
-	}()
-
-	err = cmd.Run()
-	// Thanks for your time, fizzie on #go-nuts.
-	// Signal errors are not handled as errors since they are
-	// used internally to kill Roblox as well.
-	if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
-		signal := cmd.ProcessState.Sys().(syscall.WaitStatus).Signal()
-		slog.Warn("Roblox was killed!", "signal", signal)
-		return nil
-	}
-
-	return err
-}
-
-func RobloxLogFile(pfx *wine.Prefix) (string, error) {
-	ad, err := pfx.AppDataDir()
-	if err != nil {
-		return "", fmt.Errorf("get appdata: %w", err)
-	}
-
-	dir := filepath.Join(ad, "Local", "Roblox", "logs")
-
-	// This is required due to fsnotify requiring the directory
-	// to watch to exist before adding it.
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return "", fmt.Errorf("create roblox log dir: %w", err)
-	}
-
-	w, err := fsnotify.NewWatcher()
-	if err != nil {
-		return "", fmt.Errorf("make fsnotify watcher: %w", err)
-	}
-	defer w.Close()
-
-	if err := w.Add(dir); err != nil {
-		return "", fmt.Errorf("watch roblox log dir: %w", err)
-	}
-
-	for {
-		select {
-		case e := <-w.Events:
-			if e.Has(fsnotify.Create) {
-				return e.Name, nil
-			}
-		case err := <-w.Errors:
-			slog.Error("Recieved fsnotify watcher error", "error", err)
-		}
-	}
-}
-
-func (b *bootstrapper) Tail(name string) {
-	t, err := tail.TailFile(name, tail.Config{Follow: true})
-	if err != nil {
-		slog.Error("Could not tail Roblox log file", "error", err)
-		return
-	}
-
-	for line := range t.Lines {
-		fmt.Fprintln(b.pfx.Stderr, line.Text)
-
-		if strings.Contains(line.Text, StudioShutdownEntry) {
-			go func() {
-				time.Sleep(KillWait)
-				syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-			}()
-		}
-
-		if b.cfg.Studio.DiscordRPC {
-			if err := b.rp.Handle(line.Text); err != nil {
-				slog.Error("Presence handling failed", "error", err)
-			}
-		}
-	}
-}
-
-func (b *bootstrapper) Command(args ...string) (*wine.Cmd, error) {
-	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
-		args = []string{"-protocolString", args[0]}
-	}
-
-	cmd := b.pfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
-	if cmd.Err != nil {
-		return nil, cmd.Err
-	}
-
-	launcher := strings.Fields(b.cfg.Studio.Launcher)
-	if len(launcher) >= 1 {
-		cmd.Args = append(launcher, cmd.Args...)
-		p, err := b.cfg.Studio.LauncherPath()
-		if err != nil {
-			return nil, fmt.Errorf("bad launcher: %w", err)
-		}
-		cmd.Path = p
-	}
-
-	return cmd, nil
 }
 
 func (b *bootstrapper) RegisterGameMode(pid int32) {

@@ -12,7 +12,7 @@
         <property name="margin-end">24</property>
         <property name="margin-start">24</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">12</property>
+        <property name="spacing">24</property>
         <property name="valign">center</property>
         <child>
           <object class="GtkImage" id="logo">

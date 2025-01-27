@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log/slog"
+
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
@@ -19,7 +21,7 @@ func (ctl *control) Finished() {
 	ctl.stack.SetVisibleChildName("control")
 }
 
-func (ctl *control) Studio() {
+func (ctl *control) Studio() bootstrapper {
 	b := ctl.NewBootstrapper()
 
 	destroy := func(_ gtk.Window) bool {
@@ -30,7 +32,7 @@ func (ctl *control) Studio() {
 	}
 	b.win.ConnectCloseRequest(&destroy)
 
-	b.Start()
+	return b
 }
 
 func (s *ui) NewControl() control {
@@ -43,13 +45,14 @@ func (s *ui) NewControl() control {
 	ctl.win.SetApplication(&s.app.Application)
 
 	actions := map[string]struct {
-		act func()
+		act func() error
 		msg string
 	}{
-		"run-studio":     {ctl.Studio, "Running Studio"},
-		"run-winetricks": {nil, "Running Winetricks"},
-		"delete-prefix":  {nil, "Clearing Data"},
-		"uninstall":      {nil, "Uninstalling Studio"},
+		"run-studio":       {nil, "Running Studio"}, // requires callback
+		"run-winetricks":   {ctl.pfx.Winetricks, "Running Winetricks"},
+		"delete-prefix":    {ctl.ui.DeletePrefixes, "Clearing Data"},
+		"kill-prefix":      {ctl.pfx.Kill, "Stopping Studio"},
+		"uninstall-studio": {ctl.ui.Uninstall, "Uninstalling Studio"},
 	}
 
 	var label gtk.Label
@@ -62,7 +65,23 @@ func (s *ui) NewControl() control {
 		actcb := func(_ gio.SimpleAction, _ uintptr) {
 			ctl.stack.SetVisibleChildName("loading")
 			label.SetLabel(action.msg + "...")
-			action.act()
+
+			if name == "run-studio" {
+				b := ctl.Studio()
+				action.act = b.Run
+			}
+			Background(func() {
+				go func() {
+					defer ctl.Finished()
+					if err := action.act(); err != nil {
+						slog.Error("Error occurred while running action",
+							"action", name, "err", err)
+						Background(func() {
+							s.presentError(err)
+						})
+					}
+				}()
+			})
 		}
 		act.ConnectActivate(&actcb)
 		s.app.AddAction(act)

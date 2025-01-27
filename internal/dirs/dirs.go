@@ -18,6 +18,11 @@ var (
 	Versions  = filepath.Join(Data, "versions")
 )
 
+var (
+	StatePath  = filepath.Join(Data, "state.json")
+	ConfigPath = filepath.Join(Config, "config.toml")
+)
+
 func Mkdirs(dirs ...string) error {
 	for _, dir := range dirs {
 		if err := os.MkdirAll(dir, 0o755); err != nil {

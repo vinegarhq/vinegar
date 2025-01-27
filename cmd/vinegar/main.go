@@ -5,27 +5,12 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 )
 
-var (
-	ConfigPath string
-	Version    string
-)
-
-func init() {
-	flag.StringVar(&ConfigPath, "config", filepath.Join(dirs.Config, "config.toml"), "config.toml file which should be used")
-}
-
-func usage() {
-	fmt.Fprintln(os.Stderr, "usage: vinegar [-config filepath] [-firstrun] run|exec [args...]")
-	fmt.Fprintln(os.Stderr, "       vinegar [-config filepath] sysinfo|kill|winetricks")
-	fmt.Fprintln(os.Stderr, "       vinegar delete|edit|uninstall|version")
-	os.Exit(1)
-}
+var Version string
 
 func main() {
 	flag.Parse()

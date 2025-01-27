@@ -9,8 +9,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
-var path = filepath.Join(dirs.Data, "state.json")
-
 // BinaryState is used track a Binary's deployment and wineprefix.
 type Binary struct {
 	DxvkVersion string
@@ -31,7 +29,7 @@ type State struct {
 func Load() (State, error) {
 	var state State
 
-	f, err := os.ReadFile(path)
+	f, err := os.ReadFile(dirs.StatePath)
 	if (err != nil && errors.Is(err, os.ErrNotExist)) || len(f) == 0 {
 		return State{}, nil
 	}
@@ -48,11 +46,11 @@ func Load() (State, error) {
 
 // Save saves the current state to the state file.
 func (s *State) Save() error {
-	if err := dirs.Mkdirs(filepath.Dir(path)); err != nil {
+	if err := dirs.Mkdirs(filepath.Dir(dirs.StatePath)); err != nil {
 		return err
 	}
 
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
+	f, err := os.OpenFile(dirs.StatePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}

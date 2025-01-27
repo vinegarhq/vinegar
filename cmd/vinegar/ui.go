@@ -35,7 +35,7 @@ func New() ui {
 		log.Fatalf("load state: %s", err)
 	}
 
-	cfg, err := config.Load(ConfigPath)
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("load config: %s", err)
 	}
@@ -55,8 +55,8 @@ func New() ui {
 			"org.vinegarhq.vinegar.Vinegar",
 			gio.GApplicationFlagsNoneValue,
 		),
-		cfg: &cfg,
-		state: &s,
+		cfg:     &cfg,
+		state:   &s,
 		logFile: lf,
 	}
 

@@ -12,6 +12,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/wine"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
@@ -52,14 +53,14 @@ var (
 //
 // Load is required for any initialization for Config, as it calls routines
 // to setup certain variables and verifies the configuration.
-func Load(name string) (Config, error) {
+func Load() (Config, error) {
 	cfg := Default()
 
-	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(dirs.ConfigPath); errors.Is(err, os.ErrNotExist) {
 		return cfg, nil
 	}
 
-	if _, err := toml.DecodeFile(name, &cfg); err != nil {
+	if _, err := toml.DecodeFile(dirs.ConfigPath, &cfg); err != nil {
 		return cfg, err
 	}
 

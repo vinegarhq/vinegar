@@ -61,5 +61,3 @@ Roblox Studio continues to be usable.
 + Credits to
   + [pizzaboxer](https://github.com/pizzaboxer)
   + [MaximumADHD](https://github.com/MaximumADHD)
-+ Logo modified with Katie. Base glass SVG made by the [Twemoji team](https://twemoji.twitter.com/), Licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-+ Katie usage authorized by [karliflux](https://karliflux.neocities.org)

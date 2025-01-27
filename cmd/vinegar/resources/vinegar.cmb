@@ -106,7 +106,7 @@
 	(4,2,"GtkWidget","margin-end","24",0,None,None,None,None,None,None,None,None),
 	(4,2,"GtkWidget","margin-start","24",0,None,None,None,None,None,None,None,None),
 	(4,2,"GtkWidget","valign","center",0,None,None,None,None,None,None,None,None),
-	(4,3,"GtkImage","pixel-size","86",0,None,None,None,None,None,None,None,None),
+	(4,3,"GtkImage","pixel-size","96",0,None,None,None,None,None,None,None,None),
 	(4,4,"GtkLabel","label","Initializing Vinegar",0,None,None,None,None,None,None,None,None),
 	(4,4,"GtkWidget","css-classes","title-2",None,None,None,None,None,None,None,None,None),
 	(4,5,"GtkWidget","margin-end","64",0,None,None,None,None,None,None,None,None),

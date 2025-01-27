@@ -16,7 +16,7 @@
         <property name="valign">center</property>
         <child>
           <object class="GtkImage" id="logo">
-            <property name="pixel-size">86</property>
+            <property name="pixel-size">96</property>
           </object>
         </child>
         <child>

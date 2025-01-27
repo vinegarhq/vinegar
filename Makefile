@@ -19,7 +19,7 @@ vinegar: $(SOURCES)
 	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
 
 cmd/vinegar/resources/logo.png: assets/vinegar.svg
-	magick -density 384 -background none $^ -resize 512x512 -fuzz 1% -trim +repage $<
+	magick -density 384 -background none $^ -resize 512x512 -fuzz 1% -trim +repage $@
 
 install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar

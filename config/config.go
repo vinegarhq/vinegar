@@ -84,7 +84,7 @@ func Default() Config {
 
 		Studio: Studio{
 			Dxvk:        true,
-			DxvkVersion: "2.3",
+			DxvkVersion: "2.5.3",
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "D3D11",

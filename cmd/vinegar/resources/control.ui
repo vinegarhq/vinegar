@@ -47,7 +47,17 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwButtonRow" id="uninstall">
+                                  <object class="AdwButtonRow" id="install-studio">
+                                    <property name="action-name">app.install-studio</property>
+                                    <property name="start-icon-name">document-save-symbolic</property>
+                                    <property name="title">Install Studio</property>
+                                    <style>
+                                      <class name="suggested-action"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwButtonRow" id="uninstall-studio">
                                     <property name="action-name">app.uninstall-studio</property>
                                     <property name="start-icon-name">user-trash-symbolic</property>
                                     <property name="title">Uninstall Studio</property>
@@ -144,6 +154,20 @@
                   <object class="GtkLabel" id="loading-label">
                     <property name="css-classes">title-2</property>
                     <property name="label">Performing Action</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="loading-stop">
+                    <property name="action-name">app.kill-prefix</property>
+                    <property name="halign">center</property>
+                    <property name="label">Stop Studio</property>
+                    <property name="sensitive">False</property>
+                    <property name="valign">center</property>
+                    <property name="visible">False</property>
+                    <style>
+                      <class name="destructive-action"/>
+                      <class name="pill"/>
+                    </style>
                   </object>
                 </child>
               </object>

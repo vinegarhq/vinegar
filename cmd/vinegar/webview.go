@@ -59,7 +59,7 @@ func (b *bootstrapper) DownloadWebView() error {
 	slog.Info("Downloading WebView",
 		"version", "109.0.1518.140", "url", WebViewInstallerURL, "path", tmp.Name())
 
-	err = netutil.DownloadProgress(WebViewInstallerURL, tmp.Name(), nil)
+	err = netutil.DownloadProgress(WebViewInstallerURL, tmp.Name(), &b.pbar)
 	if err != nil {
 		return err
 	}

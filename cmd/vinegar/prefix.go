@@ -1,20 +1,21 @@
 package main
 
 import (
+	"bufio"
+	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/apprehensions/wine"
 	"github.com/apprehensions/wine/dxvk"
-	"github.com/fsnotify/fsnotify"
-	"github.com/nxadm/tail"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
@@ -42,9 +43,13 @@ func (b *bootstrapper) Command(args ...string) (*wine.Cmd, error) {
 }
 
 func (b *bootstrapper) Execute(args ...string) error {
-	defer Background(b.win.Destroy)
-
 	cmd, err := b.Command(args...)
+	if err != nil {
+		return err
+	}
+
+	cmd.Stderr = nil
+	out, err := cmd.StderrPipe()
 	if err != nil {
 		return err
 	}
@@ -54,6 +59,7 @@ func (b *bootstrapper) Execute(args ...string) error {
 	// a user-sent signal and a self sent signal.
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(c)
 	go func() {
 		s := <-c
 
@@ -74,44 +80,48 @@ func (b *bootstrapper) Execute(args ...string) error {
 	slog.Info("Running Studio", "cmd", cmd)
 	b.status.SetLabel("Launching Studio")
 
-	go func() {
-		// Wait for process to start
-		for {
-			if cmd.Process != nil {
-				break
-			}
-		}
-
-		// If the log file wasn't found, assume failure
-		// and don't perform post-launch roblox functions.
-		lf, err := RobloxLogFile(b.pfx)
-		if err != nil {
-			slog.Error("Failed to find Roblox log file", "error", err.Error())
-			return
-		}
-
-		b.win.Hide()
-
-		if b.cfg.Studio.GameMode {
-			b.RegisterGameMode(int32(cmd.Process.Pid))
-		}
-
-		// Blocks and tails file forever until roblox is dead, unless
-		// if finding the log file had failed.
-		b.Tail(lf)
-	}()
-
-	err = cmd.Run()
-	// Thanks for your time, fizzie on #go-nuts.
-	// Signal errors are not handled as errors since they are
-	// used internally to kill Roblox as well.
-	if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
-		signal := cmd.ProcessState.Sys().(syscall.WaitStatus).Signal()
-		slog.Warn("Roblox was killed!", "signal", signal)
-		return nil
+	if err := cmd.Start(); err != nil {
+		return err
 	}
 
+	b.win.Hide()
+
+	if b.cfg.Studio.GameMode {
+		b.RegisterGameMode(int32(cmd.Process.Pid))
+	}
+
+	go b.HandleWineOutput(out)
+
+	err = cmd.Wait()
+
+	//  if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
+	//  	signal := cmd.ProcessState.Sys().(syscall.WaitStatus).Signal()
+	//  	slog.Warn("Roblox was killed!", "signal", signal)
+	//  	return nil
+	//  }
+
 	return err
+}
+
+func (b *bootstrapper) HandleWineOutput(wr io.Reader) {
+	s := bufio.NewScanner(wr)
+	closed := false
+
+	for s.Scan() {
+		line := s.Text()
+
+		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
+		if len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
+			if !closed {
+				b.win.Hide()
+				closed = true
+			}
+
+			b.HandleRobloxLog(line)
+		}
+
+		slog.Log(context.Background(), logging.LevelWine, line)
+	}
 }
 
 func (b *bootstrapper) SetupPrefix() error {
@@ -134,8 +144,7 @@ func (b *bootstrapper) SetupPrefix() error {
 }
 
 func (b *bootstrapper) PrefixInit() error {
-	slog.Info("Initializing wineprefix", "dir", b.pfx.Dir())
-	b.status.SetLabel("Initializing")
+	b.Message("Initializing Wineprefix")
 
 	if err := b.pfx.Init(); err != nil {
 		return fmt.Errorf("prefix init: %w", err)
@@ -168,67 +177,6 @@ func (ui *ui) DeletePrefixes() error {
 	return nil
 }
 
-func RobloxLogFile(pfx *wine.Prefix) (string, error) {
-	ad, err := pfx.AppDataDir()
-	if err != nil {
-		return "", fmt.Errorf("get appdata: %w", err)
-	}
-
-	dir := filepath.Join(ad, "Local", "Roblox", "logs")
-
-	// This is required due to fsnotify requiring the directory
-	// to watch to exist before adding it.
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return "", fmt.Errorf("create roblox log dir: %w", err)
-	}
-
-	w, err := fsnotify.NewWatcher()
-	if err != nil {
-		return "", fmt.Errorf("make fsnotify watcher: %w", err)
-	}
-	defer w.Close()
-
-	if err := w.Add(dir); err != nil {
-		return "", fmt.Errorf("watch roblox log dir: %w", err)
-	}
-
-	for {
-		select {
-		case e := <-w.Events:
-			if e.Has(fsnotify.Create) {
-				return e.Name, nil
-			}
-		case err := <-w.Errors:
-			slog.Error("Recieved fsnotify watcher error", "error", err)
-		}
-	}
-}
-
-func (b *bootstrapper) Tail(name string) {
-	t, err := tail.TailFile(name, tail.Config{Follow: true})
-	if err != nil {
-		slog.Error("Could not tail Roblox log file", "error", err)
-		return
-	}
-
-	for line := range t.Lines {
-		fmt.Fprintln(b.pfx.Stderr, line.Text)
-
-		if strings.Contains(line.Text, StudioShutdownEntry) {
-			go func() {
-				time.Sleep(KillWait)
-				syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-			}()
-		}
-
-		if b.cfg.Studio.DiscordRPC {
-			if err := b.rp.Handle(line.Text); err != nil {
-				slog.Error("Presence handling failed", "error", err)
-			}
-		}
-	}
-}
-
 func (b *bootstrapper) SetupDxvk() error {
 	dxvk.Setenv(b.cfg.Studio.Dxvk)
 
@@ -236,10 +184,9 @@ func (b *bootstrapper) SetupDxvk() error {
 		return nil
 	}
 
-	b.status.SetLabel("Setting up DXVK")
+	b.Message("Setting up DXVK")
 
 	if b.cfg.Studio.DxvkVersion == b.state.Studio.DxvkVersion {
-		slog.Info("DXVK up to date!", "version", b.state.Studio.DxvkVersion)
 		return nil
 	}
 
@@ -266,6 +213,7 @@ func (b *bootstrapper) DxvkInstall() error {
 	}
 
 	b.status.SetLabel("Installing DXVK")
+	slog.Info("Extracting DXVK", "version", ver)
 
 	if err := dxvk.Extract(b.pfx, dxvkPath); err != nil {
 		return err

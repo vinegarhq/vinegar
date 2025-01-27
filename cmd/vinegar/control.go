@@ -6,6 +6,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
 type control struct {
@@ -18,10 +19,13 @@ type control struct {
 }
 
 func (ctl *control) Finished() {
-	ctl.stack.SetVisibleChildName("control")
+	Background(func() {
+		ctl.UpdateButtons()
+		ctl.stack.SetVisibleChildName("control")
+	})
 }
 
-func (ctl *control) Studio() bootstrapper {
+func (ctl *control) Studio() *bootstrapper {
 	b := ctl.NewBootstrapper()
 
 	destroy := func(_ gtk.Window) bool {
@@ -48,17 +52,23 @@ func (s *ui) NewControl() control {
 		act func() error
 		msg string
 	}{
-		"run-studio":       {nil, "Running Studio"}, // requires callback
-		"run-winetricks":   {ctl.pfx.Winetricks, "Running Winetricks"},
-		"delete-prefix":    {ctl.ui.DeletePrefixes, "Clearing Data"},
-		"kill-prefix":      {ctl.pfx.Kill, "Stopping Studio"},
+		"run-studio":       {nil, "Running Studio"},
+		"install-studio":   {nil, "Installing Studio"},
 		"uninstall-studio": {ctl.ui.Uninstall, "Uninstalling Studio"},
+		"kill-prefix":      {ctl.pfx.Kill, "Stopping Studio"},
+
+		"run-winetricks": {ctl.pfx.Winetricks, "Running Winetricks"},
+		"delete-prefix":  {ctl.ui.DeletePrefixes, "Clearing Data"},
 	}
 
-	var label gtk.Label
 	ctl.builder.GetObject("stack").Cast(&ctl.stack)
 
+	var label gtk.Label
+	var stop gtk.Button
 	ctl.builder.GetObject("loading-label").Cast(&label)
+	ctl.builder.GetObject("loading-stop").Cast(&stop)
+
+	ctl.UpdateButtons()
 
 	for name, action := range actions {
 		act := gio.NewSimpleAction(name, nil)
@@ -66,10 +76,20 @@ func (s *ui) NewControl() control {
 			ctl.stack.SetVisibleChildName("loading")
 			label.SetLabel(action.msg + "...")
 
-			if name == "run-studio" {
+			stop.SetVisible(false)
+			if name == "run-studio" || name == "install-studio" {
 				b := ctl.Studio()
-				action.act = b.Run
+				proc := b.Setup
+				if name == "run-studio" {
+					proc = b.Run
+					stop.SetVisible(true)
+				}
+				action.act = func() error {
+					defer Background(b.win.Destroy)
+					return proc()
+				}
 			}
+
 			Background(func() {
 				go func() {
 					defer ctl.Finished()
@@ -90,7 +110,26 @@ func (s *ui) NewControl() control {
 
 	ctl.win.Present()
 	ctl.win.Unref()
-	ctl.builder.Unref()
 
 	return ctl
+}
+
+func (ctl *control) UpdateButtons() {
+	var i, u, r, k, d, w gtk.Widget
+	ctl.builder.GetObject("install-studio").Cast(&i)
+	ctl.builder.GetObject("uninstall-studio").Cast(&u)
+	ctl.builder.GetObject("run-studio").Cast(&r)
+	ctl.builder.GetObject("kill-prefix").Cast(&k)
+	ctl.builder.GetObject("delete-prefix").Cast(&d)
+	ctl.builder.GetObject("run-winetricks").Cast(&w)
+
+	empty := dirs.Empty(dirs.Versions)
+	i.SetVisible(empty)
+	u.SetVisible(!empty)
+	r.SetVisible(!empty)
+
+	empty = dirs.Empty(dirs.Prefixes)
+	k.SetVisible(!empty)
+	d.SetVisible(!empty)
+	w.SetVisible(!empty)
 }

@@ -15,16 +15,19 @@ import (
 )
 
 func (b *bootstrapper) SetupDeployment() error {
-	b.status.SetLabel("Checking for updates")
+	b.Message("Checking for updates")
 
 	if err := b.FetchDeployment(); err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
 
+	slog.Info("Using Binary Deployment",
+		"guid", b.bin.GUID, "channel", b.bin.Channel)
+
 	b.dir = filepath.Join(dirs.Versions, b.bin.GUID)
 
 	if b.state.Studio.Version != b.bin.GUID {
-		slog.Info("Installing Studio!",
+		slog.Info("Studio out of date, installing latest version...",
 			"old", b.state.Studio.Version, "new", b.bin.GUID)
 
 		if err := b.Install(); err != nil {
@@ -60,8 +63,6 @@ func (b *bootstrapper) FetchDeployment() error {
 }
 
 func (b *bootstrapper) Install() error {
-	b.status.SetLabel("Installing")
-
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
 	}
@@ -70,6 +71,7 @@ func (b *bootstrapper) Install() error {
 		return err
 	}
 
+	b.Message("Writing AppSettings")
 	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
 		return fmt.Errorf("appsettings: %w", err)
 	}
@@ -92,11 +94,13 @@ func (b *bootstrapper) Install() error {
 }
 
 func (b *bootstrapper) SetupPackages() error {
+	b.Message("Finding Mirror")
 	m, err := rbxbin.GetMirror()
 	if err != nil {
 		return fmt.Errorf("fetch mirror: %w", err)
 	}
 
+	b.Message("Fetching Package list")
 	pkgs, err := m.GetPackages(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
@@ -110,8 +114,7 @@ func (b *bootstrapper) SetupPackages() error {
 		return pkgs[i].ZipSize < pkgs[j].ZipSize
 	})
 
-	slog.Info("Fetching package directories")
-
+	b.Message("Fetching Installation directives")
 	pd, err := m.BinaryDirectories(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch package dirs: %w", err)
@@ -121,7 +124,13 @@ func (b *bootstrapper) SetupPackages() error {
 	var done atomic.Uint32
 	eg := new(errgroup.Group)
 
-	slog.Info("Installing Packages", "count", len(pkgs))
+	update := func() {
+		done.Add(1)
+		b.pbar.SetFraction(float64(done.Load()) / float64(total))
+	}
+
+	b.status.SetLabel("Installing")
+	slog.Info("Installing Packages", "count", len(pkgs), "dir", b.dir)
 	for _, p := range pkgs {
 		p := p
 
@@ -132,11 +141,6 @@ func (b *bootstrapper) SetupPackages() error {
 				return fmt.Errorf("unhandled package: %s", p.Name)
 			}
 
-			defer func() {
-				done.Add(1)
-				b.pbar.SetFraction(float64(done.Load()) / float64(total))
-			}()
-
 			if err := p.Verify(src); err != nil {
 				url := m.PackageURL(b.bin, p.Name)
 				slog.Info("Downloading Package", "name", p.Name)
@@ -145,16 +149,20 @@ func (b *bootstrapper) SetupPackages() error {
 					return err
 				}
 
+				slog.Info("Verifying Package", "name", p.Name, "sum", p.Checksum)
 				if err := p.Verify(src); err != nil {
 					return err
 				}
 			} else {
-				slog.Info("Package is already downloaded", "name", p.Name)
+				slog.Info("Package cached", "name", p.Name, "sum", p.Checksum)
+				update()
 			}
 
+			slog.Info("Extracted package", "name", p.Name, "dest", dst)
 			if err := p.Extract(src, filepath.Join(b.dir, dst)); err != nil {
 				return err
 			}
+			update()
 
 			return nil
 		})

@@ -14,10 +14,10 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
-	"github.com/lmittmann/tint"
 	slogmulti "github.com/samber/slog-multi"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/state"
 )
 
@@ -49,15 +49,17 @@ func New() ui {
 		log.Fatalf("load state: %s", err)
 	}
 
-	lf, err := LogFile()
+	lf, err := logging.NewFile()
 	if err != nil {
 		log.Fatalf("log file: %s", err)
 	}
 
 	slog.SetDefault(slog.New(slogmulti.Fanout(
-		tint.NewHandler(os.Stderr, nil),
-		tint.NewHandler(lf, &tint.Options{NoColor: true}),
+		logging.NewTextHandler(os.Stderr, false),
+		logging.NewTextHandler(lf, true),
 	)))
+
+	slog.Info("Initializing UI...")
 
 	ui := ui{
 		app: adw.NewApplication(

@@ -32,3 +32,18 @@ func Mkdirs(dirs ...string) error {
 
 	return nil
 }
+
+func Empty(name string) bool {
+	dir, err := os.Open(name)
+	if err != nil {
+		return true
+	}
+	defer dir.Close()
+
+	files, err := dir.Readdirnames(1)
+	if err != nil {
+		return true
+	}
+
+	return len(files) == 0
+}

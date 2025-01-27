@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/apprehensions/rbxbin"
@@ -17,6 +19,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/studiorpc"
 )
 
@@ -45,7 +48,7 @@ type bootstrapper struct {
 	rp *studiorpc.StudioRPC
 }
 
-func (s *ui) NewBootstrapper() bootstrapper {
+func (s *ui) NewBootstrapper() *bootstrapper {
 	b := bootstrapper{
 		builder: gtk.NewBuilderFromString(resource("bootstrapper.ui"), -1),
 		ui:      s,
@@ -77,7 +80,12 @@ func (s *ui) NewBootstrapper() bootstrapper {
 	b.win.Present()
 	b.win.Unref()
 
-	return b
+	return &b
+}
+
+func (b *bootstrapper) Message(msg string) {
+	b.status.SetLabel(msg)
+	slog.Info(msg)
 }
 
 func (b *bootstrapper) Run() error {
@@ -100,6 +108,25 @@ func (b *bootstrapper) RunArgs(args ...string) error {
 	return nil
 }
 
+func (b *bootstrapper) HandleRobloxLog(line string) {
+	if !b.cfg.Studio.Quiet {
+		slog.Log(context.Background(), logging.LevelRoblox, line)
+	}
+
+	if strings.Contains(line, StudioShutdownEntry) {
+		go func() {
+			time.Sleep(KillWait)
+			syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
+		}()
+	}
+
+	if b.cfg.Studio.DiscordRPC {
+		if err := b.rp.Handle(line); err != nil {
+			slog.Error("Presence handling failed", "error", err)
+		}
+	}
+}
+
 func (b *bootstrapper) Setup() error {
 	b.removePlayer()
 
@@ -111,14 +138,16 @@ func (b *bootstrapper) Setup() error {
 		return err
 	}
 
-	b.status.SetLabel("Applying environment variables")
+	b.pbar.SetFraction(1.0)
+
+	b.Message("Applying environment variables")
 	b.cfg.Studio.Env.Setenv()
 
 	if err := b.SetupOverlay(); err != nil {
 		return fmt.Errorf("setup overlay: %w", err)
 	}
 
-	b.status.SetLabel("Applying FFlags")
+	b.Message("Applying FFlags")
 	if err := b.cfg.Studio.FFlags.Apply(b.dir); err != nil {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
@@ -127,17 +156,18 @@ func (b *bootstrapper) Setup() error {
 		return fmt.Errorf("setup dxvk %s: %w", b.cfg.Studio.DxvkVersion, err)
 	}
 
-	b.pbar.SetFraction(1.0)
-	b.status.SetLabel("Saving to state")
+	b.Message("Updating State")
 	if err := b.state.Save(); err != nil {
 		return fmt.Errorf("save state: %w", err)
 	}
+
+	slog.Info("Successfuly installed", "guid", b.bin.GUID)
 
 	return nil
 }
 
 func (b *bootstrapper) SetupOverlay() error {
-	b.status.SetLabel("Applying overlays")
+	b.Message("Applying overlays")
 
 	dir := filepath.Join(dirs.Overlays, strings.ToLower(Studio.Short()))
 
@@ -149,8 +179,7 @@ func (b *bootstrapper) SetupOverlay() error {
 		return err
 	}
 
-	slog.Info("Copying Overlay directory's files", "src", dir, "path", b.dir)
-	b.status.SetLabel("Copying Overlay")
+	b.Message("Copying Overlay")
 
 	return cp.Copy(dir, b.dir)
 }
@@ -197,20 +226,4 @@ func (b *bootstrapper) RegisterGameMode(pid int32) {
 		slog.Error("Failed to register to GameMode", "error", err)
 		return
 	}
-}
-
-func LogFile() (*os.File, error) {
-	if err := dirs.Mkdirs(dirs.Logs); err != nil {
-		return nil, err
-	}
-
-	// name-2006-01-02T15:04:05Z07:00.log
-	path := filepath.Join(dirs.Logs, time.Now().Format(time.RFC3339)+".log")
-
-	file, err := os.Create(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create log file: %w", err)
-	}
-
-	return file, nil
 }

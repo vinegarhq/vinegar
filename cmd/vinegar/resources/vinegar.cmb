@@ -15,7 +15,7 @@
 	(1,21,"AdwPreferencesGroup",None,46,None,None,None,0,None,None),
 	(1,22,"AdwButtonRow","run-winetricks",47,None,None,None,2,None,None),
 	(1,23,"AdwButtonRow","delete-prefix",47,None,None,None,1,None,None),
-	(1,24,"AdwButtonRow","uninstall",21,None,None,None,1,None,None),
+	(1,24,"AdwButtonRow","uninstall-studio",21,None,None,None,2,None,None),
 	(1,25,"AdwNavigationPage",None,38,None,None,None,1,None,None),
 	(1,27,"AdwHeaderBar",None,28,None,"top",None,0,None,None),
 	(1,28,"AdwToolbarView",None,25,None,None,None,0,None,None),
@@ -29,9 +29,11 @@
 	(1,40,"GtkBox",None,39,None,None,None,0,None,None),
 	(1,41,"AdwSpinner",None,40,None,None,None,0,None,None),
 	(1,42,"GtkLabel","loading-label",40,None,None,None,1,None,None),
-	(1,44,"AdwButtonRow","kill-prefix",21,None,None,None,2,None,None),
+	(1,44,"AdwButtonRow","kill-prefix",21,None,None,None,3,None,None),
 	(1,46,"AdwPreferencesPage",None,18,None,None,None,1,None,None),
 	(1,47,"AdwPreferencesGroup",None,46,None,None,None,1,None,None),
+	(1,48,"GtkButton","loading-stop",40,None,None,None,2,None,None),
+	(1,49,"AdwButtonRow","install-studio",21,None,None,None,1,None,None),
 	(4,1,"AdwWindow","bootstrapper",None,None,None,None,0,None,None),
 	(4,2,"GtkBox",None,1,None,None,None,0,None,None),
 	(4,3,"GtkImage","logo",2,None,None,None,0,None,None),
@@ -87,6 +89,15 @@
 	(1,44,"AdwButtonRow","start-icon-name","process-stop-symbolic",0,None,None,None,None,None,None,None,None),
 	(1,44,"AdwPreferencesRow","title","Stop Studio",0,None,None,None,None,None,None,None,None),
 	(1,44,"GtkActionable","action-name","app.kill-prefix",0,None,None,None,None,None,None,None,None),
+	(1,48,"GtkActionable","action-name","app.kill-prefix",None,None,None,None,None,None,None,None,None),
+	(1,48,"GtkButton","label","Stop Studio",None,None,None,None,None,None,None,None,None),
+	(1,48,"GtkWidget","halign","center",None,None,None,None,None,None,None,None,None),
+	(1,48,"GtkWidget","sensitive","False",None,None,None,None,None,None,None,None,None),
+	(1,48,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
+	(1,48,"GtkWidget","visible","False",None,None,None,None,None,None,None,None,None),
+	(1,49,"AdwButtonRow","start-icon-name","document-save-symbolic",0,None,None,None,None,None,None,None,None),
+	(1,49,"AdwPreferencesRow","title","Install Studio",0,None,None,None,None,None,None,None,None),
+	(1,49,"GtkActionable","action-name","app.install-studio",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","default-height","320",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","default-width","512",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","resizable","False",0,None,None,None,None,None,None,None,None),
@@ -152,7 +163,12 @@
 	(5,7,"GtkWidget",2,3,None,1,None,None,None,None),
 	(5,7,"GtkWidget",2,4,None,1,None,None,None,None),
 	(1,44,"GtkWidget",1,1,None,None,None,None,None,None),
-	(1,44,"GtkWidget",2,2,None,1,None,None,None,None)
+	(1,44,"GtkWidget",2,2,None,1,None,None,None,None),
+	(1,48,"GtkWidget",1,1,None,None,None,None,None,None),
+	(1,48,"GtkWidget",2,2,None,1,None,None,None,None),
+	(1,48,"GtkWidget",2,3,None,1,None,None,None,None),
+	(1,49,"GtkWidget",1,1,None,None,None,None,None,None),
+	(1,49,"GtkWidget",2,2,None,1,None,None,None,None)
   </object_data>
   <object_data_arg>
 	(1,29,"GtkWidget",2,2,"name","monospace"),
@@ -167,6 +183,9 @@
 	(5,7,"GtkWidget",2,2,"name","terminal"),
 	(5,7,"GtkWidget",2,3,"name","monospace"),
 	(5,7,"GtkWidget",2,4,"name","card"),
-	(1,44,"GtkWidget",2,2,"name","destructive-action")
+	(1,44,"GtkWidget",2,2,"name","destructive-action"),
+	(1,48,"GtkWidget",2,2,"name","destructive-action"),
+	(1,48,"GtkWidget",2,3,"name","pill"),
+	(1,49,"GtkWidget",2,2,"name","suggested-action")
   </object_data_arg>
 </cambalache-project>

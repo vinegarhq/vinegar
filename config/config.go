@@ -19,6 +19,7 @@ import (
 // Studio is a representation of the deployment and behavior
 // of Roblox Studio.
 type Studio struct {
+	Quiet         bool          `toml:"quiet"`
 	Channel       string        `toml:"channel"`
 	Launcher      string        `toml:"launcher"`
 	Renderer      string        `toml:"renderer"`

@@ -6,8 +6,9 @@ PREFIX     = /usr
 APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
-GO         = go
-GO_LDFLAGS = -s -w -X main.Version=$(VERSION)
+GO          = go
+GO_LDFLAGS  = -s -w -X main.Version=$(VERSION)
+CGO_ENABLED = 0
 
 # for automatically re-building
 SOURCES != find . -type f -name "*.go"

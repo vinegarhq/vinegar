@@ -7,13 +7,7 @@
 [![Discord Server ][discord_img     ]][discord     ]
 [![Matrix Room    ][matrix_img      ]][matrix      ]
 
-An open-source, minimal, configurable, fast bootstrapper for running Roblox on Linux.
-
-## Status of Roblox on Linux
-As of the 2nd of March, 2024, Roblox has blocked the use of Wine to access the Roblox Player.
-More information can be found [here](https://vinegarhq.org/Home/rol_faq.html).
-
-Roblox Studio continues to be usable.
+An open-source, configurable, fast bootstrapper for running Roblox Studio on Linux.
 
 [pipeline]:     https://github.com/vinegarhq/vinegar/actions/workflows/go.yml
 [pipeline_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/go.yml?style=flat-square&label=build%20%26%20tests
@@ -29,30 +23,24 @@ Roblox Studio continues to be usable.
 [matrix_img]:  https://img.shields.io/matrix/vinegarhq:matrix.org?style=flat-square&label=matrix
 
 # Features
-+ Discord Rich Presence & BloxstrapRPC support
++ In-house Studio Discord Rich Presence support
 + Automatic GPU selection for PRIME systems
 + Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
 + Optional [UMU](https://github.com/Open-Wine-Components/umu-launcher) Proton support
-+ Multiple instances of Roblox open simultaneously
-+ Automatic Wineprefix killer when Roblox has quit
-+ Logging for both Vinegar, Wine and Roblox
++ Logging for Vinegar, Wine and Roblox
 + Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
 + Automatic DXVK Installer and uninstaller
 + Fast Multi-threaded installation and extraction of Roblox
 + Automatic removal of outdated cached packages and versions of Roblox
-+ FPS Unlocking for Player by default, without rbxfpsunlocker
-+ Custom execution of wine program within wineprefix
-+ Set different environment variables and FFlags for both Player and Studio, with Global to override
++ Set different environment variables and FFlags
 + Force a specific version of Roblox to be deployed
 + Custom launcher specified to be used when launching Roblox
 + Wine Root feature to set a specific wine installation path
 + Sanitization of environment
 + Browser launch via MIME
-+ Splash window during setup, with error dialog support
 
 # See Also
 + [Discord server](https://discord.gg/dzdzZ6Pps2)
-+ [Matrix room](https://matrix.to/#/#vinegarhq:matrix.org)
 + [Documentation](https://vinegarhq.github.io)
 + [Roblox-Studio-Mod-Manager](https://github.com/MaximumADHD/Roblox-Studio-Mod-Manager)
 + [Bloxstrap](https://github.com/pizzaboxer/bloxstrap)

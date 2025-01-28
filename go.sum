@@ -12,6 +12,16 @@ github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942 h1:pNRoIKlv32
 github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942/go.mod h1:F7WKRLrQxuRgfXxhwnlFJ059ZBMRxkXxvIhUxP4Qc5g=
 github.com/apprehensions/wine v0.0.0-20250127144911-936a69c3db12 h1:a8WLFFdWTBuyCzpUPPtWCxJPzKiOaTu1f+4DR+XVGAw=
 github.com/apprehensions/wine v0.0.0-20250127144911-936a69c3db12/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20250128174316-6d23b03d3575 h1:XAzpiIt+9LikgUwVjxvzNyoLaudm/8kdzy6Lf+HpgZo=
+github.com/apprehensions/wine v0.0.0-20250128174316-6d23b03d3575/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20250128175858-e81ae9aa0755 h1:G6z3PHMoNCldT4Abl0VXmclJ3siiniq9/46uRHsn3b8=
+github.com/apprehensions/wine v0.0.0-20250128175858-e81ae9aa0755/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20250128182310-4876c6b05193 h1:9XRWShQeMXJKFHLYx4spSY593CnHNo+61qgkfi6fcq4=
+github.com/apprehensions/wine v0.0.0-20250128182310-4876c6b05193/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20250128183827-dcef95e039c8 h1:STVeUkpLrMX8QAC4Ldyyz6EXwotRodUgrqgcKR0CLOE=
+github.com/apprehensions/wine v0.0.0-20250128183827-dcef95e039c8/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20250128192525-ac6662e90e2c h1:5tRauB0iGtTe++BtH+mC7YiS8MccEWPuh1Jzz+aoIdE=
+github.com/apprehensions/wine v0.0.0-20250128192525-ac6662e90e2c/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/folbricht/pefile v0.1.0 h1:y9aMwgNlPO/iyp8Izll3Au4XNp7Fi7uDH8OKZ1Nl+lw=
@@ -26,6 +36,8 @@ github.com/jwijenbergh/puregotk v0.0.0-20240827133221-51f7e663a5e9 h1:sDhZQQ4MSp
 github.com/jwijenbergh/puregotk v0.0.0-20240827133221-51f7e663a5e9/go.mod h1:RQk9qXiNlKqO3yNGizfCeqxHpdRivYRkIuSvcjIq3Dg=
 github.com/lmittmann/tint v1.0.6 h1:vkkuDAZXc0EFGNzYjWcV0h7eEX+uujH48f/ifSkJWgc=
 github.com/lmittmann/tint v1.0.6/go.mod h1:HIS3gSy7qNwGCj+5oRjAutErFBl4BzdQP6cJZ0NfMwE=
+github.com/lmittmann/tint v1.0.7 h1:D/0OqWZ0YOGZ6AyC+5Y2kD8PBEzBk6rFHVSfOqCkF9Y=
+github.com/lmittmann/tint v1.0.7/go.mod h1:HIS3gSy7qNwGCj+5oRjAutErFBl4BzdQP6cJZ0NfMwE=
 github.com/otiai10/copy v1.14.1 h1:5/7E6qsUMBaH5AnQ0sSLzzTg1oTECmcCmT6lvF45Na8=
 github.com/otiai10/copy v1.14.1/go.mod h1:oQwrEDDOci3IM8dJF0d8+jnbfPDllW6vUjNc3DoZm9I=
 github.com/otiai10/mint v1.6.3 h1:87qsV/aw1F5as1eH1zS/yqHY85ANKVMgkDrf9rcxbQs=
@@ -38,6 +50,8 @@ github.com/robloxapi/rbxver v0.3.0 h1:ax3ndKtLiXNeYbGc56UEcPQYYMEr6heOfyRDfn+68l
 github.com/robloxapi/rbxver v0.3.0/go.mod h1:mpM7UdZ2YyLq4gSVtWToeRQLUHNBcOfRGRjINbOi5vM=
 github.com/samber/lo v1.49.0 h1:AGnTnQrg1jpFuwECPUSoxZCfVH5W22b605kWSry3YxM=
 github.com/samber/lo v1.49.0/go.mod h1:dO6KHFzUKXgP8LDhU0oI8d2hekjXnGOu0DB8Jecxd6o=
+github.com/samber/lo v1.49.1 h1:4BIFyVfuQSEpluc7Fua+j1NolZHiEHEpaSEKdsH0tew=
+github.com/samber/lo v1.49.1/go.mod h1:dO6KHFzUKXgP8LDhU0oI8d2hekjXnGOu0DB8Jecxd6o=
 github.com/samber/slog-multi v1.3.3 h1:qhFXaYdW73FIWLt8SrXMXfPwY58NpluzKDwRdPvhWWY=
 github.com/samber/slog-multi v1.3.3/go.mod h1:ACuZ5B6heK57TfMVkVknN2UZHoFfjCwRxR0Q2OXKHlo=
 github.com/stretchr/testify v1.10.0 h1:Xv5erBjTwe/5IxqUQTdXv5kgmIvbHo3QQyRwhJsOfJA=

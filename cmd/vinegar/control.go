@@ -15,6 +15,8 @@ type control struct {
 	builder *gtk.Builder
 	win     adw.ApplicationWindow
 
+	boot *bootstrapper
+
 	stack adw.ViewStack
 }
 
@@ -42,6 +44,7 @@ func (ctl *control) Studio() *bootstrapper {
 func (s *ui) NewControl() control {
 	ctl := control{
 		ui:      s,
+		boot:    s.NewBootstrapper(),
 		builder: gtk.NewBuilderFromString(resource("control.ui"), -1),
 	}
 
@@ -49,16 +52,17 @@ func (s *ui) NewControl() control {
 	ctl.win.SetApplication(&s.app.Application)
 
 	actions := map[string]struct {
-		act func() error
-		msg string
+		act  func() error
+		msg  string
+		boot bool
 	}{
-		"run-studio":       {nil, "Running Studio"},
-		"install-studio":   {nil, "Installing Studio"},
-		"uninstall-studio": {ctl.ui.Uninstall, "Uninstalling Studio"},
-		"kill-prefix":      {ctl.pfx.Kill, "Stopping Studio"},
-
-		"run-winetricks": {ctl.pfx.Winetricks, "Running Winetricks"},
-		"delete-prefix":  {ctl.ui.DeletePrefixes, "Clearing Data"},
+		"run-studio":       {ctl.boot.Run, "Running Studio", true},
+		"install-studio":   {ctl.boot.Setup, "Installing Studio", true},
+		"uninstall-studio": {ctl.DeleteDeployments, "Uninstalling Studio", false},
+		"kill-prefix":      {ctl.KillPrefix, "Stopping Studio", false},
+		"init-prefix":      {ctl.boot.PrefixInit, "Initializing Data", true},
+		"delete-prefix":    {ctl.DeletePrefixes, "Clearing Data", false},
+		"run-winetricks":   {ctl.RunWinetricks, "Running Winetricks", false},
 	}
 
 	ctl.builder.GetObject("stack").Cast(&ctl.stack)
@@ -75,24 +79,20 @@ func (s *ui) NewControl() control {
 		actcb := func(_ gio.SimpleAction, _ uintptr) {
 			ctl.stack.SetVisibleChildName("loading")
 			label.SetLabel(action.msg + "...")
+			stop.SetVisible(name == "run-studio")
 
-			stop.SetVisible(false)
-			if name == "run-studio" || name == "install-studio" {
-				b := ctl.Studio()
-				proc := b.Setup
-				if name == "run-studio" {
-					proc = b.Run
-					stop.SetVisible(true)
-				}
-				action.act = func() error {
-					defer Background(b.win.Destroy)
-					return proc()
-				}
+			if action.boot {
+				Background(func() {
+					ctl.win.SetTransientFor(&ctl.boot.win.Window)
+					ctl.boot.win.Show()
+				})
 			}
-
 			Background(func() {
 				go func() {
 					defer ctl.Finished()
+					if action.boot {
+						defer Background(ctl.boot.win.Hide)
+					}
 					if err := action.act(); err != nil {
 						slog.Error("Error occurred while running action",
 							"action", name, "err", err)
@@ -115,21 +115,25 @@ func (s *ui) NewControl() control {
 }
 
 func (ctl *control) UpdateButtons() {
-	var i, u, r, k, d, w gtk.Widget
-	ctl.builder.GetObject("install-studio").Cast(&i)
-	ctl.builder.GetObject("uninstall-studio").Cast(&u)
-	ctl.builder.GetObject("run-studio").Cast(&r)
-	ctl.builder.GetObject("kill-prefix").Cast(&k)
-	ctl.builder.GetObject("delete-prefix").Cast(&d)
-	ctl.builder.GetObject("run-winetricks").Cast(&w)
+	pfx := dirs.Empty(dirs.Prefixes)
+	vers := dirs.Empty(dirs.Versions)
 
-	empty := dirs.Empty(dirs.Versions)
-	i.SetVisible(empty)
-	u.SetVisible(!empty)
-	r.SetVisible(!empty)
-
-	empty = dirs.Empty(dirs.Prefixes)
-	k.SetVisible(!empty)
-	d.SetVisible(!empty)
-	w.SetVisible(!empty)
+	// While kill-prefix is more of a wineprefix-specific action,
+	// it is instead listed as an option belonging to the Studio
+	// area, to indicate that it is used to kill studio.
+	var inst, uninst, run, kill gtk.Widget
+	var del, tricks gtk.Widget
+	// init-prefix is always shown
+	ctl.builder.GetObject("install-studio").Cast(&inst)
+	ctl.builder.GetObject("uninstall-studio").Cast(&uninst)
+	ctl.builder.GetObject("run-studio").Cast(&run)
+	ctl.builder.GetObject("kill-prefix").Cast(&kill)
+	ctl.builder.GetObject("delete-prefix").Cast(&del)
+	ctl.builder.GetObject("run-winetricks").Cast(&tricks)
+	inst.SetVisible(vers)
+	uninst.SetVisible(!vers)
+	run.SetVisible(!vers)
+	del.SetVisible(!pfx)
+	kill.SetVisible(!pfx)
+	tricks.SetVisible(!pfx)
 }

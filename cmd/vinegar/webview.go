@@ -22,14 +22,6 @@ const (
 var WebViewInstallerPath = filepath.Join(dirs.Cache, "MicrosoftEdge_X64_109.0.1518.140.exe")
 
 func (b *bootstrapper) InstallWebView() error {
-	// This is required for the installer to do some magic
-	// that makes it work.
-	slog.Info("Setting Wineprefix version to win10")
-	b.status.SetLabel("Preparing for WebView")
-	if err := b.pfx.Wine("winecfg", "/v", "win10").Run(); err != nil {
-		return err
-	}
-
 	if _, err := os.Stat(WebViewInstallerPath); err != nil {
 		if err := b.DownloadWebView(); err != nil {
 			return err
@@ -38,8 +30,8 @@ func (b *bootstrapper) InstallWebView() error {
 		slog.Info("WebView installer cached, skipping download", "path", WebViewInstallerPath)
 	}
 
+	defer b.Performing()()
 	b.status.SetLabel("Installing WebView")
-	b.pbar.SetFraction(1.0)
 	slog.Info("Running WebView installer", "path", WebViewInstallerPath)
 
 	return b.pfx.Wine(WebViewInstallerPath,

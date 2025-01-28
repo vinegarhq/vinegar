@@ -10,12 +10,14 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"unsafe"
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gdk"
+	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
@@ -78,14 +80,27 @@ func (s *ui) NewBootstrapper() *bootstrapper {
 	b.pbar.Unref()
 
 	b.win.Present()
-	b.win.Unref()
+	b.win.Hide()
+	// b.win.Unref()
 
 	return &b
 }
 
-func (b *bootstrapper) Message(msg string) {
+func (b *bootstrapper) Performing() func() {
+	var tcb glib.SourceFunc
+	tcb = func(uintptr) bool {
+		b.pbar.Pulse()
+		return true
+	}
+	id := glib.TimeoutAdd(128, &tcb, uintptr(unsafe.Pointer(nil)))
+	return func() {
+		glib.SourceRemove(id)
+	}
+}
+
+func (b *bootstrapper) Message(msg string, args ...any) {
 	b.status.SetLabel(msg)
-	slog.Info(msg)
+	slog.Info(msg, args...)
 }
 
 func (b *bootstrapper) Run() error {
@@ -108,26 +123,8 @@ func (b *bootstrapper) RunArgs(args ...string) error {
 	return nil
 }
 
-func (b *bootstrapper) HandleRobloxLog(line string) {
-	if !b.cfg.Studio.Quiet {
-		slog.Log(context.Background(), logging.LevelRoblox, line)
-	}
-
-	if strings.Contains(line, StudioShutdownEntry) {
-		go func() {
-			time.Sleep(KillWait)
-			syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-		}()
-	}
-
-	if b.cfg.Studio.DiscordRPC {
-		if err := b.rp.Handle(line); err != nil {
-			slog.Error("Presence handling failed", "error", err)
-		}
-	}
-}
-
 func (b *bootstrapper) Setup() error {
+	b.pbar.SetFraction(0.0)
 	b.removePlayer()
 
 	if err := b.SetupPrefix(); err != nil {
@@ -138,7 +135,7 @@ func (b *bootstrapper) Setup() error {
 		return err
 	}
 
-	b.pbar.SetFraction(1.0)
+	defer b.Performing()()
 
 	b.Message("Applying environment variables")
 	b.cfg.Studio.Env.Setenv()
@@ -192,6 +189,25 @@ func (b *bootstrapper) removePlayer() {
 		b.state.Player.DxvkVersion = ""
 		b.state.Player.Version = ""
 		b.state.Player.Packages = nil
+	}
+}
+
+func (b *bootstrapper) HandleRobloxLog(line string) {
+	if !b.cfg.Studio.Quiet {
+		slog.Log(context.Background(), logging.LevelRoblox, line)
+	}
+
+	if strings.Contains(line, StudioShutdownEntry) {
+		go func() {
+			time.Sleep(KillWait)
+			syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
+		}()
+	}
+
+	if b.cfg.Studio.DiscordRPC {
+		if err := b.rp.Handle(line); err != nil {
+			slog.Error("Presence handling failed", "error", err)
+		}
 	}
 }
 

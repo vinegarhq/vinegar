@@ -19,6 +19,56 @@ import (
 	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
+func WineSimpleRun(cmd *wine.Cmd) error {
+	cmd.Stderr = nil
+	out, err := cmd.StderrPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	s := bufio.NewScanner(out)
+	for s.Scan() {
+		line := s.Text()
+		slog.Log(context.Background(), logging.LevelWine, line)
+	}
+
+	return cmd.Wait()
+}
+
+func (s *ui) KillPrefix() error {
+	slog.Info("Killing Wineprefix...")
+	return s.pfx.Kill()
+}
+
+func (s *ui) RunWinetricks() error {
+	slog.Info("Running Winetricks!")
+	return WineSimpleRun(s.pfx.Tricks())
+}
+
+func (ui *ui) DeletePrefixes() error {
+	slog.Info("Deleting Wineprefixes!")
+
+	if err := ui.KillPrefix(); err != nil {
+		return fmt.Errorf("kill prefix: %w", err)
+	}
+
+	if err := os.RemoveAll(dirs.Prefixes); err != nil {
+		return err
+	}
+
+	ui.state.Studio.DxvkVersion = ""
+
+	if err := ui.state.Save(); err != nil {
+		return fmt.Errorf("save state: %w", err)
+	}
+
+	return nil
+}
+
 func (b *bootstrapper) Command(args ...string) (*wine.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
 		args = []string{"-protocolString", args[0]}
@@ -53,7 +103,6 @@ func (b *bootstrapper) Execute(args ...string) error {
 	if err != nil {
 		return err
 	}
-
 	// Roblox will keep running if it was sent SIGINT; requiring acting as the signal holder.
 	// SIGUSR1 is used in Tail() to force kill roblox, used to differenciate between
 	// a user-sent signal and a self sent signal.
@@ -90,7 +139,7 @@ func (b *bootstrapper) Execute(args ...string) error {
 		b.RegisterGameMode(int32(cmd.Process.Pid))
 	}
 
-	go b.HandleWineOutput(out)
+	b.HandleWineOutput(out)
 
 	err = cmd.Wait()
 
@@ -146,32 +195,26 @@ func (b *bootstrapper) SetupPrefix() error {
 func (b *bootstrapper) PrefixInit() error {
 	b.Message("Initializing Wineprefix")
 
-	if err := b.pfx.Init(); err != nil {
+	stop := b.Performing()
+
+	if err := WineSimpleRun(b.pfx.Init()); err != nil {
 		return fmt.Errorf("prefix init: %w", err)
 	}
 
+	b.Message("Setting Wineprefix DPI")
 	if err := b.pfx.SetDPI(97); err != nil {
 		return fmt.Errorf("prefix set dpi: %w", err)
 	}
 
+	b.Message("Setting Wineprefix version")
+	if err := WineSimpleRun(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
+		return err
+	}
+
+	stop()
+
 	if err := b.InstallWebView(); err != nil {
 		return fmt.Errorf("prefix webview install: %w", err)
-	}
-
-	return nil
-}
-
-func (ui *ui) DeletePrefixes() error {
-	slog.Info("Deleting Wineprefixes!")
-
-	if err := os.RemoveAll(dirs.Prefixes); err != nil {
-		return fmt.Errorf("remove prefixes: %w", err)
-	}
-
-	ui.state.Studio.DxvkVersion = ""
-
-	if err := ui.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
 	}
 
 	return nil
@@ -220,5 +263,6 @@ func (b *bootstrapper) DxvkInstall() error {
 	}
 
 	b.state.Studio.DxvkVersion = ver
+
 	return nil
 }

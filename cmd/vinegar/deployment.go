@@ -14,18 +14,35 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+func (ui *ui) DeleteDeployments() error {
+	slog.Info("Deleting all deployments!")
+
+	if err := os.RemoveAll(dirs.Versions); err != nil {
+		return err
+	}
+
+	ui.state.Studio.Version = ""
+	ui.state.Studio.Packages = nil
+
+	if err := ui.state.Save(); err != nil {
+		return fmt.Errorf("save state: %w", err)
+	}
+
+	return nil
+}
+
 func (b *bootstrapper) SetupDeployment() error {
 	b.Message("Checking for updates")
+
+	stop := b.Performing()
 
 	if err := b.FetchDeployment(); err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
 
-	slog.Info("Using Binary Deployment",
-		"guid", b.bin.GUID, "channel", b.bin.Channel)
-
 	b.dir = filepath.Join(dirs.Versions, b.bin.GUID)
 
+	stop()
 	if b.state.Studio.Version != b.bin.GUID {
 		slog.Info("Studio out of date, installing latest version...",
 			"old", b.state.Studio.Version, "new", b.bin.GUID)
@@ -43,13 +60,14 @@ func (b *bootstrapper) SetupDeployment() error {
 
 func (b *bootstrapper) FetchDeployment() error {
 	if b.cfg.Studio.ForcedVersion != "" {
-		slog.Warn("Using forced deployment!", "guid", b.cfg.Studio.ForcedVersion)
-
 		b.bin = rbxbin.Deployment{
 			Type:    Studio,
 			Channel: b.cfg.Studio.Channel,
 			GUID:    b.cfg.Studio.ForcedVersion,
 		}
+
+		slog.Warn("Using forced deployment!",
+			"guid", b.bin.GUID, "channel", b.bin.Channel)
 		return nil
 	}
 
@@ -59,6 +77,8 @@ func (b *bootstrapper) FetchDeployment() error {
 	}
 
 	b.bin = d
+	slog.Info("Using Binary Deployment",
+		"guid", b.bin.GUID, "channel", b.bin.Channel)
 	return nil
 }
 
@@ -71,36 +91,23 @@ func (b *bootstrapper) Install() error {
 		return err
 	}
 
-	b.Message("Writing AppSettings")
-	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
-		return fmt.Errorf("appsettings: %w", err)
-	}
-
-	brokenFont := filepath.Join(b.dir, "StudioFonts", "SourceSansPro-Black.ttf")
-	slog.Info("Removing broken font", "path", brokenFont)
-	if err := os.RemoveAll(brokenFont); err != nil {
+	if err := b.SetupInstallation(); err != nil {
 		return err
-	}
-
-	if err := b.state.CleanPackages(); err != nil {
-		return fmt.Errorf("clean packages: %w", err)
-	}
-
-	if err := b.state.CleanVersions(); err != nil {
-		return fmt.Errorf("clean versions: %w", err)
 	}
 
 	return nil
 }
 
 func (b *bootstrapper) SetupPackages() error {
+	stop := b.Performing()
+
 	b.Message("Finding Mirror")
 	m, err := rbxbin.GetMirror()
 	if err != nil {
 		return fmt.Errorf("fetch mirror: %w", err)
 	}
 
-	b.Message("Fetching Package list")
+	b.Message("Fetching Package list", "channel", b.bin.Channel)
 	pkgs, err := m.GetPackages(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
@@ -126,9 +133,12 @@ func (b *bootstrapper) SetupPackages() error {
 
 	update := func() {
 		done.Add(1)
-		b.pbar.SetFraction(float64(done.Load()) / float64(total))
+		Background(func() {
+			b.pbar.SetFraction(float64(done.Load()) / float64(total))
+		})
 	}
 
+	stop()
 	b.status.SetLabel("Installing")
 	slog.Info("Installing Packages", "count", len(pkgs), "dir", b.dir)
 	for _, p := range pkgs {
@@ -179,18 +189,26 @@ func (b *bootstrapper) SetupPackages() error {
 	return nil
 }
 
-func (ui *ui) Uninstall() error {
-	slog.Info("Deleting all deployments!")
+func (b *bootstrapper) SetupInstallation() error {
+	defer b.Performing()()
 
-	if err := os.RemoveAll(dirs.Versions); err != nil {
+	b.Message("Writing AppSettings")
+	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
+		return fmt.Errorf("appsettings: %w", err)
+	}
+
+	brokenFont := filepath.Join(b.dir, "StudioFonts", "SourceSansPro-Black.ttf")
+	slog.Info("Removing broken font", "path", brokenFont)
+	if err := os.RemoveAll(brokenFont); err != nil {
 		return err
 	}
 
-	ui.state.Studio.Version = ""
-	ui.state.Studio.Packages = nil
+	if err := b.state.CleanPackages(); err != nil {
+		return fmt.Errorf("clean packages: %w", err)
+	}
 
-	if err := ui.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
+	if err := b.state.CleanVersions(); err != nil {
+		return fmt.Errorf("clean versions: %w", err)
 	}
 
 	return nil

@@ -13,8 +13,8 @@
 	(1,19,"AdwHeaderBar",None,18,None,"top",None,0,None,None),
 	(1,20,"GtkButton",None,19,None,"start",None,0,None,None),
 	(1,21,"AdwPreferencesGroup",None,46,None,None,None,0,None,None),
-	(1,22,"AdwButtonRow","run-winetricks",47,None,None,None,2,None,None),
-	(1,23,"AdwButtonRow","delete-prefix",47,None,None,None,1,None,None),
+	(1,22,"AdwButtonRow","run-winetricks",47,None,None,None,3,None,None),
+	(1,23,"AdwButtonRow","delete-prefix",47,None,None,None,2,None,None),
 	(1,24,"AdwButtonRow","uninstall-studio",21,None,None,None,2,None,None),
 	(1,25,"AdwNavigationPage",None,38,None,None,None,1,None,None),
 	(1,27,"AdwHeaderBar",None,28,None,"top",None,0,None,None),
@@ -34,6 +34,7 @@
 	(1,47,"AdwPreferencesGroup",None,46,None,None,None,1,None,None),
 	(1,48,"GtkButton","loading-stop",40,None,None,None,2,None,None),
 	(1,49,"AdwButtonRow","install-studio",21,None,None,None,1,None,None),
+	(1,50,"AdwButtonRow","init-prefix",47,None,None,None,1,None,None),
 	(4,1,"AdwWindow","bootstrapper",None,None,None,None,0,None,None),
 	(4,2,"GtkBox",None,1,None,None,None,0,None,None),
 	(4,3,"GtkImage","logo",2,None,None,None,0,None,None),
@@ -98,6 +99,9 @@
 	(1,49,"AdwButtonRow","start-icon-name","document-save-symbolic",0,None,None,None,None,None,None,None,None),
 	(1,49,"AdwPreferencesRow","title","Install Studio",0,None,None,None,None,None,None,None,None),
 	(1,49,"GtkActionable","action-name","app.install-studio",0,None,None,None,None,None,None,None,None),
+	(1,50,"AdwButtonRow","start-icon-name","list-add-symbolic",0,None,None,None,None,None,None,None,None),
+	(1,50,"AdwPreferencesRow","title","Initialize Data",0,None,None,None,None,None,None,None,None),
+	(1,50,"GtkActionable","action-name","app.init-prefix",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","default-height","320",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","default-width","512",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","resizable","False",0,None,None,None,None,None,None,None,None),
@@ -168,7 +172,9 @@
 	(1,48,"GtkWidget",2,2,None,1,None,None,None,None),
 	(1,48,"GtkWidget",2,3,None,1,None,None,None,None),
 	(1,49,"GtkWidget",1,1,None,None,None,None,None,None),
-	(1,49,"GtkWidget",2,2,None,1,None,None,None,None)
+	(1,49,"GtkWidget",2,2,None,1,None,None,None,None),
+	(1,50,"GtkWidget",1,1,None,None,None,None,None,None),
+	(1,50,"GtkWidget",2,2,None,1,None,None,None,None)
   </object_data>
   <object_data_arg>
 	(1,29,"GtkWidget",2,2,"name","monospace"),
@@ -186,6 +192,7 @@
 	(1,44,"GtkWidget",2,2,"name","destructive-action"),
 	(1,48,"GtkWidget",2,2,"name","destructive-action"),
 	(1,48,"GtkWidget",2,3,"name","pill"),
-	(1,49,"GtkWidget",2,2,"name","suggested-action")
+	(1,49,"GtkWidget",2,2,"name","suggested-action"),
+	(1,50,"GtkWidget",2,2,"name","pill")
   </object_data_arg>
 </cambalache-project>

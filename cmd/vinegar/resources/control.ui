@@ -81,6 +81,16 @@
                             <child>
                               <object class="AdwPreferencesGroup">
                                 <child>
+                                  <object class="AdwButtonRow" id="init-prefix">
+                                    <property name="action-name">app.init-prefix</property>
+                                    <property name="start-icon-name">list-add-symbolic</property>
+                                    <property name="title">Initialize Data</property>
+                                    <style>
+                                      <class name="pill"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
                                   <object class="AdwButtonRow" id="delete-prefix">
                                     <property name="action-name">app.delete-prefix</property>
                                     <property name="start-icon-name">view-refresh-symbolic</property>

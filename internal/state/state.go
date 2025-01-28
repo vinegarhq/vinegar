@@ -3,6 +3,7 @@ package state
 import (
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"os"
 	"path/filepath"
 
@@ -46,6 +47,8 @@ func Load() (State, error) {
 
 // Save saves the current state to the state file.
 func (s *State) Save() error {
+	slog.Info("Saving state!")
+
 	if err := dirs.Mkdirs(filepath.Dir(dirs.StatePath)); err != nil {
 		return err
 	}

@@ -74,7 +74,7 @@ func Default() Config {
 	return Config{
 		Env: Environment{
 			"WINEARCH":                    "win64",
-			"WINEDEBUG":                   "err-kerberos,err-ntlm",
+			"WINEDEBUG":                   "fixme-all,err-kerberos,err-ntlm",
 			"WINEESYNC":                   "1",
 			"WINEDLLOVERRIDES":            "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
 			"DXVK_LOG_LEVEL":              "warn",

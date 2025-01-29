@@ -1,5 +1,4 @@
 //go:build freebsd
-
 package sysinfo
 
 import (
@@ -7,50 +6,57 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"fmt"
+	"syscall"
 )
 
-const drmPath = "/linsys/class/drm"
-
-// Determines if a Card is 'embedded' or not, by checking
-// if one of these displays belong to the card.
+const drmPath = "/dev/dri"
 var embeddedDisplays = []string{"eDP", "LVDS"}
 
 func getCards() (cs []Card) {
-	drmCards, _ := filepath.Glob(path.Join(drmPath, "card[0-9]"))
-
+	drmCards, err := filepath.Glob(path.Join(drmPath, "card[0-9]*"))
+	if err != nil {
+		return
+	}
 	for i, c := range drmCards {
-		dev, _ := filepath.EvalSymlinks(path.Join(c, "device"))
-		driver, _ := filepath.EvalSymlinks(path.Join(dev, "driver"))
-		driver = path.Base(driver)
-
+		devPath := path.Join(c, "device")
+		driver, err := getDriverFromSysctl(i)
+		if err != nil {
+			driver = "unknown"
+		}
 		cs = append(cs, Card{
 			Index:    i,
 			Path:     c,
-			Device:   dev,
+			Device:   devPath,
 			Driver:   driver,
-			Embedded: embedded(c),
+			Embedded: isEmbedded(c),
 		})
 	}
-
 	return
 }
 
-// Walks over the drm path, and checks if there are any displays
-// that are matched with the card path and contain any of embeddedDisplays
-func embedded(cardPath string) (embed bool) {
+func getDriverFromSysctl(cardIndex int) (string, error) {
+	driverSysctl := fmt.Sprintf("hw.dri.%d.name", cardIndex)
+	val, err := syscall.Sysctl(driverSysctl)
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(val), nil
+}
+
+func isEmbedded(cardPath string) bool {
+	var isEmbed bool
 	filepath.Walk(drmPath, func(p string, f os.FileInfo, err error) error {
 		if !strings.HasPrefix(p, cardPath) {
 			return nil
 		}
-
+		
 		for _, hwd := range embeddedDisplays {
 			if strings.Contains(p, hwd) {
-				embed = true
+				isEmbed = true
 			}
 		}
-
 		return nil
 	})
-
-	return
+	return isEmbed
 }

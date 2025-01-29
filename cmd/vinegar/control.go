@@ -50,6 +50,10 @@ func (s *ui) NewControl() control {
 
 	ctl.builder.GetObject("window").Cast(&ctl.win)
 	ctl.win.SetApplication(&s.app.Application)
+	destroy := func(_ gtk.Window) bool {
+		return false
+	}
+	ctl.win.ConnectCloseRequest(&destroy)
 
 	actions := map[string]struct {
 		act  func() error

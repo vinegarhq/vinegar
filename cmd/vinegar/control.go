@@ -1,10 +1,14 @@
 package main
 
 import (
+	"errors"
 	"log/slog"
+	"os"
+	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
+	_ "github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
@@ -51,10 +55,22 @@ func (s *ui) NewControl() control {
 	ctl.builder.GetObject("window").Cast(&ctl.win)
 	ctl.win.SetApplication(&s.app.Application)
 	destroy := func(_ gtk.Window) bool {
+		s.app.Quit()
 		return false
 	}
 	ctl.win.ConnectCloseRequest(&destroy)
 
+	// For the time being, use in-house editing.
+	// ctl.SetupConfigurationActions()
+	ctl.SetupControlActions()
+
+	ctl.win.Present()
+	ctl.win.Unref()
+
+	return ctl
+}
+
+func (ctl *control) SetupControlActions() {
 	actions := map[string]struct {
 		act  func() error
 		msg  string
@@ -67,20 +83,23 @@ func (s *ui) NewControl() control {
 		"init-prefix":      {ctl.boot.PrefixInit, "Initializing Data", true},
 		"delete-prefix":    {ctl.DeletePrefixes, "Clearing Data", false},
 		"run-winetricks":   {ctl.RunWinetricks, "Running Winetricks", false},
+
+		"save-config": {ctl.SaveConfig, "Loading Configuration", false},
 	}
 
 	ctl.builder.GetObject("stack").Cast(&ctl.stack)
-
 	var label gtk.Label
 	var stop gtk.Button
 	ctl.builder.GetObject("loading-label").Cast(&label)
 	ctl.builder.GetObject("loading-stop").Cast(&stop)
 
+	ctl.PutConfig()
 	ctl.UpdateButtons()
 
 	for name, action := range actions {
 		act := gio.NewSimpleAction(name, nil)
-		actcb := func(_ gio.SimpleAction, _ uintptr) {
+		actcb := func(_ gio.SimpleAction, p uintptr) {
+
 			ctl.stack.SetVisibleChildName("loading")
 			label.SetLabel(action.msg + "...")
 			stop.SetVisible(name == "run-studio")
@@ -101,21 +120,122 @@ func (s *ui) NewControl() control {
 						slog.Error("Error occurred while running action",
 							"action", name, "err", err)
 						Background(func() {
-							s.presentError(err)
+							ctl.presentSimpleError(err)
 						})
 					}
 				}()
 			})
 		}
 		act.ConnectActivate(&actcb)
-		s.app.AddAction(act)
+		ctl.app.AddAction(act)
 		act.Unref()
 	}
+}
 
-	ctl.win.Present()
-	ctl.win.Unref()
+func (ctl *control) SetupConfigurationActions() {
+	props := []struct {
+		name   string
+		widget string
+		modify any
+	}{
+		{"gamemode", "switch", ctl.cfg.Studio.GameMode},
+		{"launcher", "entry", ctl.cfg.Studio.Launcher},
+	}
 
-	return ctl
+	save := func() {
+		if err := ctl.LoadConfig(); err != nil {
+			ctl.presentSimpleError(err)
+		}
+	}
+
+	for _, p := range props {
+		obj := ctl.builder.GetObject(p.name)
+
+		switch p.widget {
+		case "switch":
+			// AdwSwitchRow does not implement Gtk.Switch, and neither
+			// does puregotk have a reference for AdwSwitchRow.
+			actcb := func() {
+				var new bool
+				obj.Get("active", &new)
+				p.modify = new
+				slog.Info("Configuration Switch", "name", p.widget, "value", p.modify)
+				save()
+			}
+			var w gtk.Widget
+			obj.Cast(&w)
+			obj.ConnectSignal("notify::active", &actcb)
+			slog.Info("Setup Widget", "name", p.name)
+		case "entry":
+			var entry adw.EntryRow
+			obj.Cast(&entry)
+
+			cb := func(_ adw.EntryRow) {
+				p.modify = entry.GetText()
+				slog.Info("Configuration Entry", "name", p.widget, "value", p.modify)
+				save()
+			}
+			entry.ConnectApply(&cb)
+		default:
+			panic("unreachable")
+		}
+	}
+
+	// this is a special button!
+	var rootRow adw.ActionRow
+	ctl.builder.GetObject("wineroot-row").Cast(&rootRow)
+	rootRow.SetSubtitle(ctl.cfg.Studio.WineRoot)
+
+	var rootSelect gtk.Button
+	ctl.builder.GetObject("wineroot-select").Cast(&rootSelect)
+	actcb := func(_ gtk.Button) {
+		// gtk.FileChooser is deprecated for gtk.FileDialog, but puregotk does not have it.
+		fc := gtk.NewFileChooserDialog("Select Wine Installation", &ctl.win.Window,
+			gtk.FileChooserActionSelectFolderValue,
+			"Cancel", gtk.ResponseCancelValue,
+			"Select", gtk.ResponseAcceptValue,
+			unsafe.Pointer(nil),
+		)
+		rcb := func(_ gtk.Dialog, _ int) {
+			cp := ctl.cfg.Studio
+			cp.WineRoot = fc.GetFile().GetPath()
+			// if err := cp.Setup(); err != nil {
+			rootRow.SetSubtitle(ctl.cfg.Studio.WineRoot)
+			fc.Destroy()
+		}
+		fc.ConnectResponse(&rcb)
+		fc.Present()
+	}
+	rootSelect.ConnectClicked(&actcb)
+}
+
+func (ctl *control) PutConfig() {
+	var view gtk.TextView
+	ctl.builder.GetObject("config-view").Cast(&view)
+
+	b, err := os.ReadFile(dirs.ConfigPath)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		b = []byte(err.Error())
+	}
+
+	view.GetBuffer().SetText(string(b), -1)
+}
+
+func (ctl *control) SaveConfig() error {
+	var view gtk.TextView
+	var start, end gtk.TextIter
+	ctl.builder.GetObject("config-view").Cast(&view)
+
+	buf := view.GetBuffer()
+	buf.GetBounds(&start, &end)
+	text := buf.GetText(&start, &end, false)
+
+	slog.Info("Saving Configuration!")
+	if err := os.WriteFile(dirs.ConfigPath, []byte(text), 0664); err != nil {
+		return err
+	}
+
+	return ctl.LoadConfig()
 }
 
 func (ctl *control) UpdateButtons() {
@@ -127,13 +247,15 @@ func (ctl *control) UpdateButtons() {
 	// area, to indicate that it is used to kill studio.
 	var inst, uninst, run, kill gtk.Widget
 	var del, tricks gtk.Widget
-	// init-prefix is always shown
-	ctl.builder.GetObject("install-studio").Cast(&inst)
-	ctl.builder.GetObject("uninstall-studio").Cast(&uninst)
-	ctl.builder.GetObject("run-studio").Cast(&run)
-	ctl.builder.GetObject("kill-prefix").Cast(&kill)
-	ctl.builder.GetObject("delete-prefix").Cast(&del)
-	ctl.builder.GetObject("run-winetricks").Cast(&tricks)
+
+	ctl.builder.GetObject("studio-install").Cast(&inst)
+	ctl.builder.GetObject("studio-uninstall").Cast(&uninst)
+	ctl.builder.GetObject("studio-run").Cast(&run)
+	// prefix-init is always shown
+	ctl.builder.GetObject("prefix-kill").Cast(&kill)
+	ctl.builder.GetObject("prefix-delete").Cast(&del)
+	ctl.builder.GetObject("prefix-winetricks").Cast(&tricks)
+
 	inst.SetVisible(vers)
 	uninst.SetVisible(!vers)
 	run.SetVisible(!vers)

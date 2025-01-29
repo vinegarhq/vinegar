@@ -14,7 +14,7 @@
             <property name="child">
               <object class="AdwNavigationView">
                 <child>
-                  <object class="AdwNavigationPage">
+                  <object class="AdwNavigationPage" id="control-nav-page">
                     <property name="title">Vinegar</property>
                     <child>
                       <object class="AdwToolbarView">
@@ -23,12 +23,9 @@
                             <child type="start">
                               <object class="GtkButton">
                                 <property name="action-name">navigation.push</property>
-                                <property name="action-target">'configure'</property>
+                                <property name="action-target">'configure-text'</property>
                                 <property name="icon-name">preferences-system-symbolic</property>
                               </object>
-                            </child>
-                            <child type="end">
-                              <object class="GtkSpinner" id="spinner"/>
                             </child>
                           </object>
                         </child>
@@ -37,7 +34,7 @@
                             <child>
                               <object class="AdwPreferencesGroup">
                                 <child>
-                                  <object class="AdwButtonRow" id="run-studio">
+                                  <object class="AdwButtonRow" id="studio-run">
                                     <property name="action-name">app.run-studio</property>
                                     <property name="start-icon-name">media-playback-start-symbolic</property>
                                     <property name="title">Run Studio</property>
@@ -47,7 +44,7 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwButtonRow" id="install-studio">
+                                  <object class="AdwButtonRow" id="studio-install">
                                     <property name="action-name">app.install-studio</property>
                                     <property name="start-icon-name">document-save-symbolic</property>
                                     <property name="title">Install Studio</property>
@@ -57,7 +54,7 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwButtonRow" id="uninstall-studio">
+                                  <object class="AdwButtonRow" id="studio-uninstall">
                                     <property name="action-name">app.uninstall-studio</property>
                                     <property name="start-icon-name">user-trash-symbolic</property>
                                     <property name="title">Uninstall Studio</property>
@@ -67,7 +64,7 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwButtonRow" id="kill-prefix">
+                                  <object class="AdwButtonRow" id="prefix-kill">
                                     <property name="action-name">app.kill-prefix</property>
                                     <property name="start-icon-name">process-stop-symbolic</property>
                                     <property name="title">Stop Studio</property>
@@ -81,7 +78,7 @@
                             <child>
                               <object class="AdwPreferencesGroup">
                                 <child>
-                                  <object class="AdwButtonRow" id="init-prefix">
+                                  <object class="AdwButtonRow" id="prefix-init">
                                     <property name="action-name">app.init-prefix</property>
                                     <property name="start-icon-name">list-add-symbolic</property>
                                     <property name="title">Initialize Data</property>
@@ -91,7 +88,7 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwButtonRow" id="delete-prefix">
+                                  <object class="AdwButtonRow" id="prefix-delete">
                                     <property name="action-name">app.delete-prefix</property>
                                     <property name="start-icon-name">view-refresh-symbolic</property>
                                     <property name="title">Clear Data</property>
@@ -101,7 +98,7 @@
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="AdwButtonRow" id="run-winetricks">
+                                  <object class="AdwButtonRow" id="prefix-winetricks">
                                     <property name="action-name">app.run-winetricks</property>
                                     <property name="start-icon-name">multimedia-player-symbolic</property>
                                     <property name="title">Manage Wine Components</property>
@@ -117,13 +114,13 @@
                   </object>
                 </child>
                 <child>
-                  <object class="AdwNavigationPage">
-                    <property name="tag">configure</property>
+                  <object class="AdwNavigationPage" id="config-text-nav-page">
+                    <property name="tag">configure-text</property>
                     <property name="title">Configuration</property>
                     <child>
                       <object class="AdwToolbarView">
                         <property name="content">
-                          <object class="GtkTextView" id="configuration">
+                          <object class="GtkTextView" id="config-view">
                             <property name="bottom-margin">24</property>
                             <property name="left-margin">24</property>
                             <property name="right-margin">24</property>
@@ -135,7 +132,140 @@
                           </object>
                         </property>
                         <child type="top">
+                          <object class="AdwHeaderBar">
+                            <child type="end">
+                              <object class="GtkLinkButton">
+                                <property name="css-classes">suggested-action</property>
+                                <property name="icon-name">accessories-dictionary-symbolic</property>
+                                <property name="uri">https://vinegarhq.org/Configuration</property>
+                                <property name="visited">True</property>
+                                <style>
+                                  <class name="suggested-action"/>
+                                </style>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkButton" id="config-save">
+                                <property name="action-name">app.save-config</property>
+                                <property name="icon-name">media-floppy-symbolic</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwNavigationPage" id="config-nav-page">
+                    <property name="tag">configure</property>
+                    <property name="title">Configuration</property>
+                    <child>
+                      <object class="AdwToolbarView">
+                        <child type="top">
                           <object class="AdwHeaderBar"/>
+                        </child>
+                        <child>
+                          <object class="AdwPreferencesPage">
+                            <child>
+                              <object class="AdwPreferencesGroup" id="wine">
+                                <property name="title">Wine Settings</property>
+                                <child>
+                                  <object class="AdwSwitchRow" id="gamemode">
+                                    <property name="title">Optimize Performance on demand</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwSwitchRow" id="quiet">
+                                    <property name="title">Show Roblox debugging logs</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwActionRow" id="wineroot-row">
+                                    <property name="title">Change Wine Installation</property>
+                                    <child>
+                                      <object class="GtkButton" id="wineroot-select">
+                                        <property name="icon-name">folder-open-symbolic</property>
+                                        <property name="valign">center</property>
+                                        <style/>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwEntryRow" id="launcher">
+                                    <property name="show-apply-button">True</property>
+                                    <property name="title">Set Studio Launcher</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup" id="render">
+                                <property name="title">Rendering Settings</property>
+                                <child>
+                                  <object class="AdwEntryRow" id="dxvk-version">
+                                    <property name="title">Set DXVK Version</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwComboRow" id="forced-gpu">
+                                    <property name="title">Change Graphics Card</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwComboRow" id="renderer">
+                                    <property name="title">Change Roblox Renderer</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup" id="misc">
+                                <property name="title">Miscellaneous Settings</property>
+                                <child>
+                                  <object class="AdwSwitchRow" id="discordrpc">
+                                    <property name="title">Enable Discord Rich Presence</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup" id="bin">
+                                <property name="title">Deployment Settings</property>
+                                <child>
+                                  <object class="AdwEntryRow" id="version">
+                                    <property name="title">Set Deployment Version</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwEntryRow" id="channel">
+                                    <property name="title">Set Deployment Channel</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup" id="fflags">
+                                <property name="header-suffix">
+                                  <object class="GtkButton">
+                                    <property name="icon-name">list-add-symbolic</property>
+                                  </object>
+                                </property>
+                                <property name="title">FFlags</property>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup" id="env">
+                                <property name="header-suffix">
+                                  <object class="GtkButton">
+                                    <property name="icon-name">list-add-symbolic</property>
+                                  </object>
+                                </property>
+                                <property name="title">Environment Variables</property>
+                              </object>
+                            </child>
+                          </object>
                         </child>
                       </object>
                     </child>

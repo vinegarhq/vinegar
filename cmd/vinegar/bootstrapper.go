@@ -16,7 +16,6 @@ import (
 	"github.com/apprehensions/rbxweb/clientsettings"
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
-	"github.com/jwijenbergh/puregotk/v4/gdk"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	cp "github.com/otiai10/copy"
@@ -57,14 +56,8 @@ func (s *ui) NewBootstrapper() *bootstrapper {
 		rp:      studiorpc.New(),
 	}
 
-	provider := gtk.NewCssProvider()
-	provider.LoadFromData(style, -1)
-	gtk.StyleContextAddProviderForDisplay(gdk.DisplayGetDefault(), provider,
-		uint(gtk.STYLE_PROVIDER_PRIORITY_APPLICATION))
-	provider.Unref()
-
 	var win adw.Window
-	b.builder.GetObject("bootstrapper").Cast(&win)
+	b.builder.GetObject("window").Cast(&win)
 	b.win = &win
 	b.win.SetApplication(&s.app.Application)
 	s.app.AddWindow(&b.win.Window)

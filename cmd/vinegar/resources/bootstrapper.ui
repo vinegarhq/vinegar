@@ -3,7 +3,7 @@
 <interface>
   <requires lib="gtk" version="4.12"/>
   <requires lib="libadwaita" version="1.0"/>
-  <object class="AdwWindow" id="bootstrapper">
+  <object class="AdwWindow" id="window">
     <property name="default-height">320</property>
     <property name="default-width">512</property>
     <property name="resizable">False</property>
@@ -43,6 +43,7 @@
             <property name="width-request">40</property>
             <style>
               <class name="destructive-action"/>
+              <class name="pill"/>
             </style>
           </object>
         </child>

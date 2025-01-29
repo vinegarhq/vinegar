@@ -19,19 +19,19 @@ import (
 // Studio is a representation of the deployment and behavior
 // of Roblox Studio.
 type Studio struct {
-	Quiet         bool          `toml:"quiet"`
-	Channel       string        `toml:"channel"`
-	Launcher      string        `toml:"launcher"`
-	Renderer      string        `toml:"renderer"`
+	GameMode      bool          `toml:"gamemode"`
 	WineRoot      string        `toml:"wineroot"`
+	Launcher      string        `toml:"launcher"`
+	Quiet         bool          `toml:"quiet"`
 	DiscordRPC    bool          `toml:"discord_rpc"`
 	ForcedVersion string        `toml:"forced_version"`
+	Channel       string        `toml:"channel"`
 	Dxvk          bool          `toml:"dxvk"`
 	DxvkVersion   string        `toml:"dxvk_version"`
-	FFlags        rbxbin.FFlags `toml:"fflags"`
-	Env           Environment   `toml:"env"`
 	ForcedGpu     string        `toml:"gpu"`
-	GameMode      bool          `toml:"gamemode"`
+	Renderer      string        `toml:"renderer"`
+	Env           Environment   `toml:"env"`
+	FFlags        rbxbin.FFlags `toml:"fflags"`
 }
 
 // Config is a representation of the Vinegar configuration.
@@ -47,31 +47,34 @@ var (
 	ErrWineRootInvalid  = errors.New("no wine binary present in wine root")
 )
 
-// Load will load the named file to a Config; if it doesn't exist, it
+// Load will load the configuration file; if it doesn't exist, it
 // will fallback to the default configuration.
-//
-// The returned configuration will always be appended ontop of the default
-// configuration.
-//
-// Load is required for any initialization for Config, as it calls routines
-// to setup certain variables and verifies the configuration.
-func Load() (Config, error) {
-	cfg := Default()
+func Load() (*Config, error) {
+	d := Default()
 
 	if _, err := os.Stat(dirs.ConfigPath); errors.Is(err, os.ErrNotExist) {
-		return cfg, nil
+		return d, nil
 	}
 
-	if _, err := toml.DecodeFile(dirs.ConfigPath, &cfg); err != nil {
-		return cfg, err
+	if err := Decode(d); err != nil {
+		return nil, err
 	}
 
-	return cfg, cfg.setup()
+	return d, nil
 }
 
-// Default returns a sane default configuration for Vinegar.
-func Default() Config {
-	return Config{
+// Decode will load the configuration file into the given Config.
+func Decode(cfg *Config) error {
+	if _, err := toml.DecodeFile(dirs.ConfigPath, &cfg); err != nil {
+		return err
+	}
+
+	return cfg.Setup()
+}
+
+// Default returns a default configuration.
+func Default() *Config {
+	return &Config{
 		Env: Environment{
 			"WINEARCH":                    "win64",
 			"WINEDEBUG":                   "fixme-all,err-kerberos,err-ntlm",
@@ -101,7 +104,21 @@ func (s *Studio) LauncherPath() (string, error) {
 	return exec.LookPath(strings.Fields(s.Launcher)[0])
 }
 
-func (s *Studio) validate() error {
+func (c *Config) Setup() error {
+	if c.SanitizeEnv {
+		SanitizeEnv()
+	}
+
+	c.Env.Setenv()
+
+	if err := c.Studio.setup(); err != nil {
+		return fmt.Errorf("studio: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Studio) setup() error {
 	if !strings.HasPrefix(s.Renderer, "D3D11") && s.Dxvk {
 		return ErrNeedDXVKRenderer
 	}
@@ -123,14 +140,6 @@ func (s *Studio) validate() error {
 		}
 	}
 
-	return nil
-}
-
-func (s *Studio) setup() error {
-	if err := s.validate(); err != nil {
-		return err
-	}
-
 	if err := s.FFlags.SetRenderer(s.Renderer); err != nil {
 		return err
 	}
@@ -140,18 +149,4 @@ func (s *Studio) setup() error {
 	}
 
 	return s.pickCard()
-}
-
-func (c *Config) setup() error {
-	if c.SanitizeEnv {
-		SanitizeEnv()
-	}
-
-	c.Env.Setenv()
-
-	if err := c.Studio.setup(); err != nil {
-		return fmt.Errorf("studio: %w", err)
-	}
-
-	return nil
 }

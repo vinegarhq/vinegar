@@ -68,21 +68,34 @@ func New() ui {
 		),
 		state:   &s,
 		logFile: lf,
+		cfg:     config.Default(),
 	}
 
+	ol := gio.NewSimpleAction("logfile-open", nil)
+	olcb := func(_ gio.SimpleAction, p uintptr) {
+		gtk.ShowUri(ui.app.GetActiveWindow(), "file://"+lf.Name(), 0)
+	}
+	ol.ConnectActivate(&olcb)
+	ui.app.AddAction(ol)
+	ol.Unref()
+
 	actcb := func(_ gio.Application) {
-		if err := ui.LoadConfig(); err != nil {
-			ui.presentError(err)
-			return
+		err := ui.LoadConfig()
+		if err != nil {
+			ui.presentSimpleError(err)
+			slog.Warn("Falling back to default configuration!")
 		}
 
 		switch flag.Arg(0) {
 		case "run":
+			if err != nil {
+				return
+			}
 			b := ui.NewBootstrapper()
 			Background(func() {
 				go func() {
 					if err := b.RunArgs(flag.Args()...); err != nil {
-						b.presentError(err)
+						b.presentSimpleError(err)
 					}
 				}()
 			})
@@ -101,14 +114,14 @@ func (s *ui) LoadConfig() error {
 
 	s.pfx = wine.New(
 		filepath.Join(dirs.Prefixes, "studio"),
-		cfg.Studio.WineRoot,
+		s.cfg.Studio.WineRoot,
 	)
 
-	if err != nil {
-		return err
-	}
+	s.cfg = cfg
 
-	s.cfg = &cfg
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
 
 	return nil
 }
@@ -144,18 +157,21 @@ func (ui *ui) setLogContent(tv *gtk.TextView) {
 
 func (ui *ui) presentError(e error) {
 	builder := gtk.NewBuilderFromString(resource("error.ui"), -1)
+	defer builder.Unref()
+
+	slog.Error(e.Error())
 
 	var win adw.Window
-	builder.GetObject("error").Cast(&win)
+	builder.GetObject("window").Cast(&win)
 	ui.app.AddWindow(&win.Window)
 
 	var label gtk.Label
-	builder.GetObject("error_label").Cast(&label)
+	builder.GetObject("error-label").Cast(&label)
 	label.SetMarkup(fmt.Sprintf(errorFormat, e))
 	label.Unref()
 
 	var tv gtk.TextView
-	builder.GetObject("log_output").Cast(&tv)
+	builder.GetObject("log-output").Cast(&tv)
 	ui.setLogContent(&tv)
 	tv.Unref()
 
@@ -163,4 +179,22 @@ func (ui *ui) presentError(e error) {
 	win.SetDefaultSize(512, 320)
 	win.Present()
 	win.Unref()
+}
+
+func (ui *ui) presentSimpleError(e error) {
+	builder := gtk.NewBuilderFromString(resource("error.ui"), -1)
+	defer builder.Unref()
+
+	var w adw.Window
+	builder.GetObject("dialog").Cast(&w)
+	w.SetTransientFor(ui.app.GetActiveWindow())
+	w.SetApplication(&ui.app.Application)
+
+	var msg gtk.Label
+	builder.GetObject("error").Cast(&msg)
+	msg.SetLabel(e.Error())
+	msg.Unref()
+
+	w.Present()
+	w.Unref()
 }

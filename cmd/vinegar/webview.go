@@ -21,17 +21,7 @@ const (
 
 var WebViewInstallerPath = filepath.Join(dirs.Cache, "MicrosoftEdge_X64_109.0.1518.140.exe")
 
-func (b *Binary) InstallWebView() error {
-	// This is required for the installer to do some magic
-	// that makes it work.
-	slog.Info("Setting Wineprefix version to win7")
-	b.Splash.SetMessage("Setting up wineprefix")
-	if err := b.Prefix.Wine("winecfg", "/v", "win7").Run(); err != nil {
-		return err
-	}
-
-	b.Splash.SetDesc("109.0.1518.140")
-
+func (b *bootstrapper) InstallWebView() error {
 	if _, err := os.Stat(WebViewInstallerPath); err != nil {
 		if err := b.DownloadWebView(); err != nil {
 			return err
@@ -40,17 +30,17 @@ func (b *Binary) InstallWebView() error {
 		slog.Info("WebView installer cached, skipping download", "path", WebViewInstallerPath)
 	}
 
-	b.Splash.SetMessage("Installing WebView")
-	b.Splash.SetProgress(1.0)
+	defer b.Performing()()
+	b.status.SetLabel("Installing WebView")
 	slog.Info("Running WebView installer", "path", WebViewInstallerPath)
 
-	return b.Prefix.Wine(WebViewInstallerPath,
+	return b.pfx.Wine(WebViewInstallerPath,
 		"--msedgewebview", "--do-not-launch-msedge", "--system-level",
 	).Run()
 }
 
-func (b *Binary) DownloadWebView() error {
-	b.Splash.SetMessage("Downloading WebView")
+func (b *bootstrapper) DownloadWebView() error {
+	b.status.SetLabel("Downloading WebView")
 
 	tmp, err := os.CreateTemp("", "unc_msedgestandalone.*.exe")
 	if err != nil {
@@ -61,12 +51,12 @@ func (b *Binary) DownloadWebView() error {
 	slog.Info("Downloading WebView",
 		"version", "109.0.1518.140", "url", WebViewInstallerURL, "path", tmp.Name())
 
-	err = netutil.DownloadProgress(WebViewInstallerURL, tmp.Name(), b.Splash.SetProgress)
+	err = netutil.DownloadProgress(WebViewInstallerURL, tmp.Name(), &b.pbar)
 	if err != nil {
 		return err
 	}
 
-	b.Splash.SetMessage("Extracting WebView")
+	b.status.SetLabel("Extracting WebView")
 	return GetWebViewInstaller(tmp)
 }
 

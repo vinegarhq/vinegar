@@ -2,7 +2,7 @@
 Type=Application
 Name=Roblox Studio
 Icon=org.vinegarhq.Vinegar.studio
-Exec=vinegar studio run %u
+Exec=vinegar run %u
 Terminal=false
 MimeType=application/x-roblox-rbxl;application/x-roblox-rbxlx;x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth
 Categories=Game

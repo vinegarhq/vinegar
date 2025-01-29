@@ -12,38 +12,33 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/wine"
-	"github.com/vinegarhq/vinegar/splash"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-// LogoPath is set at build-time to set the logo icon path, which is
-// used in [splash.Config] to set the icon path.
-var LogoPath string
-
-// Config is a representation of a Roblox binary Vinegar configuration.
-type Binary struct {
-	Channel       string        `toml:"channel"`
-	Launcher      string        `toml:"launcher"`
-	Renderer      string        `toml:"renderer"`
+// Studio is a representation of the deployment and behavior
+// of Roblox Studio.
+type Studio struct {
+	GameMode      bool          `toml:"gamemode"`
 	WineRoot      string        `toml:"wineroot"`
+	Launcher      string        `toml:"launcher"`
+	Quiet         bool          `toml:"quiet"`
 	DiscordRPC    bool          `toml:"discord_rpc"`
 	ForcedVersion string        `toml:"forced_version"`
+	Channel       string        `toml:"channel"`
 	Dxvk          bool          `toml:"dxvk"`
 	DxvkVersion   string        `toml:"dxvk_version"`
-	FFlags        rbxbin.FFlags `toml:"fflags"`
-	Env           Environment   `toml:"env"`
 	ForcedGpu     string        `toml:"gpu"`
-	GameMode      bool          `toml:"gamemode"`
+	Renderer      string        `toml:"renderer"`
+	Env           Environment   `toml:"env"`
+	FFlags        rbxbin.FFlags `toml:"fflags"`
 }
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
 	SanitizeEnv bool        `toml:"sanitize_env"`
-	Player      Binary      `toml:"player"`
-	Studio      Binary      `toml:"studio"`
+	Studio      Studio      `toml:"studio"`
 	Env         Environment `toml:"env"`
-
-	Splash splash.Config `toml:"splash"`
 }
 
 var (
@@ -52,34 +47,37 @@ var (
 	ErrWineRootInvalid  = errors.New("no wine binary present in wine root")
 )
 
-// Load will load the named file to a Config; if it doesn't exist, it
+// Load will load the configuration file; if it doesn't exist, it
 // will fallback to the default configuration.
-//
-// The returned configuration will always be appended ontop of the default
-// configuration.
-//
-// Load is required for any initialization for Config, as it calls routines
-// to setup certain variables and verifies the configuration.
-func Load(name string) (Config, error) {
-	cfg := Default()
+func Load() (*Config, error) {
+	d := Default()
 
-	if _, err := os.Stat(name); errors.Is(err, os.ErrNotExist) {
-		return cfg, nil
+	if _, err := os.Stat(dirs.ConfigPath); errors.Is(err, os.ErrNotExist) {
+		return d, nil
 	}
 
-	if _, err := toml.DecodeFile(name, &cfg); err != nil {
-		return cfg, err
+	if err := Decode(d); err != nil {
+		return nil, err
 	}
 
-	return cfg, cfg.setup()
+	return d, nil
 }
 
-// Default returns a sane default configuration for Vinegar.
-func Default() Config {
-	return Config{
+// Decode will load the configuration file into the given Config.
+func Decode(cfg *Config) error {
+	if _, err := toml.DecodeFile(dirs.ConfigPath, &cfg); err != nil {
+		return err
+	}
+
+	return cfg.Setup()
+}
+
+// Default returns a default configuration.
+func Default() *Config {
+	return &Config{
 		Env: Environment{
 			"WINEARCH":                    "win64",
-			"WINEDEBUG":                   "err-kerberos,err-ntlm",
+			"WINEDEBUG":                   "fixme-all,err-kerberos,err-ntlm",
 			"WINEESYNC":                   "1",
 			"WINEDLLOVERRIDES":            "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
 			"DXVK_LOG_LEVEL":              "warn",
@@ -88,64 +86,51 @@ func Default() Config {
 			"__GL_THREADED_OPTIMIZATIONS": "1",
 		},
 
-		Player: Binary{
+		Studio: Studio{
 			Dxvk:        true,
-			DxvkVersion: "2.3",
+			DxvkVersion: "2.5.3",
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "D3D11",
-			Channel:     "", // Default upstream
+			Channel:     "LIVE",
 			DiscordRPC:  true,
-			FFlags: rbxbin.FFlags{
-				"DFIntTaskSchedulerTargetFps": 640,
-			},
-			Env: Environment{
-				"OBS_VKCAPTURE": "1",
-			},
-		},
-		Studio: Binary{
-			Dxvk:        true,
-			DxvkVersion: "2.3",
-			GameMode:    true,
-			ForcedGpu:   "prime-discrete",
-			Renderer:    "D3D11",
-			Channel:     "", // Default upstream
-			DiscordRPC:  true,
-			// TODO: fill with studio fflag/env goodies
-			FFlags: make(rbxbin.FFlags),
-			Env:    make(Environment),
-		},
-
-		Splash: splash.Config{
-			Enabled:     true,
-			LogoPath:    LogoPath,
-			BgColor:     0x242424,
-			FgColor:     0xfafafa,
-			CancelColor: 0xbc3c3c,
-			TrackColor:  0x303030,
-			AccentColor: 0x8fbc5e,
-			InfoColor:   0x777777,
+			FFlags:      make(rbxbin.FFlags),
+			Env:         make(Environment),
 		},
 	}
 }
 
-func (b *Binary) LauncherPath() (string, error) {
-	return exec.LookPath(strings.Fields(b.Launcher)[0])
+func (s *Studio) LauncherPath() (string, error) {
+	return exec.LookPath(strings.Fields(s.Launcher)[0])
 }
 
-func (b *Binary) validate() error {
-	if !strings.HasPrefix(b.Renderer, "D3D11") && b.Dxvk {
+func (c *Config) Setup() error {
+	if c.SanitizeEnv {
+		SanitizeEnv()
+	}
+
+	c.Env.Setenv()
+
+	if err := c.Studio.setup(); err != nil {
+		return fmt.Errorf("studio: %w", err)
+	}
+
+	return nil
+}
+
+func (s *Studio) setup() error {
+	if !strings.HasPrefix(s.Renderer, "D3D11") && s.Dxvk {
 		return ErrNeedDXVKRenderer
 	}
 
-	if b.Launcher != "" {
-		if _, err := b.LauncherPath(); err != nil {
+	if s.Launcher != "" {
+		if _, err := s.LauncherPath(); err != nil {
 			return fmt.Errorf("bad launcher: %w", err)
 		}
 	}
 
-	if b.WineRoot != "" {
-		pfx := wine.New("", b.WineRoot)
+	if s.WineRoot != "" {
+		pfx := wine.New("", s.WineRoot)
 		w := pfx.Wine("")
 		if w.Err != nil {
 			return fmt.Errorf("wineroot: %w", w.Err)
@@ -155,39 +140,13 @@ func (b *Binary) validate() error {
 		}
 	}
 
-	return nil
-}
-
-func (b *Binary) setup() error {
-	if err := b.validate(); err != nil {
+	if err := s.FFlags.SetRenderer(s.Renderer); err != nil {
 		return err
 	}
 
-	if err := b.FFlags.SetRenderer(b.Renderer); err != nil {
-		return err
+	if s.Channel == "LIVE" || s.Channel == "live" {
+		s.Channel = ""
 	}
 
-	if b.Channel == "LIVE" || b.Channel == "live" {
-		b.Channel = ""
-	}
-
-	return b.pickCard()
-}
-
-func (c *Config) setup() error {
-	if c.SanitizeEnv {
-		SanitizeEnv()
-	}
-
-	c.Env.Setenv()
-
-	if err := c.Player.setup(); err != nil {
-		return fmt.Errorf("player: %w", err)
-	}
-
-	if err := c.Studio.setup(); err != nil {
-		return fmt.Errorf("studio: %w", err)
-	}
-
-	return nil
+	return s.pickCard()
 }

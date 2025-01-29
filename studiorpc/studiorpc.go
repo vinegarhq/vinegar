@@ -10,8 +10,9 @@ import (
 
 	"github.com/altfoxie/drpc"
 	"github.com/apprehensions/rbxweb"
-	"github.com/vinegarhq/vinegar/richpresence"
 )
+
+const appID = "1159891020956323923"
 
 const (
 	gameOpenEntry  = "[FLog::LifecycleManager] Entered PlaceSessionScope:"
@@ -28,7 +29,7 @@ type StudioRPC struct {
 }
 
 func New() *StudioRPC {
-	c, _ := drpc.New(richpresence.AppID)
+	c, _ := drpc.New("1159891020956323923")
 	return &StudioRPC{
 		client: c,
 	}

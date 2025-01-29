@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.4"/>
+  <object class="AdwWindow" id="window">
+    <property name="default-height">320</property>
+    <property name="default-width">512</property>
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="AdwHeaderBar">
+            <property name="show-start-title-buttons">False</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="margin-bottom">24</property>
+            <property name="margin-end">24</property>
+            <property name="margin-start">24</property>
+            <property name="margin-top">24</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">12</property>
+            <child>
+              <object class="GtkLabel" id="error-label">
+                <property name="halign">start</property>
+                <property name="use-markup">True</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="log-view">
+                <property name="hexpand">True</property>
+                <property name="propagate-natural-height">True</property>
+                <property name="propagate-natural-width">True</property>
+                <child>
+                  <object class="GtkTextView" id="log-output">
+                    <property name="bottom-margin">12</property>
+                    <property name="cursor-visible">False</property>
+                    <property name="editable">False</property>
+                    <property name="hexpand">True</property>
+                    <property name="input-hints">none</property>
+                    <property name="left-margin">12</property>
+                    <property name="right-margin">12</property>
+                    <property name="top-margin">12</property>
+                    <property name="wrap-mode">word-char</property>
+                    <style>
+                      <class name="terminal"/>
+                      <class name="monospace"/>
+                      <class name="card"/>
+                    </style>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="AdwMessageDialog">
+    <property name="body">Error</property>
+    <property name="body-use-markup">True</property>
+    <property name="default-response">close</property>
+    <property name="default-width">300</property>
+    <property name="heading">Error</property>
+    <!-- Custom object fragments -->
+    <responses>
+      <response id="cancel">_Cancel</response>
+      <response id="open" appearance="suggested" enabled="false">_Open Log</response>
+    </responses>
+  </object>
+  <object class="AdwWindow" id="dialog">
+    <property name="halign">center</property>
+    <property name="height-request">0</property>
+    <property name="resizable">False</property>
+    <property name="valign">center</property>
+    <property name="width-request">300</property>
+    <child>
+      <object class="GtkBox">
+        <property name="margin-bottom">24</property>
+        <property name="margin-end">24</property>
+        <property name="margin-start">24</property>
+        <property name="margin-top">32</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkBox">
+            <property name="halign">center</property>
+            <property name="margin-bottom">20</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">8</property>
+            <property name="valign">center</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="css-classes">title-2</property>
+                <property name="halign">center</property>
+                <property name="justify">center</property>
+                <property name="label">Something went wrong</property>
+                <property name="valign">center</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="error">
+                <property name="justify">center</property>
+                <property name="valign">center</property>
+                <property name="wrap">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="height-request">42</property>
+            <property name="spacing">16</property>
+            <child>
+              <object class="GtkButton">
+                <property name="action-name">window.close</property>
+                <property name="hexpand">True</property>
+                <property name="label">Cancel</property>
+                <property name="vexpand">True</property>
+                <style>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton">
+                <property name="action-name">app.logfile-open</property>
+                <property name="hexpand">True</property>
+                <property name="label">Open Log</property>
+                <property name="vexpand">True</property>
+                <style>
+                  <class name="suggested-action"/>
+                  <class name="pill"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <style/>
+      </object>
+    </child>
+    <style>
+      <class name="messagedialog"/>
+    </style>
+  </object>
+</interface>

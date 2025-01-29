@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.94.1 -->
+<interface>
+  <requires lib="gtk" version="4.12"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwWindow" id="window">
+    <property name="default-height">320</property>
+    <property name="default-width">512</property>
+    <property name="resizable">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="margin-end">24</property>
+        <property name="margin-start">24</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">24</property>
+        <property name="valign">center</property>
+        <child>
+          <object class="GtkImage" id="logo">
+            <property name="pixel-size">96</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="status">
+            <property name="css-classes">title-2</property>
+            <property name="label">Initializing Vinegar</property>
+            <style>
+              <class name="title"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkProgressBar" id="progress">
+            <property name="margin-end">64</property>
+            <property name="margin-start">64</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkButton">
+            <property name="action-name">window.close</property>
+            <property name="halign">center</property>
+            <property name="label">Cancel</property>
+            <property name="valign">center</property>
+            <property name="width-request">40</property>
+            <style>
+              <class name="destructive-action"/>
+              <class name="pill"/>
+            </style>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

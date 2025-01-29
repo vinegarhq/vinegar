@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Configure Vinegar
-Exec=vinegar edit
-Terminal=true
+Name=Vinegar
+Exec=vinegar
+Terminal=false
 Categories=Game
 Icon=org.vinegarhq.Vinegar

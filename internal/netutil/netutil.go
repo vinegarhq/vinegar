@@ -8,22 +8,21 @@ import (
 	"log"
 	"net/http"
 	"os"
-)
+	"unsafe"
 
-// DrawFunc is the callback type for drawing progress, it will
-// be ran in a goroutine.
-type DrawFunc func(float32)
+	"github.com/jwijenbergh/puregotk/v4/glib"
+	"github.com/jwijenbergh/puregotk/v4/gtk"
+)
 
 type progressCounter struct {
 	total   uint64
 	current uint64
-	draw    DrawFunc
+	pbar    *gtk.ProgressBar
 }
 
 func (pc *progressCounter) Write(p []byte) (int, error) {
 	n := len(p)
 	pc.current += uint64(n)
-	go pc.draw(float32(pc.current) / float32(pc.total))
 	return n, nil
 }
 
@@ -35,7 +34,7 @@ var ErrBadStatus = errors.New("bad status")
 
 // DownloadProgress downloads the named url to the named file, using
 // df as the callback for progress. No retry will be checked here.
-func DownloadProgress(url, file string, df DrawFunc) error {
+func DownloadProgress(url, file string, pbar *gtk.ProgressBar) error {
 	out, err := os.Create(file)
 	if err != nil {
 		return err
@@ -54,8 +53,15 @@ func DownloadProgress(url, file string, df DrawFunc) error {
 
 	pc := &progressCounter{
 		total: uint64(resp.ContentLength),
-		draw:  df,
+		pbar:  pbar,
 	}
+
+	var idlecb glib.SourceFunc
+	idlecb = func(uintptr) bool {
+		pbar.SetFraction(float64(pc.current) / float64(pc.total))
+		return pc.current != pc.total
+	}
+	glib.TimeoutAdd(16, &idlecb, uintptr(unsafe.Pointer(nil)))
 
 	_, err = io.Copy(out, io.TeeReader(resp.Body, pc))
 	if err != nil {

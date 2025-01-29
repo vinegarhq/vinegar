@@ -15,8 +15,8 @@ var (
 	ErrBadGpuIndex = errors.New("gpu index cannot be negative")
 )
 
-func (b *Binary) pickCard() error {
-	if b.ForcedGpu == "" {
+func (s *Studio) pickCard() error {
+	if s.ForcedGpu == "" {
 		return nil
 	}
 
@@ -28,11 +28,11 @@ func (b *Binary) pickCard() error {
 		"prime-discrete": 1,
 	}
 
-	if i, ok := aliases[b.ForcedGpu]; ok {
+	if i, ok := aliases[s.ForcedGpu]; ok {
 		idx = i
 		prime = true
 	} else {
-		i, err := strconv.Atoi(b.ForcedGpu)
+		i, err := strconv.Atoi(s.ForcedGpu)
 		if err != nil {
 			return err
 		}
@@ -41,7 +41,7 @@ func (b *Binary) pickCard() error {
 	}
 
 	if prime {
-		vk := b.Dxvk || b.Renderer == "Vulkan"
+		vk := s.Dxvk || s.Renderer == "Vulkan"
 
 		if n <= 1 {
 			return nil
@@ -66,15 +66,15 @@ func (b *Binary) pickCard() error {
 
 	c := sysinfo.Cards[idx]
 
-	b.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
-	b.Env.Set("DRI_PRIME",
+	s.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
+	s.Env.Set("DRI_PRIME",
 		"pci-"+strings.NewReplacer(":", "_", ".", "_").Replace(path.Base(c.Device)),
 	)
 
 	if c.Driver == "nvidia" { // Workaround for OpenGL in nvidia GPUs
-		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
+		s.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	} else {
-		b.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")
+		s.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")
 	}
 
 	return nil

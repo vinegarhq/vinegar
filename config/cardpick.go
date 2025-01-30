@@ -71,7 +71,7 @@ func (s *Studio) pickCard() error {
 		"pci-"+strings.NewReplacer(":", "_", ".", "_").Replace(path.Base(c.Device)),
 	)
 
-	if c.Driver == "nvidia" { // Workaround for OpenGL in nvidia GPUs
+	if strings.HasPrefix(c.Driver, "nvidia") { // Workaround for OpenGL in nvidia GPUs
 		s.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 	} else {
 		s.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")

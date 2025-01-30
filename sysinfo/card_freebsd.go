@@ -29,7 +29,7 @@ func getCards() (cs []Card) {
 			Path:     c,
 			Device:   devPath,
 			Driver:   driver,
-			Embedded: isEmbedded(c),
+			Embedded: embedded(c),
 		})
 	}
 	return
@@ -44,19 +44,20 @@ func getDriverFromSysctl(cardIndex int) (string, error) {
 	return strings.TrimSpace(val), nil
 }
 
-func isEmbedded(cardPath string) bool {
-	var isEmbed bool
+func embedded(cardPath string) (embed bool) {
 	filepath.Walk(drmPath, func(p string, f os.FileInfo, err error) error {
 		if !strings.HasPrefix(p, cardPath) {
 			return nil
 		}
-		
+
 		for _, hwd := range embeddedDisplays {
 			if strings.Contains(p, hwd) {
-				isEmbed = true
+				embed = true
 			}
 		}
+
 		return nil
 	})
-	return isEmbed
+
+	return
 }

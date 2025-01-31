@@ -106,6 +106,17 @@
                                 </child>
                               </object>
                             </child>
+                            <child>
+                              <object class="AdwPreferencesGroup">
+                                <child>
+                                  <object class="AdwButtonRow" id="cache-clear">
+                                    <property name="action-name">app.clear-cache</property>
+                                    <property name="start-icon-name">package-x-generic-symbolic</property>
+                                    <property name="title">Clear Downloads</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
                       </object>
@@ -148,121 +159,6 @@
                               <object class="GtkButton" id="config-save">
                                 <property name="action-name">app.save-config</property>
                                 <property name="icon-name">media-floppy-symbolic</property>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwNavigationPage" id="config-nav-page">
-                    <property name="tag">configure</property>
-                    <property name="title">Configuration</property>
-                    <child>
-                      <object class="AdwToolbarView">
-                        <child type="top">
-                          <object class="AdwHeaderBar"/>
-                        </child>
-                        <child>
-                          <object class="AdwPreferencesPage">
-                            <child>
-                              <object class="AdwPreferencesGroup" id="wine">
-                                <property name="title">Wine Settings</property>
-                                <child>
-                                  <object class="AdwSwitchRow" id="gamemode">
-                                    <property name="title">Optimize Performance on demand</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwSwitchRow" id="quiet">
-                                    <property name="title">Show Roblox debugging logs</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwActionRow" id="wineroot-row">
-                                    <property name="title">Change Wine Installation</property>
-                                    <child>
-                                      <object class="GtkButton" id="wineroot-select">
-                                        <property name="icon-name">folder-open-symbolic</property>
-                                        <property name="valign">center</property>
-                                        <style/>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwEntryRow" id="launcher">
-                                    <property name="show-apply-button">True</property>
-                                    <property name="title">Set Studio Launcher</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="AdwPreferencesGroup" id="render">
-                                <property name="title">Rendering Settings</property>
-                                <child>
-                                  <object class="AdwEntryRow" id="dxvk-version">
-                                    <property name="title">Set DXVK Version</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwComboRow" id="forced-gpu">
-                                    <property name="title">Change Graphics Card</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwComboRow" id="renderer">
-                                    <property name="title">Change Roblox Renderer</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="AdwPreferencesGroup" id="misc">
-                                <property name="title">Miscellaneous Settings</property>
-                                <child>
-                                  <object class="AdwSwitchRow" id="discordrpc">
-                                    <property name="title">Enable Discord Rich Presence</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="AdwPreferencesGroup" id="bin">
-                                <property name="title">Deployment Settings</property>
-                                <child>
-                                  <object class="AdwEntryRow" id="version">
-                                    <property name="title">Set Deployment Version</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwEntryRow" id="channel">
-                                    <property name="title">Set Deployment Channel</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="AdwPreferencesGroup" id="fflags">
-                                <property name="header-suffix">
-                                  <object class="GtkButton">
-                                    <property name="icon-name">list-add-symbolic</property>
-                                  </object>
-                                </property>
-                                <property name="title">FFlags</property>
-                              </object>
-                            </child>
-                            <child>
-                              <object class="AdwPreferencesGroup" id="env">
-                                <property name="header-suffix">
-                                  <object class="GtkButton">
-                                    <property name="icon-name">list-add-symbolic</property>
-                                  </object>
-                                </property>
-                                <property name="title">Environment Variables</property>
                               </object>
                             </child>
                           </object>

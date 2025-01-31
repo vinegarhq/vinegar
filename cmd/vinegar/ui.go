@@ -245,3 +245,8 @@ func (ui *ui) presentSimpleError(e error) {
 	w.Present()
 	w.Unref()
 }
+
+func (ui *ui) CacheClear() error {
+	slog.Info("Removing Cache directory!")
+	return os.RemoveAll(dirs.Cache)
+}

@@ -2,8 +2,8 @@ package dirs
 
 import (
 	"os"
-	"slices"
 	"path/filepath"
+	"slices"
 )
 
 // WalkForExcluded will walk the file tree located at dir, calling

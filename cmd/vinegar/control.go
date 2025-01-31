@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log/slog"
 	"os"
-	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -83,6 +82,7 @@ func (ctl *control) SetupControlActions() {
 		"init-prefix":      {ctl.boot.PrefixInit, "Initializing Data", true},
 		"delete-prefix":    {ctl.DeletePrefixes, "Clearing Data", false},
 		"run-winetricks":   {ctl.RunWinetricks, "Running Winetricks", false},
+		"clear-cache":      {ctl.CacheClear, "Clearing Downloads", false},
 
 		"save-config": {ctl.SaveConfig, "Loading Configuration", false},
 	}
@@ -132,6 +132,7 @@ func (ctl *control) SetupControlActions() {
 	}
 }
 
+/*
 func (ctl *control) SetupConfigurationActions() {
 	props := []struct {
 		name   string
@@ -208,6 +209,7 @@ func (ctl *control) SetupConfigurationActions() {
 	}
 	rootSelect.ConnectClicked(&actcb)
 }
+*/
 
 func (ctl *control) PutConfig() {
 	var view gtk.TextView

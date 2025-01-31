@@ -1,16 +1,18 @@
 //go:build freebsd
+
 package sysinfo
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
-	"fmt"
 	"syscall"
 )
 
 const drmPath = "/dev/dri"
+
 var embeddedDisplays = []string{"eDP", "LVDS"}
 
 func getCards() (cs []Card) {

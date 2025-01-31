@@ -14,7 +14,6 @@ require (
 	github.com/apprehensions/rbxbin v0.0.0-20250127194138-e1b385050444
 	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
 	github.com/apprehensions/wine v0.0.0-20250128192525-ac6662e90e2c
-	github.com/folbricht/pefile v0.1.0
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/jwijenbergh/puregotk v0.0.0-20240827133221-51f7e663a5e9
 	github.com/lmittmann/tint v1.0.7

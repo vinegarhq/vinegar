@@ -190,7 +190,7 @@ func (b *bootstrapper) SetupPrefix() error {
 
 func (b *bootstrapper) PrefixInit() error {
 	b.Message("Initializing Wineprefix")
-	stop := b.Performing()
+	defer b.Performing()()
 
 	if err := WineSimpleRun(b.pfx.Init()); err != nil {
 		return fmt.Errorf("prefix init: %w", err)
@@ -204,12 +204,6 @@ func (b *bootstrapper) PrefixInit() error {
 	b.Message("Setting Wineprefix version")
 	if err := WineSimpleRun(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
 		return err
-	}
-
-	stop()
-
-	if err := b.InstallWebView(); err != nil {
-		return fmt.Errorf("prefix webview install: %w", err)
 	}
 
 	return nil

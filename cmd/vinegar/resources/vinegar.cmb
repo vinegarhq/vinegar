@@ -51,15 +51,7 @@
 	(5,5,"GtkLabel","error-label",4,None,None,None,0,None,None),
 	(5,6,"GtkScrolledWindow","log-view",4,None,None,None,1,None,None),
 	(5,7,"GtkTextView","log-output",6,None,None,None,0,None,None),
-	(5,8,"AdwMessageDialog","error-dialog",None,None,None,None,1,"&lt;responses&gt;\n	&lt;response id=\"cancel\"&gt;_Cancel&lt;/response&gt;\n	&lt;response id=\"open\" appearance=\"suggested\" enabled=\"false\"&gt;_Open Log&lt;/response&gt;\n&lt;/responses&gt;",None),
-	(5,9,"AdwWindow","dialog",None,None,None,None,2,None,None),
-	(5,10,"GtkBox",None,9,None,None,None,0,None,None),
-	(5,11,"GtkLabel",None,16,None,None,None,0,None,None),
-	(5,12,"GtkLabel","error",16,None,None,None,1,None,None),
-	(5,14,"GtkButton",None,17,None,None,None,0,None,None),
-	(5,15,"GtkButton",None,17,None,None,None,1,None,None),
-	(5,16,"GtkBox",None,10,None,None,None,0,None,None),
-	(5,17,"GtkBox",None,10,None,None,None,1,None,None),
+	(5,8,"AdwMessageDialog","error-dialog",None,None,None,None,1,"&lt;responses&gt;\n	&lt;response id=\"okay\"&gt;_Ok&lt;/response&gt;\n	&lt;response id=\"open\" appearance=\"suggested\"&gt;_Open Log&lt;/response&gt;\n&lt;/responses&gt;",None),
 	(5,18,"GtkAlertDialog",None,None,None,None,None,3,None,None)
   </object>
   <object_property>
@@ -166,44 +158,12 @@
 	(5,7,"GtkTextView","top-margin","12",0,None,None,None,None,None,None,None,None),
 	(5,7,"GtkTextView","wrap-mode","word-char",0,None,None,None,None,None,None,None,None),
 	(5,7,"GtkWidget","hexpand","True",0,None,None,None,None,None,None,None,None),
-	(5,8,"AdwMessageDialog","body","Error",None,None,None,None,None,None,None,None,None),
+	(5,8,"AdwMessageDialog","body","Ermm..?",None,None,None,None,None,None,None,None,None),
 	(5,8,"AdwMessageDialog","body-use-markup","True",None,None,None,None,None,None,None,None,None),
-	(5,8,"AdwMessageDialog","default-response","close",None,None,None,None,None,None,None,None,None),
-	(5,8,"AdwMessageDialog","heading","Error",None,None,None,None,None,None,None,None,None),
-	(5,8,"GtkWindow","default-width","300",None,None,None,None,None,None,None,None,None),
-	(5,9,"GtkWidget","halign","center",None,None,None,None,None,None,None,None,None),
-	(5,9,"GtkWidget","height-request","0",None,None,None,None,None,None,None,None,None),
-	(5,9,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
-	(5,9,"GtkWidget","width-request","300",None,None,None,None,None,None,None,None,None),
-	(5,9,"GtkWindow","resizable","False",None,None,None,None,None,None,None,None,None),
-	(5,10,"GtkOrientable","orientation","vertical",0,None,None,None,None,None,None,None,None),
-	(5,10,"GtkWidget","margin-bottom","24",None,None,None,None,None,None,None,None,None),
-	(5,10,"GtkWidget","margin-end","24",None,None,None,None,None,None,None,None,None),
-	(5,10,"GtkWidget","margin-start","24",None,None,None,None,None,None,None,None,None),
-	(5,10,"GtkWidget","margin-top","32",None,None,None,None,None,None,None,None,None),
-	(5,11,"GtkLabel","justify","center",0,None,None,None,None,None,None,None,None),
-	(5,11,"GtkLabel","label","Something went wrong",None,None,None,None,None,None,None,None,None),
-	(5,11,"GtkWidget","css-classes","title-2",0,None,None,None,None,None,None,None,None),
-	(5,11,"GtkWidget","halign","center",None,None,None,None,None,None,None,None,None),
-	(5,11,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
-	(5,12,"GtkLabel","justify","center",0,None,None,None,None,None,None,None,None),
-	(5,12,"GtkLabel","wrap","True",0,None,None,None,None,None,None,None,None),
-	(5,12,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
-	(5,14,"GtkActionable","action-name","window.close",None,None,None,None,None,None,None,None,None),
-	(5,14,"GtkButton","label","Cancel",None,None,None,None,None,None,None,None,None),
-	(5,14,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
-	(5,14,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
-	(5,15,"GtkActionable","action-name","app.logfile-open",None,None,None,None,None,None,None,None,None),
-	(5,15,"GtkButton","label","Open Log",None,None,None,None,None,None,None,None,None),
-	(5,15,"GtkWidget","hexpand","True",None,None,None,None,None,None,None,None,None),
-	(5,15,"GtkWidget","vexpand","True",None,None,None,None,None,None,None,None,None),
-	(5,16,"GtkBox","spacing","8",None,None,None,None,None,None,None,None,None),
-	(5,16,"GtkOrientable","orientation","vertical",None,None,None,None,None,None,None,None,None),
-	(5,16,"GtkWidget","halign","center",None,None,None,None,None,None,None,None,None),
-	(5,16,"GtkWidget","margin-bottom","20",None,None,None,None,None,None,None,None,None),
-	(5,16,"GtkWidget","valign","center",None,None,None,None,None,None,None,None,None),
-	(5,17,"GtkBox","spacing","16",None,None,None,None,None,None,None,None,None),
-	(5,17,"GtkWidget","height-request","42",None,None,None,None,None,None,None,None,None)
+	(5,8,"AdwMessageDialog","close-response","okay",None,None,None,None,None,None,None,None,None),
+	(5,8,"AdwMessageDialog","default-response","okay",None,None,None,None,None,None,None,None,None),
+	(5,8,"AdwMessageDialog","heading","Something went wrong",None,None,None,None,None,None,None,None,None),
+	(5,8,"GtkWindow","default-width","300",None,None,None,None,None,None,None,None,None)
   </object_property>
   <object_data>
 	(1,29,"GtkWidget",2,2,None,1,None,None,None,None),
@@ -238,16 +198,7 @@
 	(1,53,"GtkWidget",1,1,None,None,None,None,None,None),
 	(4,6,"GtkWidget",2,3,None,1,None,None,None,None),
 	(1,53,"GtkWidget",2,2,None,1,None,None,None,None),
-	(1,20,"GtkWidget",2,2,None,1,None,None,None,None),
-	(5,9,"GtkWidget",1,1,None,None,None,None,None,None),
-	(5,15,"GtkWidget",1,1,None,None,None,None,None,None),
-	(5,15,"GtkWidget",2,2,None,1,None,None,None,None),
-	(5,10,"GtkWidget",1,1,None,None,None,None,None,None),
-	(5,14,"GtkWidget",1,1,None,None,None,None,None,None),
-	(5,17,"GtkWidget",2,2,None,1,None,None,None,None),
-	(5,14,"GtkWidget",2,2,None,1,None,None,None,None),
-	(5,15,"GtkWidget",2,3,None,1,None,None,None,None),
-	(5,9,"GtkWidget",2,2,None,1,None,None,None,None)
+	(1,20,"GtkWidget",2,2,None,1,None,None,None,None)
   </object_data>
   <object_data_arg>
 	(1,29,"GtkWidget",2,2,"name","monospace"),
@@ -268,10 +219,6 @@
 	(1,49,"GtkWidget",2,2,"name","suggested-action"),
 	(1,50,"GtkWidget",2,2,"name","pill"),
 	(4,6,"GtkWidget",2,3,"name","pill"),
-	(1,53,"GtkWidget",2,2,"name","suggested-action"),
-	(5,15,"GtkWidget",2,2,"name","suggested-action"),
-	(5,14,"GtkWidget",2,2,"name","pill"),
-	(5,15,"GtkWidget",2,3,"name","pill"),
-	(5,9,"GtkWidget",2,2,"name","messagedialog")
+	(1,53,"GtkWidget",2,2,"name","suggested-action")
   </object_data_arg>
 </cambalache-project>

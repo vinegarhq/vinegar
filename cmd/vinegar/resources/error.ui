@@ -59,90 +59,17 @@
     </child>
   </object>
   <object class="AdwMessageDialog" id="error-dialog">
-    <property name="body">Error</property>
+    <property name="body">Ermm..?</property>
     <property name="body-use-markup">True</property>
-    <property name="default-response">close</property>
+    <property name="close-response">okay</property>
+    <property name="default-response">okay</property>
     <property name="default-width">300</property>
-    <property name="heading">Error</property>
+    <property name="heading">Something went wrong</property>
     <!-- Custom object fragments -->
     <responses>
-      <response id="cancel">_Cancel</response>
-      <response id="open" appearance="suggested" enabled="false">_Open Log</response>
+      <response id="okay">_Ok</response>
+      <response id="open" appearance="suggested">_Open Log</response>
     </responses>
-  </object>
-  <object class="AdwWindow" id="dialog">
-    <property name="halign">center</property>
-    <property name="height-request">0</property>
-    <property name="resizable">False</property>
-    <property name="valign">center</property>
-    <property name="width-request">300</property>
-    <child>
-      <object class="GtkBox">
-        <property name="margin-bottom">24</property>
-        <property name="margin-end">24</property>
-        <property name="margin-start">24</property>
-        <property name="margin-top">32</property>
-        <property name="orientation">vertical</property>
-        <child>
-          <object class="GtkBox">
-            <property name="halign">center</property>
-            <property name="margin-bottom">20</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">8</property>
-            <property name="valign">center</property>
-            <child>
-              <object class="GtkLabel">
-                <property name="css-classes">title-2</property>
-                <property name="halign">center</property>
-                <property name="justify">center</property>
-                <property name="label">Something went wrong</property>
-                <property name="valign">center</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel" id="error">
-                <property name="justify">center</property>
-                <property name="valign">center</property>
-                <property name="wrap">True</property>
-              </object>
-            </child>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="height-request">42</property>
-            <property name="spacing">16</property>
-            <child>
-              <object class="GtkButton">
-                <property name="action-name">window.close</property>
-                <property name="hexpand">True</property>
-                <property name="label">Cancel</property>
-                <property name="vexpand">True</property>
-                <style>
-                  <class name="pill"/>
-                </style>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton">
-                <property name="action-name">app.logfile-open</property>
-                <property name="hexpand">True</property>
-                <property name="label">Open Log</property>
-                <property name="vexpand">True</property>
-                <style>
-                  <class name="suggested-action"/>
-                  <class name="pill"/>
-                </style>
-              </object>
-            </child>
-          </object>
-        </child>
-        <style/>
-      </object>
-    </child>
-    <style>
-      <class name="messagedialog"/>
-    </style>
   </object>
   <object class="GtkAlertDialog"/>
 </interface>

@@ -141,14 +141,6 @@ func New() ui {
 		cfg:     config.Default(),
 	}
 
-	ol := gio.NewSimpleAction("logfile-open", nil)
-	olcb := func(_ gio.SimpleAction, p uintptr) {
-		gtk.ShowUri(ui.app.GetActiveWindow(), "file://"+lf.Name(), 0)
-	}
-	ol.ConnectActivate(&olcb)
-	ui.app.AddAction(ol)
-	ol.Unref()
-
 	clcb := ui.ActivateCommandLine
 	ui.app.ConnectCommandLine(&clcb)
 
@@ -232,18 +224,25 @@ func (ui *ui) presentSimpleError(e error) {
 	builder := gtk.NewBuilderFromString(resource("error.ui"), -1)
 	defer builder.Unref()
 
-	var w adw.Window
-	builder.GetObject("dialog").Cast(&w)
-	// w.SetTransientFor(ui.app.GetActiveWindow())
-	w.SetApplication(&ui.app.Application)
+	var d adw.MessageDialog
+	builder.GetObject("error-dialog").Cast(&d)
+	d.SetTransientFor(ui.app.GetActiveWindow())
+	d.SetApplication(&ui.app.Application)
+	defer d.Unref()
 
-	var msg gtk.Label
-	builder.GetObject("error").Cast(&msg)
-	msg.SetLabel(e.Error())
-	msg.Unref()
+	var ccb gio.AsyncReadyCallback
+	ccb = func(_ uintptr, res uintptr, _ uintptr) {
+		ar := AsyncResultFromInternalPtr(res)
+		r := d.ChooseFinish(ar)
+		if r == "open" {
+			gtk.ShowUri(&d.Window, "file://"+ui.logFile.Name(), 0)
+		}
+	}
+	c := gio.NewCancellable()
+	defer c.Unref()
 
-	w.Present()
-	w.Unref()
+	d.FormatBodyMarkup("<tt>%s</tt>", e.Error())
+	d.Choose(c, &ccb, uintptr(unsafe.Pointer(nil)))
 }
 
 func (ui *ui) CacheClear() error {

@@ -111,19 +111,15 @@ func (b *bootstrapper) Execute(args ...string) error {
 	defer signal.Stop(c)
 	go func() {
 		s := <-c
+		signal.Stop(c)
 
 		slog.Warn("Recieved signal", "signal", s)
 
 		// Only kill Roblox if it hasn't exited
 		if cmd.ProcessState == nil {
 			slog.Warn("Killing Roblox", "pid", cmd.Process.Pid)
-			// This way, cmd.Run() will return and vinegar (should) exit.
 			cmd.Process.Kill()
 		}
-
-		// Don't handle INT after it was recieved, this way if another signal was sent,
-		// Vinegar will immediately exit.
-		signal.Stop(c)
 	}()
 
 	slog.Info("Running Studio", "cmd", cmd)
@@ -133,7 +129,7 @@ func (b *bootstrapper) Execute(args ...string) error {
 		return err
 	}
 
-	b.win.Hide()
+	b.win.Destroy()
 
 	if b.cfg.Studio.GameMode {
 		b.RegisterGameMode(int32(cmd.Process.Pid))
@@ -143,11 +139,11 @@ func (b *bootstrapper) Execute(args ...string) error {
 
 	err = cmd.Wait()
 
-	//  if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
-	//  	signal := cmd.ProcessState.Sys().(syscall.WaitStatus).Signal()
-	//  	slog.Warn("Roblox was killed!", "signal", signal)
-	//  	return nil
-	//  }
+	if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
+		signal := cmd.ProcessState.Sys().(syscall.WaitStatus).Signal()
+		slog.Warn("Roblox was killed!", "signal", signal)
+		return nil
+	}
 
 	return err
 }

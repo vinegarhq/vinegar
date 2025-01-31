@@ -1,13 +1,14 @@
 package main
 
 import (
-	"flag"
+	"C"
 	"fmt"
 	"io"
 	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
+	"unsafe"
 
 	"github.com/apprehensions/wine"
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -43,6 +44,77 @@ func Background(bg func()) {
 	glib.IdleAdd(&idlecb, 0)
 }
 
+func (ui *ui) ActivateCommandLine(_ gio.Application, cl uintptr) int {
+	acl := gio.ApplicationCommandLineNewFromInternalPtr(cl)
+	ptr := acl.GetArguments(0)
+
+	// This is the cost of using puregotk and not gotk4.
+	var args []string
+	for i := 0; ; i++ {
+		cStr := (**C.char)(unsafe.Pointer(ptr + uintptr(i)*unsafe.Sizeof(uintptr(0))))
+		if *cStr == nil {
+			break
+		}
+		args = append(args, C.GoString(*cStr))
+	}
+
+	subcmd := ""
+	if len(subcmd) > 2 {
+		subcmd = args[1]
+	}
+
+	var act func(...string)
+	switch subcmd {
+	case "run":
+		act = ui.ActivateBootstrapper
+	case "":
+		act = ui.ActivateControl
+	default:
+		acl.Printerr("Unrecognized subcommand: %s\n", subcmd)
+		return 1
+	}
+
+	actcb := func(_ gio.Application) {
+		act(args[1:]...)
+	}
+
+	ui.app.ConnectActivate(&actcb)
+	ui.app.Activate()
+	return 0
+}
+
+func (ui *ui) ActivateControl(_ ...string) {
+	err := ui.LoadConfig()
+	if err != nil {
+		ui.presentSimpleError(err)
+		slog.Warn("Falling back to default configuration!")
+	}
+	ui.NewControl()
+}
+
+func (ui *ui) ActivateBootstrapper(args ...string) {
+	err := ui.LoadConfig()
+	if err != nil {
+		ui.presentSimpleError(err)
+		return
+	}
+
+	b := ui.NewBootstrapper()
+	b.win.Show()
+	Background(func() {
+		go func() {
+			b.app.Hold()
+			defer b.app.Release()
+			err := b.RunArgs(args...)
+			if err != nil {
+				Background(func() {
+					b.presentSimpleError(err)
+				})
+			}
+		}()
+	})
+}
+
 func New() ui {
 	s, err := state.Load()
 	if err != nil {
@@ -59,12 +131,10 @@ func New() ui {
 		logging.NewTextHandler(lf, true),
 	)))
 
-	slog.Info("Initializing UI...")
-
 	ui := ui{
 		app: adw.NewApplication(
 			"org.vinegarhq.vinegar.Vinegar",
-			gio.GApplicationFlagsNoneValue,
+			gio.GApplicationHandlesCommandLineValue,
 		),
 		state:   &s,
 		logFile: lf,
@@ -79,31 +149,8 @@ func New() ui {
 	ui.app.AddAction(ol)
 	ol.Unref()
 
-	actcb := func(_ gio.Application) {
-		err := ui.LoadConfig()
-		if err != nil {
-			ui.presentSimpleError(err)
-			slog.Warn("Falling back to default configuration!")
-		}
-
-		switch flag.Arg(0) {
-		case "run":
-			if err != nil {
-				return
-			}
-			b := ui.NewBootstrapper()
-			Background(func() {
-				go func() {
-					if err := b.RunArgs(flag.Args()...); err != nil {
-						b.presentSimpleError(err)
-					}
-				}()
-			})
-		default:
-			ui.NewControl()
-		}
-	}
-	ui.app.ConnectActivate(&actcb)
+	clcb := ui.ActivateCommandLine
+	ui.app.ConnectCommandLine(&clcb)
 
 	return ui
 }
@@ -187,7 +234,7 @@ func (ui *ui) presentSimpleError(e error) {
 
 	var w adw.Window
 	builder.GetObject("dialog").Cast(&w)
-	w.SetTransientFor(ui.app.GetActiveWindow())
+	// w.SetTransientFor(ui.app.GetActiveWindow())
 	w.SetApplication(&ui.app.Application)
 
 	var msg gtk.Label

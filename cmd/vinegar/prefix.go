@@ -190,7 +190,6 @@ func (b *bootstrapper) SetupPrefix() error {
 
 func (b *bootstrapper) PrefixInit() error {
 	b.Message("Initializing Wineprefix")
-
 	stop := b.Performing()
 
 	if err := WineSimpleRun(b.pfx.Init()); err != nil {

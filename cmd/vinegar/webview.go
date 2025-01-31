@@ -15,15 +15,17 @@ import (
 )
 
 const (
-	WebViewInstallerURL    = "https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/updt/2023/09/microsoftedgestandaloneinstallerx64_1c890b4b8dd6b7c93da98ebdc08ecdc5e30e50cb.exe"
-	WebViewTargetInstaller = "MicrosoftEdge_X64_109.0.1518.140.exe.{0D50BFEC-CD6A-4F9A-964C-C7416E3ACB10}"
+	WebViewVersion         = "132.0.2957.127"
+	WebViewInstallerURL    = "https://catalog.s.download.windowsupdate.com/c/msdownload/update/software/updt/2025/01/microsoftedgestandaloneinstallerx64_8677c34ceecedbf74cc7e4739bf1af4ab1e884d4.exe"
+	WebViewInstallerExe    = "MicrosoftEdge_X64_"+WebViewVersion+".exe"
+	WebViewInstallerTarget = WebViewInstallerExe + ".{0D50BFEC-CD6A-4F9A-964C-C7416E3ACB10}"
 )
 
-var WebViewInstallerPath = filepath.Join(dirs.Cache, "MicrosoftEdge_X64_109.0.1518.140.exe")
+var WebViewInstallerPath = filepath.Join(dirs.Cache, WebViewInstallerExe)
 
 func (b *bootstrapper) InstallWebView() error {
 	if _, err := os.Stat(WebViewInstallerPath); err != nil {
-		if err := b.DownloadWebView(); err != nil {
+		if err := b.DownloadWebViewPackage(); err != nil {
 			return err
 		}
 	} else if err == nil {
@@ -39,8 +41,9 @@ func (b *bootstrapper) InstallWebView() error {
 	).Run()
 }
 
-func (b *bootstrapper) DownloadWebView() error {
-	b.status.SetLabel("Downloading WebView")
+func (b *bootstrapper) DownloadWebViewPackage() error {
+	b.Message("Downloading WebView Package",
+		"version", WebViewVersion, "url", WebViewInstallerURL)
 
 	tmp, err := os.CreateTemp("", "unc_msedgestandalone.*.exe")
 	if err != nil {
@@ -48,20 +51,17 @@ func (b *bootstrapper) DownloadWebView() error {
 	}
 	defer os.Remove(tmp.Name())
 
-	slog.Info("Downloading WebView",
-		"version", "109.0.1518.140", "url", WebViewInstallerURL, "path", tmp.Name())
-
 	err = netutil.DownloadProgress(WebViewInstallerURL, tmp.Name(), &b.pbar)
 	if err != nil {
 		return err
 	}
 
-	b.status.SetLabel("Extracting WebView")
-	return GetWebViewInstaller(tmp)
+
+	return b.GetWebViewInstaller(tmp)
 }
 
-func GetWebViewInstaller(r io.ReaderAt) error {
-	slog.Info("Loading PE file resources")
+func (b *bootstrapper) GetWebViewInstaller(r io.ReaderAt) error {
+	b.Message("Loading WebView package")
 
 	inst, err := pefile.New(r)
 	if err != nil {
@@ -79,14 +79,14 @@ func GetWebViewInstaller(r io.ReaderAt) error {
 			continue
 		}
 
-		return ExtractWebView(&r)
+		return b.ExtractWebView(&r)
 	}
 
 	return errors.New("webview installer resource not found")
 }
 
-func ExtractWebView(rsrc *pefile.Resource) error {
-	slog.Info("Extracting WebView installer", "resource", rsrc.Name)
+func (b *bootstrapper) ExtractWebView(rsrc *pefile.Resource) error {
+	b.Message("Extracting WebView")
 
 	r := bytes.NewReader(rsrc.Data)
 	tr := tar.NewReader(r)
@@ -101,19 +101,17 @@ func ExtractWebView(rsrc *pefile.Resource) error {
 			return err
 		}
 
-		if hdr.Name != WebViewTargetInstaller {
+		if hdr.Name != WebViewInstallerTarget {
 			continue
 		}
 
-		exe, err := os.OpenFile(WebViewInstallerPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+		cac, err := os.OpenFile(WebViewInstallerPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
 		if err != nil {
 			return err
 		}
-		defer exe.Close()
+		defer cac.Close()
 
-		slog.Info("Extracting WebView installer", "exe", hdr.Name, "path", exe.Name())
-
-		if _, err := io.Copy(exe, tr); err != nil {
+		if _, err := io.Copy(cac, tr); err != nil {
 			return err
 		}
 

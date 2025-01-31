@@ -233,6 +233,10 @@ func (b *bootstrapper) DxvkInstall() error {
 	ver := b.cfg.Studio.DxvkVersion
 	dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+ver+".tar.gz")
 
+	if err := dirs.Mkdirs(dirs.Cache); err != nil {
+		return err
+	}
+
 	if _, err := os.Stat(dxvkPath); err != nil {
 		url := dxvk.URL(ver)
 

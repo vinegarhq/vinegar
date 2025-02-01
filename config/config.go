@@ -56,20 +56,11 @@ func Load() (*Config, error) {
 		return d, nil
 	}
 
-	if err := Decode(d); err != nil {
-		return nil, err
+	if _, err := toml.DecodeFile(dirs.ConfigPath, &d); err != nil {
+		return d, err
 	}
 
-	return d, nil
-}
-
-// Decode will load the configuration file into the given Config.
-func Decode(cfg *Config) error {
-	if _, err := toml.DecodeFile(dirs.ConfigPath, &cfg); err != nil {
-		return err
-	}
-
-	return cfg.Setup()
+	return d, d.Setup()
 }
 
 // Default returns a default configuration.

@@ -190,16 +190,6 @@ func (b *bootstrapper) PrefixInit() error {
 		return fmt.Errorf("prefix init: %w", err)
 	}
 
-	b.Message("Setting Wineprefix DPI")
-	if err := b.pfx.SetDPI(97); err != nil {
-		return fmt.Errorf("prefix set dpi: %w", err)
-	}
-
-	b.Message("Setting Wineprefix version")
-	if err := WineSimpleRun(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
-		return err
-	}
-
 	return nil
 }
 

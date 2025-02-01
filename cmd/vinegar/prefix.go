@@ -135,7 +135,7 @@ func (b *bootstrapper) Execute(args ...string) error {
 		b.RegisterGameMode(int32(cmd.Process.Pid))
 	}
 
-	b.HandleWineOutput(out)
+	go b.HandleWineOutput(out)
 
 	err = cmd.Wait()
 
@@ -150,18 +150,12 @@ func (b *bootstrapper) Execute(args ...string) error {
 
 func (b *bootstrapper) HandleWineOutput(wr io.Reader) {
 	s := bufio.NewScanner(wr)
-	closed := false
 
 	for s.Scan() {
 		line := s.Text()
 
 		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
 		if len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
-			if !closed {
-				b.win.Hide()
-				closed = true
-			}
-
 			b.HandleRobloxLog(line)
 		}
 

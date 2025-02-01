@@ -59,7 +59,7 @@ func (ui *ui) ActivateCommandLine(_ gio.Application, cl uintptr) int {
 	}
 
 	subcmd := ""
-	if len(subcmd) > 2 {
+	if len(args) >= 2 {
 		subcmd = args[1]
 	}
 
@@ -74,12 +74,7 @@ func (ui *ui) ActivateCommandLine(_ gio.Application, cl uintptr) int {
 		return 1
 	}
 
-	actcb := func(_ gio.Application) {
-		act(args[1:]...)
-	}
-
-	ui.app.ConnectActivate(&actcb)
-	ui.app.Activate()
+	act(args[1:]...)
 	return 0
 }
 
@@ -103,8 +98,7 @@ func (ui *ui) ActivateBootstrapper(args ...string) {
 	b.win.Show()
 	Background(func() {
 		go func() {
-			b.app.Hold()
-			defer b.app.Release()
+			defer b.win.Destroy()
 			err := b.RunArgs(args...)
 			if err != nil {
 				Background(func() {

@@ -63,22 +63,19 @@ func (ui *ui) ActivateCommandLine(_ gio.Application, cl uintptr) int {
 		subcmd = args[1]
 	}
 
-	var act func(...string)
 	switch subcmd {
 	case "run":
-		act = ui.ActivateBootstrapper
+		ui.ActivateBootstrapper(args[2:]...)
 	case "":
-		act = ui.ActivateControl
+		ui.ActivateControl()
 	default:
 		acl.Printerr("Unrecognized subcommand: %s\n", subcmd)
 		return 1
 	}
-
-	act(args[1:]...)
 	return 0
 }
 
-func (ui *ui) ActivateControl(_ ...string) {
+func (ui *ui) ActivateControl() {
 	err := ui.LoadConfig()
 	if err != nil {
 		ui.presentSimpleError(err)

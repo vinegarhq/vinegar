@@ -1,63 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.94.1 -->
 <interface>
-  <requires lib="gtk" version="4.12"/>
-  <requires lib="libadwaita" version="1.4"/>
-  <object class="AdwWindow" id="window">
-    <property name="default-height">320</property>
-    <property name="default-width">512</property>
-    <child>
-      <object class="GtkBox">
-        <property name="orientation">vertical</property>
-        <child>
-          <object class="AdwHeaderBar">
-            <property name="show-start-title-buttons">False</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkBox">
-            <property name="margin-bottom">24</property>
-            <property name="margin-end">24</property>
-            <property name="margin-start">24</property>
-            <property name="margin-top">24</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">12</property>
-            <child>
-              <object class="GtkLabel" id="error-label">
-                <property name="halign">start</property>
-                <property name="use-markup">True</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkScrolledWindow" id="log-view">
-                <property name="hexpand">True</property>
-                <property name="propagate-natural-height">True</property>
-                <property name="propagate-natural-width">True</property>
-                <child>
-                  <object class="GtkTextView" id="log-output">
-                    <property name="bottom-margin">12</property>
-                    <property name="cursor-visible">False</property>
-                    <property name="editable">False</property>
-                    <property name="hexpand">True</property>
-                    <property name="input-hints">none</property>
-                    <property name="left-margin">12</property>
-                    <property name="right-margin">12</property>
-                    <property name="top-margin">12</property>
-                    <property name="wrap-mode">word-char</property>
-                    <style>
-                      <class name="terminal"/>
-                      <class name="monospace"/>
-                      <class name="card"/>
-                    </style>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
-    </child>
-  </object>
+  <requires lib="gtk" version="4.6"/>
+  <requires lib="libadwaita" version="1.2"/>
   <object class="AdwMessageDialog" id="error-dialog">
     <property name="body">Ermm..?</property>
     <property name="body-use-markup">True</property>
@@ -71,5 +16,4 @@
       <response id="open" appearance="suggested">_Open Log</response>
     </responses>
   </object>
-  <object class="GtkAlertDialog"/>
 </interface>

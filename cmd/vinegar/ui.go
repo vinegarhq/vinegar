@@ -194,32 +194,6 @@ func (ui *ui) setLogContent(tv *gtk.TextView) {
 	buf.Unref()
 }
 
-func (ui *ui) presentError(e error) {
-	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/error.ui")
-	defer builder.Unref()
-
-	slog.Error(e.Error())
-
-	var win adw.Window
-	builder.GetObject("window").Cast(&win)
-	ui.app.AddWindow(&win.Window)
-
-	var label gtk.Label
-	builder.GetObject("error-label").Cast(&label)
-	label.SetMarkup(fmt.Sprintf(errorFormat, e))
-	label.Unref()
-
-	var tv gtk.TextView
-	builder.GetObject("log-output").Cast(&tv)
-	ui.setLogContent(&tv)
-	tv.Unref()
-
-	win.SetTitle("Error Report")
-	win.SetDefaultSize(512, 320)
-	win.Present()
-	win.Unref()
-}
-
 func (ui *ui) presentSimpleError(e error) {
 	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/error.ui")
 	defer builder.Unref()
@@ -241,7 +215,7 @@ func (ui *ui) presentSimpleError(e error) {
 	c := gio.NewCancellable()
 	defer c.Unref()
 
-	d.FormatBodyMarkup("<tt>%s</tt>", e.Error())
+	d.FormatBodyMarkup("%s", e.Error())
 	d.Choose(c, &ccb, uintptr(unsafe.Pointer(nil)))
 }
 

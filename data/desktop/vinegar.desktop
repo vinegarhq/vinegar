@@ -3,5 +3,5 @@ Type=Application
 Name=Vinegar
 Exec=vinegar
 Terminal=false
-Categories=Game
+Categories=Game;PackageManager;
 Icon=org.vinegarhq.Vinegar

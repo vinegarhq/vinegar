@@ -232,6 +232,8 @@ func (b *bootstrapper) DxvkInstall() error {
 		}
 	}
 
+	defer b.Performing()()
+
 	b.status.SetLabel("Installing DXVK")
 	slog.Info("Extracting DXVK", "version", ver)
 

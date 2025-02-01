@@ -124,7 +124,7 @@ func (b *bootstrapper) Setup() error {
 		return err
 	}
 
-	defer b.Performing()()
+	stop := b.Performing()
 
 	b.Message("Applying environment variables")
 	b.cfg.Studio.Env.Setenv()
@@ -137,6 +137,8 @@ func (b *bootstrapper) Setup() error {
 	if err := b.cfg.Studio.FFlags.Apply(b.dir); err != nil {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
+
+	stop()
 
 	if err := b.SetupDxvk(); err != nil {
 		return fmt.Errorf("setup dxvk %s: %w", b.cfg.Studio.DxvkVersion, err)

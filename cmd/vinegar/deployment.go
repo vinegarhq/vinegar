@@ -167,6 +167,7 @@ func (b *bootstrapper) SetupPackages() error {
 				if err := p.Verify(src); err != nil {
 					return err
 				}
+				update()
 			} else {
 				slog.Info("Package cached", "name", p.Name, "sum", p.Checksum)
 				update()

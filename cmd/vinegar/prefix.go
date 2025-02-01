@@ -129,7 +129,7 @@ func (b *bootstrapper) Execute(args ...string) error {
 		return err
 	}
 
-	b.win.Destroy()
+	b.win.Hide()
 
 	if b.cfg.Studio.GameMode {
 		b.RegisterGameMode(int32(cmd.Process.Pid))

@@ -191,18 +191,34 @@ func (ui *ui) presentSimpleError(e error) {
 
 	var d adw.MessageDialog
 	builder.GetObject("error-dialog").Cast(&d)
-	d.SetTransientFor(ui.app.GetActiveWindow())
+	// It is unreccomended to have a AdwMessageDialog without a
+	// parent, and opening the log file without the parent
+	// will be impossible, this is fine, since the error in
+	// such contexts does not need further information.
+	win := ui.app.GetActiveWindow()
+	if win != nil {
+		d.SetTransientFor(ui.app.GetActiveWindow())
+	}
 	d.SetApplication(&ui.app.Application)
 	defer d.Unref()
+
+	slog.Error("Error!", "err", e)
+
+	if win == nil {
+		d.AddResponses("okay", "Ok")
+	} else {
+		d.AddResponses("okay", "Ok", "open", "Open Log")
+	}
 
 	var ccb gio.AsyncReadyCallback
 	ccb = func(_ uintptr, res uintptr, _ uintptr) {
 		ar := AsyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
-		if r == "open" {
+		if win != nil && r == "open" {
 			gtk.ShowUri(&d.Window, "file://"+ui.logFile.Name(), 0)
 		}
 	}
+
 	c := gio.NewCancellable()
 	defer c.Unref()
 

@@ -11,9 +11,5 @@
     <property name="default-width">300</property>
     <property name="heading">Something went wrong</property>
     <!-- Custom object fragments -->
-    <responses>
-      <response id="okay">_Ok</response>
-      <response id="open" appearance="suggested">_Open Log</response>
-    </responses>
   </object>
 </interface>

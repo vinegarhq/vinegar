@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -51,7 +52,7 @@ type bootstrapper struct {
 
 func (s *ui) NewBootstrapper() *bootstrapper {
 	b := bootstrapper{
-		builder: gtk.NewBuilderFromString(resource("bootstrapper.ui"), -1),
+		builder: gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/bootstrapper.ui"),
 		ui:      s,
 		rp:      studiorpc.New(),
 	}
@@ -61,11 +62,6 @@ func (s *ui) NewBootstrapper() *bootstrapper {
 	b.win = &win
 	b.win.SetApplication(&s.app.Application)
 	s.app.AddWindow(&b.win.Window)
-
-	var logo gtk.Image
-	b.builder.GetObject("logo").Cast(&logo)
-	setLogoImage(&logo)
-	logo.Unref()
 
 	b.builder.GetObject("status").Cast(&b.status)
 	b.builder.GetObject("progress").Cast(&b.pbar)
@@ -235,4 +231,18 @@ func (b *bootstrapper) RegisterGameMode(pid int32) {
 		slog.Error("Failed to register to GameMode", "error", err)
 		return
 	}
+}
+
+func (b *bootstrapper) SetMime() error {
+	o, err := exec.Command("xdg-mime", "default",
+		"org.vinegarhq.Vinegar.studio.desktop",
+		"x-scheme-handler/roblox-studio",
+		"x-scheme-handler/roblox-studio-auth",
+		"application/x-roblox-rbxl",
+		"application/x-roblox-rbxlx",
+	).CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("setup mime: %s", string(o))
+	}
+	return nil
 }

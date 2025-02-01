@@ -16,6 +16,7 @@
         <property name="valign">center</property>
         <child>
           <object class="GtkImage" id="logo">
+            <property name="icon-name">org.vinegarhq.Vinegar</property>
             <property name="pixel-size">96</property>
           </object>
         </child>

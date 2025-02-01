@@ -1,40 +1,24 @@
 package main
 
 import (
-	"embed"
+	_ "embed"
 	"unsafe"
 
-	"github.com/jwijenbergh/puregotk/v4/gdkpixbuf"
-	"github.com/jwijenbergh/puregotk/v4/gtk"
+	"github.com/jwijenbergh/puregotk/v4/gio"
+	"github.com/jwijenbergh/puregotk/v4/glib"
 )
 
-//go:embed resources/*.ui resources/logo.png
-var resources embed.FS
+//go:embed vinegar.gresource
+var gResource []byte
 
-const style = `
-.routine {
-	font-weight: 800;
-	font-size: 141%;
-}
-`
-
-func resource(name string) string {
-	b, err := resources.ReadFile("resources/" + name)
+func init() {
+	b := glib.NewBytes(
+		(uintptr)(unsafe.Pointer(&gResource[0])),
+		uint(len(gResource)),
+	)
+	r, err := gio.NewResourceFromData(b)
 	if err != nil {
 		panic(err)
 	}
-	return string(b)
-}
-
-func setLogoImage(image *gtk.Image) {
-	// Workaround for gdkbixbuf.NewPixbufFromData being non-functional
-	logoData := []byte(resource("logo.png"))
-
-	l := gdkpixbuf.NewPixbufLoader()
-	l.Write(uintptr(unsafe.Pointer(&logoData[0])), uint(len(logoData)))
-	l.Close()
-	pb := l.GetPixbuf()
-	l.Unref()
-	image.SetFromPixbuf(pb)
-	pb.Unref()
+	gio.ResourcesRegister(r)
 }

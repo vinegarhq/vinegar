@@ -15,19 +15,20 @@ SOURCES != find . -type f -name "*.go"
 
 all: vinegar
 
-vinegar: $(SOURCES)
+vinegar: $(SOURCES) cmd/vinegar/vinegar.gresource
 	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
 
-cmd/vinegar/resources/logo.png: assets/vinegar.svg
-	magick -density 384 -background none $^ -resize 512x512 -fuzz 1% -trim +repage $@
+cmd/vinegar/vinegar.gresource: data/vinegar.gresource.xml
+	glib-compile-resources --sourcedir=data --target=cmd/vinegar/vinegar.gresource $^
 
 install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
-	install -Dm644 assets/org.vinegarhq.Vinegar.metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
-	install -Dm644 assets/desktop/vinegar.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
-	install -Dm644 assets/desktop/roblox-studio.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.studio.desktop
-	install -Dm644 assets/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg
-	install -Dm644 assets/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.studio.svg
+	install -Dm644 data/org.vinegarhq.Vinegar.metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
+	install -Dm644 data/desktop/vinegar.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
+	install -Dm644 data/desktop/roblox-studio.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.studio.desktop
+	install -Dm644 data/icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg
+	install -Dm644 data/icons/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.studio.svg
+	gtk-update-icon-cache -f -t $(DESTDIR)$(ICONPREFIX) ||:
 
 uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar

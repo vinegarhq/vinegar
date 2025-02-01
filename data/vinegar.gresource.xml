@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/vinegarhq/Vinegar/">
+  	<!--
+  		Until puregotk supports AdwDialog.
+    	<file preprocess="xml-stripblanks">org.vinegarhq.Vinegar.metainfo.xml</file>
+    -->
+
+    <file preprocess="xml-stripblanks">ui/bootstrapper.ui</file>
+    <file preprocess="xml-stripblanks">ui/control.ui</file>
+    <file preprocess="xml-stripblanks">ui/error.ui</file>
+  </gresource>
+</gresources>

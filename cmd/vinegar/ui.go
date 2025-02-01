@@ -140,7 +140,7 @@ func New() ui {
 		logFile: lf,
 		cfg:     config.Default(),
 	}
-
+	
 	clcb := ui.ActivateCommandLine
 	ui.app.ConnectCommandLine(&clcb)
 
@@ -195,7 +195,7 @@ func (ui *ui) setLogContent(tv *gtk.TextView) {
 }
 
 func (ui *ui) presentError(e error) {
-	builder := gtk.NewBuilderFromString(resource("error.ui"), -1)
+	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/error.ui")
 	defer builder.Unref()
 
 	slog.Error(e.Error())
@@ -221,7 +221,7 @@ func (ui *ui) presentError(e error) {
 }
 
 func (ui *ui) presentSimpleError(e error) {
-	builder := gtk.NewBuilderFromString(resource("error.ui"), -1)
+	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/error.ui")
 	defer builder.Unref()
 
 	var d adw.MessageDialog

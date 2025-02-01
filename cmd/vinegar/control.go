@@ -48,7 +48,7 @@ func (s *ui) NewControl() control {
 	ctl := control{
 		ui:      s,
 		boot:    s.NewBootstrapper(),
-		builder: gtk.NewBuilderFromString(resource("control.ui"), -1),
+		builder: gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/control.ui"),
 	}
 
 	ctl.builder.GetObject("window").Cast(&ctl.win)
@@ -58,6 +58,18 @@ func (s *ui) NewControl() control {
 		return false
 	}
 	ctl.win.ConnectCloseRequest(&destroy)
+	ctl.boot.win.Ref()
+
+	abt := gio.NewSimpleAction("about", nil)
+	abtcb := func(_ gio.SimpleAction, p uintptr) {
+		var w adw.AboutWindow
+		ctl.builder.GetObject("about-window").Cast(&w)
+		w.SetVersion(Version)
+		w.Present()
+	}
+	abt.ConnectActivate(&abtcb)
+	ctl.app.AddAction(abt)
+	abt.Unref()
 
 	// For the time being, use in-house editing.
 	// ctl.SetupConfigurationActions()

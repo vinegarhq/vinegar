@@ -83,6 +83,10 @@ func (b *bootstrapper) FetchDeployment() error {
 }
 
 func (b *bootstrapper) Install() error {
+	if err := b.SetMime(); err != nil {
+		return err
+	}
+
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
 	}

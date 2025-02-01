@@ -140,7 +140,7 @@ func New() ui {
 		logFile: lf,
 		cfg:     config.Default(),
 	}
-	
+
 	clcb := ui.ActivateCommandLine
 	ui.app.ConnectCommandLine(&clcb)
 

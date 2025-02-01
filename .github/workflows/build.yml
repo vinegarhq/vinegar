@@ -1,4 +1,4 @@
-name: Go
+name: Build
 on:
   push:
   pull_request:
@@ -13,7 +13,11 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '>=1.22'
-    - name: 'Checkout Repository'
+    - name: Install Dependencies
+      run: |
+      	apt-get update
+      	apt-get install -y libglib2.0-dev
+    - name: Checkout Repository
       uses: actions/checkout@v3
-    - name: 'Build Vinegar'
+    - name: Build Vinegar
       run: make

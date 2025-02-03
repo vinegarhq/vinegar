@@ -51,8 +51,7 @@ func (b *bootstrapper) SetupDeployment() error {
 			return fmt.Errorf("install %s: %w", b.bin.GUID, err)
 		}
 	} else {
-		b.status.SetLabel("Up to date")
-		slog.Info("Studio up to date!", "guid", b.bin.GUID)
+		b.Message("Up to date", "guid", b.bin.GUID)
 	}
 
 	return nil
@@ -143,8 +142,7 @@ func (b *bootstrapper) SetupPackages() error {
 	}
 
 	stop()
-	b.status.SetLabel("Installing")
-	slog.Info("Installing Packages", "count", len(pkgs), "dir", b.dir)
+	slog.Info("Installing Studio", "count", len(pkgs), "dir", b.dir)
 	for _, p := range pkgs {
 		p := p
 

@@ -122,8 +122,7 @@ func (b *bootstrapper) Execute(args ...string) error {
 		}
 	}()
 
-	slog.Info("Running Studio", "cmd", cmd)
-	b.status.SetLabel("Launching Studio")
+	b.Message("Launching Studio", "cmd", cmd)
 
 	if err := cmd.Start(); err != nil {
 		return err
@@ -164,7 +163,7 @@ func (b *bootstrapper) HandleWineOutput(wr io.Reader) {
 }
 
 func (b *bootstrapper) SetupPrefix() error {
-	b.status.SetLabel("Setting up Wine")
+	b.Message("Setting up Wine")
 
 	if c := b.pfx.Wine(""); c.Err != nil {
 		return fmt.Errorf("wine: %w", c.Err)
@@ -224,8 +223,7 @@ func (b *bootstrapper) DxvkInstall() error {
 	if _, err := os.Stat(dxvkPath); err != nil {
 		url := dxvk.URL(ver)
 
-		slog.Info("Downloading DXVK", "ver", ver)
-		b.status.SetLabel("Downloading DXVK")
+		b.Message("Downloading DXVK", "ver", ver)
 
 		if err := netutil.DownloadProgress(url, dxvkPath, &b.pbar); err != nil {
 			return fmt.Errorf("download: %w", err)
@@ -234,8 +232,7 @@ func (b *bootstrapper) DxvkInstall() error {
 
 	defer b.Performing()()
 
-	b.status.SetLabel("Installing DXVK")
-	slog.Info("Extracting DXVK", "version", ver)
+	b.Message("Extracting DXVK", "version", ver)
 
 	if err := dxvk.Extract(b.pfx, dxvkPath); err != nil {
 		return err

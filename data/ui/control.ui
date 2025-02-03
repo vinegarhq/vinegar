@@ -220,12 +220,4 @@
       </object>
     </child>
   </object>
-  <object class="AdwAboutWindow" id="about-window">
-    <property name="application-icon">org.vinegarhq.Vinegar</property>
-    <property name="application-name">Vinegar</property>
-    <property name="issue-url">https://github.com/vinegarhq/vinegar/issues</property>
-    <property name="license-type">gpl-3-0-only</property>
-    <property name="support-url">https://discord.gg/dzdzZ6Pps2</property>
-    <property name="website">https://vinegarhq.org</property>
-  </object>
 </interface>

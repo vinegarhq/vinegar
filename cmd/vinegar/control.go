@@ -62,10 +62,7 @@ func (s *ui) NewControl() control {
 
 	abt := gio.NewSimpleAction("about", nil)
 	abtcb := func(_ gio.SimpleAction, p uintptr) {
-		var w adw.AboutWindow
-		ctl.builder.GetObject("about-window").Cast(&w)
-		w.SetVersion(Version)
-		w.Present()
+		ctl.PresentAboutWindow()
 	}
 	abt.ConnectActivate(&abtcb)
 	ctl.app.AddAction(abt)
@@ -276,4 +273,20 @@ func (ctl *control) UpdateButtons() {
 	del.SetVisible(!pfx)
 	kill.SetVisible(!pfx)
 	tricks.SetVisible(!pfx)
+}
+
+
+func (ctl *control) PresentAboutWindow() {
+	w := adw.NewAboutWindow()
+	defer w.Unref()
+
+	w.SetApplicationName("Vinegar")
+	w.SetApplicationIcon("org.vinegarhq.Vinegar")
+	w.SetIssueUrl("https://github.com/vinegarhq/vinegar/issues")
+	w.SetSupportUrl("https://discord.gg/dzdzZ6Pps2")
+	w.SetWebsite("https://vinegarhq.org")
+	w.SetLicenseType(gtk.LicenseAgpl30OnlyValue)
+	w.SetVersion(Version)
+	w.SetTransientFor(&ctl.win.Window)
+	w.Present()
 }

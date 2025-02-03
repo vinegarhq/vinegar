@@ -7,7 +7,7 @@
 	(5,None,None,"error.ui",None,None,None,None,None,None,None)
   </ui>
   <object>
-	(1,15,"AdwApplicationWindow","window",None,None,None,None,2,None,None),
+	(1,15,"AdwApplicationWindow","window",None,None,None,None,0,None,None),
 	(1,17,"AdwNavigationPage","control-nav-page",38,None,None,None,0,"",None),
 	(1,18,"AdwToolbarView",None,17,None,None,None,0,None,None),
 	(1,19,"AdwHeaderBar",None,18,None,"top",None,0,None,None),
@@ -39,6 +39,8 @@
 	(1,100,"AdwPreferencesGroup",None,46,None,None,None,2,None,None),
 	(1,101,"AdwButtonRow","cache-clear",100,None,None,None,0,None,None),
 	(1,103,"GtkButton",None,19,None,"end",None,1,None,None),
+	(1,104,"GtkShortcutController",None,51,None,None,None,0,None,None),
+	(1,105,"GtkShortcut",None,104,None,None,None,0,None,None),
 	(4,1,"AdwWindow","window",None,None,None,None,0,None,None),
 	(4,2,"GtkBox",None,1,None,None,None,0,None,None),
 	(4,3,"GtkImage","logo",2,None,None,None,0,None,None),
@@ -111,6 +113,9 @@
 	(1,101,"GtkActionable","action-name","app.clear-cache",None,None,None,None,None,None,None,None,None),
 	(1,103,"GtkActionable","action-name","app.about",0,None,None,None,None,None,None,None,None),
 	(1,103,"GtkButton","icon-name","help-about-symbolic",0,None,None,None,None,None,None,None,None),
+	(1,104,"GtkShortcutController","scope","managed",None,None,None,None,None,None,None,None,None),
+	(1,105,"GtkShortcut","action","activate",None,None,None,None,None,None,None,None,None),
+	(1,105,"GtkShortcut","trigger","&lt;Control&gt;s",None,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","default-height","320",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","default-width","512",0,None,None,None,None,None,None,None,None),
 	(4,1,"GtkWindow","resizable","False",0,None,None,None,None,None,None,None,None),

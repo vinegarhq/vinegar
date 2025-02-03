@@ -165,6 +165,17 @@
                               <object class="GtkButton" id="config-save">
                                 <property name="action-name">app.save-config</property>
                                 <property name="icon-name">media-floppy-symbolic</property>
+                                <child>
+                                  <object class="GtkShortcutController">
+                                    <property name="scope">managed</property>
+                                    <child>
+                                      <object class="GtkShortcut">
+                                        <property name="action">activate</property>
+                                        <property name="trigger">&lt;Control&gt;s</property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
                               </object>
                             </child>
                           </object>

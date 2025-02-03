@@ -242,7 +242,12 @@ func (ctl *control) SaveConfig() error {
 	text := buf.GetText(&start, &end, false)
 
 	slog.Info("Saving Configuration!")
-	if err := os.WriteFile(dirs.ConfigPath, []byte(text), 0664); err != nil {
+	f, err := os.OpenFile(dirs.ConfigPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	if _, err := f.Write([]byte(text)); err != nil {
 		return err
 	}
 

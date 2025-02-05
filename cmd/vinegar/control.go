@@ -241,6 +241,10 @@ func (ctl *control) SaveConfig() error {
 	buf.GetBounds(&start, &end)
 	text := buf.GetText(&start, &end, false)
 
+	if err := dirs.Mkdirs(dirs.Config); err != nil {
+		return err
+	}
+
 	slog.Info("Saving Configuration!")
 	f, err := os.OpenFile(dirs.ConfigPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
 	if err != nil {

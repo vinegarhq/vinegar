@@ -110,7 +110,7 @@ func (b *bootstrapper) SetupPackages() error {
 		return fmt.Errorf("fetch mirror: %w", err)
 	}
 
-	b.Message("Fetching Package list", "channel", b.bin.Channel)
+	b.Message("Fetching Package List", "channel", b.bin.Channel)
 	pkgs, err := m.GetPackages(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
@@ -124,7 +124,7 @@ func (b *bootstrapper) SetupPackages() error {
 		return pkgs[i].ZipSize < pkgs[j].ZipSize
 	})
 
-	b.Message("Fetching Installation directives")
+	b.Message("Fetching Installation Directives")
 	pd, err := m.BinaryDirectories(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch package dirs: %w", err)
@@ -142,7 +142,7 @@ func (b *bootstrapper) SetupPackages() error {
 	}
 
 	stop()
-	slog.Info("Installing Studio", "count", len(pkgs), "dir", b.dir)
+	b.Message("Installing Studio", "count", len(pkgs), "dir", b.dir)
 	for _, p := range pkgs {
 		p := p
 

@@ -126,7 +126,7 @@ func (b *bootstrapper) Setup() error {
 
 	stop := b.Performing()
 
-	b.Message("Applying environment variables")
+	b.Message("Applying Environment")
 	b.cfg.Studio.Env.Setenv()
 
 	if err := b.SetupOverlay(); err != nil {
@@ -149,14 +149,12 @@ func (b *bootstrapper) Setup() error {
 		return fmt.Errorf("save state: %w", err)
 	}
 
-	slog.Info("Successfuly installed", "guid", b.bin.GUID)
+	b.Message("Successfuly installed Studio", "guid", b.bin.GUID)
 
 	return nil
 }
 
 func (b *bootstrapper) SetupOverlay() error {
-	b.Message("Applying overlays")
-
 	dir := filepath.Join(dirs.Overlays, strings.ToLower(Studio.Short()))
 
 	// Don't copy Overlay if it doesn't exist

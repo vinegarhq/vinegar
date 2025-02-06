@@ -51,6 +51,6 @@ uninstall:
 		$(DESTDIR)$(LAYERPREFIX)/VkLayer_VINEGAR_VinegarLayer.json
 
 clean:
-	rm -f vinegar
+	rm -f vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so
 	
 .PHONY: all install uninstall clean

@@ -19,25 +19,8 @@ An open-source, configurable, fast bootstrapper for running Roblox Studio on Lin
 [discord]:     https://discord.gg/dzdzZ6Pps2
 [discord_img]: https://img.shields.io/discord/1069506340973707304?style=flat-square&label=discord
 
-# Features
-+ In-house Studio Discord Rich Presence support
-+ Automatic GPU selection for PRIME systems
-+ Automatic [GameMode](https://github.com/FeralInteractive/gamemode) functionality
-+ Optional [UMU](https://github.com/Open-Wine-Components/umu-launcher) Proton support
-+ Logging for Vinegar, Wine and Roblox
-+ Modifications of Roblox via the Overlay directory, overwriting Roblox's files; such as re-adding the old death sound
-+ Automatic DXVK Installer and uninstaller
-+ Fast Multi-threaded installation and extraction of Roblox
-+ Automatic removal of outdated cached packages and versions of Roblox
-+ Set different environment variables and FFlags
-+ Force a specific version of Roblox to be deployed
-+ Custom launcher specified to be used when launching Roblox
-+ Wine Root feature to set a specific wine installation path
-+ Sanitization of environment
-+ Browser launch via MIME
-
 # See Also
-+ [Discord server](https://discord.gg/dzdzZ6Pps2)
++ [Discord server][discord]
 + [Documentation](https://vinegarhq.github.io)
 + [Roblox-Studio-Mod-Manager](https://github.com/MaximumADHD/Roblox-Studio-Mod-Manager)
 + [Bloxstrap](https://github.com/pizzaboxer/bloxstrap)

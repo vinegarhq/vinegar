@@ -61,6 +61,10 @@ func (b *bootstrapper) Command(args ...string) (*wine.Cmd, error) {
 }
 
 func (b *bootstrapper) Execute(args ...string) error {
+	if err := b.Prepare(); err != nil {
+		return fmt.Errorf("prepare: %w", err)
+	}
+
 	cmd, err := b.Command(args...)
 	if err != nil {
 		return err
@@ -96,7 +100,7 @@ func (b *bootstrapper) Execute(args ...string) error {
 		return err
 	}
 
-	b.win.Hide()
+	b.win.Destroy()
 
 	if b.cfg.Studio.GameMode {
 		b.RegisterGameMode(int32(cmd.Process.Pid))
@@ -150,15 +154,8 @@ func (b *bootstrapper) SetupPrefix() error {
 }
 
 func (b *bootstrapper) SetupDxvk() error {
-	dxvk.Setenv(b.cfg.Studio.Dxvk)
-
-	if !b.cfg.Studio.Dxvk {
-		return nil
-	}
-
-	b.Message("Setting up DXVK")
-
-	if b.cfg.Studio.DxvkVersion == b.state.Studio.DxvkVersion {
+	if !b.cfg.Studio.Dxvk ||
+		b.cfg.Studio.DxvkVersion == b.state.Studio.DxvkVersion {
 		return nil
 	}
 

@@ -94,10 +94,11 @@ func (ui *ui) ActivateBootstrapper(args ...string) {
 	}
 
 	b := ui.NewBootstrapper()
+	ui.app.Hold()
 
 	var tf glib.ThreadFunc
 	tf = func(uintptr) uintptr {
-		defer Background(b.Unref)
+		defer Background(ui.app.Release)
 		if err := b.RunArgs(args...); err != nil {
 			Background(func() { b.presentSimpleError(err) })
 		}

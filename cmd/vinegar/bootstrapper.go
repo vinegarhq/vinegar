@@ -14,6 +14,7 @@ import (
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
+	"github.com/apprehensions/wine/dxvk"
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/glib"
@@ -80,11 +81,6 @@ func (s *ui) NewBootstrapper() *bootstrapper {
 	return &b
 }
 
-func (b *bootstrapper) Unref() {
-	b.win.Destroy()
-	slog.Info("Bootstrapper wishes you farewell!")
-}
-
 func (b *bootstrapper) Performing() func() {
 	var tcb glib.SourceFunc
 	tcb = func(uintptr) bool {
@@ -116,20 +112,9 @@ func (b *bootstrapper) RunArgs(args ...string) error {
 	return nil
 }
 
-func (b *bootstrapper) Setup() error {
-	b.removePlayer()
-
-	if err := b.SetupPrefix(); err != nil {
-		return fmt.Errorf("prefix: %w", err)
-	}
-
-	if err := b.SetupDeployment(); err != nil {
-		return err
-	}
-
-	stop := b.Performing()
-
+func (b *bootstrapper) Prepare() error {
 	b.Message("Applying Environment")
+	dxvk.Setenv(b.cfg.Studio.Dxvk)
 	b.cfg.Studio.Env.Setenv()
 
 	if err := b.SetupOverlay(); err != nil {
@@ -141,18 +126,27 @@ func (b *bootstrapper) Setup() error {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
 
-	stop()
+	return nil
+}
+
+func (b *bootstrapper) Setup() error {
+	b.removePlayer()
+
+	if err := b.SetupPrefix(); err != nil {
+		return fmt.Errorf("prefix: %w", err)
+	}
+
+	if err := b.SetupDeployment(); err != nil {
+		return err
+	}
 
 	if err := b.SetupDxvk(); err != nil {
 		return fmt.Errorf("setup dxvk %s: %w", b.cfg.Studio.DxvkVersion, err)
 	}
 
-	b.Message("Updating State")
 	if err := b.state.Save(); err != nil {
 		return fmt.Errorf("save state: %w", err)
 	}
-
-	slog.Info("Successfuly installed!", "guid", b.bin.GUID)
 
 	return nil
 }

@@ -122,7 +122,7 @@ func (ctl *control) SetupControlActions() {
 				run = func() error {
 					b := ctl.NewBootstrapper()
 					b.win.SetTransientFor(&ctl.win.Window)
-					defer Background(b.Unref)
+					defer Background(b.win.Destroy)
 					return f(b)
 				}
 			default:

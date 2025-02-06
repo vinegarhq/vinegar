@@ -65,10 +65,6 @@ func (b *bootstrapper) FetchDeployment() error {
 }
 
 func (b *bootstrapper) Install() error {
-	if err := b.SetMime(); err != nil {
-		return err
-	}
-
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
 	}
@@ -80,6 +76,12 @@ func (b *bootstrapper) Install() error {
 	if err := b.SetupInstallation(); err != nil {
 		return err
 	}
+
+	if err := b.SetMime(); err != nil {
+		return err
+	}
+
+	slog.Info("Successfuly installed!", "guid", b.bin.GUID)
 
 	return nil
 }
@@ -127,40 +129,8 @@ func (b *bootstrapper) SetupPackages() error {
 	stop()
 	b.Message("Installing Studio", "count", len(pkgs), "dir", b.dir)
 	for _, p := range pkgs {
-		p := p
-
 		eg.Go(func() error {
-			src := filepath.Join(dirs.Downloads, p.Checksum)
-			dst, ok := pd[p.Name]
-			if !ok {
-				return fmt.Errorf("unhandled package: %s", p.Name)
-			}
-
-			if err := p.Verify(src); err != nil {
-				url := m.PackageURL(b.bin, p.Name)
-				slog.Info("Downloading Package", "name", p.Name)
-
-				if err := netutil.Download(url, src); err != nil {
-					return err
-				}
-
-				slog.Info("Verifying Package", "name", p.Name, "sum", p.Checksum)
-				if err := p.Verify(src); err != nil {
-					return err
-				}
-				update()
-			} else {
-				slog.Info("Package cached", "name", p.Name, "sum", p.Checksum)
-				update()
-			}
-
-			slog.Info("Extracted package", "name", p.Name, "dest", dst)
-			if err := p.Extract(src, filepath.Join(b.dir, dst)); err != nil {
-				return err
-			}
-			update()
-
-			return nil
+			return b.SetupPackage(pd, &m, &p, update)
 		})
 	}
 
@@ -172,6 +142,39 @@ func (b *bootstrapper) SetupPackages() error {
 	for _, pkg := range pkgs {
 		b.state.Studio.Packages = append(b.state.Studio.Packages, pkg.Checksum)
 	}
+	return nil
+}
+
+func (b *bootstrapper) SetupPackage(
+	pd rbxbin.PackageDirectories,
+	m *rbxbin.Mirror,
+	p *rbxbin.Package,
+	update func(),
+) error {
+	src := filepath.Join(dirs.Downloads, p.Checksum)
+	dst, ok := pd[p.Name]
+	if !ok {
+		return fmt.Errorf("unhandled: %s", p.Name)
+	}
+
+	if err := p.Verify(src); err != nil {
+		url := m.PackageURL(b.bin, p.Name)
+		slog.Info("Downloading package", "name", p.Name, "sum", p.Checksum)
+		if err := netutil.Download(url, src); err != nil {
+			return err
+		}
+		if err := p.Verify(src); err != nil {
+			return err
+		}
+	}
+	update()
+
+	slog.Info("Extracting package", "name", p.Name, "dest", dst)
+	if err := p.Extract(src, filepath.Join(b.dir, dst)); err != nil {
+		return err
+	}
+	update()
+
 	return nil
 }
 

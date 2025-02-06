@@ -4,17 +4,12 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime/debug"
+	"strings"
 
-	"github.com/apprehensions/wine"
-	"github.com/vinegarhq/vinegar/config"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-func printSysinfo(cfg *config.Config) {
-	path := filepath.Join(dirs.Prefixes, "studio")
-	pfx := wine.New(path, cfg.Studio.WineRoot)
-
+func (ui *ui) DebugInfo() string {
 	var revision string
 	bi, _ := debug.ReadBuildInfo()
 	for _, bs := range bi.Settings {
@@ -23,27 +18,35 @@ func printSysinfo(cfg *config.Config) {
 		}
 	}
 
+	var b strings.Builder
+
+	inst := "source"
+	if sysinfo.InFlatpak {
+		inst = "flatpak"
+	}
+
 	info := `* Vinegar: %s %s
 * Distro: %s
 * Processor: %s
 * Kernel: %s
 * Wine: %s
+* Installation: %s
 `
 
-	fmt.Printf(info,
+	fmt.Fprintf(&b, info,
 		Version, revision,
 		sysinfo.Distro,
 		sysinfo.CPU.Name,
 		sysinfo.Kernel,
-		pfx.Version(),
+		ui.pfx.Version(),
+		inst,
 	)
 
-	if sysinfo.InFlatpak {
-		fmt.Println("* Flatpak: [x]")
+	fmt.Fprintln(&b, "* Cards:")
+	for i, c := range sysinfo.Cards {
+		fmt.Fprintf(&b, "  * Card %d: %s %s %s\n",
+			i, c.Driver, filepath.Base(c.Device), c.Path)
 	}
 
-	fmt.Println("* Cards:")
-	for i, c := range sysinfo.Cards {
-		fmt.Printf("  * Card %d: %s %s %s\n", i, c.Driver, filepath.Base(c.Device), c.Path)
-	}
+	return b.String()
 }

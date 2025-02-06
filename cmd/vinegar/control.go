@@ -335,6 +335,7 @@ func (ctl *control) PresentAboutWindow() {
 	w.SetWebsite("https://vinegarhq.org")
 	w.SetLicenseType(gtk.LicenseAgpl30OnlyValue)
 	w.SetVersion(Version)
+	w.SetDebugInfo(ctl.DebugInfo())
 	w.SetTransientFor(&ctl.win.Window)
 	w.Present()
 }

@@ -226,14 +226,3 @@ func (ui *ui) presentSimpleError(e error) {
 	d.FormatBodyMarkup("%s", e.Error())
 	d.Choose(c, &ccb, null)
 }
-
-func (ui *ui) AboutWindow() *adw.AboutWindow {
-	w := adw.NewAboutWindow()
-	w.SetApplicationName("Vinegar")
-	w.SetApplicationIcon("org.vinegarhq.Vinegar")
-	w.SetIssueUrl("https://github.com/vinegarhq/vinegar/issues")
-	w.SetSupportUrl("https://discord.gg/dzdzZ6Pps2")
-	w.SetWebsite("https://vinegarhq.org")
-	w.SetVersion(Version)
-	return w
-}

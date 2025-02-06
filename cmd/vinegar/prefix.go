@@ -26,47 +26,15 @@ func WineSimpleRun(cmd *wine.Cmd) error {
 		return err
 	}
 
-	if err := cmd.Start(); err != nil {
-		return err
-	}
+	go func() {
+		s := bufio.NewScanner(out)
+		for s.Scan() {
+			line := s.Text()
+			slog.Log(context.Background(), logging.LevelWine, line)
+		}
+	}()
 
-	s := bufio.NewScanner(out)
-	for s.Scan() {
-		line := s.Text()
-		slog.Log(context.Background(), logging.LevelWine, line)
-	}
-
-	return cmd.Wait()
-}
-
-func (s *ui) KillPrefix() error {
-	slog.Info("Killing Wineprefix...")
-	return s.pfx.Kill()
-}
-
-func (s *ui) RunWinetricks() error {
-	slog.Info("Running Winetricks!")
-	return WineSimpleRun(s.pfx.Tricks())
-}
-
-func (ui *ui) DeletePrefixes() error {
-	slog.Info("Deleting Wineprefixes!")
-
-	if err := ui.KillPrefix(); err != nil {
-		return fmt.Errorf("kill prefix: %w", err)
-	}
-
-	if err := os.RemoveAll(dirs.Prefixes); err != nil {
-		return err
-	}
-
-	ui.state.Studio.DxvkVersion = ""
-
-	if err := ui.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
-	}
-
-	return nil
+	return cmd.Run()
 }
 
 func (b *bootstrapper) Command(args ...string) (*wine.Cmd, error) {
@@ -134,6 +102,8 @@ func (b *bootstrapper) Execute(args ...string) error {
 		b.RegisterGameMode(int32(cmd.Process.Pid))
 	}
 
+	b.app.ActivateAction("show-stop", nil)
+
 	go b.HandleWineOutput(out)
 
 	err = cmd.Wait()
@@ -169,27 +139,14 @@ func (b *bootstrapper) SetupPrefix() error {
 		return fmt.Errorf("wine: %w", c.Err)
 	}
 
-	setup := false
-	if _, err := os.Stat(filepath.Join(b.pfx.Dir(), "drive_c", "windows")); err != nil {
-		setup = true
+	if b.pfx.Exists() {
+		return nil
 	}
 
-	if setup {
-		return b.PrefixInit()
-	}
-
-	return nil
-}
-
-func (b *bootstrapper) PrefixInit() error {
 	b.Message("Initializing Wineprefix")
 	defer b.Performing()()
 
-	if err := WineSimpleRun(b.pfx.Init()); err != nil {
-		return fmt.Errorf("prefix init: %w", err)
-	}
-
-	return nil
+	return WineSimpleRun(b.pfx.Init())
 }
 
 func (b *bootstrapper) SetupDxvk() error {

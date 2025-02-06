@@ -11,7 +11,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"unsafe"
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
@@ -38,8 +37,7 @@ const (
 
 type bootstrapper struct {
 	*ui
-	builder *gtk.Builder
-	win     *adw.Window
+	win adw.Window
 
 	pbar   gtk.ProgressBar
 	status gtk.Label
@@ -51,28 +49,40 @@ type bootstrapper struct {
 }
 
 func (s *ui) NewBootstrapper() *bootstrapper {
+	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/bootstrapper.ui")
+	defer builder.Unref()
+
 	b := bootstrapper{
-		builder: gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/bootstrapper.ui"),
-		ui:      s,
-		rp:      studiorpc.New(),
+		ui: s,
+		rp: studiorpc.New(),
 	}
 
-	var win adw.Window
-	b.builder.GetObject("window").Cast(&win)
-	b.win = &win
+	builder.GetObject("window").Cast(&b.win)
 	b.win.SetApplication(&s.app.Application)
 	s.app.AddWindow(&b.win.Window)
+	destroy := func(_ gtk.Window) bool {
+		// https://github.com/jwijenbergh/puregotk/issues/17
+		// BUG: realistically no other way to cancel
+		//      the bootstrapper, so just exit immediately!
+		b.app.Quit()
+		return false
+	}
+	b.win.ConnectCloseRequest(&destroy)
 
-	b.builder.GetObject("status").Cast(&b.status)
-	b.builder.GetObject("progress").Cast(&b.pbar)
+	builder.GetObject("status").Cast(&b.status)
+	builder.GetObject("progress").Cast(&b.pbar)
 	b.status.Unref()
 	b.pbar.Unref()
 
 	b.win.Present()
-	b.win.Hide()
-	// b.win.Unref()
+	b.win.Unref()
 
 	return &b
+}
+
+func (b *bootstrapper) Unref() {
+	b.win.Destroy()
+	slog.Info("Bootstrapper wishes you farewell!")
 }
 
 func (b *bootstrapper) Performing() func() {
@@ -81,15 +91,13 @@ func (b *bootstrapper) Performing() func() {
 		b.pbar.Pulse()
 		return true
 	}
-	id := glib.TimeoutAdd(128, &tcb, uintptr(unsafe.Pointer(nil)))
-	return func() {
-		glib.SourceRemove(id)
-	}
+	id := glib.TimeoutAdd(128, &tcb, null)
+	return func() { glib.SourceRemove(id) }
 }
 
 func (b *bootstrapper) Message(msg string, args ...any) {
-	b.status.SetLabel(msg + "...")
 	slog.Info(msg, args...)
+	Background(func() { b.status.SetLabel(msg + "...") })
 }
 
 func (b *bootstrapper) Run() error {
@@ -113,7 +121,6 @@ func (b *bootstrapper) RunArgs(args ...string) error {
 }
 
 func (b *bootstrapper) Setup() error {
-	b.pbar.SetFraction(0.0)
 	b.removePlayer()
 
 	if err := b.SetupPrefix(); err != nil {

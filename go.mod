@@ -6,18 +6,18 @@ require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/adrg/xdg v0.5.3
 	github.com/otiai10/copy v1.14.1
-	golang.org/x/sync v0.10.0
+	golang.org/x/sync v0.11.0
 )
 
 require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/apprehensions/rbxbin v0.0.0-20250127194138-e1b385050444
 	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
-	github.com/apprehensions/wine v0.0.0-20250201151105-683e3006ef57
+	github.com/apprehensions/wine v0.0.0-20250206171740-ab07521097ab
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/jwijenbergh/puregotk v0.0.0-20240827133221-51f7e663a5e9
 	github.com/lmittmann/tint v1.0.7
-	github.com/samber/slog-multi v1.3.3
+	github.com/samber/slog-multi v1.4.0
 )
 
 require (
@@ -27,8 +27,8 @@ require (
 	github.com/robloxapi/rbxdhist v0.6.0 // indirect
 	github.com/robloxapi/rbxver v0.3.0 // indirect
 	github.com/samber/lo v1.49.1 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
 

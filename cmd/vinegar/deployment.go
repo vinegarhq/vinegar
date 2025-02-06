@@ -14,23 +14,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func (ui *ui) DeleteDeployments() error {
-	slog.Info("Deleting all deployments!")
-
-	if err := os.RemoveAll(dirs.Versions); err != nil {
-		return err
-	}
-
-	ui.state.Studio.Version = ""
-	ui.state.Studio.Packages = nil
-
-	if err := ui.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
-	}
-
-	return nil
-}
-
 func (b *bootstrapper) SetupDeployment() error {
 	b.Message("Checking for updates")
 

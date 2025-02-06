@@ -161,9 +161,6 @@
 	(4,6,"GtkWidget",2,2,None,1,None,None,None,None),
 	(1,44,"GtkWidget",1,1,None,None,None,None,None,None),
 	(1,44,"GtkWidget",2,2,None,1,None,None,None,None),
-	(1,48,"GtkWidget",1,1,None,None,None,None,None,None),
-	(1,48,"GtkWidget",2,2,None,1,None,None,None,None),
-	(1,48,"GtkWidget",2,3,None,1,None,None,None,None),
 	(1,49,"GtkWidget",1,1,None,None,None,None,None,None),
 	(1,49,"GtkWidget",2,2,None,1,None,None,None,None),
 	(1,50,"GtkWidget",1,1,None,None,None,None,None,None),
@@ -171,7 +168,10 @@
 	(1,53,"GtkWidget",1,1,None,None,None,None,None,None),
 	(4,6,"GtkWidget",2,3,None,1,None,None,None,None),
 	(1,53,"GtkWidget",2,2,None,1,None,None,None,None),
-	(1,20,"GtkWidget",2,2,None,1,None,None,None,None)
+	(1,20,"GtkWidget",2,2,None,1,None,None,None,None),
+	(1,48,"GtkWidget",2,3,None,1,None,None,None,None),
+	(1,48,"GtkWidget",2,2,None,1,None,None,None,None),
+	(1,48,"GtkWidget",1,1,None,None,None,None,None,None)
   </object_data>
   <object_data_arg>
 	(1,29,"GtkWidget",2,2,"name","monospace"),
@@ -184,11 +184,11 @@
 	(4,4,"GtkWidget",2,2,"name","title"),
 	(4,6,"GtkWidget",2,2,"name","destructive-action"),
 	(1,44,"GtkWidget",2,2,"name","destructive-action"),
-	(1,48,"GtkWidget",2,2,"name","destructive-action"),
-	(1,48,"GtkWidget",2,3,"name","pill"),
 	(1,49,"GtkWidget",2,2,"name","suggested-action"),
 	(1,50,"GtkWidget",2,2,"name","pill"),
 	(4,6,"GtkWidget",2,3,"name","pill"),
-	(1,53,"GtkWidget",2,2,"name","suggested-action")
+	(1,53,"GtkWidget",2,2,"name","suggested-action"),
+	(1,48,"GtkWidget",2,3,"name","pill"),
+	(1,48,"GtkWidget",2,2,"name","destructive-action")
   </object_data_arg>
 </cambalache-project>

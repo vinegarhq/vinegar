@@ -22,6 +22,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/state"
 )
 
+var null = uintptr(unsafe.Pointer(nil))
+
 const errorFormat = "Vinegar has encountered an error: <tt>%v</tt>\nThe log file is shown below for debugging."
 
 type ui struct {
@@ -92,18 +94,16 @@ func (ui *ui) ActivateBootstrapper(args ...string) {
 	}
 
 	b := ui.NewBootstrapper()
-	b.win.Show()
-	Background(func() {
-		go func() {
-			defer b.win.Destroy()
-			err := b.RunArgs(args...)
-			if err != nil {
-				Background(func() {
-					b.presentSimpleError(err)
-				})
-			}
-		}()
-	})
+
+	var tf glib.ThreadFunc
+	tf = func(uintptr) uintptr {
+		defer Background(b.Unref)
+		if err := b.RunArgs(args...); err != nil {
+			Background(func() { b.presentSimpleError(err) })
+		}
+		return null
+	}
+	glib.NewThread("bootstrapper", &tf, null)
 }
 
 func New() ui {
@@ -223,12 +223,7 @@ func (ui *ui) presentSimpleError(e error) {
 	defer c.Unref()
 
 	d.FormatBodyMarkup("%s", e.Error())
-	d.Choose(c, &ccb, uintptr(unsafe.Pointer(nil)))
-}
-
-func (ui *ui) CacheClear() error {
-	slog.Info("Removing Cache directory!")
-	return os.RemoveAll(dirs.Cache)
+	d.Choose(c, &ccb, null)
 }
 
 func (ui *ui) AboutWindow() *adw.AboutWindow {

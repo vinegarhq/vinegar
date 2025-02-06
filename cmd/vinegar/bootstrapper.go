@@ -88,7 +88,7 @@ func (b *bootstrapper) Performing() func() {
 }
 
 func (b *bootstrapper) Message(msg string, args ...any) {
-	b.status.SetLabel(msg)
+	b.status.SetLabel(msg + "...")
 	slog.Info(msg, args...)
 }
 
@@ -149,7 +149,7 @@ func (b *bootstrapper) Setup() error {
 		return fmt.Errorf("save state: %w", err)
 	}
 
-	b.Message("Successfuly installed Studio", "guid", b.bin.GUID)
+	slog.Info("Successfuly installed!", "guid", b.bin.GUID)
 
 	return nil
 }

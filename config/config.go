@@ -75,6 +75,7 @@ func Default() *Config {
 			"DXVK_LOG_PATH":               "none",
 			"MESA_GL_VERSION_OVERRIDE":    "4.4",
 			"__GL_THREADED_OPTIMIZATIONS": "1",
+			"VK_LOADER_LAYERS_ENABLE":     "VK_LAYER_VINEGAR_VinegarLayer",
 		},
 
 		Studio: Studio{

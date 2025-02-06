@@ -105,10 +105,6 @@ func (b *bootstrapper) Run() error {
 }
 
 func (b *bootstrapper) RunArgs(args ...string) error {
-	if len(args) == 1 && args[0] == "roblox-" {
-		b.HandleProtocolURI(args[0])
-	}
-
 	if err := b.Setup(); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}
@@ -203,23 +199,6 @@ func (b *bootstrapper) HandleRobloxLog(line string) {
 	if b.cfg.Studio.DiscordRPC {
 		if err := b.rp.Handle(line); err != nil {
 			slog.Error("Presence handling failed", "error", err)
-		}
-	}
-}
-
-func (b *bootstrapper) HandleProtocolURI(mime string) {
-	uris := strings.Split(mime, "+")
-	for _, uri := range uris {
-		kv := strings.Split(uri, ":")
-
-		if len(kv) == 2 && kv[0] == "channel" {
-			c := kv[1]
-			if c == "" {
-				continue
-			}
-
-			slog.Warn("Roblox has requested a user channel, changing...", "channel", c)
-			b.cfg.Studio.Channel = c
 		}
 	}
 }

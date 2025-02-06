@@ -13,27 +13,22 @@ import (
 	"time"
 
 	"github.com/apprehensions/rbxbin"
-	"github.com/apprehensions/rbxweb/clientsettings"
-	"github.com/apprehensions/wine/dxvk"
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
-	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/studiorpc"
 )
 
-var Studio = clientsettings.WindowsStudio64
-
-const KillWait = 3 * time.Second
+const killWait = 3 * time.Second
 
 const (
 	// Randomly chosen log entry in cases where Studios process
 	// continues to run. Due to a lack of bug reports, it is unknown
 	// specifically which entry to use for these types of cases.
-	StudioShutdownEntry = "[FLog::LifecycleManager] Exited ApplicationScope"
+	shutdownEntry = "[FLog::LifecycleManager] Exited ApplicationScope"
 )
 
 type bootstrapper struct {
@@ -49,7 +44,7 @@ type bootstrapper struct {
 	rp *studiorpc.StudioRPC
 }
 
-func (s *ui) NewBootstrapper() *bootstrapper {
+func (s *ui) newBootstrapper() *bootstrapper {
 	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/bootstrapper.ui")
 	defer builder.Unref()
 
@@ -81,7 +76,7 @@ func (s *ui) NewBootstrapper() *bootstrapper {
 	return &b
 }
 
-func (b *bootstrapper) Performing() func() {
+func (b *bootstrapper) performing() func() {
 	var tcb glib.SourceFunc
 	tcb = func(uintptr) bool {
 		b.pbar.Pulse()
@@ -91,80 +86,25 @@ func (b *bootstrapper) Performing() func() {
 	return func() { glib.SourceRemove(id) }
 }
 
-func (b *bootstrapper) Message(msg string, args ...any) {
+func (b *bootstrapper) message(msg string, args ...any) {
 	slog.Info(msg, args...)
-	Background(func() { b.status.SetLabel(msg + "...") })
+	idle(func() { b.status.SetLabel(msg + "...") })
 }
 
-func (b *bootstrapper) Run() error {
-	return b.RunArgs()
+func (b *bootstrapper) start() error {
+	return b.run()
 }
 
-func (b *bootstrapper) RunArgs(args ...string) error {
-	if err := b.Setup(); err != nil {
+func (b *bootstrapper) run(args ...string) error {
+	if err := b.setup(); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}
 
-	if err := b.Execute(args...); err != nil {
+	if err := b.execute(args...); err != nil {
 		return fmt.Errorf("run: %w", err)
 	}
 
 	return nil
-}
-
-func (b *bootstrapper) Prepare() error {
-	b.Message("Applying Environment")
-	dxvk.Setenv(b.cfg.Studio.Dxvk)
-	b.cfg.Studio.Env.Setenv()
-
-	if err := b.SetupOverlay(); err != nil {
-		return fmt.Errorf("setup overlay: %w", err)
-	}
-
-	b.Message("Applying FFlags")
-	if err := b.cfg.Studio.FFlags.Apply(b.dir); err != nil {
-		return fmt.Errorf("apply fflags: %w", err)
-	}
-
-	return nil
-}
-
-func (b *bootstrapper) Setup() error {
-	b.removePlayer()
-
-	if err := b.SetupPrefix(); err != nil {
-		return fmt.Errorf("prefix: %w", err)
-	}
-
-	if err := b.SetupDeployment(); err != nil {
-		return err
-	}
-
-	if err := b.SetupDxvk(); err != nil {
-		return fmt.Errorf("setup dxvk %s: %w", b.cfg.Studio.DxvkVersion, err)
-	}
-
-	if err := b.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
-	}
-
-	return nil
-}
-
-func (b *bootstrapper) SetupOverlay() error {
-	dir := filepath.Join(dirs.Overlays, strings.ToLower(Studio.Short()))
-
-	// Don't copy Overlay if it doesn't exist
-	_, err := os.Stat(dir)
-	if err != nil && errors.Is(err, os.ErrNotExist) {
-		return nil
-	} else if err != nil {
-		return err
-	}
-
-	b.Message("Copying Overlay")
-
-	return cp.Copy(dir, b.dir)
 }
 
 func (b *bootstrapper) removePlayer() {
@@ -178,14 +118,14 @@ func (b *bootstrapper) removePlayer() {
 	}
 }
 
-func (b *bootstrapper) HandleRobloxLog(line string) {
+func (b *bootstrapper) handleRobloxLog(line string) {
 	if !b.cfg.Studio.Quiet {
 		slog.Log(context.Background(), logging.LevelRoblox, line)
 	}
 
-	if strings.Contains(line, StudioShutdownEntry) {
+	if strings.Contains(line, shutdownEntry) {
 		go func() {
-			time.Sleep(KillWait)
+			time.Sleep(killWait)
 			syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
 		}()
 	}
@@ -197,7 +137,7 @@ func (b *bootstrapper) HandleRobloxLog(line string) {
 	}
 }
 
-func (b *bootstrapper) RegisterGameMode(pid int32) {
+func (b *bootstrapper) registerGameMode(pid int32) {
 	conn, err := dbus.ConnectSessionBus()
 	if err != nil {
 		slog.Error("Failed to connect to D-Bus", "error", err)
@@ -213,7 +153,7 @@ func (b *bootstrapper) RegisterGameMode(pid int32) {
 	}
 }
 
-func (b *bootstrapper) SetMime() error {
+func (b *bootstrapper) setupMIME() error {
 	o, err := exec.Command("xdg-mime", "default",
 		"org.vinegarhq.Vinegar.studio.desktop",
 		"x-scheme-handler/roblox-studio",

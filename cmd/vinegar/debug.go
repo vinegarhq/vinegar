@@ -9,7 +9,7 @@ import (
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-func (ui *ui) DebugInfo() string {
+func (ui *ui) debugInfo() string {
 	var revision string
 	bi, _ := debug.ReadBuildInfo()
 	for _, bs := range bi.Settings {
@@ -34,7 +34,7 @@ func (ui *ui) DebugInfo() string {
 `
 
 	fmt.Fprintf(&b, info,
-		Version, revision,
+		version, revision,
 		sysinfo.Distro,
 		sysinfo.CPU.Name,
 		sysinfo.Kernel,

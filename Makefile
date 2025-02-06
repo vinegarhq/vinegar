@@ -7,8 +7,7 @@ APPPREFIX  = $(PREFIX)/share/applications
 ICONPREFIX = $(PREFIX)/share/icons/hicolor
 
 GO          = go
-GO_LDFLAGS  = -s -w -X main.Version=$(VERSION)
-CGO_ENABLED = 0
+GO_LDFLAGS  = -s -w -X main.version=$(VERSION)
 
 # for automatically re-building
 SOURCES != find . -type f -name "*.go"

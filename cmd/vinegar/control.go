@@ -23,7 +23,7 @@ type control struct {
 	win     adw.ApplicationWindow
 }
 
-func (s *ui) NewControl() control {
+func (s *ui) newControl() control {
 	ctl := control{
 		ui:      s,
 		builder: gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/control.ui"),
@@ -34,18 +34,18 @@ func (s *ui) NewControl() control {
 
 	abt := gio.NewSimpleAction("about", nil)
 	abtcb := func(_ gio.SimpleAction, p uintptr) {
-		ctl.PresentAboutWindow()
+		ctl.presentAbout()
 	}
 	abt.ConnectActivate(&abtcb)
 	ctl.app.AddAction(abt)
 	abt.Unref()
 
-	ctl.PutConfig()
-	ctl.UpdateButtons()
+	ctl.configPut()
+	ctl.updateButtons()
 
 	// For the time being, use in-house editing.
-	// ctl.SetupConfigurationActions()
-	ctl.SetupControlActions()
+	// ctl.setupConfigurationActions()
+	ctl.setupControlActions()
 
 	ctl.win.Present()
 	ctl.win.Unref()
@@ -53,7 +53,7 @@ func (s *ui) NewControl() control {
 	return ctl
 }
 
-func (ctl *control) PutConfig() {
+func (ctl *control) configPut() {
 	var view gtk.TextView
 	ctl.builder.GetObject("config-view").Cast(&view)
 
@@ -65,27 +65,27 @@ func (ctl *control) PutConfig() {
 	view.GetBuffer().SetText(string(b), -1)
 }
 
-func (ctl *control) SetupControlActions() {
+func (ctl *control) setupControlActions() {
 	actions := map[string]struct {
 		msg string
 		act interface{}
 	}{
-		"run-studio": {"Executing Studio", (*bootstrapper).Run},
+		"run-studio": {"Executing Studio", (*bootstrapper).run},
 		"run-winetricks": {"Executing Winetricks", func() error {
-			return ctl.pfx.Tricks().Run()
+			return run(ctl.pfx.Tricks())
 		}},
 
-		"install-studio":   {"Installing Studio", (*bootstrapper).Setup},
-		"uninstall-studio": {"Deleting all deployments", ctl.DeleteDeployments},
+		"install-studio":   {"Installing Studio", (*bootstrapper).setup},
+		"uninstall-studio": {"Deleting all deployments", ctl.deleteDeployments},
 
 		"init-prefix": {"Initializing Wineprefix", func() error {
-			return WineSimpleRun(ctl.pfx.Init())
+			return run(ctl.pfx.Init())
 		}},
 		"kill-prefix":   {"Killing Wineprefix", ctl.pfx.Kill},
-		"delete-prefix": {"Deleting Wineprefix", ctl.DeletePrefixes},
+		"delete-prefix": {"Deleting Wineprefix", ctl.deletePrefixes},
 
-		"save-config": {"Saving configuration to file", ctl.SaveConfig},
-		"clear-cache": {"Cleaning up cache folder", ctl.ClearCacheDir},
+		"save-config": {"Saving configuration to file", ctl.configSave},
+		"clear-cache": {"Cleaning up cache folder", ctl.clearCache},
 	}
 
 	var stack adw.ViewStack
@@ -120,9 +120,9 @@ func (ctl *control) SetupControlActions() {
 				}
 			case func(*bootstrapper) error:
 				run = func() error {
-					b := ctl.NewBootstrapper()
+					b := ctl.newBootstrapper()
 					b.win.SetTransientFor(&ctl.win.Window)
-					defer Background(b.win.Destroy)
+					defer idle(b.win.Destroy)
 					return f(b)
 				}
 			default:
@@ -131,12 +131,12 @@ func (ctl *control) SetupControlActions() {
 
 			var tf glib.ThreadFunc
 			tf = func(uintptr) uintptr {
-				defer Background(func() {
-					ctl.UpdateButtons()
+				defer idle(func() {
+					ctl.updateButtons()
 					stack.SetVisibleChildName("control")
 				})
 				if err := run(); err != nil {
-					Background(func() { ctl.presentSimpleError(err) })
+					idle(func() { ctl.error(err) })
 				}
 				return null
 			}
@@ -150,7 +150,7 @@ func (ctl *control) SetupControlActions() {
 }
 
 /*
-func (ctl *control) SetupConfigurationActions() {
+func (ctl *control) setupConfigurationActions() {
 	props := []struct {
 		name   string
 		widget string
@@ -228,7 +228,7 @@ func (ctl *control) SetupConfigurationActions() {
 }
 */
 
-func (ctl *control) SaveConfig() error {
+func (ctl *control) configSave() error {
 	var view gtk.TextView
 	var start, end gtk.TextIter
 	ctl.builder.GetObject("config-view").Cast(&view)
@@ -250,21 +250,21 @@ func (ctl *control) SaveConfig() error {
 		return err
 	}
 
-	return ctl.LoadConfig()
+	return ctl.loadConfig()
 }
 
-func (ui *ui) DeleteDeployments() error {
+func (ctl *control) deleteDeployments() error {
 	if err := os.RemoveAll(dirs.Versions); err != nil {
 		return err
 	}
 
-	ui.state.Studio.Version = ""
-	ui.state.Studio.Packages = nil
+	ctl.state.Studio.Version = ""
+	ctl.state.Studio.Packages = nil
 
-	return ui.state.Save()
+	return ctl.state.Save()
 }
 
-func (ctl *control) DeletePrefixes() error {
+func (ctl *control) deletePrefixes() error {
 	slog.Info("Deleting Wineprefixes!")
 
 	if err := ctl.pfx.Kill(); err != nil {
@@ -284,7 +284,7 @@ func (ctl *control) DeletePrefixes() error {
 	return nil
 }
 
-func (ctl *control) ClearCacheDir() error {
+func (ctl *control) clearCache() error {
 	return filepath.WalkDir(dirs.Cache, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -298,7 +298,7 @@ func (ctl *control) ClearCacheDir() error {
 	})
 }
 
-func (ctl *control) UpdateButtons() {
+func (ctl *control) updateButtons() {
 	pfx := ctl.pfx.Exists()
 	vers := dirs.Empty(dirs.Versions)
 
@@ -324,7 +324,7 @@ func (ctl *control) UpdateButtons() {
 	tricks.SetVisible(pfx)
 }
 
-func (ctl *control) PresentAboutWindow() {
+func (ctl *control) presentAbout() {
 	w := adw.NewAboutWindow()
 	defer w.Unref()
 
@@ -334,8 +334,8 @@ func (ctl *control) PresentAboutWindow() {
 	w.SetSupportUrl("https://discord.gg/dzdzZ6Pps2")
 	w.SetWebsite("https://vinegarhq.org")
 	w.SetLicenseType(gtk.LicenseAgpl30OnlyValue)
-	w.SetVersion(Version)
-	w.SetDebugInfo(ctl.DebugInfo())
+	w.SetVersion(version)
+	w.SetDebugInfo(ctl.debugInfo())
 	w.SetTransientFor(&ctl.win.Window)
 	w.Present()
 }

@@ -5,25 +5,29 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gobject"
 )
 
-type AsyncResult struct {
+// Exists due to the fact that puregotk's AsyncResult
+// has no transformation FromInternalPtr function,
+// which is required to be used in AdwMessageDialog.
+
+type asyncResult struct {
 	Ptr uintptr
 }
 
-func AsyncResultFromInternalPtr(ptr uintptr) *AsyncResult {
-	return &AsyncResult{
+func asyncResultFromInternalPtr(ptr uintptr) *asyncResult {
+	return &asyncResult{
 		Ptr: ptr,
 	}
 }
 
-func (x *AsyncResult) GoPointer() uintptr {
+func (x *asyncResult) GoPointer() uintptr {
 	return x.Ptr
 }
 
-func (x *AsyncResult) SetGoPointer(ptr uintptr) {
+func (x *asyncResult) SetGoPointer(ptr uintptr) {
 	x.Ptr = ptr
 }
 
-func (x *AsyncResult) GetSourceObject() *gobject.Object {
+func (x *asyncResult) GetSourceObject() *gobject.Object {
 	cret := gio.XGAsyncResultGetSourceObject(x.GoPointer())
 	if cret == 0 {
 		return nil
@@ -34,14 +38,14 @@ func (x *AsyncResult) GetSourceObject() *gobject.Object {
 	}
 }
 
-func (x *AsyncResult) GetUserData() uintptr {
+func (x *asyncResult) GetUserData() uintptr {
 	return gio.XGAsyncResultGetUserData(x.GoPointer())
 }
 
-func (x *AsyncResult) IsTagged(SourceTagVar uintptr) bool {
+func (x *asyncResult) IsTagged(SourceTagVar uintptr) bool {
 	return gio.XGAsyncResultIsTagged(x.GoPointer(), SourceTagVar)
 }
 
-func (x *AsyncResult) LegacyPropagateError() bool {
+func (x *asyncResult) LegacyPropagateError() bool {
 	return gio.XGAsyncResultLegacyPropagateError(x.GoPointer())
 }

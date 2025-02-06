@@ -3,8 +3,6 @@ package main
 import (
 	"C"
 	"fmt"
-	"io"
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -15,10 +13,8 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
-	slogmulti "github.com/samber/slog-multi"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/state"
 )
 
@@ -36,7 +32,13 @@ type ui struct {
 	logFile *os.File
 }
 
-func Background(bg func()) {
+func (s *ui) unref() {
+	s.app.Unref()
+	s.logFile.Close()
+	slog.Info("Goodbye!")
+}
+
+func idle(bg func()) {
 	var idlecb glib.SourceFunc
 	idlecb = func(uintptr) bool {
 		defer glib.UnrefCallback(&idlecb)
@@ -46,7 +48,7 @@ func Background(bg func()) {
 	glib.IdleAdd(&idlecb, 0)
 }
 
-func (ui *ui) ActivateCommandLine(_ gio.Application, cl uintptr) int {
+func (ui *ui) activateCommandLine(_ gio.Application, cl uintptr) int {
 	acl := gio.ApplicationCommandLineNewFromInternalPtr(cl)
 	ptr := acl.GetArguments(0)
 
@@ -67,9 +69,9 @@ func (ui *ui) ActivateCommandLine(_ gio.Application, cl uintptr) int {
 
 	switch subcmd {
 	case "run":
-		ui.ActivateBootstrapper(args[2:]...)
+		ui.activateBootstrapper(args[2:]...)
 	case "":
-		ui.ActivateControl()
+		ui.activateControl()
 	default:
 		acl.Printerr("Unrecognized subcommand: %s\n", subcmd)
 		return 1
@@ -77,69 +79,37 @@ func (ui *ui) ActivateCommandLine(_ gio.Application, cl uintptr) int {
 	return 0
 }
 
-func (ui *ui) ActivateControl() {
-	err := ui.LoadConfig()
+func (ui *ui) activateControl() {
+	err := ui.loadConfig()
 	if err != nil {
-		ui.presentSimpleError(err)
+		ui.error(err)
 		slog.Warn("Falling back to default configuration!")
 	}
-	ui.NewControl()
+	ui.newControl()
 }
 
-func (ui *ui) ActivateBootstrapper(args ...string) {
-	err := ui.LoadConfig()
+func (ui *ui) activateBootstrapper(args ...string) {
+	err := ui.loadConfig()
 	if err != nil {
-		ui.presentSimpleError(err)
+		ui.error(err)
 		return
 	}
 
-	b := ui.NewBootstrapper()
+	b := ui.newBootstrapper()
 	ui.app.Hold()
 
 	var tf glib.ThreadFunc
 	tf = func(uintptr) uintptr {
-		defer Background(ui.app.Release)
-		if err := b.RunArgs(args...); err != nil {
-			Background(func() { b.presentSimpleError(err) })
+		defer idle(ui.app.Release)
+		if err := b.run(args...); err != nil {
+			idle(func() { b.error(err) })
 		}
 		return null
 	}
 	glib.NewThread("bootstrapper", &tf, null)
 }
 
-func New() ui {
-	s, err := state.Load()
-	if err != nil {
-		log.Fatalf("load state: %s", err)
-	}
-
-	lf, err := logging.NewFile()
-	if err != nil {
-		log.Fatalf("log file: %s", err)
-	}
-
-	slog.SetDefault(slog.New(slogmulti.Fanout(
-		logging.NewTextHandler(os.Stderr, false),
-		logging.NewTextHandler(lf, true),
-	)))
-
-	ui := ui{
-		app: adw.NewApplication(
-			"org.vinegarhq.vinegar.Vinegar",
-			gio.GApplicationHandlesCommandLineValue,
-		),
-		state:   &s,
-		logFile: lf,
-		cfg:     config.Default(),
-	}
-
-	clcb := ui.ActivateCommandLine
-	ui.app.ConnectCommandLine(&clcb)
-
-	return ui
-}
-
-func (s *ui) LoadConfig() error {
+func (s *ui) loadConfig() error {
 	// will fallback to default configuration if there is an error
 	cfg, err := config.Load()
 
@@ -157,36 +127,7 @@ func (s *ui) LoadConfig() error {
 	return nil
 }
 
-func (s *ui) Unref() {
-	s.app.Unref()
-	s.logFile.Close()
-	slog.Info("Goodbye!")
-}
-
-func scrollToBottom(tv *gtk.TextView) {
-	Background(func() {
-		var iter gtk.TextIter
-		buf := tv.GetBuffer()
-		buf.GetEndIter(&iter)
-		buf.Unref()
-		tv.ScrollToIter(&iter, 0, true, 0, 1)
-	})
-}
-
-func (ui *ui) setLogContent(tv *gtk.TextView) {
-	_, _ = ui.logFile.Seek(0, 0)
-	b, err := io.ReadAll(ui.logFile)
-	if err != nil {
-		b = []byte(fmt.Sprintf("Failed to read log file for viewing: %v", err))
-	}
-
-	buf := tv.GetBuffer()
-	buf.SetText(string(b), -1)
-	scrollToBottom(tv)
-	buf.Unref()
-}
-
-func (ui *ui) presentSimpleError(e error) {
+func (ui *ui) error(e error) {
 	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/error.ui")
 	defer builder.Unref()
 
@@ -213,7 +154,7 @@ func (ui *ui) presentSimpleError(e error) {
 
 	var ccb gio.AsyncReadyCallback
 	ccb = func(_ uintptr, res uintptr, _ uintptr) {
-		ar := AsyncResultFromInternalPtr(res)
+		ar := asyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
 		if win != nil && r == "open" {
 			gtk.ShowUri(&d.Window, "file://"+ui.logFile.Name(), 0)

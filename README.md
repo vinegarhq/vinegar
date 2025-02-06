@@ -9,8 +9,8 @@
 
 An open-source, configurable, fast bootstrapper for running Roblox Studio on Linux.
 
-[pipeline]:     https://github.com/vinegarhq/vinegar/actions/workflows/go.yml
-[pipeline_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/go.yml?style=flat-square&label=build%20%26%20tests
+[pipeline]:     https://github.com/vinegarhq/vinegar/actions/workflows/build.yml
+[pipeline_img]: https://img.shields.io/github/actions/workflow/status/vinegarhq/vinegar/build.yml?style=flat-square&label=build%20%26%20tests
 [version]:     https://github.com/vinegarhq/vinegar/releases/latest
 [version_img]: https://img.shields.io/github/v/release/vinegarhq/vinegar?style=flat-square&display_name=tag
 [flathub]:     https://flathub.org/apps/details/org.vinegarhq.Vinegar

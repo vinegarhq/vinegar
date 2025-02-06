@@ -7,12 +7,18 @@ import (
 )
 
 var (
+	Kernel    string
+	CPU       Processor
 	Cards     []Card
+	Distro    string
 	InFlatpak bool
 )
 
 func init() {
+	Kernel = getKernel()
+	CPU = getCPU()
 	Cards = getCards()
+	Distro = getDistro()
 
 	_, err := os.Stat("/.flatpak-info")
 	InFlatpak = err == nil

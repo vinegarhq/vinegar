@@ -15,7 +15,7 @@ CXXFLAGS = -shared -fPIC -std=c++11
 GO          = go
 GO_LDFLAGS  = -s -w -X main.version=$(VERSION)
 
-# for automatically re-building
+# for automatically re-building vinegar
 SOURCES != find . -type f -name "*.go"
 
 all: vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so
@@ -23,8 +23,8 @@ all: vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so
 vinegar: $(SOURCES) cmd/vinegar/vinegar.gresource
 	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
 
-cmd/vinegar/vinegar.gresource: data/vinegar.gresource.xml
-	glib-compile-resources --sourcedir=data --target=cmd/vinegar/vinegar.gresource $^
+cmd/vinegar/vinegar.gresource: data/vinegar.gresource.xml data/ui/vinegar.cmb
+	glib-compile-resources --sourcedir=data --target=cmd/vinegar/vinegar.gresource data/vinegar.gresource.xml
 
 layer/libVkLayer_VINEGAR_VinegarLayer.so: layer/vinegar_layer.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@

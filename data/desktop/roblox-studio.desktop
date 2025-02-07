@@ -1,8 +1,8 @@
 [Desktop Entry]
-Type=Application
 Name=Roblox Studio
-Icon=org.vinegarhq.Vinegar.studio
 Exec=vinegar run %u
+Icon=org.vinegarhq.Vinegar.studio
 Terminal=false
-MimeType=application/x-roblox-rbxl;application/x-roblox-rbxlx;x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth
+Type=Application
+MimeType=application/x-roblox-rbxl;application/x-roblox-rbxlx;x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth;
 Categories=Game

@@ -1,7 +1,10 @@
 [Desktop Entry]
-Type=Application
 Name=Vinegar
+GenericName=Studio Launcher
+Comment=Run Roblox Studio on Linux
 Exec=vinegar
-Terminal=false
-Categories=Game;PackageManager;
 Icon=org.vinegarhq.Vinegar
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Game;PackageManager;
+Keywords=gaming;launcher;flatpak;

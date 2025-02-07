@@ -139,13 +139,13 @@
                         <property name="content">
                           <object class="GtkTextView" id="config-view">
                             <property name="bottom-margin">24</property>
+                            <property name="input-purpose">alpha</property>
                             <property name="left-margin">24</property>
+                            <property name="monospace">True</property>
                             <property name="right-margin">24</property>
                             <property name="top-margin">24</property>
-                            <style>
-                              <class name="terminal"/>
-                              <class name="monospace"/>
-                            </style>
+                            <property name="wrap-mode">word-char</property>
+                            <style/>
                           </object>
                         </property>
                         <child type="top">
@@ -226,6 +226,8 @@
               </object>
             </property>
             <property name="name">loading</property>
+            <!-- Custom object fragments -->
+            <!-- AdwStatusPage not used due to spinner being missing -->
           </object>
         </child>
       </object>

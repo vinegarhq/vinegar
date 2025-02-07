@@ -2,18 +2,17 @@
 
 VERSION = v1.7.8
 
-PREFIX      = /usr
+PREFIX      ?= /usr
 DATAPREFIX  = $(PREFIX)/share/vinegar
 APPPREFIX   = $(PREFIX)/share/applications
 ICONPREFIX  = $(PREFIX)/share/icons/hicolor
 LIBPREFIX   = $(PREFIX)/lib
 LAYERPREFIX = $(PREFIX)/share/vulkan/explicit_layer.d
 
-CXX      = c++
-CXXFLAGS = -shared -fPIC -std=c++11
+CXX ?= c++
 
-GO          = go
-GO_LDFLAGS  = -s -w -X main.version=$(VERSION)
+GO         ?= go
+GO_LDFLAGS ?= -s -w -X main.version=$(VERSION)
 
 # for automatically re-building vinegar
 SOURCES != find . -type f -name "*.go"
@@ -27,7 +26,7 @@ cmd/vinegar/vinegar.gresource: data/vinegar.gresource.xml data/ui/vinegar.cmb
 	glib-compile-resources --sourcedir=data --target=cmd/vinegar/vinegar.gresource data/vinegar.gresource.xml
 
 layer/libVkLayer_VINEGAR_VinegarLayer.so: layer/vinegar_layer.cpp
-	$(CXX) $(CXXFLAGS) $< -o $@
+	$(CXX) -shared -fPIC $< -o $@
 
 install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar

@@ -70,7 +70,7 @@ func (ctl *control) setupControlActions() {
 		msg string
 		act interface{}
 	}{
-		"run-studio": {"Executing Studio", (*bootstrapper).run},
+		"run-studio": {"Executing Studio", (*bootstrapper).start},
 		"run-winetricks": {"Executing Winetricks", func() error {
 			return run(ctl.pfx.Tricks())
 		}},

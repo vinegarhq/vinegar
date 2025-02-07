@@ -154,6 +154,7 @@ func (b *bootstrapper) install() error {
 		return err
 	}
 
+	// MIME has to be setup in-order for Studio to login.
 	if err := b.setupMIME(); err != nil {
 		return err
 	}

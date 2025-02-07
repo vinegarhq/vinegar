@@ -19,6 +19,8 @@ An open-source, configurable, fast bootstrapper for running Roblox Studio on Lin
 [discord]:     https://discord.gg/dzdzZ6Pps2
 [discord_img]: https://img.shields.io/discord/1069506340973707304?style=flat-square&label=discord
 
+![Showcase of Vinegar's control and bootstrapper window](data/screenshots/vinegar.png)
+
 # See Also
 + [Discord server][discord]
 + [Documentation](https://vinegarhq.github.io)

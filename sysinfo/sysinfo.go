@@ -4,6 +4,8 @@ package sysinfo
 
 import (
 	"os"
+
+	"golang.org/x/sys/cpu"
 )
 
 var (
@@ -16,7 +18,16 @@ var (
 
 func init() {
 	Kernel = getKernel()
-	CPU = getCPU()
+
+	CPU = Processor{
+		Name: "unknown cpu",
+		AVX: cpu.X86.HasAVX,
+	}
+
+	if n := cpuName(); n != "" {
+		CPU.Name = n
+	}
+
 	Cards = getCards()
 	Distro = getDistro()
 

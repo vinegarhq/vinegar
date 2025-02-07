@@ -6,17 +6,9 @@ import (
 	"bufio"
 	"os"
 	"regexp"
-	"strings"
-
-	cpulib "golang.org/x/sys/cpu"
 )
 
-func getCPU() Processor {
-	c := Processor{
-		Name: "unknown cpu",
-		AVX:  cpulib.X86.HasAVX,
-	}
-
+func cpuName() string {
 	column := regexp.MustCompile("\t+: ")
 
 	f, _ := os.Open("/proc/cpuinfo")
@@ -30,17 +22,10 @@ func getCPU() Processor {
 			continue
 		}
 
-		// pfft, who needs multiple cpus? just return if we got all we need
 		if sl[0] == "model name" {
-			c.Name = sl[1]
+			return sl[1]
 		}
-
-		if sl[0] == "flags" {
-			c.SplitLockDetect = strings.Contains(sl[1], "split_lock_detect")
-			break
-		}
-
 	}
 
-	return c
+	return ""
 }

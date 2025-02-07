@@ -287,6 +287,9 @@ func (ctl *control) deletePrefixes() error {
 func (ctl *control) clearCache() error {
 	return filepath.WalkDir(dirs.Cache, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
+			if errors.Is(err, fs.ErrNotExist) {
+				return nil
+			}
 			return err
 		}
 		if path == dirs.Cache || path == dirs.Logs || path == ctl.logFile.Name() {

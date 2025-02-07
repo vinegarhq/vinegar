@@ -4,32 +4,44 @@
 	<metadata_license>CC0-1.0</metadata_license>
 	<project_license>GPL-3.0-only</project_license>
 	<name>Vinegar</name>
-	<summary>A feature-packed small and fast bootstrapper for Roblox</summary>
+	<summary>Run Roblox Studio on Linux</summary>
 	<description>
-		<p>Vinegar is a fast and robust bootstrapper for Roblox that has many ease-of-use features.</p>
+		<p>Vinegar is an open-source, configurable, fast bootstrapper for running Roblox Studio on Linux.</p>
 	</description>
-	<developer id = "vinegarhq.org">
+	<url type="homepage">https://vinegarhq.org</url>
+	<url type="help">https://vinegarhq.org</url>
+	<url type="contribute">https://github.com/vinegarhq/vinegar</url>
+	<url type="vcs-browser">https://github.com/vinegarhq/vinegar</url>
+	<url type="bugtracker">https://github.com/vinegarhq/vinegar/issues</url>
+	<developer id="vinegarhq.org">
 		<name>VinegarHQ</name>
 	</developer>
 	<launchable type="desktop-id">org.vinegarhq.Vinegar.desktop</launchable>
 	<launchable type="desktop-id">org.vinegarhq.Vinegar.studio.desktop</launchable>
-	<provides>
-		<binary>vinegar</binary>
-	</provides>
+	<supports>
+		<control>pointing</control>
+		<control>keyboard</control>
+	</supports>
 
-	<categories>
-		<category>Game</category>
-	</categories>
-	<url type="homepage">https://vinegarhq.org</url>
-	<url type="help">https://vinegarhq.org</url>
-	<url type="contribute">https://github.com/vinegarhq/vinegar</url>
-	<url type="bugtracker">https://github.com/vinegarhq/vinegar/issues</url>
 	<screenshots>
-	  <screenshot type="default">
-	    <image type="source" width="1116" height="606">https://vinegarhq.github.io/image.png</image>
-			<caption>Vinegar gameplay of Phantom Forces, an experience on Roblox</caption>
-	  </screenshot>
+		<screenshot type="default">
+			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/studio.png</image>
+			<caption>Roblox Studio running under Vinegar</caption>
+		</screenshot>
+		<screenshot>
+			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/studio-edit.png</image>
+			<caption>Roblox Studio running under Vinegar, displaying the script editor view</caption>
+		</screenshot>
+		<screenshot>
+			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/control.png</image>
+			<caption>Vinegar's control view and configuration editing</caption>
+		</screenshot>
+		<screenshot>
+			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/bootstrapper.png</image>
+			<caption>Vinegar's bootstrapper in action</caption>
+		</screenshot>
 	</screenshots>
+
 	<releases>
 		<release version="1.7.8" date="2024-12-06">
 			<description>
@@ -75,6 +87,7 @@
 			</description>
 		</release>
 	</releases>
+
 	<content_rating type="oars-1.1">
 		<content_attribute id="violence-cartoon">moderate</content_attribute>
 		<content_attribute id="violence-fantasy">moderate</content_attribute>

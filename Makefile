@@ -35,8 +35,8 @@ install: vinegar
 	install -Dm644 data/desktop/roblox-studio.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.studio.desktop
 	install -Dm644 data/icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg
 	install -Dm644 data/icons/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.studio.svg
-	install -Dm644 layer/libVkLayer_VINEGAR_VinegarLayer.so -t $(DESTDIR)$(LIBPREFIX)
-	install -Dm644 layer/VkLayer_VINEGAR_VinegarLayer.json -t $(DESTDIR)$(LAYERPREFIX)
+	install -Dm644 layer/libVkLayer_VINEGAR_VinegarLayer.so $(DESTDIR)$(LIBPREFIX)/
+	install -Dm644 layer/VkLayer_VINEGAR_VinegarLayer.json $(DESTDIR)$(LAYERPREFIX)/
 	gtk-update-icon-cache -f -t $(DESTDIR)$(ICONPREFIX) ||:
 
 uninstall:

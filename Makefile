@@ -8,14 +8,9 @@ APPPREFIX   = $(PREFIX)/share/applications
 ICONPREFIX  = $(PREFIX)/share/icons/hicolor
 LIBPREFIX   = $(PREFIX)/lib
 LAYERPREFIX = $(PREFIX)/share/vulkan/explicit_layer.d
-UNAME := $(shell uname)
 
 CXX      = c++
-ifeq ($(UNAME), FreeBSD)
-	CXXFLAGS = -shared -fPIC -std=c++11 -I/usr/local/include
-else
-	CXXFLAGS = -shared -fPIC -std=c++11
-endif
+CXXFLAGS = -shared -fPIC -std=c++11
 
 GO          = go
 GO_LDFLAGS  = -s -w -X main.version=$(VERSION)

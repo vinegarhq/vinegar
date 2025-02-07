@@ -25,8 +25,8 @@ vinegar: $(SOURCES) cmd/vinegar/vinegar.gresource
 cmd/vinegar/vinegar.gresource: data/vinegar.gresource.xml data/ui/vinegar.cmb
 	glib-compile-resources --sourcedir=data --target=cmd/vinegar/vinegar.gresource data/vinegar.gresource.xml
 
-layer/libVkLayer_VINEGAR_VinegarLayer.so: layer/vinegar_layer.cpp
-	$(CXX) -shared -fPIC `pkg-config --cflags vulkan` $< -o $@
+layer/libVkLayer_VINEGAR_VinegarLayer.so:
+	$(CXX) -shared -fPIC `pkg-config --cflags vulkan` layer/vinegar_layer.cpp -o $@
 
 install: vinegar
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar

@@ -119,9 +119,9 @@ func (ctl *control) setupControlActions() {
 					return f()
 				}
 			case func(*bootstrapper) error:
+				b := ctl.newBootstrapper()
+				b.win.SetTransientFor(&ctl.win.Window)
 				run = func() error {
-					b := ctl.newBootstrapper()
-					b.win.SetTransientFor(&ctl.win.Window)
 					// BUG: Window is already destroyed if
 					//      studio is ran, but this doesn't
 					//      cause any errors so...

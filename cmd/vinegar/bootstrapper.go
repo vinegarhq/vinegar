@@ -20,6 +20,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/studiorpc"
+	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 const killWait = 3 * time.Second
@@ -154,6 +155,12 @@ func (b *bootstrapper) registerGameMode(pid int32) {
 }
 
 func (b *bootstrapper) setupMIME() error {
+	// xdg-mime unavailable in Flatpak; Flatpak
+	// handles MIME associations for us.
+	if sysinfo.InFlatpak {
+		return nil
+	}
+
 	o, err := exec.Command("xdg-mime", "default",
 		"org.vinegarhq.Vinegar.studio.desktop",
 		"x-scheme-handler/roblox-studio",
@@ -161,8 +168,12 @@ func (b *bootstrapper) setupMIME() error {
 		"application/x-roblox-rbxl",
 		"application/x-roblox-rbxlx",
 	).CombinedOutput()
-	if err != nil {
+	if err == nil {
+		return nil
+	}
+
+	if len(o) > 0 {
 		return fmt.Errorf("setup mime: %s", string(o))
 	}
-	return nil
+	return fmt.Errorf("xdg-mime: %w", err)
 }

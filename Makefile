@@ -1,6 +1,6 @@
 .POSIX:
 
-VERSION = v1.7.8
+VERSION = v1.8.0
 
 PREFIX      ?= /usr
 DATAPREFIX  = $(PREFIX)/share/vinegar

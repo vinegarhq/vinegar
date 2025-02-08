@@ -115,7 +115,7 @@ func (s *ui) loadConfig() error {
 
 	s.pfx = wine.New(
 		filepath.Join(dirs.Prefixes, "studio"),
-		s.cfg.Studio.WineRoot,
+		cfg.Studio.WineRoot,
 	)
 
 	s.cfg = cfg

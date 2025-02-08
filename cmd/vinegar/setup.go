@@ -24,6 +24,9 @@ var studio = clientsettings.WindowsStudio64
 func (b *bootstrapper) prepare() error {
 	b.message("Applying Environment")
 	dxvk.Setenv(b.cfg.Studio.Dxvk)
+
+	// Required to read Roblox logs.
+	b.cfg.Studio.Env["WINEDEBUG"] += ",warn+debugstr"
 	b.cfg.Studio.Env.Setenv()
 
 	if err := b.setupOverlay(); err != nil {

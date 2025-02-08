@@ -25,7 +25,7 @@ const (
 const (
 	ansiReset        = "\033[0m"
 	ansiRed          = "\033[31m"
-	ansiCyan         = "\033[37m"
+	ansiCyan         = "\033[36m"
 	ansiBrightRed    = "\033[91m"
 	ansiBrightGreen  = "\033[92m"
 	ansiBrightYellow = "\033[93m"

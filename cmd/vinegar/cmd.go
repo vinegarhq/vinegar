@@ -95,7 +95,7 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
-	idle(b.win.Destroy)
+	idle(b.win.Hide)
 
 	if b.cfg.Studio.GameMode {
 		b.registerGameMode(int32(cmd.Process.Pid))
@@ -124,7 +124,11 @@ func (b *bootstrapper) handleWineOutput(wr io.Reader) {
 
 		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
 		if len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
-			b.handleRobloxLog(line)
+			// Avoid "\n" calls to OutputDebugStringA
+			if len(line) >= 87 {
+				b.handleRobloxLog(line[39 : len(line)-1])
+			}
+			continue
 		}
 
 		slog.Log(context.Background(), logging.LevelWine, line)

@@ -121,7 +121,7 @@ func (b *bootstrapper) removePlayer() {
 
 func (b *bootstrapper) handleRobloxLog(line string) {
 	if !b.cfg.Studio.Quiet {
-		slog.Log(context.Background(), logging.LevelRoblox, line)
+		slog.Log(context.Background(), logging.LevelRoblox, line[41:])
 	}
 
 	if strings.Contains(line, shutdownEntry) {

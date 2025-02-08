@@ -96,11 +96,10 @@ func (ui *ui) activateBootstrapper(args ...string) {
 	}
 
 	b := ui.newBootstrapper()
-	ui.app.Hold()
 
 	var tf glib.ThreadFunc
 	tf = func(uintptr) uintptr {
-		defer idle(ui.app.Release)
+		defer idle(b.win.Destroy)
 		if err := b.run(args...); err != nil {
 			idle(func() { b.error(err) })
 		}

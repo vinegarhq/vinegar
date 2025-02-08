@@ -43,6 +43,17 @@
 	</screenshots>
 
 	<releases>
+		<release version="1.8.0" date="2025-02-08">
+			<description>
+				<ul>
+					<li>Switched to GTK4+Libadwaita</li>
+					<li>Remove Roblox Player functionality</li>
+					<li>Removed WebView installer</li>
+					<li>Added Vulkan layer to accomodate Roblox Studio's Vulkan Renderer</li>
+					<li>Various refactoring and tweaking to WINE and Roblox management</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.7.8" date="2024-12-06">
 			<description>
 				<ul>

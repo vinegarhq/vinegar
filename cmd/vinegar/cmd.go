@@ -95,13 +95,13 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
-	b.win.Destroy()
+	idle(b.win.Destroy)
 
 	if b.cfg.Studio.GameMode {
 		b.registerGameMode(int32(cmd.Process.Pid))
 	}
 
-	b.app.ActivateAction("show-stop", nil)
+	idle(func() { b.app.ActivateAction("show-stop", nil) })
 
 	go b.handleWineOutput(out)
 

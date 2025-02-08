@@ -122,6 +122,9 @@ func (ctl *control) setupControlActions() {
 				run = func() error {
 					b := ctl.newBootstrapper()
 					b.win.SetTransientFor(&ctl.win.Window)
+					// BUG: Window is already destroyed if
+					//      studio is ran, but this doesn't
+					//      cause any errors so...
 					defer idle(b.win.Destroy)
 					return f(b)
 				}

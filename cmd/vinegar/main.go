@@ -36,7 +36,7 @@ func main() {
 
 	ui := ui{
 		app: adw.NewApplication(
-			"org.vinegarhq.vinegar.Vinegar",
+			"org.vinegarhq.Vinegar",
 			gio.GApplicationHandlesCommandLineValue,
 		),
 		state:   &s,

@@ -121,7 +121,13 @@ func (b *bootstrapper) removePlayer() {
 
 func (b *bootstrapper) handleRobloxLog(line string) {
 	if !b.cfg.Studio.Quiet {
-		slog.Log(context.Background(), logging.LevelRoblox, line[41:])
+		before, ent, found := strings.Cut(line, ",6")
+		if !found {
+			ent = before
+		} else if ent[0] == ',' || ent[0] == ' ' {
+			ent = ent[1:]
+		}
+		slog.Log(context.Background(), logging.LevelRoblox, ent)
 	}
 
 	if strings.Contains(line, shutdownEntry) {

@@ -79,11 +79,11 @@ func Default() *Config {
 		},
 
 		Studio: Studio{
-			Dxvk:        true,
+			Dxvk:        false,
 			DxvkVersion: "2.5.3",
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",
-			Renderer:    "D3D11",
+			Renderer:    "Vulkan",
 			Channel:     "LIVE",
 			DiscordRPC:  true,
 			FFlags:      make(rbxbin.FFlags),

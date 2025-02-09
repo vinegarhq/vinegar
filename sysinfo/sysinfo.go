@@ -21,7 +21,7 @@ func init() {
 
 	CPU = Processor{
 		Name: "unknown cpu",
-		AVX: cpu.X86.HasAVX,
+		AVX:  cpu.X86.HasAVX,
 	}
 
 	if n := cpuName(); n != "" {

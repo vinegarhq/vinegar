@@ -13,7 +13,7 @@ require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/apprehensions/rbxbin v0.0.0-20250127194138-e1b385050444
 	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
-	github.com/apprehensions/wine v0.0.0-20250208155613-b47818c0f018
+	github.com/apprehensions/wine v0.0.0-20250209112853-456b833e523a
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/jwijenbergh/puregotk v0.0.0-20240827133221-51f7e663a5e9
 	github.com/lmittmann/tint v1.0.7

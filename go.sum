@@ -12,6 +12,8 @@ github.com/apprehensions/wine v0.0.0-20250206171740-ab07521097ab h1:Zm2vhLcafeuS
 github.com/apprehensions/wine v0.0.0-20250206171740-ab07521097ab/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
 github.com/apprehensions/wine v0.0.0-20250208155613-b47818c0f018 h1:fVmFn+ECvfAU8YIiLcJeLcd4a7t0kXVwI6kVUrlk9oQ=
 github.com/apprehensions/wine v0.0.0-20250208155613-b47818c0f018/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
+github.com/apprehensions/wine v0.0.0-20250209112853-456b833e523a h1:AT/11Qxa+1d0v0pnWH+gGlRc/G41r7E05IMXwqNxzZ0=
+github.com/apprehensions/wine v0.0.0-20250209112853-456b833e523a/go.mod h1:t54gBblDmNAdLoRNLKk/338+JQvCiyt6qS8EUpD3RYw=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=

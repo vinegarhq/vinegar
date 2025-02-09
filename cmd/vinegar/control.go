@@ -74,6 +74,9 @@ func (ctl *control) setupControlActions() {
 		"run-winetricks": {"Executing Winetricks", func() error {
 			return run(ctl.pfx.Tricks())
 		}},
+		"run-winecfg": {"Running Wine Configurator", func() error {
+			return run(ctl.pfx.Wine("winecfg"))
+		}},
 
 		"install-studio":   {"Installing Studio", (*bootstrapper).setup},
 		"uninstall-studio": {"Deleting all deployments", ctl.deleteDeployments},

@@ -8,8 +8,6 @@ github.com/apprehensions/rbxbin v0.0.0-20250127194138-e1b385050444 h1:6KRg1JpRJA
 github.com/apprehensions/rbxbin v0.0.0-20250127194138-e1b385050444/go.mod h1:FRJLfv2+HPYGcR7xP2VLG4O6QjkFCf05rBcdfUq1j3M=
 github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942 h1:pNRoIKlv329La+msdHmJSPYYf1y4hY4s5ou2mEQDHqU=
 github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942/go.mod h1:F7WKRLrQxuRgfXxhwnlFJ059ZBMRxkXxvIhUxP4Qc5g=
-github.com/apprehensions/wine v0.0.0-20250209195638-d98a2ae4ca19 h1:rP7tlldLsLAI8lm5mpVpcsLaoFxRLrOm7JmwJ4ZrhpE=
-github.com/apprehensions/wine v0.0.0-20250209195638-d98a2ae4ca19/go.mod h1:apeIbCtolwZOKOw3jJGFLsnSIzL28Rrs+tM0x3jxJZk=
 github.com/apprehensions/wine v0.0.0-20250209200938-16e6e976d70e h1:9KsvxDjgP0mrx0ldLDT9R/KkBOEjz6txyFfxfaEiaxA=
 github.com/apprehensions/wine v0.0.0-20250209200938-16e6e976d70e/go.mod h1:apeIbCtolwZOKOw3jJGFLsnSIzL28Rrs+tM0x3jxJZk=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

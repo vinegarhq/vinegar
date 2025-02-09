@@ -24,7 +24,7 @@
                               <object class="GtkButton">
                                 <property name="action-name">navigation.push</property>
                                 <property name="action-target">'configure-text'</property>
-                                <property name="icon-name">preferences-system-symbolic</property>
+                                <property name="icon-name">emblem-system-symbolic</property>
                               </object>
                             </child>
                             <child type="end">
@@ -101,6 +101,13 @@
                                     <style>
                                       <class name="destructive-action"/>
                                     </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwButtonRow" id="prefix-configure">
+                                    <property name="action-name">app.run-winecfg</property>
+                                    <property name="start-icon-name">preferences-system</property>
+                                    <property name="title">Configure Wine</property>
                                   </object>
                                 </child>
                                 <child>

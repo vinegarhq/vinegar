@@ -1,22 +1,23 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 	"sync/atomic"
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
+	"github.com/apprehensions/wine/dxvk"
+	"github.com/apprehensions/wine/webview"
+	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 	"golang.org/x/sync/errgroup"
-	cp "github.com/otiai10/copy"
-	"github.com/apprehensions/wine/dxvk"
 )
 
 var studio = clientsettings.WindowsStudio64
@@ -63,10 +64,6 @@ func (b *bootstrapper) setup() error {
 	return nil
 }
 
-func (ui *ui) prefixInit() error {
-	return run(ui.pfx.Init())
-}
-
 func (b *bootstrapper) setupPrefix() error {
 	b.message("Setting up Wine")
 
@@ -78,10 +75,73 @@ func (b *bootstrapper) setupPrefix() error {
 		return nil
 	}
 
-	b.message("Initializing Wineprefix")
-	defer b.performing()()
+	stop := b.performing()
 
-	return b.prefixInit()
+	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
+	if err := run(b.pfx.Init()); err != nil {
+		return err
+	}
+
+	stop()
+
+	if err := b.webViewInstall(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (b *bootstrapper) webViewInstall() error {
+	if b.cfg.Studio.WebView == "" {
+		return nil
+	}
+
+	name := filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
+	if _, err := os.Stat(name); err != nil {
+		if err := b.webViewDownload(name); err != nil {
+			return err
+		}
+	}
+
+	defer b.performing()()
+	b.message("Installing WebView", "path", name)
+
+	return run(webview.Install(b.pfx, name))
+}
+
+func (b *bootstrapper) webViewDownload(name string) error {
+	stop := b.performing()
+
+	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
+	d, err := webview.GetDownload(b.cfg.Studio.WebView)
+	if err != nil {
+		return err
+	}
+
+	tmp, err := os.CreateTemp("", "unc_msedgestandalone.*.exe")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmp.Name())
+
+	if err != nil {
+		return err
+	}
+
+	stop()
+	b.message("Downloading WebView", "version", d.Version)
+	err = netutil.DownloadProgress(d.URL, tmp.Name(), &b.pbar)
+	if err != nil {
+		return err
+	}
+
+	cac, err := os.OpenFile(name, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	if err != nil {
+		return err
+	}
+	defer cac.Close()
+
+	return d.Extract(tmp, cac)
 }
 
 func (b *bootstrapper) setupOverlay() error {

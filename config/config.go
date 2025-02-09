@@ -28,6 +28,7 @@ type Studio struct {
 	Channel       string        `toml:"channel"`
 	Dxvk          bool          `toml:"dxvk"`
 	DxvkVersion   string        `toml:"dxvk_version"`
+	WebView       string        `toml:"webview"`
 	ForcedGpu     string        `toml:"gpu"`
 	Renderer      string        `toml:"renderer"`
 	Env           Environment   `toml:"env"`
@@ -81,6 +82,7 @@ func Default() *Config {
 		Studio: Studio{
 			Dxvk:        false,
 			DxvkVersion: "2.5.3",
+			WebView:     "cd7a382c-62c6-46c0-8098-0d50a7953b61",
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "Vulkan",

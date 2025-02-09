@@ -78,7 +78,7 @@ func (ctl *control) setupControlActions() {
 		"install-studio":   {"Installing Studio", (*bootstrapper).setup},
 		"uninstall-studio": {"Deleting all deployments", ctl.deleteDeployments},
 
-		"init-prefix": {"Initializing Wineprefix", ctl.prefixInit},
+		"init-prefix":   {"Initializing Wineprefix", (*bootstrapper).setupPrefix},
 		"kill-prefix":   {"Killing Wineprefix", ctl.pfx.Kill},
 		"delete-prefix": {"Deleting Wineprefix", ctl.deletePrefixes},
 

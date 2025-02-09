@@ -63,6 +63,10 @@ func (b *bootstrapper) setup() error {
 	return nil
 }
 
+func (ui *ui) prefixInit() error {
+	return run(ui.pfx.Init())
+}
+
 func (b *bootstrapper) setupPrefix() error {
 	b.message("Setting up Wine")
 
@@ -77,7 +81,7 @@ func (b *bootstrapper) setupPrefix() error {
 	b.message("Initializing Wineprefix")
 	defer b.performing()()
 
-	return run(b.pfx.Init())
+	return b.prefixInit()
 }
 
 func (b *bootstrapper) setupOverlay() error {

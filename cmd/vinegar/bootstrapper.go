@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"syscall"
-	"time"
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/godbus/dbus/v5"
@@ -21,15 +19,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/studiorpc"
 	"github.com/vinegarhq/vinegar/sysinfo"
-)
-
-const killWait = 3 * time.Second
-
-const (
-	// Randomly chosen log entry in cases where Studios process
-	// continues to run. Due to a lack of bug reports, it is unknown
-	// specifically which entry to use for these types of cases.
-	shutdownEntry = "[FLog::LifecycleManager] Exited ApplicationScope"
 )
 
 type bootstrapper struct {
@@ -128,13 +117,6 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 			ent = ent[1:]
 		}
 		slog.Log(context.Background(), logging.LevelRoblox, ent)
-	}
-
-	if strings.Contains(line, shutdownEntry) {
-		go func() {
-			time.Sleep(killWait)
-			syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-		}()
 	}
 
 	if b.cfg.Studio.DiscordRPC {

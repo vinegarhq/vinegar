@@ -67,6 +67,8 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
+	slog.Info("Running Studio!", "cmd", cmd)
+
 	cmd.Stderr = nil
 	out, err := cmd.StderrPipe()
 	if err != nil {
@@ -88,8 +90,6 @@ func (b *bootstrapper) execute(args ...string) error {
 			cmd.Process.Kill()
 		}
 	}()
-
-	b.message("Launching Studio", "cmd", cmd)
 
 	if err := cmd.Start(); err != nil {
 		return err

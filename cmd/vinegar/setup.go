@@ -12,6 +12,7 @@ import (
 
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/rbxweb/clientsettings"
+	"github.com/apprehensions/wine"
 	"github.com/apprehensions/wine/dxvk"
 	"github.com/apprehensions/wine/webview"
 	cp "github.com/otiai10/copy"
@@ -23,6 +24,8 @@ import (
 var studio = clientsettings.WindowsStudio64
 
 func (b *bootstrapper) prepare() error {
+	defer b.performing()()
+
 	b.message("Applying Environment")
 	dxvk.Setenv(b.cfg.Studio.Dxvk)
 
@@ -33,6 +36,24 @@ func (b *bootstrapper) prepare() error {
 	b.message("Applying FFlags")
 	if err := b.cfg.Studio.FFlags.Apply(b.dir); err != nil {
 		return fmt.Errorf("apply fflags: %w", err)
+	}
+
+	theme := "Light"
+	if b.app.GetStyleManager().GetDark() {
+		theme = "Dark"
+	}
+
+	idle(func() { b.status.SetLabel("Launching Studio") })
+
+	// Ontop of changing the theme, this also kick starts the wineserver,
+	// removing the awkward delay after the bootstrapper window dissapears
+	// and wineserver takes its time to start initializing.
+	slog.Info("Kickstarting wineserver!", "theme", theme)
+	err := b.pfx.RegistryAdd(
+	   `HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`,
+	   "CurrentTheme", wine.REG_SZ, theme)
+	if err != nil {
+		return fmt.Errorf("change theme: %w", err)
 	}
 
 	return nil

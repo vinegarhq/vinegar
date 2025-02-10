@@ -26,10 +26,6 @@ func (b *bootstrapper) prepare() error {
 	b.message("Applying Environment")
 	dxvk.Setenv(b.cfg.Studio.Dxvk)
 
-	// Required to read Roblox logs.
-	b.cfg.Studio.Env["WINEDEBUG"] += ",warn+debugstr"
-	b.cfg.Studio.Env.Setenv()
-
 	if err := b.setupOverlay(); err != nil {
 		return fmt.Errorf("setup overlay: %w", err)
 	}
@@ -90,9 +86,17 @@ func (b *bootstrapper) setupPrefix() error {
 	if err := b.pfx.SetDPI(98); err != nil {
 		return nil
 	}
+
 	stop()
 
 	if err := b.webViewInstall(); err != nil {
+		return err
+	}
+
+	// Some unknown DPI issue arises if the DPI is changed
+	// *after* wineserver/wineprefix initialization, causing
+	// Studio not to run.
+	if err := b.pfx.Kill(); err != nil {
 		return err
 	}
 
@@ -112,7 +116,6 @@ func (b *bootstrapper) webViewInstall() error {
 	}
 
 	defer b.performing()()
-
 
 	b.message("Setting Wineprefix version")
 	// If it is not win7, WebView will appear black.

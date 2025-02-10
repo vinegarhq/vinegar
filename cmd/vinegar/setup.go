@@ -26,7 +26,8 @@ var studio = clientsettings.WindowsStudio64
 func (b *bootstrapper) prepare() error {
 	defer b.performing()()
 
-	b.message("Applying Environment")
+	b.message("Renderer Status:", "renderer", b.cfg.Studio.Renderer,
+		"dxvk", b.cfg.Studio.Dxvk)
 	dxvk.Setenv(b.cfg.Studio.Dxvk)
 
 	if err := b.setupOverlay(); err != nil {
@@ -50,8 +51,8 @@ func (b *bootstrapper) prepare() error {
 	// and wineserver takes its time to start initializing.
 	slog.Info("Kickstarting wineserver!", "theme", theme)
 	err := b.pfx.RegistryAdd(
-	   `HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`,
-	   "CurrentTheme", wine.REG_SZ, theme)
+		`HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`,
+		"CurrentTheme", wine.REG_SZ, theme)
 	if err != nil {
 		return fmt.Errorf("change theme: %w", err)
 	}

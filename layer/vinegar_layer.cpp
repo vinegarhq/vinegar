@@ -110,8 +110,6 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_CreateInstance(
         instance_dispatch[GetKey(*pInstance)] = dispatchTable;
     }
 
-    printf("Vinegar Vulkan layer enabled\n");
-
     return VK_SUCCESS;
 }
 

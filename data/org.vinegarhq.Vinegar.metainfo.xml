@@ -43,6 +43,16 @@
 	</screenshots>
 
 	<releases>
+		<release version="1.8.1" date="2025-02-10">
+			<description>
+				<ul>
+					<li>Enabled Vulkan by default</li>
+					<li>Added opt-out configurable WebView installer</li>
+					<li>Added action to launch WINE configurator</li>
+					<li>Automatically set Studio theme based on libadwaita</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.8.0" date="2025-02-08">
 			<description>
 				<ul>

@@ -104,6 +104,8 @@ func (c *Config) Setup() error {
 		SanitizeEnv()
 	}
 
+	// Required to read Roblox logs.
+	c.Env["WINEDEBUG"] += ",warn+debugstr"
 	c.Env.Setenv()
 
 	if err := c.Studio.setup(); err != nil {

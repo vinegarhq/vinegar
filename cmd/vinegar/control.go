@@ -317,14 +317,16 @@ func (ctl *control) updateButtons() {
 	uninst.SetVisible(!vers)
 	run.SetVisible(!vers)
 
-	var init, kill, del, tricks gtk.Widget
+	var init, kill, del, cfg, tricks gtk.Widget
 	ctl.builder.GetObject("prefix-init").Cast(&init)
 	ctl.builder.GetObject("prefix-kill").Cast(&kill)
 	ctl.builder.GetObject("prefix-delete").Cast(&del)
+	ctl.builder.GetObject("prefix-configure").Cast(&cfg)
 	ctl.builder.GetObject("prefix-winetricks").Cast(&tricks)
 	init.SetVisible(!pfx)
 	del.SetVisible(pfx)
 	kill.SetVisible(pfx)
+	cfg.SetVisible(pfx)
 	tricks.SetVisible(pfx)
 }
 

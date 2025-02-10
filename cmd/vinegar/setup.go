@@ -82,6 +82,14 @@ func (b *bootstrapper) setupPrefix() error {
 		return err
 	}
 
+	b.message("Setting Wineprefix DPI")
+	// Studio will not load past the splash screen if the DPI
+	// is 96 with the following conditions:
+	//   1. WebView is installed
+	//   2. WebView is not installed, but we are in Flatpak
+	if err := b.pfx.SetDPI(98); err != nil {
+		return nil
+	}
 	stop()
 
 	if err := b.webViewInstall(); err != nil {
@@ -105,12 +113,6 @@ func (b *bootstrapper) webViewInstall() error {
 
 	defer b.performing()()
 
-	b.message("Setting Wineprefix DPI")
-	// Studio will not load past the splash screen if the DPI
-	// is 96 and WebView is installed.
-	if err := b.pfx.SetDPI(98); err != nil {
-		return nil
-	}
 
 	b.message("Setting Wineprefix version")
 	// If it is not win7, WebView will appear black.

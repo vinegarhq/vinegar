@@ -13,7 +13,7 @@ require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/apprehensions/rbxbin v0.0.0-20250127194138-e1b385050444
 	github.com/apprehensions/rbxweb v0.0.0-20240329184049-0bdedc184942
-	github.com/apprehensions/wine v0.0.0-20250209200938-16e6e976d70e
+	github.com/apprehensions/wine v0.0.0-20250211082328-b661ff87ef87
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/jwijenbergh/puregotk v0.0.0-20240827133221-51f7e663a5e9
 	github.com/lmittmann/tint v1.0.7
@@ -37,3 +37,5 @@ retract (
 	[v1.0.0, v1.1.3]
 	v0.0.1
 )
+
+replace github.com/apprehensions/wine => ../wine

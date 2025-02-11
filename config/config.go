@@ -4,7 +4,6 @@ package config
 import (
 	"errors"
 	"fmt"
-	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,7 +12,6 @@ import (
 	"github.com/apprehensions/rbxbin"
 	"github.com/apprehensions/wine"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 // Studio is a representation of the deployment and behavior
@@ -129,13 +127,12 @@ func (s *Studio) setup() error {
 	}
 
 	if s.WineRoot != "" {
+		// Check if constructing a Wine command from the WineRoot is erroneous,
+		// such as wine64 being missing.
 		pfx := wine.New("", s.WineRoot)
 		w := pfx.Wine("")
 		if w.Err != nil {
 			return fmt.Errorf("wineroot: %w", w.Err)
-		}
-		if pfx.IsProton() && w.Args[0] != "umu-run" && !sysinfo.InFlatpak {
-			slog.Warn("wineroot: umu-run recommended for Proton usage!")
 		}
 	}
 

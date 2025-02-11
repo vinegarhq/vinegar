@@ -37,5 +37,3 @@ retract (
 	[v1.0.0, v1.1.3]
 	v0.0.1
 )
-
-replace github.com/apprehensions/wine => ../wine

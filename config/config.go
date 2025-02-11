@@ -104,18 +104,20 @@ func (c *Config) Setup() error {
 		SanitizeEnv()
 	}
 
-	// Required to read Roblox logs.
-	c.Env["WINEDEBUG"] += ",warn+debugstr"
-	c.Env.Setenv()
-
 	if err := c.Studio.setup(); err != nil {
 		return fmt.Errorf("studio: %w", err)
 	}
+
+	// Required to read Roblox logs.
+	c.Env["WINEDEBUG"] += ",warn+debugstr"
+	c.Env.Setenv()
 
 	return nil
 }
 
 func (s *Studio) setup() error {
+	s.Env.Setenv()
+
 	if !strings.HasPrefix(s.Renderer, "D3D11") && s.Dxvk {
 		return ErrNeedDXVKRenderer
 	}

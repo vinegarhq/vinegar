@@ -27,5 +27,5 @@ body:
     id: sysinfo
     attributes:
       label: System information
-      placeholder: Output of `vinegar sysinfo` or `flatpak run org.vinegarhq.Vinegar sysinfo`
+      placeholder: Data from Vinegar > About page (top-right) > Troubleshooting > Debugging Information
       render: shell

@@ -52,7 +52,7 @@ func Load() (*Config, error) {
 	d := Default()
 
 	if _, err := os.Stat(dirs.ConfigPath); errors.Is(err, os.ErrNotExist) {
-		return d, nil
+		return d, d.Setup()
 	}
 
 	if _, err := toml.DecodeFile(dirs.ConfigPath, &d); err != nil {

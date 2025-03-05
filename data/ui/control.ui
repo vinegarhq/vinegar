@@ -159,7 +159,6 @@
                           <object class="AdwHeaderBar">
                             <child type="end">
                               <object class="GtkLinkButton">
-                                <property name="css-classes">suggested-action</property>
                                 <property name="icon-name">accessories-dictionary-symbolic</property>
                                 <property name="uri">https://vinegarhq.org/Configuration</property>
                                 <property name="visited">True</property>
@@ -170,6 +169,7 @@
                             </child>
                             <child>
                               <object class="GtkButton" id="config-save">
+                                <property name="css-classes">suggested-action</property>
                                 <property name="action-name">app.save-config</property>
                                 <property name="icon-name">media-floppy-symbolic</property>
                                 <child>

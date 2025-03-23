@@ -57,6 +57,12 @@ func (b *bootstrapper) prepare() error {
 		return fmt.Errorf("change theme: %w", err)
 	}
 
+	// Modern versions of Studio now hard-require win10 and onwards,
+	// so *always* set it.
+	if err := run(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
+		return nil
+	}
+
 	return nil
 }
 

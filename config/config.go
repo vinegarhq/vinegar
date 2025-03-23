@@ -80,15 +80,14 @@ func Default() *Config {
 		Studio: Studio{
 			Dxvk:        false,
 			DxvkVersion: "2.5.3",
-			// Runtime 109.0.1518.140 for X64.
-			WebView:    "322eb0af-cdbc-4a17-a8ca-f0ace4d4adc8",
-			GameMode:   true,
-			ForcedGpu:  "prime-discrete",
-			Renderer:   "Vulkan",
-			Channel:    "LIVE",
-			DiscordRPC: true,
-			FFlags:     make(rbxbin.FFlags),
-			Env:        make(Environment),
+			WebView:     "",
+			GameMode:    true,
+			ForcedGpu:   "prime-discrete",
+			Renderer:    "Vulkan",
+			Channel:     "LIVE",
+			DiscordRPC:  true,
+			FFlags:      make(rbxbin.FFlags),
+			Env:         make(Environment),
 		},
 	}
 }

@@ -95,6 +95,10 @@ func (b *bootstrapper) setupPrefix() error {
 		return fmt.Errorf("wine: %w", c.Err)
 	}
 
+	if err := b.setupWebView(); err != nil {
+		return fmt.Errorf("webview: %w", err)
+	}
+
 	if b.pfx.Exists() {
 		return nil
 	}
@@ -117,10 +121,6 @@ func (b *bootstrapper) setupPrefix() error {
 
 	stop()
 
-	if err := b.webViewInstall(); err != nil {
-		return err
-	}
-
 	// Some unknown DPI issue arises if the DPI is changed
 	// *after* wineserver/wineprefix initialization, causing
 	// Studio not to run.
@@ -131,11 +131,19 @@ func (b *bootstrapper) setupPrefix() error {
 	return nil
 }
 
-func (b *bootstrapper) webViewInstall() error {
+func (b *bootstrapper) setupWebView() error {
+	// Since we do not keep webview tracked in state, simply removing it
+	// always if it is disabled is fine, since it will be a harmless error.
 	if b.cfg.Studio.WebView == "" {
+		inst := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView")
+		os.RemoveAll(inst)
 		return nil
 	}
 
+	return b.webViewInstall()
+}
+
+func (b *bootstrapper) webViewInstall() error {
 	name := filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
 	if _, err := os.Stat(name); err != nil {
 		if err := b.webViewDownload(name); err != nil {

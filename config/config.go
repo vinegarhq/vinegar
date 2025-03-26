@@ -41,7 +41,6 @@ type Config struct {
 }
 
 var (
-	ErrNeedDXVKRenderer = errors.New("dxvk is only valid with d3d renderers")
 	ErrWineRootAbs      = errors.New("wine root path is not an absolute path")
 	ErrWineRootInvalid  = errors.New("no wine binary present in wine root")
 )
@@ -114,10 +113,6 @@ func (c *Config) Setup() error {
 
 func (s *Studio) setup() error {
 	s.Env.Setenv()
-
-	if !strings.HasPrefix(s.Renderer, "D3D11") && s.Dxvk {
-		return ErrNeedDXVKRenderer
-	}
 
 	if s.Launcher != "" {
 		if _, err := s.LauncherPath(); err != nil {

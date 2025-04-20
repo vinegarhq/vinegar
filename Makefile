@@ -29,7 +29,7 @@ layer/libVkLayer_VINEGAR_VinegarLayer.so:
 	$(CXX) -shared -fPIC `pkg-config --cflags vulkan` layer/vinegar_layer.cpp -o $@
 
 install: all
-	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
+	install -Dm755 vinegar $(DESTDIR)/usr/local/bin/vinegar
 	install -Dm644 data/org.vinegarhq.Vinegar.metainfo.xml $(DESTDIR)$(PREFIX)/share/metainfo/org.vinegarhq.Vinegar.metainfo.xml
 	install -Dm644 data/desktop/vinegar.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
 	install -Dm644 data/desktop/roblox-studio.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.studio.desktop

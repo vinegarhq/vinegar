@@ -2,7 +2,7 @@
 
 VERSION = v1.8.1
 
-PREFIX      ?= /usr
+PREFIX      ?= /usr/local
 DATAPREFIX  = $(PREFIX)/share/vinegar
 APPPREFIX   = $(PREFIX)/share/applications
 ICONPREFIX  = $(PREFIX)/share/icons/hicolor

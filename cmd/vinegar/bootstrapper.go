@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/apprehensions/rbxbin"
+	"github.com/sewnie/rbxbin"
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/glib"
@@ -29,7 +29,7 @@ type bootstrapper struct {
 	status gtk.Label
 
 	dir string
-	bin rbxbin.Deployment
+	bin *rbxbin.Deployment
 
 	rp *studiorpc.StudioRPC
 }

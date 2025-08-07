@@ -12,7 +12,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/apprehensions/wine"
+	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 

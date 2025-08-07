@@ -8,7 +8,8 @@ import (
 	"path/filepath"
 	"unsafe"
 
-	"github.com/apprehensions/wine"
+	"github.com/sewnie/wine"
+	"github.com/sewnie/rbxweb"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
@@ -28,6 +29,7 @@ type ui struct {
 	cfg   *config.Config
 	state *state.State
 	pfx   *wine.Prefix
+	rbx   *rbxweb.Client
 
 	logFile *os.File
 }

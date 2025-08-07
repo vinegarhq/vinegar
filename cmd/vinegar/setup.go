@@ -10,18 +10,18 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/apprehensions/rbxbin"
-	"github.com/apprehensions/rbxweb/clientsettings"
-	"github.com/apprehensions/wine"
-	"github.com/apprehensions/wine/dxvk"
-	"github.com/apprehensions/wine/webview"
+	"github.com/sewnie/rbxbin"
+	"github.com/sewnie/rbxweb"
+	"github.com/sewnie/wine"
+	"github.com/sewnie/wine/dxvk"
+	"github.com/sewnie/wine/webview"
 	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 	"golang.org/x/sync/errgroup"
 )
 
-var studio = clientsettings.WindowsStudio64
+var studio = rbxweb.BinaryTypeWindowsStudio64
 
 func (b *bootstrapper) prepare() error {
 	defer b.performing()()
@@ -241,7 +241,7 @@ func (b *bootstrapper) fetchDeployment() error {
 	defer b.performing()()
 
 	if b.cfg.Studio.ForcedVersion != "" {
-		b.bin = rbxbin.Deployment{
+		b.bin = &rbxbin.Deployment{
 			Type:    studio,
 			Channel: b.cfg.Studio.Channel,
 			GUID:    b.cfg.Studio.ForcedVersion,
@@ -252,7 +252,7 @@ func (b *bootstrapper) fetchDeployment() error {
 		return nil
 	}
 
-	d, err := rbxbin.GetDeployment(studio, b.cfg.Studio.Channel)
+	d, err := rbxbin.GetDeployment(b.rbx, studio, b.cfg.Studio.Channel)
 	if err != nil {
 		return err
 	}
@@ -296,7 +296,7 @@ func (b *bootstrapper) setupPackages() error {
 	}
 
 	b.message("Fetching Package List", "channel", b.bin.Channel)
-	pkgs, err := m.GetPackages(b.bin)
+	pkgs, err := m.GetPackages(b.rbx, b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
 	}
@@ -310,7 +310,7 @@ func (b *bootstrapper) setupPackages() error {
 	})
 
 	b.message("Fetching Installation Directives")
-	pd, err := m.BinaryDirectories(b.bin)
+	pd, err := m.BinaryDirectories(b.rbx, b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch package dirs: %w", err)
 	}

@@ -5,8 +5,6 @@ import (
 	"time"
 
 	"github.com/altfoxie/drpc"
-	"github.com/apprehensions/rbxweb"
-	"github.com/apprehensions/rbxweb/games"
 )
 
 // UpdateGamePresence sets the activity based on the current
@@ -16,12 +14,7 @@ import (
 func (s *StudioRPC) UpdateGamePresence() error {
 	details := ""
 
-	uid, err := rbxweb.GetPlaceUniverse(s.placeID)
-	if err != nil {
-		return err
-	}
-
-	pd, err := games.GetGameDetail(uid)
+	pd, err := s.rbx.GamesV1.GetPlaceDetail(s.placeID)
 	// Sometimes the game itself is actually just a template, and is not owned by the
 	// user, which is why details won't be fetched.
 	if err != nil {

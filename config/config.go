@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/BurntSushi/toml"
-	"github.com/apprehensions/rbxbin"
-	"github.com/apprehensions/wine"
+	"github.com/sewnie/rbxbin"
+	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/altfoxie/drpc"
-	"github.com/apprehensions/rbxweb"
+	"github.com/sewnie/rbxweb"
 )
 
 const appID = "1159891020956323923"
@@ -24,6 +24,7 @@ var gameOpenEntryPattern = regexp.MustCompile(`Entered PlaceSessionScope:'([0-9]
 type StudioRPC struct {
 	presence drpc.Activity
 	client   *drpc.Client
+	rbx      *rbxweb.Client
 
 	placeID rbxweb.PlaceID
 }
@@ -32,6 +33,7 @@ func New() *StudioRPC {
 	c, _ := drpc.New("1159891020956323923")
 	return &StudioRPC{
 		client: c,
+		rbx: rbxweb.NewClient(),
 	}
 }
 

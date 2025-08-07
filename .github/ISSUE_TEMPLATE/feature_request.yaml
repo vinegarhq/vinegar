@@ -2,7 +2,7 @@ name: Feature request
 labels: "enhancement"
 description: Suggest a feature that should be added
 assignees:
-  - apprehensions
+  - sewnie
 body:
   - type: checkboxes
     attributes:

@@ -101,7 +101,7 @@ func (b *bootstrapper) execute(args ...string) error {
 		b.registerGameMode(int32(cmd.Process.Pid))
 	}
 
-	idle(func() { b.app.ActivateAction("show-stop", nil) })
+	idle(func() { b.ActivateAction("show-stop", nil) })
 
 	go b.handleWineOutput(out)
 

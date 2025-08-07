@@ -17,20 +17,20 @@ import (
 )
 
 type control struct {
-	*ui
+	*app
 
 	builder *gtk.Builder
 	win     adw.ApplicationWindow
 }
 
-func (s *ui) newControl() control {
+func (s *app) newControl() control {
 	ctl := control{
-		ui:      s,
+		app:     s,
 		builder: gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/control.ui"),
 	}
 
 	ctl.builder.GetObject("window").Cast(&ctl.win)
-	ctl.win.SetApplication(&s.app.Application)
+	ctl.win.SetApplication(&s.Application.Application)
 
 	abt := gio.NewSimpleAction("about", nil)
 	abtcb := func(_ gio.SimpleAction, p uintptr) {
@@ -39,7 +39,7 @@ func (s *ui) newControl() control {
 		w.Unref()
 	}
 	abt.ConnectActivate(&abtcb)
-	ctl.app.AddAction(abt)
+	ctl.AddAction(abt)
 	abt.Unref()
 
 	ctl.configPut()
@@ -101,7 +101,7 @@ func (ctl *control) setupControlActions() {
 		btn.SetVisible(true)
 	}
 	stop.ConnectActivate(&stopcb)
-	ctl.app.AddAction(stop)
+	ctl.AddAction(stop)
 	stop.Unref()
 
 	for name, action := range actions {
@@ -144,7 +144,7 @@ func (ctl *control) setupControlActions() {
 		}
 
 		act.ConnectActivate(&actcb)
-		ctl.app.AddAction(act)
+		ctl.AddAction(act)
 		act.Unref()
 	}
 }

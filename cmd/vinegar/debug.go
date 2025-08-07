@@ -9,7 +9,7 @@ import (
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-func (ui *ui) debugInfo() string {
+func (ui *app) debugInfo() string {
 	var revision string
 	bi, _ := debug.ReadBuildInfo()
 	for _, bs := range bi.Settings {

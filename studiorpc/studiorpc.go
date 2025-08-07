@@ -33,7 +33,7 @@ func New() *StudioRPC {
 	c, _ := drpc.New("1159891020956323923")
 	return &StudioRPC{
 		client: c,
-		rbx: rbxweb.NewClient(),
+		rbx:    rbxweb.NewClient(),
 	}
 }
 

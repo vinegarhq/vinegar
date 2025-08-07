@@ -41,8 +41,8 @@ type Config struct {
 }
 
 var (
-	ErrWineRootAbs      = errors.New("wine root path is not an absolute path")
-	ErrWineRootInvalid  = errors.New("no wine binary present in wine root")
+	ErrWineRootAbs     = errors.New("wine root path is not an absolute path")
+	ErrWineRootInvalid = errors.New("no wine binary present in wine root")
 )
 
 // Load will load the configuration file; if it doesn't exist, it

@@ -34,8 +34,8 @@ func main() {
 		logging.NewTextHandler(lf, true),
 	)))
 
-	ui := ui{
-		app: adw.NewApplication(
+	ui := app{
+		Application: adw.NewApplication(
 			"org.vinegarhq.Vinegar",
 			gio.GApplicationHandlesCommandLineValue,
 		),
@@ -46,9 +46,9 @@ func main() {
 	defer ui.unref()
 
 	aclcb := ui.activateCommandLine
-	ui.app.ConnectCommandLine(&aclcb)
+	ui.ConnectCommandLine(&aclcb)
 
-	if code := ui.app.Run(len(os.Args), os.Args); code > 0 {
+	if code := ui.Run(len(os.Args), os.Args); code > 0 {
 		os.Exit(code)
 	}
 }

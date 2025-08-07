@@ -10,12 +10,12 @@ import (
 	"strings"
 	"sync/atomic"
 
+	cp "github.com/otiai10/copy"
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
 	"github.com/sewnie/wine/dxvk"
 	"github.com/sewnie/wine/webview"
-	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 	"golang.org/x/sync/errgroup"
@@ -40,7 +40,7 @@ func (b *bootstrapper) prepare() error {
 	}
 
 	theme := "Light"
-	if b.app.GetStyleManager().GetDark() {
+	if b.GetStyleManager().GetDark() {
 		theme = "Dark"
 	}
 

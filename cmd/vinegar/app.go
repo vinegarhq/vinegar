@@ -8,12 +8,12 @@ import (
 	"path/filepath"
 	"unsafe"
 
-	"github.com/sewnie/wine"
-	"github.com/sewnie/rbxweb"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
+	"github.com/sewnie/rbxweb"
+	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
@@ -23,8 +23,8 @@ var null = uintptr(unsafe.Pointer(nil))
 
 const errorFormat = "Vinegar has encountered an error: <tt>%v</tt>\nThe log file is shown below for debugging."
 
-type ui struct {
-	app *adw.Application
+type app struct {
+	*adw.Application
 
 	cfg   *config.Config
 	state *state.State
@@ -34,8 +34,8 @@ type ui struct {
 	logFile *os.File
 }
 
-func (s *ui) unref() {
-	s.app.Unref()
+func (s *app) unref() {
+	s.Unref()
 	s.logFile.Close()
 	slog.Info("Goodbye!")
 }
@@ -50,7 +50,7 @@ func idle(bg func()) {
 	glib.IdleAdd(&idlecb, 0)
 }
 
-func (ui *ui) activateCommandLine(_ gio.Application, cl uintptr) int {
+func (ui *app) activateCommandLine(_ gio.Application, cl uintptr) int {
 	acl := gio.ApplicationCommandLineNewFromInternalPtr(cl)
 	ptr := acl.GetArguments(0)
 
@@ -81,7 +81,7 @@ func (ui *ui) activateCommandLine(_ gio.Application, cl uintptr) int {
 	return 0
 }
 
-func (ui *ui) activateControl() {
+func (ui *app) activateControl() {
 	err := ui.loadConfig()
 	if err != nil {
 		ui.error(err)
@@ -90,7 +90,7 @@ func (ui *ui) activateControl() {
 	ui.newControl()
 }
 
-func (ui *ui) activateBootstrapper(args ...string) {
+func (ui *app) activateBootstrapper(args ...string) {
 	err := ui.loadConfig()
 	if err != nil {
 		ui.error(err)
@@ -110,7 +110,7 @@ func (ui *ui) activateBootstrapper(args ...string) {
 	glib.NewThread("bootstrapper", &tf, null)
 }
 
-func (s *ui) loadConfig() error {
+func (s *app) loadConfig() error {
 	// will fallback to default configuration if there is an error
 	cfg, err := config.Load()
 
@@ -128,7 +128,7 @@ func (s *ui) loadConfig() error {
 	return nil
 }
 
-func (ui *ui) error(e error) {
+func (ui *app) error(e error) {
 	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/error.ui")
 	defer builder.Unref()
 
@@ -138,11 +138,11 @@ func (ui *ui) error(e error) {
 	// parent, and opening the log file without the parent
 	// will be impossible, this is fine, since the error in
 	// such contexts does not need further information.
-	win := ui.app.GetActiveWindow()
+	win := ui.GetActiveWindow()
 	if win != nil {
-		d.SetTransientFor(ui.app.GetActiveWindow())
+		d.SetTransientFor(ui.GetActiveWindow())
 	}
-	d.SetApplication(&ui.app.Application)
+	d.SetApplication(&ui.Application.Application)
 	defer d.Unref()
 
 	slog.Error("Error!", "err", e)

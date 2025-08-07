@@ -10,11 +10,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sewnie/rbxbin"
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
+	"github.com/sewnie/rbxbin"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/studiorpc"
@@ -22,7 +22,7 @@ import (
 )
 
 type bootstrapper struct {
-	*ui
+	*app
 	win adw.Window
 
 	pbar   gtk.ProgressBar
@@ -34,23 +34,23 @@ type bootstrapper struct {
 	rp *studiorpc.StudioRPC
 }
 
-func (s *ui) newBootstrapper() *bootstrapper {
+func (s *app) newBootstrapper() *bootstrapper {
 	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/bootstrapper.ui")
 	defer builder.Unref()
 
 	b := bootstrapper{
-		ui: s,
-		rp: studiorpc.New(),
+		app: s,
+		rp:  studiorpc.New(),
 	}
 
 	builder.GetObject("window").Cast(&b.win)
-	b.win.SetApplication(&s.app.Application)
-	s.app.AddWindow(&b.win.Window)
+	b.win.SetApplication(&s.Application.Application)
+	s.AddWindow(&b.win.Window)
 	destroy := func(_ gtk.Window) bool {
 		// https://github.com/jwijenbergh/puregotk/issues/17
 		// BUG: realistically no other way to cancel
 		//      the bootstrapper, so just exit immediately!
-		b.app.Quit()
+		b.Quit()
 		return false
 	}
 	b.win.ConnectCloseRequest(&destroy)

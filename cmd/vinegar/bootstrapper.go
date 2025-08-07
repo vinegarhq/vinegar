@@ -67,8 +67,7 @@ func (s *app) newBootstrapper() *bootstrapper {
 }
 
 func (b *bootstrapper) performing() func() {
-	var tcb glib.SourceFunc
-	tcb = func(uintptr) bool {
+	var tcb glib.SourceFunc = func(uintptr) bool {
 		b.pbar.Pulse()
 		return true
 	}

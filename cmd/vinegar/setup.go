@@ -179,10 +179,6 @@ func (b *bootstrapper) webViewDownload(name string) error {
 	}
 	defer os.Remove(tmp.Name())
 
-	if err != nil {
-		return err
-	}
-
 	stop()
 	b.message("Downloading WebView", "version", d.Version)
 	err = netutil.DownloadProgress(d.URL, tmp.Name(), &b.pbar)

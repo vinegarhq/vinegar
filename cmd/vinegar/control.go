@@ -11,7 +11,6 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
-	_ "github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
@@ -129,8 +128,7 @@ func (ctl *control) setupControlActions() {
 				panic("unreachable")
 			}
 
-			var tf glib.ThreadFunc
-			tf = func(uintptr) uintptr {
+			var tf glib.ThreadFunc = func(uintptr) uintptr {
 				defer idle(func() {
 					ctl.updateButtons()
 					stack.SetVisibleChildName("control")

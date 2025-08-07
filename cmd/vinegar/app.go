@@ -21,8 +21,6 @@ import (
 
 var null = uintptr(unsafe.Pointer(nil))
 
-const errorFormat = "Vinegar has encountered an error: <tt>%v</tt>\nThe log file is shown below for debugging."
-
 type app struct {
 	*adw.Application
 
@@ -99,8 +97,7 @@ func (ui *app) activateBootstrapper(args ...string) {
 
 	b := ui.newBootstrapper()
 
-	var tf glib.ThreadFunc
-	tf = func(uintptr) uintptr {
+	var tf glib.ThreadFunc = func(uintptr) uintptr {
 		defer idle(b.win.Destroy)
 		if err := b.run(args...); err != nil {
 			idle(func() { b.error(err) })
@@ -153,8 +150,7 @@ func (ui *app) error(e error) {
 		d.AddResponses("okay", "Ok", "open", "Open Log")
 	}
 
-	var ccb gio.AsyncReadyCallback
-	ccb = func(_ uintptr, res uintptr, _ uintptr) {
+	var ccb gio.AsyncReadyCallback = func(_ uintptr, res uintptr, _ uintptr) {
 		ar := asyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
 		if win != nil && r == "open" {

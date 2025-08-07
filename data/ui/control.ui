@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.94.1 -->
+<!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name bia.ui -->
-  <requires lib="gtk" version="4.12"/>
+  <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
   <object class="AdwApplicationWindow" id="window">
     <property name="default-height">512</property>
@@ -108,13 +108,6 @@
                                     <property name="action-name">app.run-winecfg</property>
                                     <property name="start-icon-name">preferences-system</property>
                                     <property name="title">Configure Wine</property>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwButtonRow" id="prefix-winetricks">
-                                    <property name="action-name">app.run-winetricks</property>
-                                    <property name="start-icon-name">multimedia-player-symbolic</property>
-                                    <property name="title">Manage Wine Components</property>
                                   </object>
                                 </child>
                               </object>

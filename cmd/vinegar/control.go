@@ -35,6 +35,7 @@ func (s *app) newControl() control {
 	abtcb := func(_ gio.SimpleAction, p uintptr) {
 		w := adw.NewAboutDialogFromAppdata("/org/vinegarhq/Vinegar/metainfo.xml", version[1:])
 		w.Present(&ctl.win.Widget)
+		w.SetDebugInfo(s.debugInfo())
 		w.Unref()
 	}
 	abt.ConnectActivate(&abtcb)

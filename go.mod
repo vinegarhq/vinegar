@@ -19,7 +19,7 @@ require (
 	github.com/samber/slog-multi v1.4.1
 	github.com/sewnie/rbxbin v0.0.0-20250806104726-6336cb47e0e4
 	github.com/sewnie/rbxweb v0.0.0-20250807144008-1cc287f8788a
-	github.com/sewnie/wine v0.0.0-20250802220453-3332fe968016
+	github.com/sewnie/wine v0.0.0-20250807210248-7b57a5ad6303
 	golang.org/x/sys v0.35.0
 )
 
@@ -29,7 +29,7 @@ require (
 	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/samber/lo v1.51.0 // indirect
 	github.com/samber/slog-common v0.19.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
+	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
 

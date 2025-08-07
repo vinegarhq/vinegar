@@ -9,6 +9,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	slogmulti "github.com/samber/slog-multi"
+	"github.com/sewnie/rbxweb"
 	"github.com/vinegarhq/vinegar/config"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/state"
@@ -42,6 +43,7 @@ func main() {
 		state:   &s,
 		logFile: lf,
 		cfg:     config.Default(),
+		rbx:     rbxweb.NewClient(),
 	}
 	defer ui.unref()
 

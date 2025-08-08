@@ -17,7 +17,7 @@ import (
 	"github.com/sewnie/rbxbin"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
-	"github.com/vinegarhq/vinegar/studiorpc"
+	"github.com/vinegarhq/vinegar/internal/studiorpc"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 

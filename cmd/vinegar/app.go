@@ -14,7 +14,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
-	"github.com/vinegarhq/vinegar/config"
+	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 )

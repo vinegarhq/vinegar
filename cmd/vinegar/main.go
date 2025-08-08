@@ -50,6 +50,7 @@ func main() {
 	aclcb := ui.activateCommandLine
 	ui.ConnectCommandLine(&aclcb)
 
+	// TODO: sometimes segfaults for no reason
 	if code := ui.Run(len(os.Args), os.Args); code > 0 {
 		os.Exit(code)
 	}

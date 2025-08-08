@@ -1,12 +1,10 @@
 package main
 
 import (
-	"C"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -18,8 +16,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/state"
 )
-
-var null = uintptr(unsafe.Pointer(nil))
 
 type app struct {
 	*adw.Application
@@ -38,29 +34,11 @@ func (s *app) unref() {
 	slog.Info("Goodbye!")
 }
 
-func idle(bg func()) {
-	var idlecb glib.SourceFunc
-	idlecb = func(uintptr) bool {
-		defer glib.UnrefCallback(&idlecb)
-		bg()
-		return false
-	}
-	glib.IdleAdd(&idlecb, 0)
-}
-
 func (ui *app) activateCommandLine(_ gio.Application, cl uintptr) int {
 	acl := gio.ApplicationCommandLineNewFromInternalPtr(cl)
 	ptr := acl.GetArguments(0)
-
-	// This is the cost of using puregotk and not gotk4.
-	var args []string
-	for i := 0; ; i++ {
-		cStr := (**C.char)(unsafe.Pointer(ptr + uintptr(i)*unsafe.Sizeof(uintptr(0))))
-		if *cStr == nil {
-			break
-		}
-		args = append(args, C.GoString(*cStr))
-	}
+	args := cGoStringArray(ptr)
+	glib.Free(ptr)
 
 	subcmd := ""
 	if len(args) >= 2 {

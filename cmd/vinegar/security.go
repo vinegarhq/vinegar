@@ -24,13 +24,13 @@ func (a *app) getSecurity() (string, error) {
 		for _, sk := range k.Subkeys {
 			switch sk.Name {
 			case "EncryptionKey": // [Software\Wine\Credential Manager
-				c, err = rc4.NewCipher([]byte(sk.Value))
+				c, err = rc4.NewCipher(sk.Value.([]byte))
 				if err != nil {
 					return "", err
 				}
 			case "Password": // Software\Wine\Credential Manager\Generic: https://www.roblox.com:RobloxStudioAuth.
-				sec := make([]byte, len(sk.Value))
-				c.XORKeyStream(sec, []byte(sk.Value))
+				sec := make([]byte, len(sk.Value.([]byte)))
+				c.XORKeyStream(sec, sk.Value.([]byte))
 				return string(sec), nil
 			}
 		}

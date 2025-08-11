@@ -18,7 +18,7 @@ var gResource []byte
 
 func init() {
 	b := glib.NewBytes(
-		(uintptr)(unsafe.Pointer(&gResource[0])),
+		gResource,
 		uint(len(gResource)),
 	)
 	r, err := gio.NewResourceFromData(b)
@@ -36,21 +36,6 @@ func idle(bg func()) {
 		return false
 	}
 	glib.IdleAdd(&idlecb, 0)
-}
-
-// GTK library puregotk does not support slices as a transformation in
-// certain types.
-func cGoStringArray(p uintptr) (res []string) {
-	for {
-		s := (**C.char)(unsafe.Pointer(p))
-		if *s == nil {
-			break
-		}
-		res = append(res, C.GoString(*s))
-		glib.Free(p)
-		p += unsafe.Sizeof(uintptr(0))
-	}
-	return
 }
 
 // Exists due to the fact that puregotk's AsyncResult

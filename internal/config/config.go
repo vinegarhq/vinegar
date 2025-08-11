@@ -11,6 +11,7 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/wine"
+	"github.com/sewnie/wine/dxvk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
@@ -106,6 +107,7 @@ func (c *Config) Setup() error {
 
 	// Required to read Roblox logs.
 	c.Env["WINEDEBUG"] += ",warn+debugstr"
+	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.Dxvk)
 	c.Env.Setenv()
 
 	return nil

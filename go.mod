@@ -14,18 +14,18 @@ require (
 require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/godbus/dbus/v5 v5.1.0
-	github.com/jwijenbergh/puregotk v0.0.0-20250407124134-bc1a52f44fd4
+	github.com/jwijenbergh/puregotk v0.0.0-20250812133623-7203178b5172
 	github.com/lmittmann/tint v1.1.2
 	github.com/samber/slog-multi v1.4.1
-	github.com/sewnie/rbxbin v0.0.0-20250806104726-6336cb47e0e4
-	github.com/sewnie/rbxweb v0.0.0-20250807144008-1cc287f8788a
-	github.com/sewnie/wine v0.0.0-20250807210248-7b57a5ad6303
+	github.com/sewnie/rbxbin v0.0.0-20250809200201-8e6157d3175d
+	github.com/sewnie/rbxweb v0.0.0-20250814211051-ffceb5ad27e4
+	github.com/sewnie/wine v0.0.0-20250813131532-21cd09220e19
 	golang.org/x/sys v0.35.0
 )
 
 require (
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/jwijenbergh/purego v0.0.0-20241210143217-aeaa0bfe09e0 // indirect
+	github.com/jwijenbergh/purego v0.0.0-20250812133547-b5852df1402b // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
 	github.com/samber/lo v1.51.0 // indirect
 	github.com/samber/slog-common v0.19.0 // indirect
@@ -37,5 +37,3 @@ retract (
 	[v1.0.0, v1.1.3]
 	v0.0.1
 )
-
-replace github.com/jwijenbergh/puregotk => github.com/sewnie/puregotk v0.0.0-20250803195448-7ce64774bae4

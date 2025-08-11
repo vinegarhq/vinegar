@@ -13,7 +13,6 @@ import (
 	cp "github.com/otiai10/copy"
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/rbxweb"
-	"github.com/sewnie/wine"
 	"github.com/sewnie/wine/dxvk"
 	"github.com/sewnie/wine/webview"
 	"github.com/vinegarhq/vinegar/internal/dirs"
@@ -28,7 +27,6 @@ func (b *bootstrapper) prepare() error {
 
 	b.message("Renderer Status:", "renderer", b.cfg.Studio.Renderer,
 		"dxvk", b.cfg.Studio.Dxvk)
-	dxvk.Setenv(b.cfg.Studio.Dxvk)
 
 	if err := b.setupOverlay(); err != nil {
 		return fmt.Errorf("setup overlay: %w", err)
@@ -52,7 +50,7 @@ func (b *bootstrapper) prepare() error {
 	slog.Info("Kickstarting wineserver!", "theme", theme)
 	err := b.pfx.RegistryAdd(
 		`HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`,
-		"CurrentTheme", wine.REG_SZ, theme)
+		"CurrentTheme", theme)
 	if err != nil {
 		return fmt.Errorf("change theme: %w", err)
 	}

@@ -36,9 +36,7 @@ func (s *app) unref() {
 
 func (ui *app) activateCommandLine(_ gio.Application, cl uintptr) int {
 	acl := gio.ApplicationCommandLineNewFromInternalPtr(cl)
-	ptr := acl.GetArguments(0)
-	args := cGoStringArray(ptr)
-	glib.Free(ptr)
+	args := acl.GetArguments(0)
 
 	subcmd := ""
 	if len(args) >= 2 {

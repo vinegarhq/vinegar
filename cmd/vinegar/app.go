@@ -57,11 +57,11 @@ func (ui *app) activateCommandLine(_ gio.Application, cl uintptr) int {
 
 func (ui *app) activateControl() {
 	err := ui.loadConfig()
-	if err != nil {
-		ui.error(err)
-		slog.Warn("Falling back to default configuration!")
-	}
 	ui.newControl()
+	if err != nil {
+		slog.Warn("Falling back to default configuration!")
+		ui.error(err)
+	}
 }
 
 func (ui *app) activateBootstrapper(args ...string) {
@@ -76,7 +76,9 @@ func (ui *app) activateBootstrapper(args ...string) {
 	var tf glib.ThreadFunc = func(uintptr) uintptr {
 		defer idle(b.win.Destroy)
 		if err := b.run(args...); err != nil {
-			idle(func() { b.error(err) })
+			idle(func() {
+				b.error(err)
+			})
 		}
 		return null
 	}
@@ -102,41 +104,24 @@ func (s *app) loadConfig() error {
 }
 
 func (ui *app) error(e error) {
-	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/error.ui")
-	defer builder.Unref()
-
-	var d adw.MessageDialog
-	builder.GetObject("error-dialog").Cast(&d)
-	// It is unreccomended to have a AdwMessageDialog without a
-	// parent, and opening the log file without the parent
-	// will be impossible, this is fine, since the error in
-	// such contexts does not need further information.
-	win := ui.GetActiveWindow()
-	if win != nil {
-		d.SetTransientFor(ui.GetActiveWindow())
-	}
-	d.SetApplication(&ui.Application.Application)
-	defer d.Unref()
-
-	slog.Error("Error!", "err", e)
-
-	if win == nil {
-		d.AddResponses("okay", "Ok")
-	} else {
-		d.AddResponses("okay", "Ok", "open", "Open Log")
-	}
+	// In a bootstrapper context, the window is destroyed to show the
+	// error instead, which will make the GtkApplication exit.
+	ui.Hold()
+	d := adw.NewAlertDialog("Something went wrong", e.Error())
+	d.AddResponses("okay", "Ok", "open", "Open Log")
+	d.SetCloseResponse("okay")
+	d.SetDefaultResponse("okay")
+	d.SetResponseAppearance("open", adw.ResponseSuggestedValue)
 
 	var ccb gio.AsyncReadyCallback = func(_ uintptr, res uintptr, _ uintptr) {
+		defer ui.Release()
 		ar := asyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
-		if win != nil && r == "open" {
-			gtk.ShowUri(&d.Window, "file://"+ui.logFile.Name(), 0)
+		uri := "file://" + ui.logFile.Name()
+		if r == "open" {
+			gtk.ShowUri(nil, uri, 0)
 		}
 	}
 
-	c := gio.NewCancellable()
-	defer c.Unref()
-
-	d.FormatBodyMarkup("%s", e.Error())
-	d.Choose(c, &ccb, null)
+	d.Choose(nil, nil, &ccb, null)
 }

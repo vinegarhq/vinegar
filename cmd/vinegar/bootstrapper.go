@@ -44,7 +44,6 @@ func (s *app) newBootstrapper() *bootstrapper {
 	}
 
 	builder.GetObject("window").Cast(&b.win)
-	b.win.SetApplication(&s.Application.Application)
 	s.AddWindow(&b.win.Window)
 	destroy := func(_ gtk.Window) bool {
 		// https://github.com/jwijenbergh/puregotk/issues/17
@@ -60,8 +59,7 @@ func (s *app) newBootstrapper() *bootstrapper {
 	b.status.Unref()
 	b.pbar.Unref()
 
-	b.win.Present()
-	b.win.Unref()
+	b.win.Show()
 
 	return &b
 }

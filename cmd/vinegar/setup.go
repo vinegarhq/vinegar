@@ -129,11 +129,15 @@ func (b *bootstrapper) setupPrefix() error {
 }
 
 func (b *bootstrapper) setupWebView() error {
+	path := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView")
 	// Since we do not keep webview tracked in state, simply removing it
 	// always if it is disabled is fine, since it will be a harmless error.
 	if b.cfg.Studio.WebView == "" {
-		inst := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView")
-		os.RemoveAll(inst)
+		os.RemoveAll(path)
+		return nil
+	}
+
+	if _, err := os.Stat(path); err == nil {
 		return nil
 	}
 

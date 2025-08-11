@@ -36,7 +36,6 @@ type Studio struct {
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
-	SanitizeEnv bool        `toml:"sanitize_env"`
 	Studio      Studio      `toml:"studio"`
 	Env         Environment `toml:"env"`
 }
@@ -97,10 +96,6 @@ func (s *Studio) LauncherPath() (string, error) {
 }
 
 func (c *Config) Setup() error {
-	if c.SanitizeEnv {
-		SanitizeEnv()
-	}
-
 	if err := c.Studio.setup(); err != nil {
 		return fmt.Errorf("studio: %w", err)
 	}

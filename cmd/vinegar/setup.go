@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"sync/atomic"
@@ -14,6 +15,7 @@ import (
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine/dxvk"
+	"github.com/sewnie/wine/peutil"
 	"github.com/sewnie/wine/webview"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/netutil"
@@ -91,20 +93,56 @@ func (b *bootstrapper) setupPrefix() error {
 		return fmt.Errorf("webview: %w", err)
 	}
 
-	if b.pfx.Exists() {
+	if !b.pfx.Exists() {
+		if err := b.prefixInstall(); err != nil {
+			return err
+		}
+	}
+
+	// Latest versions of studio require a implemented call, check if the given
+	// prefix supports it
+	if b.cfg.Studio.ForcedVersion != "" {
+		// Skip check on old versions, which will cause the user to remove the override,
+		// and get a proper error afterwards :)
 		return nil
 	}
 
-	stop := b.performing()
+	f, err := peutil.Open(filepath.Join(
+		b.pfx.Dir(), "drive_c", "windows", "system32", "kernelbase.dll"))
+	if err != nil {
+		// WINE probably won't change this path anytime soon, so this DLL being missing
+		// is catastrophic
+		return fmt.Errorf("dll: %w", err)
+	}
+	defer f.Close()
+
+	es, err := f.Exports()
+	if err != nil {
+		return fmt.Errorf("exports: %w", err)
+	}
+
+	if !slices.ContainsFunc(es, func(e peutil.Export) bool {
+		return e.Name == "VirtualProtectFromApp"
+	}) {
+		// TODO: actually give a solution to the user
+		return errors.New("wine installation cannot run studio")
+	}
+
+	return nil
+}
+
+func (b *bootstrapper) prefixInstall() error {
+	defer b.performing()()
 
 	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
 	if err := run(b.pfx.Init()); err != nil {
 		return err
 	}
 
+	// Default version on modern WINE
 	b.message("Setting Wineprefix version")
 	if err := run(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
-		return nil
+		return err
 	}
 
 	b.message("Setting Wineprefix DPI")
@@ -116,16 +154,10 @@ func (b *bootstrapper) setupPrefix() error {
 		return nil
 	}
 
-	stop()
-
 	// Some unknown DPI issue arises if the DPI is changed
 	// *after* wineserver/wineprefix initialization, causing
 	// Studio not to run.
-	if err := b.pfx.Kill(); err != nil {
-		return err
-	}
-
-	return nil
+	return b.pfx.Kill()
 }
 
 func (b *bootstrapper) setupWebView() error {

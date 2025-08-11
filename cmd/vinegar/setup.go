@@ -55,12 +55,6 @@ func (b *bootstrapper) prepare() error {
 		return fmt.Errorf("change theme: %w", err)
 	}
 
-	// Modern versions of Studio now hard-require win10 and onwards,
-	// so *always* set it.
-	if err := run(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
-		return nil
-	}
-
 	return nil
 }
 
@@ -108,6 +102,11 @@ func (b *bootstrapper) setupPrefix() error {
 		return err
 	}
 
+	b.message("Setting Wineprefix version")
+	if err := run(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
+		return nil
+	}
+
 	b.message("Setting Wineprefix DPI")
 	// Studio will not load past the splash screen if the DPI
 	// is 96 with the following conditions:
@@ -148,14 +147,7 @@ func (b *bootstrapper) webViewInstall() error {
 			return err
 		}
 	}
-
 	defer b.performing()()
-
-	b.message("Setting Wineprefix version")
-	// If it is not win7, WebView will appear black.
-	if err := run(b.pfx.Wine("winecfg", "/v", "win7")); err != nil {
-		return nil
-	}
 
 	b.message("Installing WebView", "path", name)
 

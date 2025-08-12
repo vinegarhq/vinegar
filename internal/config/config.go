@@ -96,14 +96,13 @@ func (s *Studio) LauncherPath() (string, error) {
 }
 
 func (c *Config) Setup() error {
+	c.Env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
+	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.Dxvk)
+	c.Env.Setenv()
+
 	if err := c.Studio.setup(); err != nil {
 		return fmt.Errorf("studio: %w", err)
 	}
-
-	// Required to read Roblox logs.
-	c.Env["WINEDEBUG"] += ",warn+debugstr"
-	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.Dxvk)
-	c.Env.Setenv()
 
 	return nil
 }

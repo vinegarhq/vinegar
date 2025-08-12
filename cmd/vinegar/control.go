@@ -137,9 +137,9 @@ func (ctl *control) setupControlActions() {
 				if err := run(); err != nil {
 					idle(func() { ctl.error(err) })
 				}
-				return null
+				return 0
 			}
-			glib.NewThread("action", &tf, null)
+			glib.NewThread("action", &tf, 0)
 		}
 
 		act.ConnectActivate(&actcb)

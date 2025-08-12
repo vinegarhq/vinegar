@@ -80,9 +80,9 @@ func (ui *app) activateBootstrapper(args ...string) {
 				b.error(err)
 			})
 		}
-		return null
+		return 0
 	}
-	glib.NewThread("bootstrapper", &tf, null)
+	glib.NewThread("bootstrapper", &tf, 0)
 }
 
 func (s *app) loadConfig() error {
@@ -123,5 +123,5 @@ func (ui *app) error(e error) {
 		}
 	}
 
-	d.Choose(nil, nil, &ccb, null)
+	d.Choose(nil, nil, &ccb, 0)
 }

@@ -69,7 +69,7 @@ func (b *bootstrapper) performing() func() {
 		b.pbar.Pulse()
 		return true
 	}
-	id := glib.TimeoutAdd(128, &tcb, null)
+	id := glib.TimeoutAdd(128, &tcb, 0)
 	return func() { glib.SourceRemove(id) }
 }
 

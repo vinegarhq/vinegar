@@ -3,15 +3,11 @@ package main
 import (
 	"C"
 	_ "embed"
-	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gobject"
 )
-
-// used more often than you think
-var null = uintptr(unsafe.Pointer(nil))
 
 //go:embed vinegar.gresource
 var gResource []byte

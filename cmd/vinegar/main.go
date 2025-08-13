@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"log/slog"
+	"net/http"
 	"os"
 	"runtime/debug"
 
@@ -46,6 +47,20 @@ func main() {
 		rbx:     rbxweb.NewClient(),
 	}
 	defer ui.unref()
+
+	_ = http.StatusTeapot
+
+	// ui.rbx.Client.Transport = &debugTransport{
+	// 	underlying: http.DefaultTransport,
+	// }
+
+	dialogA := gio.NewSimpleAction("show-login-dialog", nil)
+	dialobCb := func(a gio.SimpleAction, p uintptr) {
+		ui.newLogin()
+	}
+	dialogA.ConnectActivate(&dialobCb)
+	ui.AddAction(dialogA)
+	dialogA.Unref()
 
 	aclcb := ui.activateCommandLine
 	ui.ConnectCommandLine(&aclcb)

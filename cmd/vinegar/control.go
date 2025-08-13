@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -103,6 +104,20 @@ func (ctl *control) setupControlActions() {
 	stop.ConnectActivate(&stopcb)
 	ctl.AddAction(stop)
 	stop.Unref()
+
+	toastT := glib.NewVariantType("s")
+	toastA := gio.NewSimpleAction("control-toast", toastT)
+	toastT.Free()
+	toastCb := func(a gio.SimpleAction, p uintptr) {
+		msg := (*glib.Variant)(unsafe.Pointer(p)).GetString(0)
+		var overlay adw.ToastOverlay
+		ctl.builder.GetObject("overlay").Cast(&overlay)
+		toast := adw.NewToast(msg)
+		overlay.AddToast(toast)
+	}
+	toastA.ConnectActivate(&toastCb)
+	ctl.AddAction(toastA)
+	toastA.Unref()
 
 	for name, action := range actions {
 		act := gio.NewSimpleAction(name, nil)

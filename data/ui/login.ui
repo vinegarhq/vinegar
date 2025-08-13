@@ -1,0 +1,158 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.96.1 -->
+<interface>
+  <!-- interface-name login.ui -->
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="libadwaita" version="1.0"/>
+  <object class="AdwDialog" id="dialog-login">
+    <property name="child">
+      <object class="AdwNavigationView" id="navview">
+        <child>
+          <object class="AdwNavigationPage" id="page-login">
+            <property name="tag">nav-page-login</property>
+            <property name="title">Login</property>
+            <child>
+              <object class="AdwToolbarView">
+                <property name="content">
+                  <object class="AdwPreferencesPage">
+                    <child>
+                      <object class="AdwPreferencesGroup">
+                        <child>
+                          <object class="AdwEntryRow" id="entry-username">
+                            <property name="title">Username</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwPasswordEntryRow" id="entry-password">
+                            <property name="title">Password</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Note: Quick Login is most likely to work.</property>
+                            <property name="margin-top">20</property>
+                            <style>
+                              <class name="dimmed"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwPreferencesGroup">
+                        <child>
+                          <object class="AdwButtonRow">
+                            <property name="action-name">navigation.push</property>
+                            <property name="action-target">'nav-page-quick-login'</property>
+                            <property name="title">Use Quick Login</property>
+                            <style>
+                              <class name="suggested-action"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwPreferencesGroup">
+                        <child>
+                          <object class="AdwButtonRow" id="button-login">
+                            <property name="title">Login</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <child type="top">
+                  <object class="AdwHeaderBar"/>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwNavigationPage" id="page-quick-login">
+            <property name="tag">nav-page-quick-login</property>
+            <property name="title">Quick Login</property>
+            <child>
+              <object class="AdwToolbarView">
+                <child>
+                  <object class="GtkBox">
+                    <property name="halign">center</property>
+                    <property name="margin-bottom">24</property>
+                    <property name="margin-end">24</property>
+                    <property name="margin-start">24</property>
+                    <property name="margin-top">24</property>
+                    <property name="orientation">vertical</property>
+                    <property name="spacing">24</property>
+                    <property name="valign">center</property>
+                    <child>
+                      <object class="GtkLabel" id="label-quick-login-code">
+                        <property name="selectable">True</property>
+                        <style>
+                          <class name="title-1"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel" id="label-quick-login-status">
+                        <style>
+                          <class name="title-4"/>
+                        </style>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="justify">center</property>
+                        <property name="label">Open your Roblox app and go to:
+&lt;b&gt;More Page &gt; Quick Sign In&lt;/b&gt; to enter your code.</property>
+                        <property name="lines">2</property>
+                        <property name="use-markup">True</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child type="top">
+                  <object class="AdwHeaderBar">
+                    <property name="show-end-title-buttons">False</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="AdwNavigationPage">
+            <property name="child">
+              <object class="GtkBox">
+                <property name="css-classes">medium</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">24</property>
+                <property name="valign">center</property>
+                <child>
+                  <object class="AdwSpinner">
+                    <property name="height-request">64</property>
+                    <property name="width-request">64</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="label-loading">
+                    <property name="css-classes">title-3</property>
+                    <property name="label">Performing Action</property>
+                    <property name="wrap">True</property>
+                  </object>
+                </child>
+              </object>
+            </property>
+            <property name="tag">nav-page-loading</property>
+            <property name="title">Setting Credentials</property>
+          </object>
+        </child>
+      </object>
+    </property>
+    <property name="content-height">384</property>
+    <property name="content-width">384</property>
+    <property name="presentation-mode">floating</property>
+    <property name="title">Login</property>
+  </object>
+</interface>

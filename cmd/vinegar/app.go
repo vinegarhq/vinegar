@@ -104,6 +104,8 @@ func (s *app) loadConfig() error {
 }
 
 func (ui *app) error(e error) {
+	slog.Error("Error!", "err", e.Error())
+
 	// In a bootstrapper context, the window is destroyed to show the
 	// error instead, which will make the GtkApplication exit.
 	ui.Hold()

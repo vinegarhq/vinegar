@@ -117,9 +117,17 @@
                                     </child>
                                     <child>
                                       <object class="AdwButtonRow" id="prefix-configure">
-                                        <property name="action-name">app.run-winecfg</property>
-                                        <property name="start-icon-name">preferences-system</property>
+                                        <property name="action-name">app.wine-run-winecfg</property>
+                                        <property name="start-icon-name">preferences-system-</property>
                                         <property name="title">Configure Wine</property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwEntryRow" id="prefix-run">
+                                        <property name="action-name">app.wine-run</property>
+                                        <property name="activates-default">True</property>
+                                        <property name="show-apply-button">True</property>
+                                        <property name="title">Run Wine Command </property>
                                       </object>
                                     </child>
                                   </object>

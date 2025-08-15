@@ -73,24 +73,39 @@ func (ctl *control) configPut() {
 }
 
 func (ctl *control) setupControlActions() {
+	var wineRunner adw.EntryRow
+	ctl.builder.GetObject("prefix-run").Cast(&wineRunner)
+	applyCb := func(_ adw.EntryRow) {
+		ctl.ActivateAction("wine-run", nil)
+	}
+	wineRunner.ConnectApply(&applyCb)
+
 	actions := map[string]struct {
 		msg string
 		act interface{}
 	}{
-		"run-studio": {"Executing Studio", (*bootstrapper).start},
-		"run-winecfg": {"Running Wine Configurator", func() error {
-			return run(ctl.pfx.Wine("winecfg"))
-		}},
-
+		// ordered by appearance in GUI
+		// TODO: move login to control only
+		"run-studio":       {"Executing Studio", (*bootstrapper).start},
 		"install-studio":   {"Installing Studio", (*bootstrapper).setup},
 		"uninstall-studio": {"Deleting all deployments", ctl.deleteDeployments},
+		"kill-prefix":      {"Killing Wineprefix", ctl.pfx.Kill}, // "Stop Studio"
 
 		"init-prefix":   {"Initializing Wineprefix", (*bootstrapper).setupPrefix},
-		"kill-prefix":   {"Killing Wineprefix", ctl.pfx.Kill},
 		"delete-prefix": {"Deleting Wineprefix", ctl.deletePrefixes},
+		"wine-run-winecfg": {"Running Wine Configurator", func() error {
+			return run(ctl.pfx.Wine("winecfg"))
+		}},
+		"wine-run": {"Running Command", func() error {
+			cmd := wineRunner.GetText()
+			args := strings.Fields(cmd)
+			return run(ctl.pfx.Wine(args[0], args[1:]...))
+		}},
 
-		"save-config": {"Saving configuration to file", ctl.configSave},
 		"clear-cache": {"Cleaning up cache folder", ctl.clearCache},
+
+		/// edit page
+		"save-config": {"Saving configuration to file", ctl.configSave},
 	}
 
 	var stack adw.ViewStack

@@ -36,8 +36,8 @@ type Studio struct {
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
-	Studio      Studio      `toml:"studio"`
-	Env         Environment `toml:"env"`
+	Studio Studio      `toml:"studio"`
+	Env    Environment `toml:"env"`
 }
 
 var (

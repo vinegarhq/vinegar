@@ -34,10 +34,8 @@ func idle(bg func()) {
 	glib.IdleAdd(&idlecb, 0)
 }
 
-// Exists due to the fact that puregotk's AsyncResult
-// has no transformation FromInternalPtr function,
-// which is required to be used in AdwMessageDialog.
-
+// https://github.com/jwijenbergh/puregotk/issues/23
+// + Interface(Base) lacking FromInternalPtr
 type asyncResult struct {
 	Ptr uintptr
 }

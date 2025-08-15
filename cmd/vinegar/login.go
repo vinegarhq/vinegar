@@ -21,6 +21,11 @@ type login struct {
 	label gtk.Label
 }
 
+func (l *login) message(msg string) {
+	slog.Info(msg)
+	idle(func() { l.label.SetLabel(msg) })
+}
+
 func (l *login) quickLoginLoop() (*rbxweb.Login, error) {
 	var code, status gtk.Label
 	l.builder.GetObject("label-quick-login-code").Cast(&code)
@@ -96,7 +101,7 @@ func (ui *app) newLogin() *login {
 
 	// Rather than setting up a Action and making a new thread from there,
 	// re-use the existing thread that this would be called from
-	var setSecurityFn = func(success *rbxweb.Login) {
+	setSecurityFn := func(success *rbxweb.Login) {
 		idle(func() { view.PushByTag("nav-page-loading") })
 		defer idle(func() { view.Pop() })
 		if err := l.setSecurity(); err != nil {
@@ -105,7 +110,7 @@ func (ui *app) newLogin() *login {
 		idle(func() {
 			l.dialog.Close()
 			l.ActivateAction("control-toast",
-				glib.NewVariantString("Logged in as " + success.User.Name))
+				glib.NewVariantString("Logged in as "+success.User.Name))
 		})
 	}
 

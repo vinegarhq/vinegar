@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime/debug"
+	"strings"
 	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -14,6 +16,8 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+
+	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 type control struct {
@@ -36,7 +40,7 @@ func (s *app) newControl() control {
 	abtcb := func(_ gio.SimpleAction, p uintptr) {
 		w := adw.NewAboutDialogFromAppdata("/org/vinegarhq/Vinegar/metainfo.xml", version[1:])
 		w.Present(&ctl.win.Widget)
-		w.SetDebugInfo(s.debugInfo())
+		w.SetDebugInfo(ctl.debugInfo())
 		w.Unref()
 	}
 	abt.ConnectActivate(&abtcb)
@@ -339,4 +343,46 @@ func (ctl *control) updateButtons() {
 	del.SetVisible(pfx)
 	kill.SetVisible(pfx)
 	cfg.SetVisible(pfx)
+}
+
+func (ctl *control) debugInfo() string {
+	var revision string
+	bi, _ := debug.ReadBuildInfo()
+	for _, bs := range bi.Settings {
+		if bs.Key == "vcs.revision" {
+			revision = fmt.Sprintf("(%s)", bs.Value)
+		}
+	}
+
+	var b strings.Builder
+
+	inst := "source"
+	if sysinfo.InFlatpak {
+		inst = "flatpak"
+	}
+
+	info := `* Vinegar: %s %s
+* Distro: %s
+* Processor: %s
+* Kernel: %s
+* Wine: %s
+* Installation: %s
+`
+
+	fmt.Fprintf(&b, info,
+		version, revision,
+		sysinfo.Distro,
+		sysinfo.CPU.Name,
+		sysinfo.Kernel,
+		ctl.pfx.Version(),
+		inst,
+	)
+
+	fmt.Fprintln(&b, "* Cards:")
+	for i, c := range sysinfo.Cards {
+		fmt.Fprintf(&b, "  * Card %d: %s %s %s\n",
+			i, c.Driver, filepath.Base(c.Device), c.Path)
+	}
+
+	return b.String()
 }

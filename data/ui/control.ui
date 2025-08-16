@@ -20,6 +20,125 @@
                         <property name="title">Vinegar</property>
                         <child>
                           <object class="AdwToolbarView">
+                            <property name="content">
+                              <object class="GtkScrolledWindow">
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="margin-bottom">24</property>
+                                    <property name="margin-end">12</property>
+                                    <property name="margin-start">12</property>
+                                    <property name="orientation">vertical</property>
+                                    <child>
+                                      <object class="AdwPreferencesGroup" id="pref-group-studio">
+                                        <property name="title">Roblox Studio</property>
+                                        <child>
+                                          <object class="AdwButtonRow" id="studio-run">
+                                            <property name="action-name">app.run-studio</property>
+                                            <property name="start-icon-name">media-playback-start-symbolic</property>
+                                            <property name="title">Launch</property>
+                                            <style>
+                                              <class name="suggested-action"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="AdwButtonRow" id="studio-login">
+                                            <property name="action-name">app.show-login-dialog</property>
+                                            <property name="start-icon-name">contact-new-symbolic</property>
+                                            <property name="title">Log in</property>
+                                            <style>
+                                              <class name="suggested-action"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="AdwButtonRow" id="studio-install">
+                                            <property name="action-name">app.install-studio</property>
+                                            <property name="start-icon-name">document-save-symbolic</property>
+                                            <property name="title">Install</property>
+                                            <style>
+                                              <class name="suggested-action"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="AdwButtonRow" id="studio-uninstall">
+                                            <property name="action-name">app.uninstall-studio</property>
+                                            <property name="start-icon-name">user-trash-symbolic</property>
+                                            <property name="title">Uninstall</property>
+                                            <style>
+                                              <class name="destructive-action"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwPreferencesGroup" id="pref-group-wine">
+                                        <property name="title">Wine</property>
+                                        <child>
+                                          <object class="AdwButtonRow" id="prefix-init">
+                                            <property name="action-name">app.init-prefix</property>
+                                            <property name="start-icon-name">list-add-symbolic</property>
+                                            <property name="title">Initialize Data</property>
+                                            <style>
+                                              <class name="pill"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="AdwButtonRow" id="prefix-kill">
+                                            <property name="action-name">app.kill-prefix</property>
+                                            <property name="start-icon-name">process-stop-symbolic</property>
+                                            <property name="title">Terminate</property>
+                                            <style>
+                                              <class name="destructive-action"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="AdwButtonRow" id="prefix-delete">
+                                            <property name="action-name">app.delete-prefix</property>
+                                            <property name="start-icon-name">view-refresh-symbolic</property>
+                                            <property name="title">Clear Data</property>
+                                            <style>
+                                              <class name="destructive-action"/>
+                                            </style>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="AdwButtonRow" id="prefix-configure">
+                                            <property name="action-name">app.wine-run-winecfg</property>
+                                            <property name="start-icon-name">preferences-system-symbolic</property>
+                                            <property name="title">Configure Wine</property>
+                                          </object>
+                                        </child>
+                                        <child>
+                                          <object class="AdwEntryRow" id="prefix-custom-run">
+                                            <property name="action-name">app.wine-run</property>
+                                            <property name="activates-default">True</property>
+                                            <property name="show-apply-button">True</property>
+                                            <property name="title">Run Wine Command </property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwPreferencesGroup" id="pref-group-vinegar">
+                                        <property name="title">Vinegar</property>
+                                        <child>
+                                          <object class="AdwButtonRow" id="cache-clear">
+                                            <property name="action-name">app.clear-cache</property>
+                                            <property name="start-icon-name">package-x-generic-symbolic</property>
+                                            <property name="title">Clear Downloads</property>
+                                          </object>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
                             <child type="top">
                               <object class="AdwHeaderBar">
                                 <child type="start">
@@ -37,114 +156,7 @@
                                 </child>
                               </object>
                             </child>
-                            <child>
-                              <object class="AdwPreferencesPage">
-                                <child>
-                                  <object class="AdwPreferencesGroup">
-                                    <child>
-                                      <object class="AdwButtonRow" id="login">
-                                        <property name="action-name">app.show-login-dialog</property>
-                                        <property name="start-icon-name">contact-new-symbolic</property>
-                                        <property name="title">Log in</property>
-                                        <style>
-                                          <class name="suggested-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="studio-run">
-                                        <property name="action-name">app.run-studio</property>
-                                        <property name="start-icon-name">media-playback-start-symbolic</property>
-                                        <property name="title">Run Studio</property>
-                                        <style>
-                                          <class name="suggested-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="studio-install">
-                                        <property name="action-name">app.install-studio</property>
-                                        <property name="start-icon-name">document-save-symbolic</property>
-                                        <property name="title">Install Studio</property>
-                                        <style>
-                                          <class name="suggested-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="studio-uninstall">
-                                        <property name="action-name">app.uninstall-studio</property>
-                                        <property name="start-icon-name">user-trash-symbolic</property>
-                                        <property name="title">Uninstall Studio</property>
-                                        <style>
-                                          <class name="destructive-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="prefix-kill">
-                                        <property name="action-name">app.kill-prefix</property>
-                                        <property name="start-icon-name">process-stop-symbolic</property>
-                                        <property name="title">Stop Studio</property>
-                                        <style>
-                                          <class name="destructive-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwPreferencesGroup">
-                                    <child>
-                                      <object class="AdwButtonRow" id="prefix-init">
-                                        <property name="action-name">app.init-prefix</property>
-                                        <property name="start-icon-name">list-add-symbolic</property>
-                                        <property name="title">Initialize Data</property>
-                                        <style>
-                                          <class name="pill"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="prefix-delete">
-                                        <property name="action-name">app.delete-prefix</property>
-                                        <property name="start-icon-name">view-refresh-symbolic</property>
-                                        <property name="title">Clear Data</property>
-                                        <style>
-                                          <class name="destructive-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="prefix-configure">
-                                        <property name="action-name">app.wine-run-winecfg</property>
-                                        <property name="start-icon-name">preferences-system-</property>
-                                        <property name="title">Configure Wine</property>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwEntryRow" id="prefix-run">
-                                        <property name="action-name">app.wine-run</property>
-                                        <property name="activates-default">True</property>
-                                        <property name="show-apply-button">True</property>
-                                        <property name="title">Run Wine Command </property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwPreferencesGroup">
-                                    <child>
-                                      <object class="AdwButtonRow" id="cache-clear">
-                                        <property name="action-name">app.clear-cache</property>
-                                        <property name="start-icon-name">package-x-generic-symbolic</property>
-                                        <property name="title">Clear Downloads</property>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
+                            <style/>
                           </object>
                         </child>
                       </object>

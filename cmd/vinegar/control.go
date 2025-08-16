@@ -74,7 +74,7 @@ func (ctl *control) configPut() {
 
 func (ctl *control) setupControlActions() {
 	var wineRunner adw.EntryRow
-	ctl.builder.GetObject("prefix-run").Cast(&wineRunner)
+	ctl.builder.GetObject("prefix-custom-run").Cast(&wineRunner)
 	applyCb := func(_ adw.EntryRow) {
 		ctl.ActivateAction("wine-run", nil)
 	}
@@ -338,26 +338,27 @@ func (ctl *control) updateButtons() {
 	pfx := ctl.pfx.Exists()
 	vers := dirs.Empty(dirs.Versions)
 
-	// While kill-prefix is more of a wineprefix-specific action,
-	// it is instead listed as an option belonging to the Studio
-	// area, to indicate that it is used to kill studio.
-	var inst, uninst, run gtk.Widget
+	var launch, login, inst, uninst gtk.Widget
+	ctl.builder.GetObject("studio-run").Cast(&launch)
+	ctl.builder.GetObject("studio-login").Cast(&login)
 	ctl.builder.GetObject("studio-install").Cast(&inst)
 	ctl.builder.GetObject("studio-uninstall").Cast(&uninst)
-	ctl.builder.GetObject("studio-run").Cast(&run)
+	launch.SetVisible(!vers)
+	login.SetVisible(pfx)
 	inst.SetVisible(vers)
 	uninst.SetVisible(!vers)
-	run.SetVisible(!vers)
 
-	var init, kill, del, cfg gtk.Widget
+	var init, kill, del, cfg, run gtk.Widget
 	ctl.builder.GetObject("prefix-init").Cast(&init)
 	ctl.builder.GetObject("prefix-kill").Cast(&kill)
 	ctl.builder.GetObject("prefix-delete").Cast(&del)
 	ctl.builder.GetObject("prefix-configure").Cast(&cfg)
+	ctl.builder.GetObject("prefix-custom-run").Cast(&run)
 	init.SetVisible(!pfx)
-	del.SetVisible(pfx)
 	kill.SetVisible(pfx)
+	del.SetVisible(pfx)
 	cfg.SetVisible(pfx)
+	run.SetVisible(pfx)
 }
 
 func (ctl *control) debugInfo() string {

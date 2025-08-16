@@ -10,18 +10,24 @@ import (
 	"time"
 )
 
-var credPath = `HKEY_CURRENT_USER\Software\Wine\Credential Manager`
+var (
+	credPath = `HKEY_CURRENT_USER\Software\Wine\Credential Manager`
+	// UserID comes afterwards
+	secPrefix = credPath + `\Generic: https://www.roblox.com:RobloxStudioAuth.ROBLOSECURITY`
+)
 
 // TODO: use for rbxweb.Client
-func (a *app) getSecurity() (string, error) {
+func (a *app) getSecurity() error {
+	slog.Info("Retrieving current user")
+
 	keys, err := a.pfx.RegistryQuery(credPath, ``)
 	if err != nil {
-		return "", err
+		return fmt.Errorf("query: %w", err)
 	}
 
 	var c *rc4.Cipher
 	for _, k := range keys {
-		if k.Key != credPath && !strings.Contains(k.Key, "RobloxStudioAuth") {
+		if k.Key != credPath && !strings.HasPrefix(k.Key, secPrefix) {
 			continue
 		}
 		// following subkeys usually only belong to the ROBLOSECURITY or root
@@ -31,17 +37,20 @@ func (a *app) getSecurity() (string, error) {
 			case "EncryptionKey": // [Software\Wine\Credential Manager
 				c, err = rc4.NewCipher(sk.Value.([]byte))
 				if err != nil {
-					return "", err
+					return fmt.Errorf("cipher: %w", err)
 				}
 			case "Password": // Software\Wine\Credential Manager\Generic: https://www.roblox.com:RobloxStudioAuth.
 				sec := make([]byte, len(sk.Value.([]byte)))
 				c.XORKeyStream(sec, sk.Value.([]byte))
-				return string(sec), nil
+				a.rbx.Security = string(sec)
+				id, _ := strings.CutPrefix(k.Key, secPrefix)
+				slog.Info("Using authenticated user for API requests", "user", id)
+				return nil
 			}
 		}
 	}
 
-	return "", errors.New("failed to locate security")
+	return errors.New("cookie missing")
 }
 
 func (b *app) getWineCredKey() ([]byte, error) {

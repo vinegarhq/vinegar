@@ -23,30 +23,29 @@ type Handler struct {
 	slog.Handler
 	file slog.Handler
 
-	// Path to the log file if created with doFile
 	Path string
 }
 
-func NewHandler(w io.Writer, level slog.Level, doFile bool) slog.Handler {
+func NewHandler(w io.Writer, level slog.Level) slog.Handler {
 	h := NewTextHandler(w, level, true)
 
 	var fh slog.Handler
 	path := ""
-	if doFile {
-		var r slog.Record
-		f, err := NewFile()
-		if err == nil {
-			fh = NewTextHandler(f, level, false)
-			path = f.Name()
 
-			r = slog.NewRecord(time.Now(), slog.LevelInfo, "Logging to file", 0)
-			r.AddAttrs(slog.String("path", f.Name()))
-		} else {
-			r = slog.NewRecord(time.Now(), slog.LevelError, "Failed to log to file", 0)
-			r.AddAttrs(slog.String("err", err.Error()))
-		}
-		h.Handle(context.TODO(), r)
+	var r slog.Record
+	f, err := NewFile()
+	if err == nil {
+		fh = NewTextHandler(f, level, false)
+		path = f.Name()
+
+		r = slog.NewRecord(time.Now(), slog.LevelInfo, "Logging to file", 0)
+		r.AddAttrs(slog.String("path", f.Name()))
+	} else {
+		r = slog.NewRecord(time.Now(), slog.LevelError, "Failed to log to file", 0)
+		r.AddAttrs(slog.String("err", err.Error()))
 	}
+	h.Handle(context.TODO(), r)
+
 	return &Handler{
 		Handler: h,
 		file:    fh,

@@ -34,7 +34,7 @@ func main() {
 	}
 
 	slog.SetDefault(slog.New(
-		logging.NewHandler(os.Stderr, slog.LevelInfo, true)))
+		logging.NewHandler(os.Stderr, slog.LevelInfo)))
 
 	ui := app{
 		Application: adw.NewApplication(

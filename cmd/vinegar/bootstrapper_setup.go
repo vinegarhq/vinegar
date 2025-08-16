@@ -67,6 +67,11 @@ func (b *bootstrapper) setup() error {
 		return fmt.Errorf("prefix: %w", err)
 	}
 
+	b.message("Retrieving current user")
+	if err := b.app.getSecurity(); err != nil {
+		slog.Warn("Retrieving authenticated user failed", "err", err)
+	}
+
 	if err := b.setupDeployment(); err != nil {
 		return err
 	}

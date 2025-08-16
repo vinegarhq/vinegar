@@ -17,11 +17,11 @@ const (
 	LevelRoblox = slog.LevelInfo + 2
 )
 
-func NewTextHandler(w io.Writer, noColor bool) slog.Handler {
+func NewTextHandler(w io.Writer, level slog.Level, color bool) slog.Handler {
 	return tint.NewHandler(w, &tint.Options{
-		Level:      slog.LevelInfo,
+		Level:      level,
 		TimeFormat: time.TimeOnly,
-		NoColor:    noColor,
+		NoColor:    !color,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
 			if a.Key != slog.LevelKey || len(groups) != 0 {
 				return a

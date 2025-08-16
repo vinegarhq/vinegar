@@ -32,8 +32,8 @@ func main() {
 	}
 
 	slog.SetDefault(slog.New(slogmulti.Fanout(
-		logging.NewTextHandler(os.Stderr, false),
-		logging.NewTextHandler(lf, true),
+		logging.NewTextHandler(os.Stderr, slog.LevelInfo, false),
+		logging.NewTextHandler(lf, slog.LevelInfo, true),
 	)))
 
 	ui := app{

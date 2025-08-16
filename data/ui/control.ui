@@ -150,6 +150,10 @@
                                           <attribute name="action">app.clear-cache</attribute>
                                           <attribute name="label">Clear Cache</attribute>
                                         </item>
+                                        <item>
+                                          <attribute name="action">app.open-log-dir</attribute>
+                                          <attribute name="label">Open Logs</attribute>
+                                        </item>
                                       </menu>
                                     </property>
                                     <property name="primary">True</property>

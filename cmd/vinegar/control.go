@@ -47,6 +47,14 @@ func (s *app) newControl() control {
 	ctl.AddAction(abt)
 	abt.Unref()
 
+	logsA := gio.NewSimpleAction("open-log-dir", nil)
+	logsCb := func(_ gio.SimpleAction, p uintptr) {
+		gtk.ShowUri(&ctl.win.Window, "file://"+dirs.Logs, 0)
+	}
+	logsA.ConnectActivate(&logsCb)
+	ctl.AddAction(logsA)
+	logsA.Unref()
+
 	ctl.configPut()
 	ctl.updateButtons()
 

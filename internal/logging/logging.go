@@ -13,58 +13,24 @@ import (
 )
 
 const (
-	LevelDebug   = slog.LevelDebug
-	LevelInfo    = slog.LevelInfo
-	LevelWine    = slog.Level(2)
-	LevelRoblox  = slog.Level(3)
-	LevelWarning = slog.LevelWarn
-	LevelError   = slog.LevelError
-)
-
-// ANSI modes inherited from tint
-const (
-	ansiReset        = "\033[0m"
-	ansiRed          = "\033[31m"
-	ansiCyan         = "\033[36m"
-	ansiBrightRed    = "\033[91m"
-	ansiBrightGreen  = "\033[92m"
-	ansiBrightYellow = "\033[93m"
+	LevelWine   = slog.LevelInfo + 1
+	LevelRoblox = slog.LevelInfo + 2
 )
 
 func NewTextHandler(w io.Writer, noColor bool) slog.Handler {
 	return tint.NewHandler(w, &tint.Options{
-		Level:      LevelInfo,
+		Level:      slog.LevelInfo,
 		TimeFormat: time.TimeOnly,
 		NoColor:    noColor,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			if a.Key == slog.LevelKey {
-				level := a.Value.Any().(slog.Level)
-				value := "ERROR"
-				color := ""
-				switch {
-				case level < LevelInfo:
-					value = "DBUG"
-				case level < LevelWine:
-					value = "INFO"
-					color = ansiBrightGreen
-				case level < LevelRoblox:
-					value = "WINE"
-					color = ansiRed
-				case level < LevelWarning:
-					value = "RBLX"
-					color = ansiCyan
-				case level < LevelError:
-					value = "WARN"
-					color = ansiBrightYellow
-				default:
-					value = "ERRO"
-					color = ansiBrightRed
-				}
-				if noColor {
-					a.Value = slog.StringValue(value)
-				} else {
-					a.Value = slog.StringValue(color + value + ansiReset)
-				}
+			if a.Key != slog.LevelKey || len(groups) != 0 {
+				return a
+			}
+			switch a.Value.Any().(slog.Level) {
+			case LevelWine:
+				return tint.Attr(1, slog.String(a.Key, "WIN"))
+			case LevelRoblox:
+				return tint.Attr(6, slog.String(a.Key, "RBX"))
 			}
 			return a
 		},

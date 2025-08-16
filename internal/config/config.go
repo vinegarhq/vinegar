@@ -4,6 +4,7 @@ package config
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"github.com/sewnie/wine"
 	"github.com/sewnie/wine/dxvk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
 // Studio is a representation of the deployment and behavior
@@ -36,6 +38,7 @@ type Studio struct {
 
 // Config is a representation of the Vinegar configuration.
 type Config struct {
+	Debug  bool        `toml:"debug"`
 	Studio Studio      `toml:"studio"`
 	Env    Environment `toml:"env"`
 }
@@ -64,6 +67,8 @@ func Load() (*Config, error) {
 // Default returns a default configuration.
 func Default() *Config {
 	return &Config{
+		Debug: false,
+
 		Env: Environment{
 			"WINEARCH":                    "win64",
 			"WINEDEBUG":                   "fixme-all,err-kerberos,err-ntlm",
@@ -96,6 +101,13 @@ func (s *Studio) LauncherPath() (string, error) {
 }
 
 func (c *Config) Setup() error {
+	level := slog.LevelInfo
+	if c.Debug {
+		level = slog.LevelDebug
+	}
+	slog.SetDefault(slog.New(
+		logging.NewHandler(os.Stderr, level)))
+
 	c.Env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
 	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.Dxvk)
 	c.Env.Setenv()

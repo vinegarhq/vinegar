@@ -2,8 +2,6 @@ package main
 
 import (
 	"log"
-	"log/slog"
-	"net/http"
 	"os"
 	"runtime/debug"
 
@@ -11,7 +9,6 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/sewnie/rbxweb"
 	"github.com/vinegarhq/vinegar/internal/config"
-	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/state"
 )
 
@@ -25,9 +22,6 @@ func main() {
 		log.Fatalf("load state: %s", err)
 	}
 
-	slog.SetDefault(slog.New(
-		logging.NewHandler(os.Stderr, slog.LevelInfo)))
-
 	ui := app{
 		Application: adw.NewApplication(
 			"org.vinegarhq.Vinegar",
@@ -38,12 +32,6 @@ func main() {
 		rbx:   rbxweb.NewClient(),
 	}
 	defer ui.unref()
-
-	_ = http.StatusTeapot
-
-	// ui.rbx.Client.Transport = &debugTransport{
-	// 	underlying: http.DefaultTransport,
-	// }
 
 	dialogA := gio.NewSimpleAction("show-login-dialog", nil)
 	dialobCb := func(a gio.SimpleAction, p uintptr) {

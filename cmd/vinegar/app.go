@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -30,7 +31,7 @@ type app struct {
 }
 
 func (s *app) unref() {
-	if !s.keepLog {
+	if !s.keepLog && !s.cfg.Debug {
 		_ = os.Remove(logging.Path)
 	}
 	s.Unref()
@@ -99,6 +100,12 @@ func (s *app) loadConfig() error {
 
 	s.cfg = cfg
 
+	if cfg.Debug {
+		s.rbx.Client.Transport = &debugTransport{
+			underlying: http.DefaultTransport,
+		}
+	}
+
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
@@ -131,4 +138,24 @@ func (ui *app) error(e error) {
 	}
 
 	d.Choose(nil, nil, &ccb, 0)
+}
+
+type debugTransport struct {
+	underlying http.RoundTripper
+}
+
+func (t *debugTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	slog.Debug("rbxweb request",
+		"method", req.Method,
+		"url", req.URL.String(),
+	)
+
+	resp, err := t.underlying.RoundTrip(req)
+	if err != nil {
+		slog.Debug("rbxweb request failed", "error", err)
+		return nil, err
+	}
+
+	slog.Debug("rbxweb response", "status", resp.StatusCode)
+	return resp, nil
 }

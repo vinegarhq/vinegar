@@ -2,6 +2,7 @@
 <!-- Created with Cambalache 0.96.1 -->
 <interface>
   <!-- interface-name bia.ui -->
+  <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
   <object class="AdwApplicationWindow" id="window">
@@ -123,18 +124,6 @@
                                         </child>
                                       </object>
                                     </child>
-                                    <child>
-                                      <object class="AdwPreferencesGroup" id="pref-group-vinegar">
-                                        <property name="title">Vinegar</property>
-                                        <child>
-                                          <object class="AdwButtonRow" id="cache-clear">
-                                            <property name="action-name">app.clear-cache</property>
-                                            <property name="start-icon-name">package-x-generic-symbolic</property>
-                                            <property name="title">Clear Downloads</property>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
                                   </object>
                                 </child>
                               </object>
@@ -149,9 +138,30 @@
                                   </object>
                                 </child>
                                 <child type="end">
-                                  <object class="GtkButton">
-                                    <property name="action-name">app.about</property>
-                                    <property name="icon-name">help-about-symbolic</property>
+                                  <object class="GtkMenuButton">
+                                    <property name="icon-name">open-menu-symbolic</property>
+                                    <property name="menu-model">
+                                      <menu>
+                                        <item>
+                                          <attribute name="action">app.about</attribute>
+                                          <attribute name="label">About Vinegar</attribute>
+                                        </item>
+                                        <item>
+                                          <attribute name="action">app.clear-cache</attribute>
+                                          <attribute name="label">Clear Cache</attribute>
+                                        </item>
+                                      </menu>
+                                    </property>
+                                    <property name="primary">True</property>
+                                    <child>
+                                      <menu/>
+                                    </child>
+                                    <child>
+                                      <menu/>
+                                    </child>
+                                    <child>
+                                      <menu/>
+                                    </child>
                                   </object>
                                 </child>
                               </object>

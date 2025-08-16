@@ -327,7 +327,7 @@ func (ctl *control) clearCache() error {
 			}
 			return err
 		}
-		if path == dirs.Cache || path == dirs.Logs || path == ctl.logFile.Name() {
+		if path == dirs.Cache || path == dirs.Logs || path == logFile() {
 			return nil
 		}
 

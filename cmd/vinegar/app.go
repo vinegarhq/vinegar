@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log/slog"
-	"os"
 	"path/filepath"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -24,13 +23,10 @@ type app struct {
 	state *state.State
 	pfx   *wine.Prefix
 	rbx   *rbxweb.Client
-
-	logFile *os.File
 }
 
 func (s *app) unref() {
 	s.Unref()
-	s.logFile.Close()
 	slog.Info("Goodbye!")
 }
 
@@ -119,7 +115,8 @@ func (ui *app) error(e error) {
 		defer ui.Release()
 		ar := asyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
-		uri := "file://" + ui.logFile.Name()
+		slog.Default()
+		uri := "file://" + logFile()
 		if r == "open" {
 			gtk.ShowUri(nil, uri, 0)
 		}

@@ -17,6 +17,14 @@ import (
 
 var version string
 
+func logFile() string {
+	h, ok := slog.Default().Handler().(*logging.Handler)
+	if !ok {
+		return ""
+	}
+	return h.Path
+}
+
 func main() {
 	debug.SetPanicOnFault(true)
 
@@ -25,24 +33,17 @@ func main() {
 		log.Fatalf("load state: %s", err)
 	}
 
-	lf, err := logging.NewFile()
-	if err != nil {
-		log.Fatalf("log file: %s", err)
-	}
-
 	slog.SetDefault(slog.New(
-		logging.NewHandler(os.Stderr, slog.LevelInfo, nil)))
-	slog.Info("Logging to file", "path", lf.Name())
+		logging.NewHandler(os.Stderr, slog.LevelInfo, true)))
 
 	ui := app{
 		Application: adw.NewApplication(
 			"org.vinegarhq.Vinegar",
 			gio.GApplicationHandlesCommandLineValue,
 		),
-		state:   &s,
-		logFile: lf,
-		cfg:     config.Default(),
-		rbx:     rbxweb.NewClient(),
+		state: &s,
+		cfg:   config.Default(),
+		rbx:   rbxweb.NewClient(),
 	}
 	defer ui.unref()
 

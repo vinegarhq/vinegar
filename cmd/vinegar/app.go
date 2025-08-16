@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"fmt"
 	"log/slog"
 	"path/filepath"
@@ -23,9 +24,14 @@ type app struct {
 	state *state.State
 	pfx   *wine.Prefix
 	rbx   *rbxweb.Client
+
+	keepLog bool
 }
 
 func (s *app) unref() {
+	if !s.keepLog {
+		_ = os.Remove(logFile())
+	}
 	s.Unref()
 	slog.Info("Goodbye!")
 }
@@ -100,6 +106,7 @@ func (s *app) loadConfig() error {
 }
 
 func (ui *app) error(e error) {
+	ui.keepLog = true
 	slog.Error("Error!", "err", e.Error())
 
 	// In a bootstrapper context, the window is destroyed to show the

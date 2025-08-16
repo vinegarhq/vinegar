@@ -17,8 +17,8 @@ require (
 	github.com/jwijenbergh/puregotk v0.0.0-20250812133623-7203178b5172
 	github.com/lmittmann/tint v1.1.2
 	github.com/samber/slog-multi v1.4.1
-	github.com/sewnie/rbxbin v0.0.0-20250809200201-8e6157d3175d
-	github.com/sewnie/rbxweb v0.0.0-20250814211051-ffceb5ad27e4
+	github.com/sewnie/rbxbin v0.0.0-20250816115250-5cf6d6f110f5
+	github.com/sewnie/rbxweb v0.0.0-20250816104123-2cd06d8d0551
 	github.com/sewnie/wine v0.0.0-20250813131532-21cd09220e19
 	golang.org/x/sys v0.35.0
 )

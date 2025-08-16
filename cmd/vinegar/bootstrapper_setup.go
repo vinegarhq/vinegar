@@ -67,9 +67,11 @@ func (b *bootstrapper) setup() error {
 		return fmt.Errorf("prefix: %w", err)
 	}
 
-	b.message("Retrieving current user")
-	if err := b.app.getSecurity(); err != nil {
-		slog.Warn("Retrieving authenticated user failed", "err", err)
+	if b.rbx.Security == "" {
+		b.message("Retrieving current user")
+		if err := b.app.getSecurity(); err != nil {
+			slog.Warn("Retrieving authenticated user failed", "err", err)
+		}
 	}
 
 	if err := b.setupDeployment(); err != nil {
@@ -284,6 +286,10 @@ func (b *bootstrapper) fetchDeployment() error {
 		return err
 	}
 
+	idle(func() {
+		b.info.SetLabel(d.Channel)
+	})
+
 	b.bin = d
 	slog.Info("Using Binary Deployment",
 		"guid", b.bin.GUID, "channel", b.bin.Channel)
@@ -323,7 +329,7 @@ func (b *bootstrapper) setupPackages() error {
 	}
 
 	b.message("Fetching Package List", "channel", b.bin.Channel)
-	pkgs, err := m.GetPackages(b.rbx, b.bin)
+	pkgs, err := m.GetPackages(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
 	}

@@ -27,6 +27,7 @@ type bootstrapper struct {
 
 	pbar   gtk.ProgressBar
 	status gtk.Label
+	info   gtk.Label
 
 	dir string
 	bin *rbxbin.Deployment
@@ -56,6 +57,7 @@ func (s *app) newBootstrapper() *bootstrapper {
 
 	builder.GetObject("status").Cast(&b.status)
 	builder.GetObject("progress").Cast(&b.pbar)
+	builder.GetObject("info").Cast(&b.info)
 	b.status.Unref()
 	b.pbar.Unref()
 

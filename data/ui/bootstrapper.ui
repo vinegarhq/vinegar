@@ -13,11 +13,11 @@
         <property name="margin-end">24</property>
         <property name="margin-start">24</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">24</property>
         <property name="valign">center</property>
         <child>
           <object class="GtkImage" id="logo">
             <property name="icon-name">org.vinegarhq.Vinegar</property>
+            <property name="margin-bottom">24</property>
             <property name="pixel-size">96</property>
           </object>
         </child>
@@ -25,6 +25,7 @@
           <object class="GtkLabel" id="status">
             <property name="css-classes">title-2</property>
             <property name="label">Initializing Vinegar</property>
+            <property name="margin-bottom">24</property>
             <style>
               <class name="title"/>
             </style>
@@ -37,10 +38,20 @@
           </object>
         </child>
         <child>
+          <object class="GtkLabel" id="info">
+            <property name="margin-top">14</property>
+            <style>
+              <class name="monospace"/>
+              <class name="dimmed"/>
+            </style>
+          </object>
+        </child>
+        <child>
           <object class="GtkButton">
             <property name="action-name">window.close</property>
             <property name="halign">center</property>
             <property name="label">Cancel</property>
+            <property name="margin-top">10</property>
             <property name="valign">center</property>
             <property name="width-request">40</property>
             <style>

@@ -3,6 +3,6 @@
 <!-- Created with Cambalache 0.96.1 -->
 <cambalache-project version="0.96.0" target_tk="gtk-4.0">
   <ui filename="control.ui" sha256="20297809a7b4b19d2d7114fefa04c6fae845e19243dc6415efd4cf4f3382fae6"/>
-  <ui filename="bootstrapper.ui" sha256="b647fdd119ac5d0a5f9ec62fe16a1c0761909004951bfcc77487d23ceda216e1"/>
+  <ui filename="bootstrapper.ui" sha256="fc08c733b8bfcae4088d9e727dc93e301f5f442fa86281d5a7e88d6d3771c2a6"/>
   <ui filename="login.ui" sha256="a71258be341e8b14579a3ed7080a2d3e9af2dee2262a57c1e863cd6dc834cf7f"/>
 </cambalache-project>

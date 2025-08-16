@@ -283,6 +283,8 @@ func (ctl *control) configSave() error {
 		return err
 	}
 
+	ctl.ActivateAction("control-toast", glib.NewVariantString("Saved!"))
+
 	return ctl.loadConfig()
 }
 

@@ -17,14 +17,6 @@ import (
 
 var version string
 
-func logFile() string {
-	h, ok := slog.Default().Handler().(*logging.Handler)
-	if !ok {
-		return ""
-	}
-	return h.Path
-}
-
 func main() {
 	debug.SetPanicOnFault(true)
 

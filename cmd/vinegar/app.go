@@ -1,9 +1,9 @@
 package main
 
 import (
-	"os"
 	"fmt"
 	"log/slog"
+	"os"
 	"path/filepath"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -14,6 +14,7 @@ import (
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/state"
 )
 
@@ -30,7 +31,7 @@ type app struct {
 
 func (s *app) unref() {
 	if !s.keepLog {
-		_ = os.Remove(logFile())
+		_ = os.Remove(logging.Path)
 	}
 	s.Unref()
 	slog.Info("Goodbye!")
@@ -123,7 +124,7 @@ func (ui *app) error(e error) {
 		ar := asyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
 		slog.Default()
-		uri := "file://" + logFile()
+		uri := "file://" + logging.Path
 		if r == "open" {
 			gtk.ShowUri(nil, uri, 0)
 		}

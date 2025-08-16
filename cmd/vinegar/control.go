@@ -16,7 +16,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-
+	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
@@ -327,7 +327,7 @@ func (ctl *control) clearCache() error {
 			}
 			return err
 		}
-		if path == dirs.Cache || path == dirs.Logs || path == logFile() {
+		if path == dirs.Cache || path == dirs.Logs || path == logging.Path {
 			return nil
 		}
 

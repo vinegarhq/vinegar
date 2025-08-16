@@ -3,7 +3,6 @@ package logging
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -14,6 +13,9 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
+// Path to the log file that is scoped to the entire program runtime
+var Path string
+
 const (
 	LevelWine   = slog.LevelInfo + 1
 	LevelRoblox = slog.LevelInfo + 2
@@ -22,26 +24,38 @@ const (
 type Handler struct {
 	slog.Handler
 	file slog.Handler
+}
 
-	Path string
+func init() {
+	// name-2006-01-02T15:04:05Z07:00.log
+	Path = filepath.Join(dirs.Logs, time.Now().Format(time.RFC3339)+".log")
+}
+
+func openPath() (*os.File, error) {
+	if err := dirs.Mkdirs(dirs.Logs); err != nil {
+		return nil, err
+	}
+
+	f, err := os.OpenFile(Path, os.O_APPEND|os.O_WRONLY|os.O_CREATE, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }
 
 func NewHandler(w io.Writer, level slog.Level) slog.Handler {
 	h := NewTextHandler(w, level, true)
 
 	var fh slog.Handler
-	path := ""
-
 	var r slog.Record
-	f, err := NewFile()
+	f, err := openPath()
 	if err == nil {
 		fh = NewTextHandler(f, level, false)
-		path = f.Name()
-
 		r = slog.NewRecord(time.Now(), slog.LevelInfo, "Logging to file", 0)
-		r.AddAttrs(slog.String("path", f.Name()))
+		r.AddAttrs(slog.String("path", Path))
 	} else {
-		r = slog.NewRecord(time.Now(), slog.LevelError, "Failed to log to file", 0)
+		r = slog.NewRecord(time.Now(), slog.LevelError, "Failed to open log file", 0)
 		r.AddAttrs(slog.String("err", err.Error()))
 	}
 	h.Handle(context.TODO(), r)
@@ -49,7 +63,6 @@ func NewHandler(w io.Writer, level slog.Level) slog.Handler {
 	return &Handler{
 		Handler: h,
 		file:    fh,
-		Path:    path,
 	}
 }
 
@@ -110,20 +123,4 @@ func NewTextHandler(w io.Writer, level slog.Level, color bool) slog.Handler {
 			return a
 		},
 	})
-}
-
-func NewFile() (*os.File, error) {
-	if err := dirs.Mkdirs(dirs.Logs); err != nil {
-		return nil, err
-	}
-
-	// name-2006-01-02T15:04:05Z07:00.log
-	path := filepath.Join(dirs.Logs, time.Now().Format(time.RFC3339)+".log")
-
-	file, err := os.Create(path)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create log file: %w", err)
-	}
-
-	return file, nil
 }

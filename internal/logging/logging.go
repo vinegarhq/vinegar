@@ -1,6 +1,8 @@
 package logging
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -16,6 +18,61 @@ const (
 	LevelWine   = slog.LevelInfo + 1
 	LevelRoblox = slog.LevelInfo + 2
 )
+
+type Handler struct {
+	slog.Handler
+	file slog.Handler
+}
+
+func NewHandler(w io.Writer, level slog.Level, f *os.File) slog.Handler {
+	var fh slog.Handler
+	if f != nil {
+		fh = NewTextHandler(f, level, false)
+	}
+	return &Handler{
+		Handler: NewTextHandler(w, level, true),
+		file:    fh,
+	}
+}
+
+func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
+	return h.Handler.Enabled(ctx, level)
+}
+
+func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
+	c := r.Clone()
+	herr := h.Handler.Handle(ctx, c)
+	var ferr error
+	if h.file != nil {
+		ferr = h.file.Handle(ctx, r)
+	}
+	if herr != nil || ferr != nil {
+		return errors.Join(herr, ferr)
+	}
+	return nil
+}
+
+func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
+	var a slog.Handler
+	if h.file != nil {
+		a = h.file.WithAttrs(attrs)
+	}
+	return &Handler{
+		Handler: h.Handler.WithAttrs(attrs),
+		file:    a,
+	}
+}
+
+func (h *Handler) WithGroup(name string) slog.Handler {
+	var g slog.Handler
+	if h.file != nil {
+		g = h.file.WithGroup(name)
+	}
+	return &Handler{
+		Handler: h.Handler.WithGroup(name),
+		file:    g,
+	}
+}
 
 func NewTextHandler(w io.Writer, level slog.Level, color bool) slog.Handler {
 	return tint.NewHandler(w, &tint.Options{

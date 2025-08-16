@@ -9,7 +9,6 @@ import (
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
-	slogmulti "github.com/samber/slog-multi"
 	"github.com/sewnie/rbxweb"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/logging"
@@ -31,10 +30,9 @@ func main() {
 		log.Fatalf("log file: %s", err)
 	}
 
-	slog.SetDefault(slog.New(slogmulti.Fanout(
-		logging.NewTextHandler(os.Stderr, slog.LevelInfo, false),
-		logging.NewTextHandler(lf, slog.LevelInfo, true),
-	)))
+	slog.SetDefault(slog.New(
+		logging.NewHandler(os.Stderr, slog.LevelInfo, nil)))
+	slog.Info("Logging to file", "path", lf.Name())
 
 	ui := app{
 		Application: adw.NewApplication(

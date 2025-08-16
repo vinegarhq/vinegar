@@ -16,7 +16,6 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0
 	github.com/jwijenbergh/puregotk v0.0.0-20250812133623-7203178b5172
 	github.com/lmittmann/tint v1.1.2
-	github.com/samber/slog-multi v1.4.1
 	github.com/sewnie/rbxbin v0.0.0-20250816115250-5cf6d6f110f5
 	github.com/sewnie/rbxweb v0.0.0-20250816104123-2cd06d8d0551
 	github.com/sewnie/wine v0.0.0-20250813131532-21cd09220e19
@@ -27,9 +26,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jwijenbergh/purego v0.0.0-20250812133547-b5852df1402b // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
-	github.com/samber/lo v1.51.0 // indirect
-	github.com/samber/slog-common v0.19.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
 

@@ -18,7 +18,7 @@ var Path string
 
 const (
 	LevelWine   = slog.LevelInfo + 1
-	LevelRoblox = slog.LevelDebug + 1
+	LevelRoblox = slog.LevelInfo + 2
 )
 
 type Handler struct {

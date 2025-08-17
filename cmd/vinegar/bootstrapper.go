@@ -109,12 +109,14 @@ func (b *bootstrapper) removePlayer() {
 
 func (b *bootstrapper) handleRobloxLog(line string) {
 	if !b.cfg.Studio.Quiet {
-		before, ent, found := strings.Cut(line, ",6")
-		if !found {
-			ent = before
-		} else if ent[0] == ',' || ent[0] == ' ' {
-			ent = ent[1:]
+		ent := line
+		// 2025-08-17T13:13:37.469Z,11.469932,0238,6,Info [FLog::AnrDetector]
+		// 2025-08-17T12:54:23.583Z,1.583294,00e0,6(,(Warning|Info|Error)) [Flog::..] ...
+		_, a, ok := strings.Cut(ent, ",6")
+		if i := strings.Index(a, "["); ok && i > 0 {
+			ent = a[i:]
 		}
+
 		slog.Log(context.Background(), logging.LevelRoblox, ent)
 	}
 

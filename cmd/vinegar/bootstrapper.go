@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -108,6 +109,17 @@ func (b *bootstrapper) removePlayer() {
 }
 
 func (b *bootstrapper) handleRobloxLog(line string) {
+	switch {
+	case strings.Contains(line, "ANR In Progress."):
+		// Roblox normally exits after submitting ANR data to
+		// ecsv2.roblox.com, but in Wine it does nothing.
+		syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
+		idle(func() {
+			b.error(errors.New(
+				"Studio detected as unresponsive!"))
+		})
+	}
+
 	if !b.cfg.Studio.Quiet {
 		ent := line
 		// 2025-08-17T13:13:37.469Z,11.469932,0238,6,Info [FLog::AnrDetector]

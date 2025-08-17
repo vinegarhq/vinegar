@@ -76,7 +76,7 @@ func (b *bootstrapper) execute(args ...string) error {
 	}
 
 	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(c)
 	go func() {
 		s := <-c

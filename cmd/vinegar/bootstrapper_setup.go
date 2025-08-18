@@ -39,17 +39,22 @@ func (b *bootstrapper) prepare() error {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
 
+	// When Studio is finally executed, the bootstrapper window
+	// immediately closes. Indicate to the user that Studio is being ran.
+	idle(func() { b.status.SetLabel("Launching Studio") })
+
+	// To allow the wineserver to report any errors, start it manually,
+	// instead of have it appear in any registry calls.
+	slog.Info("Kickstarting Wineserver")
+	if err := b.pfx.Server(); err != nil {
+		return fmt.Errorf("server: %w, check logs", err)
+	}
+
 	theme := "Light"
 	if b.GetStyleManager().GetDark() {
 		theme = "Dark"
 	}
-
-	idle(func() { b.status.SetLabel("Launching Studio") })
-
-	// Ontop of changing the theme, this also kick starts the wineserver,
-	// removing the awkward delay after the bootstrapper window dissapears
-	// and wineserver takes its time to start initializing.
-	slog.Info("Kickstarting wineserver!", "theme", theme)
+	slog.Info("Changing Studio Theme", "theme", theme)
 	err := b.pfx.RegistryAdd(
 		`HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`,
 		"CurrentTheme", theme)
@@ -68,10 +73,12 @@ func (b *bootstrapper) setup() error {
 	}
 
 	if b.rbx.Security == "" {
+		stop := b.performing()
 		b.message("Retrieving current user")
 		if err := b.app.getSecurity(); err != nil {
 			slog.Warn("Retrieving authenticated user failed", "err", err)
 		}
+		stop()
 	}
 
 	if err := b.setupDeployment(); err != nil {

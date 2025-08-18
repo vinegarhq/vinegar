@@ -50,14 +50,26 @@ func (b *bootstrapper) prepare() error {
 		return fmt.Errorf("server: %w, check logs", err)
 	}
 
+	key := `HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`
+	val := "CurrentTheme"
+	q, err := b.pfx.RegistryQuery(key, val)
+	if err != nil {
+		slog.Warn("Failed to retrieve current Studio theme", "err", err)
+		return nil
+	}
+
+	// If the user set an explicit theme rather than the default
+	// Studio system theme, do not attempt to change the theme accordingly.
+	if len(q) != 0 && q[0].Subkeys[0].Value != "Default" {
+		return nil
+	}
+
 	theme := "Light"
 	if b.GetStyleManager().GetDark() {
 		theme = "Dark"
 	}
 	slog.Info("Changing Studio Theme", "theme", theme)
-	err := b.pfx.RegistryAdd(
-		`HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`,
-		"CurrentTheme", theme)
+	err = b.pfx.RegistryAdd(key, val, theme)
 	if err != nil {
 		return fmt.Errorf("change theme: %w", err)
 	}

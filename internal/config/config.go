@@ -83,7 +83,7 @@ func Default() *Config {
 
 		Studio: Studio{
 			Dxvk:        false,
-			DxvkVersion: "2.5.3",
+			DxvkVersion: "2.7",
 			WebView:     "",
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",

@@ -4,18 +4,31 @@ import (
 	"log"
 	"os"
 	"runtime/debug"
+	"slices"
+	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/sewnie/rbxweb"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/state"
+	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 var version string
 
 func main() {
 	debug.SetPanicOnFault(true)
+
+	if slices.ContainsFunc(sysinfo.Cards, func(c sysinfo.Card) bool {
+		return strings.HasPrefix(c.Driver, "nvidia") &&
+			os.Getenv("WAYLAND_DISPLAY") != "" // GDK will prefer wayland
+	}) {
+		// Causes GTK panic with: "No provider of eglGetCurrentContext found.""
+		os.Setenv("GSK_RENDERER", "cairo")
+	}
+	// VK_SUBOPTIMAL_KHR
+	os.Setenv("GDK_DISABLE", "vulkan")
 
 	s, err := state.Load()
 	if err != nil {

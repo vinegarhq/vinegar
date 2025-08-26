@@ -95,7 +95,11 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
-	idle(b.win.Hide)
+	idle(func() {
+		b.win.Destroy()
+		b.app.Hold()
+	})
+	defer idle(b.app.Release)
 
 	if b.cfg.Studio.GameMode {
 		b.registerGameMode(int32(cmd.Process.Pid))

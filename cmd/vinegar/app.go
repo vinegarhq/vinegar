@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -27,81 +28,110 @@ type app struct {
 	pfx   *wine.Prefix
 	rbx   *rbxweb.Client
 
+	// initialized only in Application::command-line
+	ctl  *control
+	boot *bootstrapper
+
 	keepLog bool
 }
 
-func (s *app) unref() {
-	if !s.keepLog && !s.cfg.Debug {
+func newApp() *app {
+	s, err := state.Load()
+	if err != nil {
+		log.Fatalf("load state: %s", err)
+	}
+
+	a := app{
+		Application: adw.NewApplication(
+			"org.vinegarhq.Vinegar",
+			gio.GApplicationHandlesCommandLineValue,
+		),
+		state: &s,
+		cfg:   config.Default(),
+		rbx:   rbxweb.NewClient(),
+	}
+
+	dialogA := gio.NewSimpleAction("show-login-dialog", nil)
+	dialobCb := func(_ gio.SimpleAction, _ uintptr) {
+		a.newLogin()
+	}
+	dialogA.ConnectActivate(&dialobCb)
+	a.AddAction(dialogA)
+
+	clcb := a.commandLine
+	a.ConnectCommandLine(&clcb)
+
+	scb := a.shutdown
+	a.ConnectShutdown(&scb)
+
+	return &a
+}
+
+func (a *app) shutdown(_ gio.Application) {
+	if !a.keepLog && !a.cfg.Debug {
 		_ = os.Remove(logging.Path)
 	}
-	s.Unref()
 	slog.Info("Goodbye!")
 }
 
-func (ui *app) activateCommandLine(_ gio.Application, cl uintptr) int {
-	acl := gio.ApplicationCommandLineNewFromInternalPtr(cl)
-	args := acl.GetArguments(0)
+func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
+	cl := gio.ApplicationCommandLineNewFromInternalPtr(clPtr)
+	args := cl.GetArguments(0)
 
-	subcmd := ""
+	arg := ""
 	if len(args) >= 2 {
-		subcmd = args[1]
+		arg = args[1]
 	}
 
-	switch subcmd {
+	err := a.loadConfig()
+
+	switch arg {
 	case "run":
-		ui.activateBootstrapper(args[2:]...)
+		if err != nil {
+			a.error(err)
+			return 1
+		}
+		if a.boot == nil {
+			a.boot = a.newBootstrapper()
+		}
+
+		var tf glib.ThreadFunc = func(uintptr) uintptr {
+			if err := a.boot.run(args[2:]...); err != nil {
+				idle(func() {
+					a.boot.error(err)
+				})
+			}
+			return 0
+		}
+		glib.NewThread("bootstrapper", &tf, 0)
 	case "":
-		ui.activateControl()
+		if err != nil {
+			a.error(err)
+		}
+		if a.ctl == nil {
+			a.ctl = a.newControl()
+		}
+		a.ctl.win.Present()
 	default:
-		acl.Printerr("Unrecognized subcommand: %s\n", subcmd)
+		cl.Printerr("Unrecognized subcommand: %s\n", arg)
 		return 1
 	}
 	return 0
 }
 
-func (ui *app) activateControl() {
-	err := ui.loadConfig()
-	ui.newControl()
-	if err != nil {
-		slog.Warn("Falling back to default configuration!")
-		ui.error(err)
-	}
-}
-
-func (ui *app) activateBootstrapper(args ...string) {
-	err := ui.loadConfig()
-	if err != nil {
-		ui.error(err)
-		return
-	}
-
-	b := ui.newBootstrapper()
-
-	var tf glib.ThreadFunc = func(uintptr) uintptr {
-		defer idle(b.win.Destroy)
-		if err := b.run(args...); err != nil {
-			idle(func() {
-				b.error(err)
-			})
-		}
-		return 0
-	}
-	glib.NewThread("bootstrapper", &tf, 0)
-}
-
-func (s *app) loadConfig() error {
+func (a *app) loadConfig() error {
 	// will fallback to default configuration if there is an error
 	cfg, err := config.Load()
 
-	s.pfx = wine.New(
+	a.pfx = wine.New(
 		filepath.Join(dirs.Prefixes, "studio"),
 		cfg.Studio.WineRoot,
 	)
 
-	s.cfg = cfg
+	a.cfg = cfg
 
 	if cfg.Debug {
-		s.rbx.Client.Transport = &debugTransport{
+		a.rbx.Client.Transport = &debugTransport{
 			underlying: http.DefaultTransport,
 		}
 	}
@@ -113,13 +143,13 @@ func (s *app) loadConfig() error {
 	return nil
 }
 
-func (ui *app) error(e error) {
-	ui.keepLog = true
+func (a *app) error(e error) {
+	a.keepLog = true
 	slog.Error("Error!", "err", e.Error())
 
 	// In a bootstrapper context, the window is destroyed to show the
 	// error instead, which will make the GtkApplication exit.
-	ui.Hold()
+	a.Hold()
 	d := adw.NewAlertDialog("Something went wrong", e.Error())
 	d.AddResponses("okay", "Ok", "open", "Open Log")
 	d.SetCloseResponse("okay")
@@ -127,7 +157,7 @@ func (ui *app) error(e error) {
 	d.SetResponseAppearance("open", adw.ResponseSuggestedValue)
 
 	var ccb gio.AsyncReadyCallback = func(_ uintptr, res uintptr, _ uintptr) {
-		defer ui.Release()
+		defer a.Release()
 		ar := asyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
 		slog.Default()

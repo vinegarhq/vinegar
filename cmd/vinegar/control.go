@@ -27,7 +27,7 @@ type control struct {
 	win     adw.ApplicationWindow
 }
 
-func (s *app) newControl() control {
+func (s *app) newControl() *control {
 	ctl := control{
 		app:     s,
 		builder: gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/control.ui"),
@@ -62,10 +62,7 @@ func (s *app) newControl() control {
 	// ctl.setupConfigurationActions()
 	ctl.setupControlActions()
 
-	ctl.win.Present()
-	ctl.win.Unref()
-
-	return ctl
+	return &ctl
 }
 
 func (ctl *control) configPut() {

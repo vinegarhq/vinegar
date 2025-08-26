@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"unsafe"
 
 	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -36,17 +37,17 @@ type bootstrapper struct {
 	rp *studiorpc.StudioRPC
 }
 
-func (s *app) newBootstrapper() *bootstrapper {
+func (a *app) newBootstrapper() *bootstrapper {
 	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/bootstrapper.ui")
 	defer builder.Unref()
 
 	b := bootstrapper{
-		app: s,
+		app: a,
 		rp:  studiorpc.New(),
 	}
 
 	builder.GetObject("window").Cast(&b.win)
-	s.AddWindow(&b.win.Window)
+	a.AddWindow(&b.win.Window)
 	destroy := func(_ gtk.Window) bool {
 		// https://github.com/jwijenbergh/puregotk/issues/17
 		// BUG: realistically no other way to cancel
@@ -55,6 +56,7 @@ func (s *app) newBootstrapper() *bootstrapper {
 		return false
 	}
 	b.win.ConnectCloseRequest(&destroy)
+	b.win.SetData("bootstrapper", uintptr(unsafe.Pointer(&b)))
 
 	builder.GetObject("status").Cast(&b.status)
 	builder.GetObject("progress").Cast(&b.pbar)

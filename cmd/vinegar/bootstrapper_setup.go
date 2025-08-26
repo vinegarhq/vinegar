@@ -24,7 +24,7 @@ import (
 
 var studio = rbxweb.BinaryTypeWindowsStudio64
 
-func (b *bootstrapper) prepare() error {
+func (b *bootstrapper) prepareRun() error {
 	defer b.performing()()
 
 	b.message("Renderer Status:", "renderer", b.cfg.Studio.Renderer,
@@ -50,6 +50,14 @@ func (b *bootstrapper) prepare() error {
 		return fmt.Errorf("server: %w, check logs", err)
 	}
 
+	if err := b.changeTheme(); err != nil {
+		slog.Warn("Failed to change Studio's theme!", "err", err)
+	}
+
+	return nil
+}
+
+func (b *bootstrapper) changeTheme() error {
 	key := `HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`
 	val := "CurrentTheme"
 	q, err := b.pfx.RegistryQuery(key, val)
@@ -69,16 +77,17 @@ func (b *bootstrapper) prepare() error {
 		theme = "Dark"
 	}
 	slog.Info("Changing Studio Theme", "theme", theme)
-	err = b.pfx.RegistryAdd(key, val, theme)
-	if err != nil {
-		return fmt.Errorf("change theme: %w", err)
-	}
-
-	return nil
+	return b.pfx.RegistryAdd(key, val, theme)
 }
 
 func (b *bootstrapper) setup() error {
 	b.removePlayer()
+
+	// Allow a primary bootstrapper object to only setup just once
+	if b.bin != nil {
+		slog.Info("Skipping setup!", "ver", b.bin.GUID)
+		return nil
+	}
 
 	if err := b.setupPrefix(); err != nil {
 		return fmt.Errorf("prefix: %w", err)
@@ -103,6 +112,10 @@ func (b *bootstrapper) setup() error {
 
 	if err := b.state.Save(); err != nil {
 		return fmt.Errorf("save state: %w", err)
+	}
+
+	if err := b.prepareRun(); err != nil {
+		return err
 	}
 
 	return nil

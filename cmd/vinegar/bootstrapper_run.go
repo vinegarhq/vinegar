@@ -58,10 +58,6 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 }
 
 func (b *bootstrapper) execute(args ...string) error {
-	if err := b.prepare(); err != nil {
-		return fmt.Errorf("prepare: %w", err)
-	}
-
 	cmd, err := b.command(args...)
 	if err != nil {
 		return err

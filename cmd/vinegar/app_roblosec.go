@@ -16,10 +16,7 @@ var (
 	secPrefix = credPath + `\Generic: https://www.roblox.com:RobloxStudioAuth.ROBLOSECURITY`
 )
 
-// TODO: use for rbxweb.Client
 func (a *app) getSecurity() error {
-	slog.Info("Retrieving current user")
-
 	keys, err := a.pfx.RegistryQuery(credPath, ``)
 	if err != nil {
 		return fmt.Errorf("query: %w", err)

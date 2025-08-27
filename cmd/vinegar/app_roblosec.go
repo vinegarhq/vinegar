@@ -25,6 +25,12 @@ func (a *app) getSecurity() error {
 		return fmt.Errorf("query: %w", err)
 	}
 
+	// Encryption key will be unavailable, no authentication
+	// was performed yet
+	if len(keys) == 0 {
+		return errors.New("user not logged in")
+	}
+
 	// Credential Manager first root subkey
 	c, err := rc4.NewCipher(keys[0].Subkeys[0].Value.([]byte))
 	if err != nil {
@@ -47,7 +53,7 @@ func (a *app) getSecurity() error {
 		}
 	}
 
-	return errors.New("cookie missing")
+	return fmt.Errorf("user %s cookie not found", user)
 }
 
 // workaround rc4.Cipher KSA to keep the original key intact

@@ -130,14 +130,14 @@ func (b *bootstrapper) setupPrefix() error {
 		return fmt.Errorf("wine: %w", c.Err)
 	}
 
-	if err := b.setupWebView(); err != nil {
-		return fmt.Errorf("webview: %w", err)
-	}
-
 	if !b.pfx.Exists() {
 		if err := b.prefixInstall(); err != nil {
 			return err
 		}
+	}
+
+	if err := b.setupWebView(); err != nil {
+		return fmt.Errorf("webview: %w", err)
 	}
 
 	// Latest versions of studio require a implemented call, check if the given
@@ -227,6 +227,10 @@ func (b *bootstrapper) webViewInstall() error {
 	defer b.performing()()
 
 	b.message("Installing WebView", "path", name)
+
+	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\AppDefaults\msedgewebview2.exe`, "Version", "win7"); err != nil {
+		return fmt.Errorf("version set: %w", err)
+	}
 
 	return run(webview.Install(b.pfx, name))
 }

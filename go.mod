@@ -13,7 +13,6 @@ require (
 
 require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
-	github.com/godbus/dbus/v5 v5.1.0
 	github.com/jwijenbergh/puregotk v0.0.0-20250812133623-7203178b5172
 	github.com/lmittmann/tint v1.1.2
 	github.com/sewnie/rbxbin v0.0.0-20250816115250-5cf6d6f110f5

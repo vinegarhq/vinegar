@@ -12,8 +12,8 @@ import (
 	"syscall"
 	"unsafe"
 
-	"github.com/godbus/dbus/v5"
 	"github.com/jwijenbergh/puregotk/v4/adw"
+	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxbin"
@@ -141,20 +141,38 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 	}
 }
 
-func (b *bootstrapper) registerGameMode(pid int32) {
-	conn, err := dbus.ConnectSessionBus()
+func (b *bootstrapper) registerGameMode(target int) error {
+	if !b.cfg.Studio.GameMode {
+		return nil
+	}
+
+	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
 	if err != nil {
-		slog.Error("Failed to connect to D-Bus", "error", err)
-		return
+		return fmt.Errorf("bus: %w", err)
 	}
 
-	desktop := conn.Object("org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop")
-
-	call := desktop.Call("org.freedesktop.portal.GameMode.RegisterGame", 0, pid)
-	if call.Err != nil && !errors.Is(call.Err, dbus.ErrMsgNoObject) {
-		slog.Error("Failed to register to GameMode", "error", err)
-		return
+	resp, err := conn.CallSync("org.freedesktop.portal.Desktop",
+		"/org/freedesktop/portal/desktop",
+		"org.freedesktop.portal.GameMode",
+		"RegisterGame",
+		glib.NewVariant("(i)", target),
+		glib.NewVariantType("(i)"),
+		gio.GDbusCallFlagsNoneValue,
+		-1,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("register: %w", err)
 	}
+	var res int32
+	resp.Get("(i)", &res)
+
+	if res < 0 {
+		return errors.New("rejected by gamemode")
+	}
+	slog.Info("Registered with GameMode", "response", res)
+
+	return nil
 }
 
 func (b *bootstrapper) setupMIME() error {

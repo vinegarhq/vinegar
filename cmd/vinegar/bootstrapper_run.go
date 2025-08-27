@@ -97,8 +97,8 @@ func (b *bootstrapper) execute(args ...string) error {
 	})
 	defer idle(b.app.Release)
 
-	if b.cfg.Studio.GameMode {
-		b.registerGameMode(int32(cmd.Process.Pid))
+	if err := b.registerGameMode(syscall.Getpid()); err != nil {
+		slog.Error("Failed to register with GameMode", "err", err)
 	}
 
 	idle(func() { b.ActivateAction("show-stop", nil) })

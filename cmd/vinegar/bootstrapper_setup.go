@@ -176,29 +176,7 @@ func (b *bootstrapper) prefixInstall() error {
 	defer b.performing()()
 
 	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
-	if err := run(b.pfx.Init()); err != nil {
-		return err
-	}
-
-	// Default version on modern WINE
-	b.message("Setting Wineprefix version")
-	if err := run(b.pfx.Wine("winecfg", "/v", "win10")); err != nil {
-		return err
-	}
-
-	b.message("Setting Wineprefix DPI")
-	// Studio will not load past the splash screen if the DPI
-	// is 96 with the following conditions:
-	//   1. WebView is installed
-	//   2. WebView is not installed, but we are in Flatpak
-	if err := b.pfx.SetDPI(98); err != nil {
-		return nil
-	}
-
-	// Some unknown DPI issue arises if the DPI is changed
-	// *after* wineserver/wineprefix initialization, causing
-	// Studio not to run.
-	return b.pfx.Kill()
+	return run(b.pfx.Init())
 }
 
 func (b *bootstrapper) setupWebView() error {

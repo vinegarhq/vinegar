@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"fmt"
 	"log/slog"
 	"strconv"
@@ -67,11 +66,4 @@ func (l *login) setSecurity() error {
 	}
 
 	return nil
-}
-
-func filetime(t time.Time) []byte {
-	b := make([]byte, 8)
-	binary.LittleEndian.PutUint64(b, uint64(
-		t.UTC().UnixNano()/100+116444736000000000))
-	return b
 }

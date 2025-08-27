@@ -93,6 +93,8 @@ func (b *bootstrapper) setup() error {
 		return fmt.Errorf("prefix: %w", err)
 	}
 
+	// Check is only performed once, and won't take into account
+	// when and if the user changes their user while Vinegar is running.
 	if b.rbx.Security == "" {
 		stop := b.performing()
 		b.message("Retrieving current user")

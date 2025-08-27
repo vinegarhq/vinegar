@@ -3,17 +3,20 @@ package main
 import (
 	"crypto/rand"
 	"crypto/rc4"
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
+	"slices"
 	"time"
 )
 
 var (
 	credPath = `HKEY_CURRENT_USER\Software\Wine\Credential Manager`
 	// UserID comes afterwards
-	secPrefix = credPath + `\Generic: https://www.roblox.com:RobloxStudioAuth.ROBLOSECURITY`
+	authPrefix = credPath + `\Generic: https://www.roblox.com:RobloxStudioAuth`
+	secPrefix  = authPrefix + `.ROBLOSECURITY`
+	userPrefix = authPrefix + `userid`
 )
 
 func (a *app) getSecurity() error {
@@ -22,32 +25,37 @@ func (a *app) getSecurity() error {
 		return fmt.Errorf("query: %w", err)
 	}
 
-	var c *rc4.Cipher
-	for _, k := range keys {
-		if k.Key != credPath && !strings.HasPrefix(k.Key, secPrefix) {
-			continue
-		}
-		// following subkeys usually only belong to the ROBLOSECURITY or root
-		// credential registry key
-		for _, sk := range k.Subkeys {
-			switch sk.Name {
-			case "EncryptionKey": // [Software\Wine\Credential Manager
-				c, err = rc4.NewCipher(sk.Value.([]byte))
-				if err != nil {
-					return fmt.Errorf("cipher: %w", err)
-				}
-			case "Password": // Software\Wine\Credential Manager\Generic: https://www.roblox.com:RobloxStudioAuth.
-				sec := make([]byte, len(sk.Value.([]byte)))
-				c.XORKeyStream(sec, sk.Value.([]byte))
-				a.rbx.Security = string(sec)
-				id, _ := strings.CutPrefix(k.Key, secPrefix)
-				slog.Info("Using authenticated user for API requests", "user", id)
-				return nil
-			}
+	// Credential Manager first root subkey
+	c, err := rc4.NewCipher(keys[0].Subkeys[0].Value.([]byte))
+	if err != nil {
+		return fmt.Errorf("cipher: %w", err)
+	}
+
+	var user string
+	// The current user comes last. Read in reverse order to get the key
+	// and get the ROBLOSECURITY entries.
+	// A race condition is most likely to occur here, as it assumes Wine
+	// retains and has a specific order for how keys are displayed.
+	for _, k := range slices.Backward(keys) {
+		switch k.Key {
+		case userPrefix:
+			user = keyStream(c, k.Subkeys[3].Value.([]byte))
+		case secPrefix + user:
+			a.rbx.Security = keyStream(c, k.Subkeys[3].Value.([]byte))
+			slog.Info("Using user for authentication", "user", user)
+			return nil
 		}
 	}
 
 	return errors.New("cookie missing")
+}
+
+// workaround rc4.Cipher KSA to keep the original key intact
+func keyStream(c *rc4.Cipher, subKey []byte) string {
+	cpy := *c
+	sec := make([]byte, len(subKey))
+	cpy.XORKeyStream(sec, subKey)
+	return string(sec)
 }
 
 func (b *app) getWineCredKey() ([]byte, error) {
@@ -95,4 +103,11 @@ func (b *app) addWineCred(key []byte, name string, blob []byte) error {
 		}
 	}
 	return nil
+}
+
+func filetime(t time.Time) []byte {
+	b := make([]byte, 8)
+	binary.LittleEndian.PutUint64(b, uint64(
+		t.UTC().UnixNano()/100+116444736000000000))
+	return b
 }

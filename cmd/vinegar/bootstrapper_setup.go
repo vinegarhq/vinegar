@@ -24,7 +24,7 @@ import (
 
 var studio = rbxweb.BinaryTypeWindowsStudio64
 
-func (b *bootstrapper) prepareRun() error {
+func (b *bootstrapper) setupRun() error {
 	defer b.performing()()
 
 	b.message("Renderer Status:", "renderer", b.cfg.Studio.Renderer,
@@ -83,40 +83,25 @@ func (b *bootstrapper) changeTheme() error {
 func (b *bootstrapper) setup() error {
 	b.removePlayer()
 
-	// Allow a primary bootstrapper object to only setup just once
+	// Bootstrapper is currently running
 	if b.bin != nil {
 		slog.Info("Skipping setup!", "ver", b.bin.GUID)
 		return nil
-	}
-
-	if err := b.setupPrefix(); err != nil {
-		return fmt.Errorf("prefix: %w", err)
-	}
-
-	// Check is only performed once, and won't take into account
-	// when and if the user changes their user while Vinegar is running.
-	if b.rbx.Security == "" {
-		stop := b.performing()
-		b.message("Retrieving current user")
-		if err := b.app.getSecurity(); err != nil {
-			slog.Warn("Retrieving authenticated user failed", "err", err)
-		}
-		stop()
 	}
 
 	if err := b.setupDeployment(); err != nil {
 		return err
 	}
 
-	if err := b.setupDxvk(); err != nil {
-		return fmt.Errorf("setup dxvk %s: %w", b.cfg.Studio.DxvkVersion, err)
-	}
-
 	if err := b.state.Save(); err != nil {
 		return fmt.Errorf("save state: %w", err)
 	}
 
-	if err := b.prepareRun(); err != nil {
+	if err := b.setupPrefix(); err != nil {
+		return fmt.Errorf("prefix: %w", err)
+	}
+
+	if err := b.setupRun(); err != nil {
 		return err
 	}
 
@@ -126,20 +111,40 @@ func (b *bootstrapper) setup() error {
 func (b *bootstrapper) setupPrefix() error {
 	b.message("Setting up Wine")
 
+	// if Wine is runnable
 	if c := b.pfx.Wine(""); c.Err != nil {
 		return fmt.Errorf("wine: %w", c.Err)
 	}
 
 	if !b.pfx.Exists() {
-		if err := b.prefixInstall(); err != nil {
-			return err
+		if err := b.setupPrefixInit(); err != nil {
+			return fmt.Errorf("init: %w", err)
 		}
+	}
+
+	if err := b.checkPrefix(); err != nil {
+		return err
+	}
+
+	if err := b.setupDxvk(); err != nil {
+		return fmt.Errorf("setup dxvk %s: %w", b.cfg.Studio.DxvkVersion, err)
 	}
 
 	if err := b.setupWebView(); err != nil {
 		return fmt.Errorf("webview: %w", err)
 	}
 
+	return nil
+}
+
+func (b *bootstrapper) setupPrefixInit() error {
+	defer b.performing()()
+
+	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
+	return run(b.pfx.Init())
+}
+
+func (b *bootstrapper) checkPrefix() error {
 	// Latest versions of studio require a implemented call, check if the given
 	// prefix supports it
 	if b.cfg.Studio.ForcedVersion != "" {
@@ -170,13 +175,6 @@ func (b *bootstrapper) setupPrefix() error {
 	}
 
 	return nil
-}
-
-func (b *bootstrapper) prefixInstall() error {
-	defer b.performing()()
-
-	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
-	return run(b.pfx.Init())
 }
 
 func (b *bootstrapper) setupWebView() error {
@@ -295,6 +293,12 @@ func (b *bootstrapper) fetchDeployment() error {
 		slog.Warn("Using forced deployment!",
 			"guid", b.bin.GUID, "channel", b.bin.Channel)
 		return nil
+	}
+
+	if b.rbx.Security == "" && b.pfx.Exists() {
+		if err := b.app.getSecurity(); err != nil {
+			slog.Warn("Retrieving authenticated user failed", "err", err)
+		}
 	}
 
 	d, err := rbxbin.GetDeployment(b.rbx, studio, b.cfg.Studio.Channel)

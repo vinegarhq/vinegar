@@ -18,19 +18,20 @@ import (
 var studio = rbxweb.BinaryTypeWindowsStudio64
 
 func (b *bootstrapper) setupDeployment() error {
-	b.message("Checking for updates")
-
 	if err := b.stepFetchDeployment(); err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
 	b.dir = filepath.Join(dirs.Versions, b.bin.GUID)
+
+	slog.Info("Using Deployment",
+		"guid", b.bin.GUID, "channel", b.bin.Channel)
 
 	if b.state.Studio.Version == b.bin.GUID {
 		b.message("Up to date", "guid", b.bin.GUID)
 		return nil
 	}
 
-	slog.Info("Studio out of date, installing latest version...",
+	b.message("Installing Studio",
 		"old", b.state.Studio.Version, "new", b.bin.GUID)
 
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
@@ -59,17 +60,10 @@ func (b *bootstrapper) stepFetchDeployment() error {
 			Channel: b.cfg.Studio.Channel,
 			GUID:    b.cfg.Studio.ForcedVersion,
 		}
-
-		slog.Warn("Using forced deployment!",
-			"guid", b.bin.GUID, "channel", b.bin.Channel)
 		return nil
 	}
 
-	if b.rbx.Security == "" && b.pfx.Exists() {
-		if err := b.app.getSecurity(); err != nil {
-			slog.Warn("Retrieving authenticated user failed", "err", err)
-		}
-	}
+	b.message("Checking for updates")
 
 	d, err := rbxbin.GetDeployment(b.rbx, studio, b.cfg.Studio.Channel)
 	if err != nil {
@@ -81,8 +75,7 @@ func (b *bootstrapper) stepFetchDeployment() error {
 	})
 
 	b.bin = d
-	slog.Info("Using Binary Deployment",
-		"guid", b.bin.GUID, "channel", b.bin.Channel)
+
 	return nil
 }
 
@@ -95,7 +88,7 @@ func (b *bootstrapper) stepSetupPackages() error {
 		return fmt.Errorf("fetch mirror: %w", err)
 	}
 
-	b.message("Fetching Package List", "channel", b.bin.Channel)
+	b.message("Fetching Package List")
 	pkgs, err := m.GetPackages(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)

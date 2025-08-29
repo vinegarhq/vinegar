@@ -21,16 +21,36 @@ func (b *bootstrapper) setup() error {
 		return nil
 	}
 
+	pfxFirstRun := !b.pfx.Exists()
+
+	if err := b.setupPrefix(); err != nil {
+		return err
+	}
+
+	if b.rbx.Security == "" && !pfxFirstRun {
+		if err := b.app.getSecurity(); err != nil {
+			slog.Warn("Retrieving authenticated user failed", "err", err)
+		}
+	}
+
+	if err := b.stepSetupDxvk(); err != nil {
+		return fmt.Errorf("dxvk dl: %w")
+	}
+
+	if err := b.stepWebviewDownload(); err != nil {
+		return fmt.Errorf("webview dl: %w")
+	}
+
 	if err := b.setupDeployment(); err != nil {
 		return err
 	}
 
-	if err := b.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
+	if err := b.stepWebviewInstall(); err != nil {
+		return fmt.Errorf("webview: %w")
 	}
 
-	if err := b.setupPrefix(); err != nil {
-		return fmt.Errorf("prefix: %w", err)
+	if err := b.state.Save(); err != nil {
+		return fmt.Errorf("save state: %w", err)
 	}
 
 	if err := b.stepPrepareRun(); err != nil {
@@ -71,25 +91,25 @@ func (b *bootstrapper) stepPrepareRun() error {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
 
-	// When Studio is finally executed, the bootstrapper window
-	// immediately closes. Indicate to the user that Studio is being ran.
 	idle(func() { b.status.SetLabel("Launching Studio") })
 
-	// To allow the wineserver to report any errors, start it manually,
-	// instead of have it appear in any registry calls.
+	// If no setup took place, this will go immediately.
 	slog.Info("Kickstarting Wineserver")
 	if err := b.pfx.Server(); err != nil {
 		return fmt.Errorf("server: %w, check logs", err)
 	}
 
-	if err := b.changeTheme(); err != nil {
+	// Running this command will initialize Wine for
+	// running applications, which gives more time to the
+	// splash window to show that studio is going to be ran.
+	if err := b.stepChangeStudioTheme(); err != nil {
 		slog.Warn("Failed to change Studio's theme!", "err", err)
 	}
 
 	return nil
 }
 
-func (b *bootstrapper) changeTheme() error {
+func (b *bootstrapper) stepChangeStudioTheme() error {
 	key := `HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`
 	val := "CurrentTheme"
 	q, err := b.pfx.RegistryQuery(key, val)
@@ -108,6 +128,6 @@ func (b *bootstrapper) changeTheme() error {
 	if b.GetStyleManager().GetDark() {
 		theme = "Dark"
 	}
-	slog.Info("Changing Studio Theme", "theme", theme)
+	b.message("Changing Theme", "theme", theme)
 	return b.pfx.RegistryAdd(key, val, theme)
 }

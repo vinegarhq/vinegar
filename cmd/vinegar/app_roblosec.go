@@ -27,10 +27,8 @@ func (a *app) getSecurity() error {
 		return fmt.Errorf("query: %w", err)
 	}
 
-	// Encryption key will be unavailable, no authentication
-	// was performed yet
 	if len(keys) == 0 {
-		return errors.New("user not logged in")
+		return errors.New("no authentication")
 	}
 
 	// Credential Manager first root subkey
@@ -53,6 +51,10 @@ func (a *app) getSecurity() error {
 			slog.Info("Using user for authentication", "user", user)
 			return nil
 		}
+	}
+
+	if user == "" {
+		return fmt.Errorf("not logged in")
 	}
 
 	return fmt.Errorf("user %s cookie not found", user)

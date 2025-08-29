@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"slices"
@@ -22,22 +23,14 @@ func (b *bootstrapper) setupPrefix() error {
 		return fmt.Errorf("wine: %w", c.Err)
 	}
 
-	if !b.pfx.Exists() {
-		if err := b.stepPrefixInit(); err != nil {
-			return fmt.Errorf("init: %w", err)
-		}
+	// Always initialize in case Wine changes,
+	// to prevent a dialog from appearing in normal apps.
+	if err := b.stepPrefixInit(); err != nil {
+		return fmt.Errorf("init: %w", err)
 	}
 
 	if err := b.checkPrefix(); err != nil {
 		return err
-	}
-
-	if err := b.stepDxvkInstall(); err != nil {
-		return fmt.Errorf("dxvk: %w", err)
-	}
-
-	if err := b.setupWebView(); err != nil {
-		return fmt.Errorf("webview: %w", err)
 	}
 
 	return nil
@@ -51,6 +44,7 @@ func (b *bootstrapper) stepPrefixInit() error {
 }
 
 func (b *bootstrapper) checkPrefix() error {
+	b.message("Checking Wineprefix")
 	// Latest versions of studio require a implemented call, check if the given
 	// prefix supports it
 	if b.cfg.Studio.ForcedVersion != "" {
@@ -83,67 +77,105 @@ func (b *bootstrapper) checkPrefix() error {
 	return nil
 }
 
-func (b *bootstrapper) stepDxvkInstall() error {
+func (b *bootstrapper) stepSetupDxvk() error {
+	// If installed, installing won't be required since
+	// DLL overrides decide if DXVK is actually used or not.
 	if !b.cfg.Studio.Dxvk ||
 		b.cfg.Studio.DxvkVersion == b.state.Studio.DxvkVersion {
 		return nil
 	}
 
-	ver := b.cfg.Studio.DxvkVersion
-	dxvkPath := filepath.Join(dirs.Cache, "dxvk-"+ver+".tar.gz")
+	name := filepath.Join(dirs.Cache, "dxvk-"+b.cfg.Studio.DxvkVersion+".tar.gz")
+	if _, err := os.Stat(name); err == nil {
+		goto install
+	}
 
 	if err := dirs.Mkdirs(dirs.Cache); err != nil {
-		return err
+		return fmt.Errorf("prepare cache: %w", err)
 	}
 
-	if _, err := os.Stat(dxvkPath); err != nil {
-		url := dxvk.URL(ver)
+	b.message("Downloading DXVK", "ver", b.cfg.Studio.DxvkVersion)
 
-		b.message("Downloading DXVK", "ver", ver)
-
-		if err := netutil.DownloadProgress(url, dxvkPath, &b.pbar); err != nil {
-			return fmt.Errorf("download: %w", err)
-		}
+	if err := netutil.DownloadProgress(
+		dxvk.URL(b.cfg.Studio.DxvkVersion), name, &b.pbar); err != nil {
+		return fmt.Errorf("download: %w", err)
 	}
 
+install:
 	defer b.performing()()
 
-	b.message("Extracting DXVK", "version", ver)
+	b.message("Extracting DXVK", "ver", b.cfg.Studio.DxvkVersion)
 
-	if err := dxvk.Extract(b.pfx, dxvkPath); err != nil {
-		return err
+	if err := dxvk.Extract(b.pfx, name); err != nil {
+		return fmt.Errorf("extract: %w", err)
 	}
 
-	b.state.Studio.DxvkVersion = ver
-
+	b.state.Studio.DxvkVersion = b.cfg.Studio.DxvkVersion
 	return nil
 }
 
-func (b *bootstrapper) setupWebView() error {
-	path := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView")
-	// Since we do not keep webview tracked in state, simply removing it
-	// always if it is disabled is fine, since it will be a harmless error.
-	// TODO: implement a webview uninstaller
+func (b *bootstrapper) webviewInstaller() string {
 	if b.cfg.Studio.WebView == "" {
-		os.RemoveAll(path)
+		return ""
+	}
+	return filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
+}
+
+func (b *bootstrapper) stepWebviewDownload() error {
+	name := b.webviewInstaller()
+	if name == "" {
 		return nil
 	}
 
-	if _, err := os.Stat(path); err == nil {
+	if _, err := os.Stat(name); err == nil {
 		return nil
 	}
 
-	return b.stepWebviewInstall()
+	stop := b.performing()
+
+	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
+	d, err := webview.GetDownload(b.cfg.Studio.WebView)
+	if err != nil {
+		return fmt.Errorf("fetch: %w", err)
+	}
+
+	// TODO: pipe straight to Extract
+	tmp, err := os.CreateTemp("", "unc_msedgestandalone.*.exe")
+	if err != nil {
+		return fmt.Errorf("temp: %w", err)
+	}
+	defer os.Remove(tmp.Name())
+
+	stop()
+	b.message("Downloading WebView", "version", d.Version)
+	err = netutil.DownloadProgress(d.URL, tmp.Name(), &b.pbar)
+	if err != nil {
+		return fmt.Errorf("download: %w", err)
+	}
+
+	f, err := os.OpenFile(name, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	if err != nil {
+		return fmt.Errorf("installer open: %w", err)
+	}
+	defer f.Close()
+
+	return d.Extract(tmp, f)
 }
 
 func (b *bootstrapper) stepWebviewInstall() error {
-	name := filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
-	if _, err := os.Stat(name); err != nil {
-		if err := b.stepWebviewDownload(name); err != nil {
-			return err
-		}
+	name := b.webviewInstaller()
+
+	path := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView")
+	_, err := os.Stat(path)
+
+	if name == "" && err == nil {
+		b.message("Uninstalling WebView")
+		os.RemoveAll(path)
+		return nil
+	} else if err == nil {
+		// Already installed
+		return nil
 	}
-	defer b.performing()()
 
 	b.message("Installing WebView", "path", name)
 
@@ -152,36 +184,4 @@ func (b *bootstrapper) stepWebviewInstall() error {
 	}
 
 	return run(webview.Install(b.pfx, name))
-}
-
-func (b *bootstrapper) stepWebviewDownload(name string) error {
-	stop := b.performing()
-
-	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
-	d, err := webview.GetDownload(b.cfg.Studio.WebView)
-	if err != nil {
-		return err
-	}
-
-	// TODO: pipe straight to Extract
-	tmp, err := os.CreateTemp("", "unc_msedgestandalone.*.exe")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tmp.Name())
-
-	stop()
-	b.message("Downloading WebView", "version", d.Version)
-	err = netutil.DownloadProgress(d.URL, tmp.Name(), &b.pbar)
-	if err != nil {
-		return err
-	}
-
-	f, err := os.OpenFile(name, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	return d.Extract(tmp, f)
 }

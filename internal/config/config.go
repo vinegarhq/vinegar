@@ -108,6 +108,10 @@ func (c *Config) Setup() error {
 	slog.SetDefault(slog.New(
 		logging.NewHandler(os.Stderr, level)))
 
+	if !c.Debug && os.Getenv("WAYLAND_DISPLAY") != "" {
+		c.Env["DISPLAY"] = ""
+	}
+
 	c.Env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
 	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.Dxvk)
 	c.Env.Setenv()

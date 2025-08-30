@@ -163,20 +163,18 @@ func (b *bootstrapper) stepWebviewDownload() error {
 
 func (b *bootstrapper) stepWebviewInstall() error {
 	name := b.webviewInstaller()
-
 	path := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView")
-	_, err := os.Stat(path)
 
-	if name == "" && err == nil {
+	_, err := os.Stat(path)
+	if err == nil && name == "" {
 		b.message("Uninstalling WebView")
-		os.RemoveAll(path)
-		return nil
-	} else if err == nil {
-		// Already installed
+		return os.RemoveAll(path)
+	} else if name == "" || (err == nil && name != "") {
 		return nil
 	}
 
 	b.message("Installing WebView", "path", name)
+	defer b.performing()()
 
 	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\AppDefaults\msedgewebview2.exe`, "Version", "win7"); err != nil {
 		return fmt.Errorf("version set: %w", err)

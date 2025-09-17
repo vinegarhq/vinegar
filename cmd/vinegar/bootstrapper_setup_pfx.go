@@ -9,7 +9,7 @@ import (
 
 	"github.com/sewnie/wine/dxvk"
 	"github.com/sewnie/wine/peutil"
-	"github.com/sewnie/wine/webview"
+	"github.com/sewnie/wine/webview2"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 )
@@ -131,43 +131,25 @@ func (b *bootstrapper) stepWebviewDownload() error {
 	}
 
 	stop := b.performing()
-
 	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
-	d, err := webview.GetDownload(b.cfg.Studio.WebView)
+	d, err := webview2.StableLegacy.Runtime(b.cfg.Studio.WebView, "x64")
 	if err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
-
-	// TODO: pipe straight to Extract
-	tmp, err := os.CreateTemp("", "unc_msedgestandalone.*.exe")
-	if err != nil {
-		return fmt.Errorf("temp: %w", err)
-	}
-	defer os.Remove(tmp.Name())
-
 	stop()
+
 	b.message("Downloading WebView", "version", d.Version)
-	err = netutil.DownloadProgress(d.URL, tmp.Name(), &b.pbar)
-	if err != nil {
-		return fmt.Errorf("download: %w", err)
-	}
-
-	f, err := os.OpenFile(name, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
-	if err != nil {
-		return fmt.Errorf("installer open: %w", err)
-	}
-	defer f.Close()
-
-	return d.Extract(tmp, f)
+	return netutil.DownloadProgress(d.URL, name, &b.pbar)
 }
 
 func (b *bootstrapper) stepWebviewInstall() error {
 	name := b.webviewInstaller()
-	path := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView")
+	path := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView/Application", b.cfg.Studio.WebView)
 
 	_, err := os.Stat(path)
 	if err == nil && name == "" {
 		b.message("Uninstalling WebView")
+
 		return os.RemoveAll(path)
 	} else if name == "" || (err == nil && name != "") {
 		return nil
@@ -176,9 +158,5 @@ func (b *bootstrapper) stepWebviewInstall() error {
 	b.message("Installing WebView", "path", name)
 	defer b.performing()()
 
-	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\AppDefaults\msedgewebview2.exe`, "Version", "win7"); err != nil {
-		return fmt.Errorf("version set: %w", err)
-	}
-
-	return run(webview.Install(b.pfx, name))
+	return webview2.Install(b.pfx, name)
 }

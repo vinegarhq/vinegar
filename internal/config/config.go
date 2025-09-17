@@ -84,7 +84,7 @@ func Default() *Config {
 		Studio: Studio{
 			Dxvk:        false,
 			DxvkVersion: "2.7",
-			WebView:     "89d20053-c604-48b6-8cc0-d88cf11aa7a8", // 134.0.3124.83, version-cbab48157b714899
+			WebView:     "109.0.1518.140", // Last known win7
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",
 			Renderer:    "Vulkan",

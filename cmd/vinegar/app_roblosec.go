@@ -20,8 +20,6 @@ var (
 )
 
 func (a *app) getSecurity() error {
-	slog.Info("Retrieving logged in user authentication")
-
 	keys, err := a.pfx.RegistryQuery(credPath, ``)
 	if err != nil {
 		return fmt.Errorf("query: %w", err)

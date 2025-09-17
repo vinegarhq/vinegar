@@ -39,7 +39,7 @@ func (b *bootstrapper) stepPrefixInit() error {
 	defer b.performing()()
 
 	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
-	return run(b.pfx.Init())
+	return b.pfx.Init().Run()
 }
 
 func (b *bootstrapper) checkPrefix() error {

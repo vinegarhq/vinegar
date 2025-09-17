@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -30,7 +32,7 @@ type app struct {
 
 	// initialized only in Application::command-line
 	ctl  *control
-	boot *bootstrapper
+	boot *bootstrapper // set if control runs boot
 
 	keepLog bool
 }
@@ -119,6 +121,28 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	return 0
 }
 
+// Write implements io.Writer for app and is used to exclusively send all
+// data recieved to the log under the WINE log level.
+func (a *app) Write(b []byte) (int, error) {
+	for line := range strings.SplitSeq(string(b), "\n") {
+		if line == "" {
+			continue
+		}
+
+		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
+		if a.boot != nil && len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
+			// Avoid "\n" calls to OutputDebugStringA
+			if len(line) >= 87 {
+				a.boot.handleRobloxLog(line[39 : len(line)-1])
+			}
+			continue
+		}
+
+		slog.Log(context.Background(), logging.LevelWine, line)
+	}
+	return len(b), nil
+}
+
 func (a *app) loadConfig() error {
 	// will fallback to default configuration if there is an error
 	cfg, err := config.Load()
@@ -127,6 +151,8 @@ func (a *app) loadConfig() error {
 		filepath.Join(dirs.Prefixes, "studio"),
 		cfg.Studio.WineRoot,
 	)
+	a.pfx.Stderr = a
+	a.pfx.Stdout = a
 
 	a.cfg = cfg
 

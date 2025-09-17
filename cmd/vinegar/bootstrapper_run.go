@@ -1,10 +1,7 @@
 package main
 
 import (
-	"bufio"
-	"context"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -13,26 +10,7 @@ import (
 	"syscall"
 
 	"github.com/sewnie/wine"
-	"github.com/vinegarhq/vinegar/internal/logging"
 )
-
-func run(cmd *wine.Cmd) error {
-	cmd.Stderr = nil
-	out, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		s := bufio.NewScanner(out)
-		for s.Scan() {
-			line := s.Text()
-			slog.Log(context.Background(), logging.LevelWine, line)
-		}
-	}()
-
-	return cmd.Run()
-}
 
 func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
@@ -64,12 +42,6 @@ func (b *bootstrapper) execute(args ...string) error {
 	}
 
 	slog.Info("Running Studio!", "cmd", cmd)
-
-	cmd.Stderr = nil
-	out, err := cmd.StderrPipe()
-	if err != nil {
-		return err
-	}
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
@@ -103,8 +75,6 @@ func (b *bootstrapper) execute(args ...string) error {
 
 	idle(func() { b.ActivateAction("show-stop", nil) })
 
-	go b.handleWineOutput(out)
-
 	err = cmd.Wait()
 
 	if cmd.ProcessState != nil && cmd.ProcessState.ExitCode() == -1 {
@@ -114,23 +84,4 @@ func (b *bootstrapper) execute(args ...string) error {
 	}
 
 	return err
-}
-
-func (b *bootstrapper) handleWineOutput(wr io.Reader) {
-	s := bufio.NewScanner(wr)
-
-	for s.Scan() {
-		line := s.Text()
-
-		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
-		if len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
-			// Avoid "\n" calls to OutputDebugStringA
-			if len(line) >= 87 {
-				b.handleRobloxLog(line[39 : len(line)-1])
-			}
-			continue
-		}
-
-		slog.Log(context.Background(), logging.LevelWine, line)
-	}
 }

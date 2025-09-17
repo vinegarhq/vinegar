@@ -28,6 +28,7 @@ func (b *bootstrapper) setup() error {
 	}
 
 	if b.rbx.Security == "" && !pfxFirstRun {
+		b.message("Acquiring user authentication")
 		if err := b.app.getSecurity(); err != nil {
 			slog.Warn("Retrieving authenticated user failed", "err", err)
 		}

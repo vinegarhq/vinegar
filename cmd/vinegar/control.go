@@ -99,12 +99,12 @@ func (ctl *control) setupControlActions() {
 		"init-prefix":   {"Initializing Wineprefix", (*bootstrapper).setupPrefix},
 		"delete-prefix": {"Deleting Wineprefix", ctl.deletePrefixes},
 		"wine-run-winecfg": {"Running Wine Configurator", func() error {
-			return run(ctl.pfx.Wine("winecfg"))
+			return ctl.pfx.Wine("winecfg").Run()
 		}},
 		"wine-run": {"Running Command", func() error {
 			cmd := wineRunner.GetText()
 			args := strings.Fields(cmd)
-			return run(ctl.pfx.Wine(args[0], args[1:]...))
+			return ctl.pfx.Wine(args[0], args[1:]...).Run()
 		}},
 
 		"clear-cache": {"Cleaning up cache folder", ctl.clearCache},
@@ -158,11 +158,13 @@ func (ctl *control) setupControlActions() {
 					return f()
 				}
 			case func(*bootstrapper) error:
-				b := ctl.newBootstrapper()
-				b.win.SetTransientFor(&ctl.win.Window)
+				if ctl.boot == nil {
+					ctl.boot = ctl.newBootstrapper()
+				}
+				ctl.boot.win.SetTransientFor(&ctl.win.Window)
 				run = func() error {
-					defer idle(b.win.Destroy)
-					return f(b)
+					defer idle(ctl.boot.win.Destroy)
+					return f(ctl.boot)
 				}
 			default:
 				panic("unreachable")

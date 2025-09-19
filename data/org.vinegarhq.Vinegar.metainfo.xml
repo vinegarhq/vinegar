@@ -17,7 +17,6 @@
 		<name>VinegarHQ</name>
 	</developer>
 	<launchable type="desktop-id">org.vinegarhq.Vinegar.desktop</launchable>
-	<launchable type="desktop-id">org.vinegarhq.Vinegar.studio.desktop</launchable>
 	<supports>
 		<control>pointing</control>
 		<control>keyboard</control>

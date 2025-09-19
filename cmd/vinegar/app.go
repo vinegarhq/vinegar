@@ -32,7 +32,7 @@ type app struct {
 
 	// initialized only in Application::command-line
 	ctl  *control
-	boot *bootstrapper // set if control runs boot
+	boot *bootstrapper // also set if control runs boot
 
 	keepLog bool
 }
@@ -46,6 +46,9 @@ func newApp() *app {
 	a := app{
 		Application: adw.NewApplication(
 			"org.vinegarhq.Vinegar",
+			// command-line is preferred over open due to open
+			// abstracting real argument to GFile, which is not
+			// an effective wrapper for Studio arguments.
 			gio.GApplicationHandlesCommandLineValue,
 		),
 		state: &s,
@@ -53,18 +56,17 @@ func newApp() *app {
 		rbx:   rbxweb.NewClient(),
 	}
 
+	clcb := a.commandLine
+	a.ConnectCommandLine(&clcb)
+	scb := a.shutdown
+	a.ConnectShutdown(&scb)
+
 	dialogA := gio.NewSimpleAction("show-login-dialog", nil)
 	dialobCb := func(_ gio.SimpleAction, _ uintptr) {
 		a.newLogin()
 	}
 	dialogA.ConnectActivate(&dialobCb)
 	a.AddAction(dialogA)
-
-	clcb := a.commandLine
-	a.ConnectCommandLine(&clcb)
-
-	scb := a.shutdown
-	a.ConnectShutdown(&scb)
 
 	return &a
 }
@@ -80,33 +82,9 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	cl := gio.ApplicationCommandLineNewFromInternalPtr(clPtr)
 	args := cl.GetArguments(0)
 
-	arg := ""
-	if len(args) >= 2 {
-		arg = args[1]
-	}
-
 	err := a.loadConfig()
 
-	switch arg {
-	case "run":
-		if err != nil {
-			a.error(err)
-			return 1
-		}
-		if a.boot == nil {
-			a.boot = a.newBootstrapper()
-		}
-
-		var tf glib.ThreadFunc = func(uintptr) uintptr {
-			if err := a.boot.run(args[2:]...); err != nil {
-				idle(func() {
-					a.boot.error(err)
-				})
-			}
-			return 0
-		}
-		glib.NewThread("bootstrapper", &tf, 0)
-	case "":
+	if len(args) < 2 {
 		if err != nil {
 			a.error(err)
 		}
@@ -114,10 +92,31 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 			a.ctl = a.newControl()
 		}
 		a.ctl.win.Present()
-	default:
-		cl.Printerr("Unrecognized subcommand: %s\n", arg)
-		return 1
+		return 0
 	}
+
+	if err != nil {
+		a.error(err)
+		return 22
+	}
+
+	if args[1] == "run" { // backwards compatibility
+		args = args[1:]
+	}
+
+	if a.boot == nil {
+		a.boot = a.newBootstrapper()
+	}
+	var tf glib.ThreadFunc = func(uintptr) uintptr {
+		if err := a.boot.run(args[1:]...); err != nil {
+			idle(func() {
+				a.boot.error(err)
+			})
+		}
+		return 0
+	}
+	glib.NewThread("bootstrapper", &tf, 0)
+
 	return 0
 }
 

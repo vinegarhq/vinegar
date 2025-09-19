@@ -120,6 +120,8 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 			b.error(errors.New(
 				"Studio detected as unresponsive!"))
 		})
+	case strings.Contains(line, "LoginDialog Error: Embedded Web Browser fail to load"):
+
 	}
 
 	if b.cfg.Studio.DiscordRPC {
@@ -188,7 +190,7 @@ func (b *bootstrapper) setupMIME() error {
 	}
 
 	o, err := exec.Command("xdg-mime", "default",
-		"org.vinegarhq.Vinegar.studio.desktop",
+		"org.vinegarhq.Vinegar.desktop",
 		"x-scheme-handler/roblox-studio",
 		"x-scheme-handler/roblox-studio-auth",
 		"application/x-roblox-rbxl",

@@ -5,6 +5,7 @@ VERSION = v1.8.1
 PREFIX      ?= /usr
 DATAPREFIX  = $(PREFIX)/share/vinegar
 APPPREFIX   = $(PREFIX)/share/applications
+MIMEPREFIX  = $(PREFIX)/share/mime
 ICONPREFIX  = $(PREFIX)/share/icons/hicolor
 LIBPREFIX   = $(PREFIX)/lib
 LAYERPREFIX = $(PREFIX)/share/vulkan/explicit_layer.d
@@ -32,12 +33,14 @@ install: all
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 	install -Dm644 data/org.vinegarhq.Vinegar.metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
 	install -Dm644 data/desktop/vinegar.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
+	install -Dm644 data/vinegar-mime.xml -t $(DESTDIR)$(MIMEPREFIX)/packages
 	install -Dm644 data/icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg
 	install -Dm644 data/icons/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.studio.svg
 	install -Dm644 layer/libVkLayer_VINEGAR_VinegarLayer.so $(DESTDIR)$(LIBPREFIX)/libVkLayer_VINEGAR_VinegarLayer.so
 	install -Dm644 layer/VkLayer_VINEGAR_VinegarLayer.json $(DESTDIR)$(LAYERPREFIX)/VkLayer_VINEGAR_VinegarLayer.json
 	gtk-update-icon-cache $(DESTDIR)$(ICONPREFIX) ||:
 	update-desktop-database $(DESTDIR)$(APPPREFIX) ||:
+	update-mime-database $(DESTDIR)$(MIMEPREFIX) ||:
 
 uninstall:
 	# Retain removal of old studio desktop & icon files

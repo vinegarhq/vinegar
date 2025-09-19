@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-roblox-place">
+    <comment>Roblox Place</comment>
+    <icon name="org.vinegarhq.Vinegar.studio"/> 
+    <alias type="application/x-roblox-rbxl"/>
+    <alias type="application/x-roblox-rbxlx"/>
+    <glob-deleteall/>
+    <glob pattern="*.rbxl"/>
+    <glob pattern="*.rbxlx"/>
+  </mime-type>
+  <mime-type type="application/x-roblox-model">
+    <comment>Roblox Model</comment>
+    <icon name="org.vinegarhq.Vinegar.studio"/> 
+    <alias type="application/x-roblox-rbxm"/>
+    <alias type="application/x-roblox-rbxmx"/>
+    <glob-deleteall/>
+    <glob pattern="*.rbxm"/>
+    <glob pattern="*.rbxmx"/>
+  </mime-type>
+</mime-info>
+

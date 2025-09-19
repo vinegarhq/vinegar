@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"log/slog"
@@ -69,6 +70,29 @@ func newApp() *app {
 	a.AddAction(dialogA)
 
 	return &a
+}
+
+func (a *app) appInfo() *gio.AppInfoBase {
+	for app := range listSeq[gio.AppInfoBase](gio.AppInfoGetAll()) {
+		if strings.HasPrefix(app.GetId(), a.GetApplicationId()) {
+			return app
+		}
+	}
+	return nil
+}
+
+func (a *app) setMime() error {
+	selfApp := a.appInfo()
+	if selfApp == nil {
+		return errors.New("Where is Vinegar's desktop file? is this a proper installation?")
+	}
+
+	slog.Info("Setting as default application for browser login")
+	ok, err := selfApp.SetAsDefaultForType("x-scheme-handler/roblox-studio-auth")
+	if !ok || err != nil {
+		return fmt.Errorf("Cannot gurantee browser login: %w", err)
+	}
+	return nil
 }
 
 func (a *app) shutdown(_ gio.Application) {

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"strings"
 	"syscall"
@@ -20,7 +19,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
-	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 type bootstrapper struct {
@@ -121,7 +119,10 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 				"Studio detected as unresponsive!"))
 		})
 	case strings.Contains(line, "LoginDialog Error: Embedded Web Browser fail to load"):
-
+		// Ensure that browser login functionality will work
+		if err := b.setMime(); err != nil {
+			idle(func() { b.error(err) })
+		}
 	}
 
 	if b.cfg.Studio.DiscordRPC {
@@ -180,28 +181,4 @@ func (b *bootstrapper) registerGameMode(target int) error {
 	slog.Info("Registered with GameMode", "response", res)
 
 	return nil
-}
-
-func (b *bootstrapper) setupMIME() error {
-	// xdg-mime unavailable in Flatpak; Flatpak
-	// handles MIME associations for us.
-	if sysinfo.InFlatpak {
-		return nil
-	}
-
-	o, err := exec.Command("xdg-mime", "default",
-		"org.vinegarhq.Vinegar.desktop",
-		"x-scheme-handler/roblox-studio",
-		"x-scheme-handler/roblox-studio-auth",
-		"application/x-roblox-rbxl",
-		"application/x-roblox-rbxlx",
-	).CombinedOutput()
-	if err == nil {
-		return nil
-	}
-
-	if len(o) > 0 {
-		return fmt.Errorf("setup mime: %s", string(o))
-	}
-	return fmt.Errorf("xdg-mime: %w", err)
 }

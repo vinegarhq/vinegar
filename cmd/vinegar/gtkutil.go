@@ -25,7 +25,7 @@ func init() {
 	gio.ResourcesRegister(r)
 }
 
-func idle(bg func()) {
+func uiThread(bg func()) {
 	var idlecb glib.SourceFunc
 	idlecb = func(uintptr) bool {
 		defer glib.UnrefCallback(&idlecb)

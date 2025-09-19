@@ -163,7 +163,7 @@ func (ctl *control) setupControlActions() {
 				}
 				ctl.boot.win.SetTransientFor(&ctl.win.Window)
 				run = func() error {
-					defer idle(ctl.boot.win.Destroy)
+					defer uiThread(ctl.boot.win.Destroy)
 					return f(ctl.boot)
 				}
 			default:
@@ -171,12 +171,12 @@ func (ctl *control) setupControlActions() {
 			}
 
 			var tf glib.ThreadFunc = func(uintptr) uintptr {
-				defer idle(func() {
+				defer uiThread(func() {
 					ctl.updateButtons()
 					stack.SetVisibleChildName("control")
 				})
 				if err := run(); err != nil {
-					idle(func() { ctl.error(err) })
+					uiThread(func() { ctl.showError(err) })
 				}
 				return 0
 			}

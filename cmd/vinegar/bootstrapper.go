@@ -78,7 +78,7 @@ func (b *bootstrapper) performing() func() {
 
 func (b *bootstrapper) message(msg string, args ...any) {
 	slog.Info(msg, args...)
-	idle(func() { b.status.SetLabel(msg + "...") })
+	uiThread(func() { b.status.SetLabel(msg + "...") })
 }
 
 func (b *bootstrapper) start() error {
@@ -114,14 +114,14 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 		// Roblox normally exits after submitting ANR data to
 		// ecsv2.roblox.com, but in Wine it does nothing.
 		syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-		idle(func() {
-			b.error(errors.New(
+		uiThread(func() {
+			b.showError(errors.New(
 				"Studio detected as unresponsive!"))
 		})
 	case strings.Contains(line, "LoginDialog Error: Embedded Web Browser fail to load"):
 		// Ensure that browser login functionality will work
 		if err := b.setMime(); err != nil {
-			idle(func() { b.error(err) })
+			uiThread(func() { b.showError(err) })
 		}
 	}
 

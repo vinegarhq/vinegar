@@ -92,7 +92,7 @@ func (b *bootstrapper) stepPrepareRun() error {
 		return fmt.Errorf("apply fflags: %w", err)
 	}
 
-	idle(func() { b.status.SetLabel("Launching Studio") })
+	uiThread(func() { b.status.SetLabel("Launching Studio") })
 
 	// If no setup took place, this will go immediately.
 	slog.Info("Kickstarting Wineserver")

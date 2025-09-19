@@ -110,7 +110,7 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 
 	if len(args) < 2 {
 		if err != nil {
-			a.error(err)
+			a.showError(err)
 		}
 		if a.ctl == nil {
 			a.ctl = a.newControl()
@@ -120,7 +120,7 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	}
 
 	if err != nil {
-		a.error(err)
+		a.showError(err)
 		return 22
 	}
 
@@ -133,8 +133,8 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	}
 	var tf glib.ThreadFunc = func(uintptr) uintptr {
 		if err := a.boot.run(args[1:]...); err != nil {
-			idle(func() {
-				a.boot.error(err)
+			uiThread(func() {
+				a.boot.showError(err)
 			})
 		}
 		return 0
@@ -192,7 +192,7 @@ func (a *app) loadConfig() error {
 	return nil
 }
 
-func (a *app) error(e error) {
+func (a *app) showError(e error) {
 	a.keepLog = true
 	slog.Error("Error!", "err", e.Error())
 

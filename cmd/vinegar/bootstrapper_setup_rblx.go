@@ -70,7 +70,7 @@ func (b *bootstrapper) stepFetchDeployment() error {
 		return err
 	}
 
-	idle(func() {
+	uiThread(func() {
 		b.info.SetLabel(d.Channel)
 	})
 
@@ -128,7 +128,7 @@ func (b *bootstrapper) stepPackagesInstall(
 
 	update := func() {
 		finished.Add(1)
-		idle(func() { b.pbar.SetFraction(float64(finished.Load()) / float64(total)) })
+		uiThread(func() { b.pbar.SetFraction(float64(finished.Load()) / float64(total)) })
 	}
 
 	b.message("Installing Packages", "count", len(pkgs), "dir", b.dir)

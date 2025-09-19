@@ -30,8 +30,6 @@ func (pc *progressCounter) Write(p []byte) (int, error) {
 // if the returned HTTP status code is not http.StatusOK.
 var ErrBadStatus = errors.New("bad status")
 
-// TODO: make ErrBadStatus a custom error type with interface
-
 // DownloadProgress downloads the named url to the named file, using
 // df as the callback for progress. No retry will be checked here.
 func DownloadProgress(url, file string, pbar *gtk.ProgressBar) error {

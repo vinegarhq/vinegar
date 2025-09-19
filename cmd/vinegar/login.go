@@ -23,7 +23,7 @@ type login struct {
 
 func (l *login) message(msg string) {
 	slog.Info(msg)
-	idle(func() { l.label.SetLabel(msg) })
+	uiThread(func() { l.label.SetLabel(msg) })
 }
 
 func (l *login) quickLoginLoop() (*rbxweb.Login, error) {
@@ -31,7 +31,7 @@ func (l *login) quickLoginLoop() (*rbxweb.Login, error) {
 	l.builder.GetObject("label-quick-login-code").Cast(&code)
 	l.builder.GetObject("label-quick-login-status").Cast(&status)
 
-	defer idle(func() {
+	defer uiThread(func() {
 		code.SetLabel("")
 		status.SetLabel("")
 		l.token = nil
@@ -39,7 +39,7 @@ func (l *login) quickLoginLoop() (*rbxweb.Login, error) {
 
 	for {
 		if l.token == nil {
-			idle(func() {
+			uiThread(func() {
 				status.SetLabel("Creating...")
 			})
 
@@ -51,7 +51,7 @@ func (l *login) quickLoginLoop() (*rbxweb.Login, error) {
 			slog.Info("Created token", "token", t.Code, "expires", t.ExpirationTime)
 		}
 
-		idle(func() {
+		uiThread(func() {
 			code.SetLabel(l.token.Code)
 			status.SetLabel(l.token.Status)
 		})
@@ -102,12 +102,12 @@ func (ui *app) newLogin() *login {
 	// Rather than setting up a Action and making a new thread from there,
 	// re-use the existing thread that this would be called from
 	setSecurityFn := func(success *rbxweb.Login) {
-		idle(func() { view.PushByTag("nav-page-loading") })
-		defer idle(func() { view.Pop() })
+		uiThread(func() { view.PushByTag("nav-page-loading") })
+		defer uiThread(func() { view.Pop() })
 		if err := l.setSecurity(); err != nil {
-			idle(func() { ui.error(err) })
+			uiThread(func() { ui.showError(err) })
 		}
-		idle(func() {
+		uiThread(func() {
 			l.dialog.Close()
 			l.ActivateAction("control-toast",
 				glib.NewVariantString("Logged in as "+success.User.Name))
@@ -123,9 +123,9 @@ func (ui *app) newLogin() *login {
 
 		success, err := l.quickLoginLoop()
 		if err != nil {
-			idle(func() { ui.error(err) })
+			uiThread(func() { ui.showError(err) })
 		} else if success != nil {
-			idle(func() { view.Pop() }) // Return to login
+			uiThread(func() { view.Pop() }) // Return to login
 			setSecurityFn(success)
 		}
 		return 0
@@ -153,11 +153,11 @@ func (ui *app) newLogin() *login {
 	l.builder.GetObject("entry-password").Cast(&password)
 	var usernameTf glib.ThreadFunc = func(uintptr) uintptr {
 		// Don't make the user press it again :D
-		idle(func() {
+		uiThread(func() {
 			loginButton.SetActivatable(false)
 			loginButton.AddCssClass("dimmed")
 		})
-		defer idle(func() {
+		defer uiThread(func() {
 			loginButton.SetActivatable(true)
 			loginButton.RemoveCssClass("dimmed")
 		})
@@ -166,7 +166,7 @@ func (ui *app) newLogin() *login {
 		success, err := l.rbx.AuthV2.CreateLogin(username.GetText(), password.GetText(),
 			rbxweb.LoginTypeUsername)
 		if err != nil {
-			idle(func() { l.error(err) })
+			uiThread(func() { l.showError(err) })
 		} else {
 			setSecurityFn(success)
 		}

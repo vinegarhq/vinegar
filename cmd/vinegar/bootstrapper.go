@@ -122,23 +122,28 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 		})
 	}
 
-	if !b.cfg.Studio.Quiet {
-		ent := line
-		// 2025-08-17T13:13:37.469Z,11.469932,0238,6,Info [FLog::AnrDetector]
-		// 2025-08-17T12:54:23.583Z,1.583294,00e0,6(,(Warning|Info|Error)) [Flog::..] ...
-		_, a, ok := strings.Cut(ent, ",6")
-		if i := strings.Index(a, "["); ok && i > 0 {
-			ent = a[i:]
-		}
-
-		slog.Log(context.Background(), logging.LevelRoblox, ent)
-	}
-
 	if b.cfg.Studio.DiscordRPC {
 		if err := b.rp.Handle(line); err != nil {
 			slog.Error("Presence handling failed", "error", err)
 		}
 	}
+
+	if b.cfg.Studio.Quiet {
+		return
+	}
+
+	// 2025-08-17T13:13:37.469Z,11.469932,0238,6,Info [FLog::AnrDetector]
+	// 2025-08-17T12:54:23.583Z,1.583294,00e0,6(,(Warning|Info|Error)) [Flog::..] ...
+	_, a, ok := strings.Cut(line, ",6")
+	if ok {
+		i := strings.Index(a, " [")
+		if i > 0 && a[1:i] == "Info" && !b.cfg.Debug {
+			return
+		}
+		line = strings.TrimSpace(a[i:])
+	}
+
+	slog.Log(context.Background(), logging.LevelRoblox, line)
 }
 
 func (b *bootstrapper) registerGameMode(target int) error {

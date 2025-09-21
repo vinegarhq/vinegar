@@ -16,19 +16,50 @@ import (
 // Path to the log file that is scoped to the entire program runtime
 var Path string
 
+// Level is a custom type to represent custom log levels with
+// their names.
+type Level int
+
 const (
-	LevelWine   = slog.LevelInfo + 1
-	LevelRoblox = slog.LevelInfo + 2
+	LevelWine   = Level(slog.LevelInfo + 1)
+	LevelRoblox = Level(slog.LevelInfo + 2)
 )
 
 type Handler struct {
 	slog.Handler
 	file slog.Handler
+
+	// Channel that can be opened & closed to read incomding
+	// log records, used to show new logs as it comes.
+	ReadRecord func(*slog.Record)
 }
 
 func init() {
 	// name-2006-01-02T15:04:05Z07:00.log
 	Path = filepath.Join(dirs.Logs, time.Now().Format(time.RFC3339)+".log")
+}
+
+// Level implements slog.Leveler.
+func (l Level) Level() slog.Level {
+	return slog.Level(l)
+}
+
+// FromLevel is a helper to transform slog.Level to Level
+func FromLevel(l slog.Level) Level {
+	return Level(int(l))
+}
+
+// String implements Stringer, used to represent the level's name
+// in [Handler].
+func (l Level) String() string {
+	switch l {
+	case LevelWine:
+		return "WIN"
+	case LevelRoblox:
+		return "RBX"
+	default:
+		return l.Level().String()
+	}
 }
 
 func openPath() (*os.File, error) {
@@ -77,6 +108,9 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	if h.file != nil {
 		ferr = h.file.Handle(ctx, r)
 	}
+	if h.ReadRecord != nil {
+		h.ReadRecord(&r)
+	}
 	if herr != nil || ferr != nil {
 		return errors.Join(herr, ferr)
 	}
@@ -114,11 +148,11 @@ func NewTextHandler(w io.Writer, level slog.Level, color bool) slog.Handler {
 			if a.Key != slog.LevelKey || len(groups) != 0 {
 				return a
 			}
-			switch a.Value.Any().(slog.Level) {
+			switch l := FromLevel(a.Value.Any().(slog.Level)); l {
 			case LevelWine:
-				return tint.Attr(1, slog.String(a.Key, "WIN"))
+				return tint.Attr(1, slog.String(a.Key, l.String()))
 			case LevelRoblox:
-				return tint.Attr(6, slog.String(a.Key, "RBX"))
+				return tint.Attr(6, slog.String(a.Key, l.String()))
 			}
 			return a
 		},

@@ -161,7 +161,7 @@ func (a *app) Write(b []byte) (int, error) {
 			continue
 		}
 
-		slog.Log(context.Background(), logging.LevelWine, line)
+		slog.Log(context.Background(), logging.LevelWine.Level(), line)
 	}
 	return len(b), nil
 }

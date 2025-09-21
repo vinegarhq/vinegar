@@ -58,9 +58,28 @@ func (s *app) newControl() *control {
 	ctl.configPut()
 	ctl.updateButtons()
 
+	toastA := gio.NewSimpleAction("control-toast", glib.NewVariantType("s"))
+	toastCb := func(a gio.SimpleAction, p uintptr) {
+		msg := (*glib.Variant)(unsafe.Pointer(p)).GetString(0)
+		var overlay adw.ToastOverlay
+		ctl.builder.GetObject("overlay").Cast(&overlay)
+		toast := adw.NewToast(msg)
+		overlay.AddToast(toast)
+	}
+	toastA.ConnectActivate(&toastCb)
+	ctl.AddAction(toastA)
+	toastA.Unref()
+
 	// For the time being, use in-house editing.
 	// ctl.setupConfigurationActions()
 	ctl.setupControlActions()
+
+	var wineRunner adw.EntryRow
+	ctl.builder.GetObject("prefix-custom-run").Cast(&wineRunner)
+	applyCb := func(_ adw.EntryRow) {
+		ctl.ActivateAction("wine-run", nil)
+	}
+	wineRunner.ConnectApply(&applyCb)
 
 	return &ctl
 }
@@ -77,84 +96,88 @@ func (ctl *control) configPut() {
 	view.GetBuffer().SetText(string(b), -1)
 }
 
-func (ctl *control) setupControlActions() {
-	var wineRunner adw.EntryRow
-	ctl.builder.GetObject("prefix-custom-run").Cast(&wineRunner)
-	applyCb := func(_ adw.EntryRow) {
-		ctl.ActivateAction("wine-run", nil)
+func (ctl *control) setupLogDialog() *adw.Dialog {
+	var dialog adw.Dialog
+	ctl.builder.GetObject("dialog-working").Cast(&dialog)
+
+	var view gtk.TextView
+	ctl.builder.GetObject("textview-log").Cast(&view)
+	buf := view.GetBuffer()
+
+	h, _ := slog.Default().Handler().(*logging.Handler)
+
+	lvlTags := make(map[slog.Level]*gtk.TextTag, 6)
+	for lvl, color := range map[slog.Level]string{
+		slog.LevelDebug:             "white",
+		slog.LevelInfo:              "lime",
+		logging.LevelWine.Level():   "darkred",
+		logging.LevelRoblox.Level(): "cyan",
+		slog.LevelWarn:              "yellow",
+		slog.LevelError:             "red",
+	} {
+		lvlTags[lvl] = buf.CreateTag(lvl.String(), "foreground", color)
 	}
-	wineRunner.ConnectApply(&applyCb)
 
-	actions := map[string]struct {
-		msg string
-		act interface{}
-	}{
-		// ordered by appearance in GUI
-		// TODO: move login to control only
-		"run-studio":       {"Executing Studio", (*bootstrapper).start},
-		"install-studio":   {"Installing Studio", (*bootstrapper).setup},
-		"uninstall-studio": {"Deleting all deployments", ctl.deleteDeployments},
-		"kill-prefix":      {"Killing Wineprefix", ctl.pfx.Kill}, // "Stop Studio"
+	dialogShowCb := func(_ gtk.Widget) {
+		h.ReadRecord = func(r *slog.Record) {
+			tag := lvlTags[r.Level]
+			name := logging.FromLevel(r.Level).String() + " "
+			uiThread(func() {
+				var iter gtk.TextIter
+				buf.GetEndIter(&iter)
+				buf.InsertWithTags(&iter, name, -1, tag)
+				buf.Insert(&iter, r.Message+"\n", -1)
+				view.ScrollToIter(&iter, 0, false, 0, 0)
+			})
+		}
+	}
+	dialog.ConnectMap(&dialogShowCb)
 
-		"init-prefix":   {"Initializing Wineprefix", (*bootstrapper).setupPrefix},
-		"delete-prefix": {"Deleting Wineprefix", ctl.deletePrefixes},
-		"wine-run-winecfg": {"Running Wine Configurator", func() error {
+	dialogClosedCb := func(_ adw.Dialog) {
+		h.ReadRecord = nil
+		var start, end gtk.TextIter
+		buf.GetStartIter(&start)
+		buf.GetEndIter(&end)
+		buf.Delete(&start, &end)
+	}
+	dialog.ConnectClosed(&dialogClosedCb)
+
+	return &dialog
+}
+
+func (ctl *control) setupControlActions() {
+	actions := map[string]interface{}{
+		"run-studio":       (*bootstrapper).start,
+		"install-studio":   (*bootstrapper).setup,
+		"uninstall-studio": ctl.deleteDeployments,
+		"kill-prefix":      ctl.pfx.Kill,
+		"init-prefix":      (*bootstrapper).setupPrefix,
+		"delete-prefix":    ctl.deletePrefixes,
+		"wine-run-winecfg": func() error {
 			return ctl.pfx.Wine("winecfg").Run()
-		}},
-		"wine-run": {"Running Command", func() error {
-			cmd := wineRunner.GetText()
+		},
+		"clear-cache": ctl.clearCache,
+		"save-config": ctl.configSave,
+
+		"wine-run": func() error {
+			var runner adw.EntryRow
+			ctl.builder.GetObject("prefix-custom-run").Cast(&runner)
+			cmd := runner.GetText()
 			args := strings.Fields(cmd)
 			return ctl.pfx.Wine(args[0], args[1:]...).Run()
-		}},
-
-		"clear-cache": {"Cleaning up cache folder", ctl.clearCache},
-
-		/// edit page
-		"save-config": {"Saving configuration to file", ctl.configSave},
+		},
 	}
 
-	var stack adw.ViewStack
-	ctl.builder.GetObject("stack").Cast(&stack)
-	var label gtk.Label
-	ctl.builder.GetObject("loading-label").Cast(&label)
-
-	// Reserved only for execution of studio
-	var btn gtk.Button
-	ctl.builder.GetObject("loading-stop").Cast(&btn)
-	stop := gio.NewSimpleAction("show-stop", nil)
-	stopcb := func(_ gio.SimpleAction, p uintptr) {
-		btn.SetVisible(true)
-	}
-	stop.ConnectActivate(&stopcb)
-	ctl.AddAction(stop)
-	stop.Unref()
-
-	toastT := glib.NewVariantType("s")
-	toastA := gio.NewSimpleAction("control-toast", toastT)
-	toastT.Free()
-	toastCb := func(a gio.SimpleAction, p uintptr) {
-		msg := (*glib.Variant)(unsafe.Pointer(p)).GetString(0)
-		var overlay adw.ToastOverlay
-		ctl.builder.GetObject("overlay").Cast(&overlay)
-		toast := adw.NewToast(msg)
-		overlay.AddToast(toast)
-	}
-	toastA.ConnectActivate(&toastCb)
-	ctl.AddAction(toastA)
-	toastA.Unref()
+	logDialog := ctl.setupLogDialog()
 
 	for name, action := range actions {
 		act := gio.NewSimpleAction(name, nil)
 		actcb := func(_ gio.SimpleAction, p uintptr) {
-			stack.SetVisibleChildName("loading")
-			label.SetLabel(action.msg + "...")
-			btn.SetVisible(false)
-
 			var run func() error
-			switch f := action.act.(type) {
+
+			switch f := action.(type) {
 			case func() error:
 				run = func() error {
-					slog.Info(action.msg + "...")
 					return f()
 				}
 			case func(*bootstrapper) error:
@@ -170,10 +193,11 @@ func (ctl *control) setupControlActions() {
 				panic("unreachable")
 			}
 
+			logDialog.Present(&ctl.win.Widget)
 			var tf glib.ThreadFunc = func(uintptr) uintptr {
 				defer uiThread(func() {
 					ctl.updateButtons()
-					stack.SetVisibleChildName("control")
+					logDialog.ForceClose()
 				})
 				if err := run(); err != nil {
 					uiThread(func() { ctl.showError(err) })

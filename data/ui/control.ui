@@ -11,216 +11,184 @@
     <child>
       <object class="AdwToastOverlay" id="overlay">
         <property name="child">
-          <object class="AdwViewStack" id="stack">
+          <object class="AdwNavigationView">
             <child>
-              <object class="AdwViewStackPage" id="control-page">
-                <property name="child">
-                  <object class="AdwNavigationView">
-                    <child>
-                      <object class="AdwNavigationPage" id="control-nav-page">
-                        <property name="title">Vinegar</property>
-                        <child>
-                          <object class="AdwToolbarView">
-                            <property name="content">
-                              <object class="GtkScrolledWindow">
+              <object class="AdwNavigationPage" id="control-nav-page">
+                <property name="title">Vinegar</property>
+                <child>
+                  <object class="AdwToolbarView">
+                    <property name="content">
+                      <object class="GtkScrolledWindow">
+                        <property name="child">
+                          <object class="GtkBox">
+                            <property name="margin-bottom">24</property>
+                            <property name="margin-end">12</property>
+                            <property name="margin-start">12</property>
+                            <property name="orientation">vertical</property>
+                            <child>
+                              <object class="AdwPreferencesGroup" id="pref-group-studio">
+                                <property name="title">Roblox Studio</property>
                                 <child>
-                                  <object class="GtkBox">
-                                    <property name="margin-bottom">24</property>
-                                    <property name="margin-end">12</property>
-                                    <property name="margin-start">12</property>
-                                    <property name="orientation">vertical</property>
-                                    <child>
-                                      <object class="AdwPreferencesGroup" id="pref-group-studio">
-                                        <property name="title">Roblox Studio</property>
-                                        <child>
-                                          <object class="AdwButtonRow" id="studio-run">
-                                            <property name="action-name">app.run-studio</property>
-                                            <property name="start-icon-name">media-playback-start-symbolic</property>
-                                            <property name="title">Launch</property>
-                                            <style>
-                                              <class name="suggested-action"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="AdwButtonRow" id="studio-login">
-                                            <property name="action-name">app.show-login-dialog</property>
-                                            <property name="start-icon-name">contact-new-symbolic</property>
-                                            <property name="title">Log in</property>
-                                            <style>
-                                              <class name="suggested-action"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="AdwButtonRow" id="studio-install">
-                                            <property name="action-name">app.install-studio</property>
-                                            <property name="start-icon-name">document-save-symbolic</property>
-                                            <property name="title">Install</property>
-                                            <style>
-                                              <class name="suggested-action"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="AdwButtonRow" id="studio-uninstall">
-                                            <property name="action-name">app.uninstall-studio</property>
-                                            <property name="start-icon-name">user-trash-symbolic</property>
-                                            <property name="title">Uninstall</property>
-                                            <style>
-                                              <class name="destructive-action"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwPreferencesGroup" id="pref-group-wine">
-                                        <property name="title">Wine</property>
-                                        <child>
-                                          <object class="AdwButtonRow" id="prefix-init">
-                                            <property name="action-name">app.init-prefix</property>
-                                            <property name="start-icon-name">list-add-symbolic</property>
-                                            <property name="title">Initialize Data</property>
-                                            <style>
-                                              <class name="pill"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="AdwButtonRow" id="prefix-kill">
-                                            <property name="action-name">app.kill-prefix</property>
-                                            <property name="start-icon-name">process-stop-symbolic</property>
-                                            <property name="title">Terminate</property>
-                                            <style>
-                                              <class name="destructive-action"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="AdwButtonRow" id="prefix-delete">
-                                            <property name="action-name">app.delete-prefix</property>
-                                            <property name="start-icon-name">view-refresh-symbolic</property>
-                                            <property name="title">Clear Data</property>
-                                            <style>
-                                              <class name="destructive-action"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="AdwButtonRow" id="prefix-configure">
-                                            <property name="action-name">app.wine-run-winecfg</property>
-                                            <property name="start-icon-name">preferences-system-symbolic</property>
-                                            <property name="title">Configure Wine</property>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="AdwEntryRow" id="prefix-custom-run">
-                                            <property name="action-name">app.wine-run</property>
-                                            <property name="activates-default">True</property>
-                                            <property name="show-apply-button">True</property>
-                                            <property name="title">Run Wine Command </property>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </property>
-                            <child type="top">
-                              <object class="AdwHeaderBar">
-                                <child type="start">
-                                  <object class="GtkButton">
-                                    <property name="action-name">navigation.push</property>
-                                    <property name="action-target">'configure-text'</property>
-                                    <property name="icon-name">emblem-system-symbolic</property>
-                                  </object>
-                                </child>
-                                <child type="end">
-                                  <object class="GtkMenuButton">
-                                    <property name="icon-name">open-menu-symbolic</property>
-                                    <property name="menu-model">
-                                      <menu>
-                                        <item>
-                                          <attribute name="action">app.about</attribute>
-                                          <attribute name="label">About Vinegar</attribute>
-                                        </item>
-                                        <item>
-                                          <attribute name="action">app.clear-cache</attribute>
-                                          <attribute name="label">Clear Cache</attribute>
-                                        </item>
-                                        <item>
-                                          <attribute name="action">app.open-log-dir</attribute>
-                                          <attribute name="label">Open Logs</attribute>
-                                        </item>
-                                      </menu>
-                                    </property>
-                                    <property name="primary">True</property>
-                                    <child>
-                                      <menu/>
-                                    </child>
-                                    <child>
-                                      <menu/>
-                                    </child>
-                                    <child>
-                                      <menu/>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                            <style/>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="AdwNavigationPage" id="config-text-nav-page">
-                        <property name="tag">configure-text</property>
-                        <property name="title">Configuration</property>
-                        <child>
-                          <object class="AdwToolbarView">
-                            <property name="content">
-                              <object class="GtkTextView" id="config-view">
-                                <property name="bottom-margin">24</property>
-                                <property name="input-purpose">alpha</property>
-                                <property name="left-margin">24</property>
-                                <property name="monospace">True</property>
-                                <property name="right-margin">24</property>
-                                <property name="top-margin">24</property>
-                                <property name="wrap-mode">word-char</property>
-                                <style/>
-                              </object>
-                            </property>
-                            <child type="top">
-                              <object class="AdwHeaderBar">
-                                <child type="end">
-                                  <object class="GtkLinkButton">
-                                    <property name="css-classes">suggested-action</property>
-                                    <property name="icon-name">accessories-dictionary-symbolic</property>
-                                    <property name="uri">https://vinegarhq.org/Configuration</property>
-                                    <property name="visited">True</property>
+                                  <object class="AdwButtonRow" id="studio-run">
+                                    <property name="action-name">app.run-studio</property>
+                                    <property name="start-icon-name">media-playback-start-symbolic</property>
+                                    <property name="title">Launch</property>
                                     <style>
                                       <class name="suggested-action"/>
                                     </style>
                                   </object>
                                 </child>
                                 <child>
-                                  <object class="GtkButton" id="config-save">
-                                    <property name="action-name">app.save-config</property>
-                                    <property name="icon-name">media-floppy-symbolic</property>
-                                    <child>
-                                      <object class="GtkShortcutController">
-                                        <property name="scope">managed</property>
-                                        <child>
-                                          <object class="GtkShortcut">
-                                            <property name="action">activate</property>
-                                            <property name="trigger">&lt;Control&gt;s</property>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
+                                  <object class="AdwButtonRow" id="studio-login">
+                                    <property name="action-name">app.show-login-dialog</property>
+                                    <property name="start-icon-name">contact-new-symbolic</property>
+                                    <property name="title">Log in</property>
+                                    <style>
+                                      <class name="suggested-action"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwButtonRow" id="studio-install">
+                                    <property name="action-name">app.install-studio</property>
+                                    <property name="start-icon-name">document-save-symbolic</property>
+                                    <property name="title">Install</property>
+                                    <style>
+                                      <class name="suggested-action"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwButtonRow" id="studio-uninstall">
+                                    <property name="action-name">app.uninstall-studio</property>
+                                    <property name="start-icon-name">user-trash-symbolic</property>
+                                    <property name="title">Uninstall</property>
+                                    <style>
+                                      <class name="destructive-action"/>
+                                    </style>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="AdwPreferencesGroup" id="pref-group-wine">
+                                <property name="title">Wine</property>
+                                <child>
+                                  <object class="AdwButtonRow" id="prefix-init">
+                                    <property name="action-name">app.init-prefix</property>
+                                    <property name="start-icon-name">list-add-symbolic</property>
+                                    <property name="title">Initialize Data</property>
+                                    <style>
+                                      <class name="pill"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwButtonRow" id="prefix-kill">
+                                    <property name="action-name">app.kill-prefix</property>
+                                    <property name="start-icon-name">process-stop-symbolic</property>
+                                    <property name="title">Terminate</property>
+                                    <style>
+                                      <class name="destructive-action"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwButtonRow" id="prefix-delete">
+                                    <property name="action-name">app.delete-prefix</property>
+                                    <property name="start-icon-name">view-refresh-symbolic</property>
+                                    <property name="title">Clear Data</property>
+                                    <style>
+                                      <class name="destructive-action"/>
+                                    </style>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwButtonRow" id="prefix-configure">
+                                    <property name="action-name">app.wine-run-winecfg</property>
+                                    <property name="start-icon-name">preferences-system-symbolic</property>
+                                    <property name="title">Configure Wine</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwEntryRow" id="prefix-custom-run">
+                                    <property name="activates-default">True</property>
+                                    <property name="show-apply-button">True</property>
+                                    <property name="title">Run Wine Command </property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
+                          </object>
+                        </property>
+                        <property name="hscrollbar-policy">never</property>
+                        <property name="propagate-natural-height">True</property>
+                      </object>
+                    </property>
+                    <child type="top">
+                      <object class="AdwHeaderBar">
+                        <child type="start">
+                          <object class="GtkButton">
+                            <property name="action-name">navigation.push</property>
+                            <property name="action-target">'configure-text'</property>
+                            <property name="icon-name">emblem-system-symbolic</property>
+                          </object>
+                        </child>
+                        <child type="end">
+                          <object class="GtkMenuButton">
+                            <property name="icon-name">open-menu-symbolic</property>
+                            <property name="primary">True</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <style/>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwNavigationPage" id="config-text-nav-page">
+                <property name="tag">configure-text</property>
+                <property name="title">Configuration</property>
+                <child>
+                  <object class="AdwToolbarView">
+                    <property name="content">
+                      <object class="GtkTextView" id="config-view">
+                        <property name="bottom-margin">24</property>
+                        <property name="input-purpose">alpha</property>
+                        <property name="left-margin">24</property>
+                        <property name="monospace">True</property>
+                        <property name="right-margin">24</property>
+                        <property name="top-margin">24</property>
+                        <property name="wrap-mode">word-char</property>
+                        <style/>
+                      </object>
+                    </property>
+                    <child type="top">
+                      <object class="AdwHeaderBar">
+                        <child type="end">
+                          <object class="GtkLinkButton">
+                            <property name="css-classes">suggested-action</property>
+                            <property name="icon-name">accessories-dictionary-symbolic</property>
+                            <property name="uri">https://vinegarhq.org/Configuration</property>
+                            <property name="visited">True</property>
+                            <style>
+                              <class name="suggested-action"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="config-save">
+                            <property name="action-name">app.save-config</property>
+                            <property name="icon-name">media-floppy-symbolic</property>
+                            <child>
+                              <object class="GtkShortcutController">
+                                <property name="scope">managed</property>
+                                <child>
+                                  <object class="GtkShortcut">
+                                    <property name="action">activate</property>
+                                    <property name="trigger">&lt;Control&gt;s</property>
                                   </object>
                                 </child>
                               </object>
@@ -230,51 +198,57 @@
                       </object>
                     </child>
                   </object>
-                </property>
-                <property name="name">control</property>
-              </object>
-            </child>
-            <child>
-              <object class="AdwViewStackPage" id="loading-page">
-                <property name="child">
-                  <object class="GtkBox">
-                    <property name="css-classes">medium</property>
-                    <property name="orientation">vertical</property>
-                    <property name="spacing">24</property>
-                    <property name="valign">center</property>
-                    <child>
-                      <object class="AdwSpinner">
-                        <property name="height-request">64</property>
-                        <property name="width-request">64</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkLabel" id="loading-label">
-                        <property name="css-classes">title-2</property>
-                        <property name="label">Performing Action</property>
-                      </object>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="loading-stop">
-                        <property name="action-name">app.kill-prefix</property>
-                        <property name="halign">center</property>
-                        <property name="label">Stop Studio</property>
-                        <property name="sensitive">False</property>
-                        <property name="valign">center</property>
-                        <property name="visible">False</property>
-                        <style>
-                          <class name="destructive-action"/>
-                          <class name="pill"/>
-                        </style>
-                      </object>
-                    </child>
-                  </object>
-                </property>
-                <property name="name">loading</property>
+                </child>
               </object>
             </child>
           </object>
         </property>
+      </object>
+    </child>
+  </object>
+  <object class="AdwDialog" id="dialog-working">
+    <property name="can-close">False</property>
+    <property name="presentation-mode">floating</property>
+    <child>
+      <object class="GtkBox">
+        <property name="css-classes">medium</property>
+        <property name="margin-bottom">12</property>
+        <property name="margin-top">12</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">24</property>
+        <property name="valign">center</property>
+        <child>
+          <object class="GtkLabel">
+            <property name="css-classes">title-2</property>
+            <property name="label">Working on it...</property>
+            <property name="margin-top">12</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow">
+            <property name="min-content-height">256</property>
+            <property name="min-content-width">320</property>
+            <property name="propagate-natural-height">True</property>
+            <property name="propagate-natural-width">True</property>
+            <child>
+              <object class="GtkTextView" id="textview-log">
+                <property name="cursor-visible">False</property>
+                <property name="editable">False</property>
+                <property name="height-request">0</property>
+                <property name="left-margin">12</property>
+                <property name="margin-end">12</property>
+                <property name="margin-start">12</property>
+                <property name="monospace">True</property>
+                <property name="right-margin">12</property>
+                <property name="top-margin">12</property>
+                <style>
+                  <class name="terminal"/>
+                  <class name="card"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
   </object>

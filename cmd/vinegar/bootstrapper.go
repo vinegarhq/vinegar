@@ -146,7 +146,7 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 		line = strings.TrimSpace(a[i:])
 	}
 
-	slog.Log(context.Background(), logging.LevelRoblox, line)
+	slog.Log(context.Background(), logging.LevelRoblox.Level(), line)
 }
 
 func (b *bootstrapper) registerGameMode(target int) error {

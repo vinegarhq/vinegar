@@ -25,6 +25,8 @@ const (
 	LevelRoblox = Level(slog.LevelInfo + 2)
 )
 
+// Handler is a slog handler with additional extra level types
+// that outputs to a file, determined by Path, set at package init.
 type Handler struct {
 	slog.Handler
 	file slog.Handler
@@ -63,7 +65,7 @@ func (l Level) String() string {
 }
 
 func openPath() (*os.File, error) {
-	if err := dirs.Mkdirs(dirs.Logs); err != nil {
+	if err := dirs.Mkdirs(filepath.Dir(Path)); err != nil {
 		return nil, err
 	}
 
@@ -75,26 +77,48 @@ func openPath() (*os.File, error) {
 	return f, nil
 }
 
-func NewHandler(w io.Writer, level slog.Level) slog.Handler {
-	h := NewTextHandler(w, level, true)
+func cleanupLogs() error {
+	dir := filepath.Dir(Path)
+	logs, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
 
-	var fh slog.Handler
-	var r slog.Record
+	// Immediately start removing log files that aren't beyond
+	// minimum count and this file is not managed by Vinegar or is old
+	// (determined by filename length)
+	for i, log := range logs {
+		if i > len(logs)-16 || len(log.Name()) != 29 {
+			continue
+		}
+		if err := os.Remove(filepath.Join(dir, log.Name())); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// NewHandler creates a new [Handler] that writes to w. When called,
+// the same handler will be used to notify the current log filepath,
+// and old logs in its directory will also be removed and printed.
+func NewHandler(w io.Writer, level slog.Level) slog.Handler {
+	h := &Handler{Handler: NewTextHandler(w, level, true)}
+	l := slog.New(h)
+
 	f, err := openPath()
 	if err == nil {
-		fh = NewTextHandler(f, level, false)
-		r = slog.NewRecord(time.Now(), slog.LevelInfo, "Logging to file", 0)
-		r.AddAttrs(slog.String("path", Path))
+		h.file = NewTextHandler(f, level, false)
+		l.Info("Logging to file", "path", Path)
 	} else {
-		r = slog.NewRecord(time.Now(), slog.LevelError, "Failed to open log file", 0)
-		r.AddAttrs(slog.String("err", err.Error()))
+		l.Error("Failed to open log file", "err", err)
 	}
-	h.Handle(context.TODO(), r)
 
-	return &Handler{
-		Handler: h,
-		file:    fh,
+	if err := cleanupLogs(); err != nil {
+		l.Error("Failed to clear old log files", "err", err)
 	}
+
+	return h
 }
 
 func (h *Handler) Enabled(ctx context.Context, level slog.Level) bool {
@@ -139,6 +163,8 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 	}
 }
 
+// NewTextHandler is a wrapper for [tint.NewHandler] for handling the custom log
+// levels exported in this package.
 func NewTextHandler(w io.Writer, level slog.Level, color bool) slog.Handler {
 	return tint.NewHandler(w, &tint.Options{
 		Level:      level,

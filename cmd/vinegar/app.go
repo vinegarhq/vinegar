@@ -62,13 +62,6 @@ func newApp() *app {
 	scb := a.shutdown
 	a.ConnectShutdown(&scb)
 
-	dialogA := gio.NewSimpleAction("show-login-dialog", nil)
-	dialobCb := func(_ gio.SimpleAction, _ uintptr) {
-		a.newLogin()
-	}
-	dialogA.ConnectActivate(&dialobCb)
-	a.AddAction(dialogA)
-
 	return &a
 }
 

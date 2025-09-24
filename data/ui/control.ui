@@ -41,16 +41,6 @@
                                       </object>
                                     </child>
                                     <child>
-                                      <object class="AdwButtonRow" id="studio-login">
-                                        <property name="action-name">app.show-login-dialog</property>
-                                        <property name="start-icon-name">contact-new-symbolic</property>
-                                        <property name="title">Log in</property>
-                                        <style>
-                                          <class name="suggested-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
                                       <object class="AdwButtonRow" id="studio-install">
                                         <property name="action-name">app.install-studio</property>
                                         <property name="start-icon-name">document-save-symbolic</property>

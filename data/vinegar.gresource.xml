@@ -4,6 +4,5 @@
     <file alias="metainfo.xml" preprocess="xml-stripblanks">org.vinegarhq.Vinegar.metainfo.xml</file>
     <file preprocess="xml-stripblanks">ui/bootstrapper.ui</file>
     <file preprocess="xml-stripblanks">ui/control.ui</file>
-    <file preprocess="xml-stripblanks">ui/login.ui</file>
   </gresource>
 </gresources>

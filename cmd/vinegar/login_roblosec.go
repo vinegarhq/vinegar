@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/sewnie/rbxweb"
 )
 
@@ -13,29 +14,32 @@ import (
 var oauthClientID = rbxweb.OAuthClientID("7968549422692352298")
 
 func (l *login) setSecurity() error {
+	uiThread(func() { l.view.PushByTag("nav-page-loading") })
+	defer uiThread(func() { l.view.Pop() })
+
 	l.message("Authenticating")
-	user, err := l.rbx.UsersV1.GetAuthenticated()
+	user, err := l.app.rbx.UsersV1.GetAuthenticated()
 	if err != nil {
 		return fmt.Errorf("user: %w", err)
 	}
 	slog.Info("Recieved authenticated user", "id", user.ID)
 
 	l.message("Fetching authorization")
-	u, err := l.rbx.OAuthV1.GetAuthStudioURL(oauthClientID, user.ID)
+	u, err := l.app.rbx.OAuthV1.GetAuthStudioURL(oauthClientID, user.ID)
 	if err != nil {
 		return fmt.Errorf("url: %w", err)
 	}
 	slog.Info("Recieved Oauth authorization", "url", u)
 
 	l.message("Fetching OAuth token")
-	t, err := l.rbx.OAuthV1.AuthStudioToken(oauthClientID, u)
+	t, err := l.app.rbx.OAuthV1.AuthStudioToken(oauthClientID, u)
 	if err != nil {
 		return fmt.Errorf("token: %w", err)
 	}
 	slog.Info("Recieved OAuth Token", "type", t.TokenType)
 
 	l.message("Retrieving credential key")
-	k, err := l.getWineCredKey()
+	k, err := l.app.getWineCredKey()
 	if err != nil {
 		return fmt.Errorf("cred key: %w", err)
 	}
@@ -51,7 +55,7 @@ func (l *login) setSecurity() error {
 		name string
 		blob string
 	}{
-		{`.ROBLOSECURITY` + uid, l.rbx.Security},
+		{`.ROBLOSECURITY` + uid, l.app.rbx.Security},
 		{`accessToken` + uid, t.AccessToken},
 		{`expiresAtSecSinceEpoch` + uid, expire},
 		{`Cookies`, ".ROBLOSECURITY;"},
@@ -60,10 +64,16 @@ func (l *login) setSecurity() error {
 	}
 	for i, c := range credentials {
 		l.message(fmt.Sprintf("Applying %d of %d Wine Credentials", i+1, len(credentials)))
-		if err := l.addWineCred(k, keyPrefix+c.name, []byte(c.blob)); err != nil {
+		if err := l.app.addWineCred(k, keyPrefix+c.name, []byte(c.blob)); err != nil {
 			return fmt.Errorf("cred %s: %w", c.name, err)
 		}
 	}
+
+	uiThread(func() {
+		l.dialog.ForceClose()
+		l.app.ActivateAction("control-toast",
+			glib.NewVariantString("Logged in as "+user.Name))
+	})
 
 	return nil
 }

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.96.1 -->
+<!-- Created with Cambalache 0.97.8 -->
 <interface>
   <!-- interface-name bia.ui -->
   <requires lib="gio" version="2.0"/>
@@ -114,9 +114,8 @@
                                     </child>
                                     <child>
                                       <object class="AdwEntryRow" id="prefix-custom-run">
-                                        <property name="activates-default">True</property>
                                         <property name="show-apply-button">True</property>
-                                        <property name="title">Run Wine Command </property>
+                                        <property name="title">Run Wine Command</property>
                                       </object>
                                     </child>
                                   </object>

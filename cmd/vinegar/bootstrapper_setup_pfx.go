@@ -120,6 +120,11 @@ func (b *bootstrapper) webviewInstaller() string {
 	return filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
 }
 
+func (b *bootstrapper) webviewPath() string {
+	return filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView/Application", b.cfg.Studio.WebView)
+
+}
+
 func (b *bootstrapper) stepWebviewDownload() error {
 	name := b.webviewInstaller()
 	if name == "" {
@@ -144,7 +149,7 @@ func (b *bootstrapper) stepWebviewDownload() error {
 
 func (b *bootstrapper) stepWebviewInstall() error {
 	name := b.webviewInstaller()
-	path := filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView/Application", b.cfg.Studio.WebView)
+	path := b.webviewPath()
 
 	_, err := os.Stat(path)
 	if err == nil && name == "" {

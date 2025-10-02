@@ -30,6 +30,7 @@ type app struct {
 	state *state.State
 	pfx   *wine.Prefix
 	rbx   *rbxweb.Client
+	bus   *gio.DBusConnection // can be null
 
 	// initialized only in Application::command-line
 	ctl  *control
@@ -55,6 +56,13 @@ func newApp() *app {
 		state: &s,
 		cfg:   config.Default(),
 		rbx:   rbxweb.NewClient(),
+	}
+
+	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
+	if err != nil {
+		slog.Error("Failed to retrieve session bus, all DBus operations will be ignored", "err", err)
+	} else {
+		a.bus = conn
 	}
 
 	clcb := a.commandLine

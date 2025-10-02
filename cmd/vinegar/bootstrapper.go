@@ -150,16 +150,11 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 }
 
 func (b *bootstrapper) registerGameMode(target int) error {
-	if !b.cfg.Studio.GameMode {
+	if !b.cfg.Studio.GameMode || b.bus == nil {
 		return nil
 	}
 
-	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
-	if err != nil {
-		return fmt.Errorf("bus: %w", err)
-	}
-
-	resp, err := conn.CallSync("org.freedesktop.portal.Desktop",
+	resp, err := b.bus.CallSync("org.freedesktop.portal.Desktop",
 		"/org/freedesktop/portal/desktop",
 		"org.freedesktop.portal.GameMode",
 		"RegisterGame",

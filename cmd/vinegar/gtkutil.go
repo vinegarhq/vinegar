@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"iter"
+	"path"
 	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -23,6 +24,10 @@ func init() {
 		panic(err)
 	}
 	gio.ResourcesRegister(r)
+}
+
+func resource(elems ...string) string {
+	return path.Join(append([]string{"/org/vinegarhq/Vinegar"}, elems...)...)
 }
 
 func uiThread(bg func()) {

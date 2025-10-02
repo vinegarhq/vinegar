@@ -33,7 +33,7 @@ type control struct {
 func (s *app) newControl() *control {
 	ctl := control{
 		app:     s,
-		builder: gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/control.ui"),
+		builder: gtk.NewBuilderFromResource(resource("ui/control.ui")),
 	}
 
 	ctl.builder.GetObject("window").Cast(&ctl.win)

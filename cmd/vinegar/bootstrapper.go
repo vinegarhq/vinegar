@@ -36,7 +36,7 @@ type bootstrapper struct {
 }
 
 func (a *app) newBootstrapper() *bootstrapper {
-	builder := gtk.NewBuilderFromResource("/org/vinegarhq/Vinegar/ui/bootstrapper.ui")
+	builder := gtk.NewBuilderFromResource(resource("ui/bootstrapper.ui"))
 	defer builder.Unref()
 
 	b := bootstrapper{

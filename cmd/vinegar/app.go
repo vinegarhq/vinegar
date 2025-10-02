@@ -97,14 +97,17 @@ func (a *app) shutdown(_ gio.Application) {
 
 func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	cl := gio.ApplicationCommandLineNewFromInternalPtr(clPtr)
-	args := cl.GetArguments(0)
+	args := cl.GetArguments(0)[1:] // skip argv0
+	if len(args) >= 1 && args[0] == "run" {
+		args = args[1:] // skip 'run' cmd
+	}
 
 	err := a.loadConfig()
+	if err != nil {
+		a.showError(err)
+	}
 
-	if len(args) < 2 {
-		if err != nil {
-			a.showError(err)
-		}
+	if len(args) == 1 && args[0] == "config" {
 		if a.ctl == nil {
 			a.ctl = a.newControl()
 		}
@@ -112,20 +115,17 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 		return 0
 	}
 
+	// fatal exit on non-configure invocation
 	if err != nil {
-		a.showError(err)
 		return 22
-	}
-
-	if args[1] == "run" { // backwards compatibility
-		args = args[1:]
 	}
 
 	if a.boot == nil {
 		a.boot = a.newBootstrapper()
 	}
+
 	var tf glib.ThreadFunc = func(uintptr) uintptr {
-		if err := a.boot.run(args[1:]...); err != nil {
+		if err := a.boot.run(args[:]...); err != nil {
 			uiThread(func() {
 				a.boot.showError(err)
 			})

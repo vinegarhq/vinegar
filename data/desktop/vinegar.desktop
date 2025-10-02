@@ -13,6 +13,6 @@ Keywords=gaming;launcher;flatpak;
 X-Flatpak-RenamedFrom=org.vinegarhq.Vinegar.studio.desktop;
 X-Flatpak=org.vinegarhq.Vinegar
 
-[Desktop Action run-studio]
-Name=Run Roblox Studio
-Exec=vinegar run
+[Desktop Action configure]
+Name=Configure
+Exec=vinegar config

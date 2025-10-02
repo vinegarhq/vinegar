@@ -371,13 +371,11 @@ func (ctl *control) updateButtons() {
 	pfx := ctl.pfx.Exists()
 	vers := dirs.Empty(dirs.Versions)
 
-	var launch, login, inst, uninst gtk.Widget
+	var launch, inst, uninst gtk.Widget
 	ctl.builder.GetObject("studio-run").Cast(&launch)
-	ctl.builder.GetObject("studio-login").Cast(&login)
 	ctl.builder.GetObject("studio-install").Cast(&inst)
 	ctl.builder.GetObject("studio-uninstall").Cast(&uninst)
 	launch.SetVisible(!vers)
-	login.SetVisible(pfx)
 	inst.SetVisible(vers)
 	uninst.SetVisible(!vers)
 

@@ -62,8 +62,6 @@ func (a *app) newBootstrapper() *bootstrapper {
 	b.status.Unref()
 	b.pbar.Unref()
 
-	b.win.Show()
-
 	return &b
 }
 
@@ -86,6 +84,8 @@ func (b *bootstrapper) start() error {
 }
 
 func (b *bootstrapper) run(args ...string) error {
+	uiThread(b.win.Present)
+
 	if err := b.setup(); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}

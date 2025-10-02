@@ -108,6 +108,9 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	if len(args) >= 1 && args[0] == "run" {
 		args = args[1:] // skip 'run' cmd
 	}
+	if a.boot == nil {
+		a.boot = a.newBootstrapper()
+	}
 
 	err := a.loadConfig()
 	if err != nil {
@@ -127,11 +130,8 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 		return 22
 	}
 
-	if a.boot == nil {
-		a.boot = a.newBootstrapper()
-	}
-
 	a.errThread(func() error {
+		defer a.boot.win.Destroy()
 		return a.boot.run(args[:]...)
 	})
 

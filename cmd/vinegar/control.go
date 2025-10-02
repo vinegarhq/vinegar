@@ -14,6 +14,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/glib"
+	"github.com/jwijenbergh/puregotk/v4/gobject"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
@@ -25,6 +26,8 @@ type control struct {
 
 	builder *gtk.Builder
 	win     adw.ApplicationWindow
+
+	runner adw.EntryRow
 }
 
 func (s *app) newControl() *control {
@@ -47,14 +50,6 @@ func (s *app) newControl() *control {
 	ctl.AddAction(abt)
 	abt.Unref()
 
-	logsA := gio.NewSimpleAction("open-log-dir", nil)
-	logsCb := func(_ gio.SimpleAction, p uintptr) {
-		gtk.ShowUri(&ctl.win.Window, "file://"+dirs.Logs, 0)
-	}
-	logsA.ConnectActivate(&logsCb)
-	ctl.AddAction(logsA)
-	logsA.Unref()
-
 	ctl.configPut()
 	ctl.updateButtons()
 
@@ -74,12 +69,13 @@ func (s *app) newControl() *control {
 	// ctl.setupConfigurationActions()
 	ctl.setupControlActions()
 
-	var wineRunner adw.EntryRow
-	ctl.builder.GetObject("prefix-custom-run").Cast(&wineRunner)
+	ctl.builder.GetObject("entry-prefix-run").Cast(&ctl.runner)
 	applyCb := func(_ adw.EntryRow) {
-		ctl.ActivateAction("wine-run", nil)
+		cmd := ctl.runner.GetText()
+		args := strings.Fields(cmd)
+		ctl.app.errThread(ctl.pfx.Wine(args[0], args[1:]...).Run)
 	}
-	wineRunner.ConnectApply(&applyCb)
+	ctl.runner.ConnectApply(&applyCb)
 
 	return &ctl
 }
@@ -146,67 +142,63 @@ func (ctl *control) setupLogDialog() *adw.Dialog {
 }
 
 func (ctl *control) setupControlActions() {
-	actions := map[string]interface{}{
-		"run-studio":       (*bootstrapper).start,
-		"install-studio":   (*bootstrapper).setup,
-		"uninstall-studio": ctl.deleteDeployments,
-		"kill-prefix":      ctl.pfx.Kill,
-		"init-prefix":      (*bootstrapper).setupPrefix,
-		"delete-prefix":    ctl.deletePrefixes,
-		"wine-run-winecfg": func() error {
-			return ctl.pfx.Wine("winecfg").Run()
-		},
-		"clear-cache": ctl.clearCache,
-		"save-config": ctl.configSave,
+	buttons := map[string]func() error{
+		"btn-studio-run":       ctl.app.boot.start,
+		"btn-studio-install":   ctl.app.boot.setup,
+		"btn-studio-uninstall": ctl.deleteDeployments,
 
-		"wine-run": func() error {
-			var runner adw.EntryRow
-			ctl.builder.GetObject("prefix-custom-run").Cast(&runner)
-			cmd := runner.GetText()
-			args := strings.Fields(cmd)
-			return ctl.pfx.Wine(args[0], args[1:]...).Run()
-		},
+		"btn-prefix-init":   ctl.app.boot.setupPrefix,
+		"btn-prefix-kill":   ctl.pfx.Kill,
+		"btn-prefix-delete": ctl.deletePrefixes,
 	}
+
+	var r gtk.Button
+	ctl.builder.GetObject("btn-prefix-config").Cast(&r)
+	cb := func(_ gtk.Button) {
+		ctl.runner.SetText("winecfg")
+		gobject.SignalEmitByName(&ctl.runner.Object, "apply")
+	}
+	r.ConnectClicked(&cb)
 
 	logDialog := ctl.setupLogDialog()
 
-	for name, action := range actions {
-		act := gio.NewSimpleAction(name, nil)
-		actcb := func(_ gio.SimpleAction, p uintptr) {
-			var run func() error
+	for name, activate := range buttons {
+		var button adw.ButtonRow
+		ctl.builder.GetObject(name).Cast(&button)
 
-			switch f := action.(type) {
-			case func() error:
-				run = func() error {
-					return f()
-				}
-			case func(*bootstrapper) error:
-				if ctl.boot == nil {
-					ctl.boot = ctl.newBootstrapper()
-				}
-				ctl.boot.win.SetTransientFor(&ctl.win.Window)
-				run = func() error {
-					defer uiThread(ctl.boot.win.Destroy)
-					return f(ctl.boot)
-				}
-			default:
-				panic("unreachable")
-			}
-
+		actcb := func(_ adw.ButtonRow) {
 			logDialog.Present(&ctl.win.Widget)
 			ctl.app.errThread(func() error {
 				defer uiThread(func() {
 					ctl.updateButtons()
 					logDialog.ForceClose()
 				})
-				return run()
+				return activate()
 			})
 		}
-
-		act.ConnectActivate(&actcb)
-		ctl.AddAction(act)
-		act.Unref()
+		button.ConnectActivated(&actcb)
 	}
+
+	group := gio.NewSimpleActionGroup()
+	for name, fn := range map[string]func() error{
+		"save-config": ctl.configSave,
+		"clear-cache": ctl.clearCache,
+		"open-logs": func() error {
+			gtk.ShowUri(&ctl.win.Window, "file://"+dirs.Logs, 0)
+			return nil
+		},
+	} {
+		action := gio.NewSimpleAction(name, nil)
+		acb := func(_ gio.SimpleAction, p uintptr) {
+			if err := fn(); err != nil {
+				ctl.app.showError(err)
+			}
+		}
+		action.ConnectActivate(&acb)
+		group.AddAction(action)
+	}
+
+	ctl.win.Widget.InsertActionGroup("ctl", group)
 }
 
 /*
@@ -368,19 +360,19 @@ func (ctl *control) updateButtons() {
 	vers := dirs.Empty(dirs.Versions)
 
 	var launch, inst, uninst gtk.Widget
-	ctl.builder.GetObject("studio-run").Cast(&launch)
-	ctl.builder.GetObject("studio-install").Cast(&inst)
-	ctl.builder.GetObject("studio-uninstall").Cast(&uninst)
+	ctl.builder.GetObject("btn-studio-run").Cast(&launch)
+	ctl.builder.GetObject("btn-studio-install").Cast(&inst)
+	ctl.builder.GetObject("btn-studio-uninstall").Cast(&uninst)
 	launch.SetVisible(!vers)
 	inst.SetVisible(vers)
 	uninst.SetVisible(!vers)
 
 	var init, kill, del, cfg, run gtk.Widget
-	ctl.builder.GetObject("prefix-init").Cast(&init)
-	ctl.builder.GetObject("prefix-kill").Cast(&kill)
-	ctl.builder.GetObject("prefix-delete").Cast(&del)
-	ctl.builder.GetObject("prefix-configure").Cast(&cfg)
-	ctl.builder.GetObject("prefix-custom-run").Cast(&run)
+	ctl.builder.GetObject("btn-prefix-init").Cast(&init)
+	ctl.builder.GetObject("btn-prefix-kill").Cast(&kill)
+	ctl.builder.GetObject("btn-prefix-delete").Cast(&del)
+	ctl.builder.GetObject("btn-prefix-config").Cast(&cfg)
+	ctl.builder.GetObject("entry-prefix-run").Cast(&run)
 	init.SetVisible(!pfx)
 	kill.SetVisible(pfx)
 	del.SetVisible(pfx)

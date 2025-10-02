@@ -63,17 +63,11 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
-	uiThread(func() {
-		b.win.Destroy()
-		b.app.Hold()
-	})
-	defer uiThread(b.app.Release)
+	uiThread(b.win.Hide)
 
 	if err := b.registerGameMode(cmd.Process.Pid); err != nil {
 		slog.Error("Failed to register with GameMode", "err", err)
 	}
-
-	uiThread(func() { b.ActivateAction("show-stop", nil) })
 
 	err = cmd.Wait()
 

@@ -13,7 +13,6 @@ import (
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
-	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
@@ -132,15 +131,9 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 		a.boot = a.newBootstrapper()
 	}
 
-	var tf glib.ThreadFunc = func(uintptr) uintptr {
-		if err := a.boot.run(args[:]...); err != nil {
-			uiThread(func() {
-				a.boot.showError(err)
-			})
-		}
-		return 0
-	}
-	glib.NewThread("bootstrapper", &tf, 0)
+	a.errThread(func() error {
+		return a.boot.run(args[:]...)
+	})
 
 	return 0
 }
@@ -191,6 +184,16 @@ func (a *app) loadConfig() error {
 	}
 
 	return nil
+}
+
+func (a *app) errThread(fn func() error) {
+	go func() {
+		if err := fn(); err != nil {
+			uiThread(func() {
+				a.showError(err)
+			})
+		}
+	}()
 }
 
 func (a *app) showError(e error) {

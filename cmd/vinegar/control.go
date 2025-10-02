@@ -194,17 +194,13 @@ func (ctl *control) setupControlActions() {
 			}
 
 			logDialog.Present(&ctl.win.Widget)
-			var tf glib.ThreadFunc = func(uintptr) uintptr {
+			ctl.app.errThread(func() error {
 				defer uiThread(func() {
 					ctl.updateButtons()
 					logDialog.ForceClose()
 				})
-				if err := run(); err != nil {
-					uiThread(func() { ctl.showError(err) })
-				}
-				return 0
-			}
-			glib.NewThread("action", &tf, 0)
+				return run()
+			})
 		}
 
 		act.ConnectActivate(&actcb)

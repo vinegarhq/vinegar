@@ -1,24 +1,16 @@
 package main
 
 import (
-	"errors"
-	"fmt"
-	"io/fs"
-	"log/slog"
-	"os"
-	"path/filepath"
-	"runtime/debug"
+	"reflect"
 	"strings"
-	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
-	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gobject"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
+	"github.com/vinegarhq/vinegar/internal/adwaux"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/logging"
-	"github.com/vinegarhq/vinegar/sysinfo"
+	"github.com/vinegarhq/vinegar/internal/gtkutil"
 )
 
 type control struct {
@@ -33,41 +25,15 @@ type control struct {
 func (s *app) newControl() *control {
 	ctl := control{
 		app:     s,
-		builder: gtk.NewBuilderFromResource(resource("ui/control.ui")),
+		builder: gtk.NewBuilderFromResource(gtkutil.Resource("ui/control.ui")),
 	}
 
 	ctl.builder.GetObject("window").Cast(&ctl.win)
 	ctl.win.SetApplication(&s.Application.Application)
 
-	abt := gio.NewSimpleAction("about", nil)
-	abtcb := func(_ gio.SimpleAction, p uintptr) {
-		w := adw.NewAboutDialogFromAppdata("/org/vinegarhq/Vinegar/metainfo.xml", version[1:])
-		w.Present(&ctl.win.Widget)
-		w.SetDebugInfo(ctl.debugInfo())
-		w.Unref()
-	}
-	abt.ConnectActivate(&abtcb)
-	ctl.AddAction(abt)
-	abt.Unref()
-
-	ctl.configPut()
-	ctl.updateButtons()
-
-	toastA := gio.NewSimpleAction("control-toast", glib.NewVariantType("s"))
-	toastCb := func(a gio.SimpleAction, p uintptr) {
-		msg := (*glib.Variant)(unsafe.Pointer(p)).GetString(0)
-		var overlay adw.ToastOverlay
-		ctl.builder.GetObject("overlay").Cast(&overlay)
-		toast := adw.NewToast(msg)
-		overlay.AddToast(toast)
-	}
-	toastA.ConnectActivate(&toastCb)
-	ctl.AddAction(toastA)
-	toastA.Unref()
-
-	// For the time being, use in-house editing.
-	// ctl.setupConfigurationActions()
-	ctl.setupControlActions()
+	var page adw.PreferencesPage
+	ctl.builder.GetObject("prefpage-main").Cast(&page)
+	adwaux.AddStructPage(&page, reflect.ValueOf(ctl.cfg).Elem())
 
 	ctl.builder.GetObject("entry-prefix-run").Cast(&ctl.runner)
 	applyCb := func(_ adw.EntryRow) {
@@ -77,81 +43,6 @@ func (s *app) newControl() *control {
 	}
 	ctl.runner.ConnectApply(&applyCb)
 
-	return &ctl
-}
-
-func (ctl *control) configPut() {
-	var view gtk.TextView
-	ctl.builder.GetObject("config-view").Cast(&view)
-
-	b, err := os.ReadFile(dirs.ConfigPath)
-	if err != nil && !errors.Is(err, os.ErrNotExist) {
-		b = []byte(err.Error())
-	}
-
-	view.GetBuffer().SetText(string(b), -1)
-}
-
-func (ctl *control) setupLogDialog() *adw.Dialog {
-	var dialog adw.Dialog
-	ctl.builder.GetObject("dialog-working").Cast(&dialog)
-
-	var view gtk.TextView
-	ctl.builder.GetObject("textview-log").Cast(&view)
-	buf := view.GetBuffer()
-
-	h, _ := slog.Default().Handler().(*logging.Handler)
-
-	lvlTags := make(map[slog.Level]*gtk.TextTag, 6)
-	for lvl, color := range map[slog.Level]string{
-		slog.LevelDebug:             "white",
-		slog.LevelInfo:              "lime",
-		logging.LevelWine.Level():   "darkred",
-		logging.LevelRoblox.Level(): "cyan",
-		slog.LevelWarn:              "yellow",
-		slog.LevelError:             "red",
-	} {
-		lvlTags[lvl] = buf.CreateTag(lvl.String(), "foreground", color)
-	}
-
-	dialogShowCb := func(_ gtk.Widget) {
-		h.ReadRecord = func(r *slog.Record) {
-			tag := lvlTags[r.Level]
-			name := logging.FromLevel(r.Level).String() + " "
-			uiThread(func() {
-				var iter gtk.TextIter
-				buf.GetEndIter(&iter)
-				buf.InsertWithTags(&iter, name, -1, tag)
-				buf.Insert(&iter, r.Message+"\n", -1)
-				view.ScrollToIter(&iter, 0, false, 0, 0)
-			})
-		}
-	}
-	dialog.ConnectMap(&dialogShowCb)
-
-	dialogClosedCb := func(_ adw.Dialog) {
-		h.ReadRecord = nil
-		var start, end gtk.TextIter
-		buf.GetStartIter(&start)
-		buf.GetEndIter(&end)
-		buf.Delete(&start, &end)
-	}
-	dialog.ConnectClosed(&dialogClosedCb)
-
-	return &dialog
-}
-
-func (ctl *control) setupControlActions() {
-	buttons := map[string]func() error{
-		"btn-studio-run":       ctl.app.boot.start,
-		"btn-studio-install":   ctl.app.boot.setup,
-		"btn-studio-uninstall": ctl.deleteDeployments,
-
-		"btn-prefix-init":   ctl.app.boot.setupPrefix,
-		"btn-prefix-kill":   ctl.pfx.Kill,
-		"btn-prefix-delete": ctl.deletePrefixes,
-	}
-
 	var r gtk.Button
 	ctl.builder.GetObject("btn-prefix-config").Cast(&r)
 	cb := func(_ gtk.Button) {
@@ -160,264 +51,52 @@ func (ctl *control) setupControlActions() {
 	}
 	r.ConnectClicked(&cb)
 
-	logDialog := ctl.setupLogDialog()
+	for name, fn := range map[string]any{
+		"save":  ctl.saveConfig,
+		"about": ctl.showAbout,
 
-	for name, activate := range buttons {
-		var button adw.ButtonRow
-		ctl.builder.GetObject(name).Cast(&button)
-
-		actcb := func(_ adw.ButtonRow) {
-			logDialog.Present(&ctl.win.Widget)
-			ctl.app.errThread(func() error {
-				defer uiThread(func() {
-					ctl.updateButtons()
-					logDialog.ForceClose()
-				})
-				return activate()
-			})
-		}
-		button.ConnectActivated(&actcb)
-	}
-
-	group := gio.NewSimpleActionGroup()
-	for name, fn := range map[string]func() error{
-		"save-config": ctl.configSave,
 		"clear-cache": ctl.clearCache,
-		"open-logs": func() error {
-			gtk.ShowUri(&ctl.win.Window, "file://"+dirs.Logs, 0)
-			return nil
+		"open-prefix": func() {
+			gtk.ShowUri(&ctl.win.Window, "file://"+ctl.pfx.Dir(), 0)
 		},
+		"open-logs": func() {
+			gtk.ShowUri(&ctl.win.Window, "file://"+dirs.Logs, 0)
+		},
+
+		"delete-studio": ctl.deleteDeployments,
+		"run":           ctl.run,
+		"prefix-kill":   ctl.pfx.Kill,
+		"delete-prefix": ctl.deletePrefixes,
 	} {
 		action := gio.NewSimpleAction(name, nil)
-		acb := func(_ gio.SimpleAction, p uintptr) {
-			if err := fn(); err != nil {
-				ctl.app.showError(err)
+		activate := func(_ gio.SimpleAction, p uintptr) {
+			switch v := fn.(type) {
+			case func() error:
+				ctl.app.errThread(func() error {
+					return v()
+				})
+			case func():
+				v()
+			default:
+				panic("unreachable")
 			}
 		}
-		action.ConnectActivate(&acb)
-		group.AddAction(action)
+		action.ConnectActivate(&activate)
+		ctl.win.AddAction(action)
+		action.Unref()
 	}
 
-	ctl.win.Widget.InsertActionGroup("ctl", group)
+	ctl.updateRun()
+
+	return &ctl
 }
 
-/*
-func (ctl *control) setupConfigurationActions() {
-	props := []struct {
-		name   string
-		widget string
-		modify any
-	}{
-		{"gamemode", "switch", ctl.cfg.Studio.GameMode},
-		{"launcher", "entry", ctl.cfg.Studio.Launcher},
+func (ctl *control) updateRun() {
+	var btn adw.ButtonContent
+	ctl.builder.GetObject("btn-run").Cast(&btn)
+	if ctl.pfx.Exists() {
+		btn.SetLabel("Run")
+	} else {
+		btn.SetLabel("Initialize")
 	}
-
-	save := func() {
-		if err := ctl.LoadConfig(); err != nil {
-			ctl.presentSimpleError(err)
-		}
-	}
-
-	for _, p := range props {
-		obj := ctl.builder.GetObject(p.name)
-
-		switch p.widget {
-		case "switch":
-			// AdwSwitchRow does not implement Gtk.Switch, and neither
-			// does puregotk have a reference for AdwSwitchRow.
-			actcb := func() {
-				var new bool
-				obj.Get("active", &new)
-				p.modify = new
-				slog.Info("Configuration Switch", "name", p.widget, "value", p.modify)
-				save()
-			}
-			var w gtk.Widget
-			obj.Cast(&w)
-			obj.ConnectSignal("notify::active", &actcb)
-			slog.Info("Setup Widget", "name", p.name)
-		case "entry":
-			var entry adw.EntryRow
-			obj.Cast(&entry)
-
-			cb := func(_ adw.EntryRow) {
-				p.modify = entry.GetText()
-				slog.Info("Configuration Entry", "name", p.widget, "value", p.modify)
-				save()
-			}
-			entry.ConnectApply(&cb)
-		default:
-			panic("unreachable")
-		}
-	}
-
-	// this is a special button!
-	var rootRow adw.ActionRow
-	ctl.builder.GetObject("wineroot-row").Cast(&rootRow)
-	rootRow.SetSubtitle(ctl.cfg.Studio.WineRoot)
-
-	var rootSelect gtk.Button
-	ctl.builder.GetObject("wineroot-select").Cast(&rootSelect)
-	actcb := func(_ gtk.Button) {
-		// gtk.FileChooser is deprecated for gtk.FileDialog, but puregotk does not have it.
-		fc := gtk.NewFileChooserDialog("Select Wine Installation", &ctl.win.Window,
-			gtk.FileChooserActionSelectFolderValue,
-			"Cancel", gtk.ResponseCancelValue,
-			"Select", gtk.ResponseAcceptValue,
-			unsafe.Pointer(nil),
-		)
-		rcb := func(_ gtk.Dialog, _ int) {
-			cp := ctl.cfg.Studio
-			cp.WineRoot = fc.GetFile().GetPath()
-			// if err := cp.Setup(); err != nil {
-			rootRow.SetSubtitle(ctl.cfg.Studio.WineRoot)
-			fc.Destroy()
-		}
-		fc.ConnectResponse(&rcb)
-		fc.Present()
-	}
-	rootSelect.ConnectClicked(&actcb)
-}
-*/
-
-func (ctl *control) configSave() error {
-	var view gtk.TextView
-	var start, end gtk.TextIter
-	ctl.builder.GetObject("config-view").Cast(&view)
-
-	buf := view.GetBuffer()
-	buf.GetBounds(&start, &end)
-	text := buf.GetText(&start, &end, false)
-
-	if err := dirs.Mkdirs(dirs.Config); err != nil {
-		return err
-	}
-
-	f, err := os.OpenFile(dirs.ConfigPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	if _, err := f.Write([]byte(text)); err != nil {
-		return err
-	}
-
-	ctl.ActivateAction("control-toast", glib.NewVariantString("Saved!"))
-
-	return ctl.loadConfig()
-}
-
-func (ctl *control) deleteDeployments() error {
-	if err := os.RemoveAll(dirs.Versions); err != nil {
-		return err
-	}
-
-	ctl.state.Studio.Version = ""
-	ctl.state.Studio.Packages = nil
-
-	return ctl.state.Save()
-}
-
-func (ctl *control) deletePrefixes() error {
-	slog.Info("Deleting Wineprefixes!")
-
-	if err := ctl.pfx.Kill(); err != nil {
-		return fmt.Errorf("kill prefix: %w", err)
-	}
-
-	if err := os.RemoveAll(dirs.Prefixes); err != nil {
-		return err
-	}
-
-	ctl.state.Studio.DxvkVersion = ""
-
-	if err := ctl.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
-	}
-
-	return nil
-}
-
-func (ctl *control) clearCache() error {
-	return filepath.WalkDir(dirs.Cache, func(path string, d fs.DirEntry, err error) error {
-		if err != nil {
-			if errors.Is(err, fs.ErrNotExist) {
-				return nil
-			}
-			return err
-		}
-		if path == dirs.Cache || path == dirs.Logs || path == logging.Path {
-			return nil
-		}
-
-		slog.Info("Removing cache file", "path", path)
-		return os.RemoveAll(path)
-	})
-}
-
-func (ctl *control) updateButtons() {
-	pfx := ctl.pfx.Exists()
-	vers := dirs.Empty(dirs.Versions)
-
-	var launch, inst, uninst gtk.Widget
-	ctl.builder.GetObject("btn-studio-run").Cast(&launch)
-	ctl.builder.GetObject("btn-studio-install").Cast(&inst)
-	ctl.builder.GetObject("btn-studio-uninstall").Cast(&uninst)
-	launch.SetVisible(!vers)
-	inst.SetVisible(vers)
-	uninst.SetVisible(!vers)
-
-	var init, kill, del, cfg, run gtk.Widget
-	ctl.builder.GetObject("btn-prefix-init").Cast(&init)
-	ctl.builder.GetObject("btn-prefix-kill").Cast(&kill)
-	ctl.builder.GetObject("btn-prefix-delete").Cast(&del)
-	ctl.builder.GetObject("btn-prefix-config").Cast(&cfg)
-	ctl.builder.GetObject("entry-prefix-run").Cast(&run)
-	init.SetVisible(!pfx)
-	kill.SetVisible(pfx)
-	del.SetVisible(pfx)
-	cfg.SetVisible(pfx)
-	run.SetVisible(pfx)
-}
-
-func (ctl *control) debugInfo() string {
-	var revision string
-	bi, _ := debug.ReadBuildInfo()
-	for _, bs := range bi.Settings {
-		if bs.Key == "vcs.revision" {
-			revision = fmt.Sprintf("(%s)", bs.Value)
-		}
-	}
-
-	var b strings.Builder
-
-	inst := "source"
-	if sysinfo.InFlatpak {
-		inst = "flatpak"
-	}
-
-	info := `* Vinegar: %s %s
-* Distro: %s
-* Processor: %s
-* Kernel: %s
-* Wine: %s
-* Installation: %s
-`
-
-	fmt.Fprintf(&b, info,
-		version, revision,
-		sysinfo.Distro,
-		sysinfo.CPU.Name,
-		sysinfo.Kernel,
-		ctl.pfx.Version(),
-		inst,
-	)
-
-	fmt.Fprintln(&b, "* Cards:")
-	for i, c := range sysinfo.Cards {
-		fmt.Fprintf(&b, "  * Card %d: %s %s %s\n",
-			i, c.Driver, filepath.Base(c.Device), c.Path)
-	}
-
-	return b.String()
 }

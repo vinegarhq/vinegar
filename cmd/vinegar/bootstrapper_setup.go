@@ -82,7 +82,7 @@ func (b *bootstrapper) stepPrepareRun() error {
 	defer b.performing()()
 
 	b.message("Renderer Status:", "renderer", b.cfg.Studio.Renderer,
-		"dxvk", b.cfg.Studio.Dxvk)
+		"dxvk", b.cfg.Studio.DXVK)
 
 	if err := b.setupOverlay(); err != nil {
 		return fmt.Errorf("setup overlay: %w", err)

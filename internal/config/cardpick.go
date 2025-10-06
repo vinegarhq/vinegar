@@ -41,7 +41,7 @@ func (s *Studio) pickCard() error {
 	}
 
 	if prime {
-		vk := s.Dxvk || s.Renderer == "Vulkan"
+		vk := s.DXVK || s.Renderer == "Vulkan"
 
 		if n <= 1 {
 			return nil

@@ -79,12 +79,12 @@ func (b *bootstrapper) checkPrefix() error {
 func (b *bootstrapper) stepSetupDxvk() error {
 	// If installed, installing won't be required since
 	// DLL overrides decide if DXVK is actually used or not.
-	if !b.cfg.Studio.Dxvk ||
-		b.cfg.Studio.DxvkVersion == b.state.Studio.DxvkVersion {
+	if !b.cfg.Studio.DXVK ||
+		b.cfg.Studio.DXVKVersion == b.state.Studio.DxvkVersion {
 		return nil
 	}
 
-	name := filepath.Join(dirs.Cache, "dxvk-"+b.cfg.Studio.DxvkVersion+".tar.gz")
+	name := filepath.Join(dirs.Cache, "dxvk-"+b.cfg.Studio.DXVKVersion+".tar.gz")
 	if _, err := os.Stat(name); err == nil {
 		goto install
 	}
@@ -93,23 +93,23 @@ func (b *bootstrapper) stepSetupDxvk() error {
 		return fmt.Errorf("prepare cache: %w", err)
 	}
 
-	b.message("Downloading DXVK", "ver", b.cfg.Studio.DxvkVersion)
+	b.message("Downloading DXVK", "ver", b.cfg.Studio.DXVKVersion)
 
 	if err := netutil.DownloadProgress(
-		dxvk.URL(b.cfg.Studio.DxvkVersion), name, &b.pbar); err != nil {
+		dxvk.URL(b.cfg.Studio.DXVKVersion), name, &b.pbar); err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
 
 install:
 	defer b.performing()()
 
-	b.message("Extracting DXVK", "ver", b.cfg.Studio.DxvkVersion)
+	b.message("Extracting DXVK", "ver", b.cfg.Studio.DXVKVersion)
 
 	if err := dxvk.Extract(b.pfx, name); err != nil {
 		return fmt.Errorf("extract: %w", err)
 	}
 
-	b.state.Studio.DxvkVersion = b.cfg.Studio.DxvkVersion
+	b.state.Studio.DxvkVersion = b.cfg.Studio.DXVKVersion
 	return nil
 }
 
@@ -122,7 +122,6 @@ func (b *bootstrapper) webviewInstaller() string {
 
 func (b *bootstrapper) webviewPath() string {
 	return filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView/Application", b.cfg.Studio.WebView)
-
 }
 
 func (b *bootstrapper) stepWebviewDownload() error {

@@ -6,253 +6,128 @@
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.6"/>
   <object class="AdwApplicationWindow" id="window">
-    <property name="default-height">512</property>
-    <property name="default-width">384</property>
-    <child>
-      <object class="AdwToastOverlay" id="overlay">
-        <property name="child">
-          <object class="AdwNavigationView">
+    <property name="content">
+      <object class="AdwToolbarView">
+        <property name="content">
+          <object class="AdwPreferencesPage" id="prefpage-main">
+            <property name="banner">
+              <object class="AdwBanner" id="banner-config-error"/>
+            </property>
             <child>
-              <object class="AdwNavigationPage" id="control-nav-page">
-                <property name="title">Vinegar</property>
+              <object class="AdwPreferencesGroup">
                 <child>
-                  <object class="AdwToolbarView">
-                    <property name="content">
-                      <object class="GtkScrolledWindow">
+                  <object class="GtkBox">
+                    <property name="halign">center</property>
+                    <property name="hexpand">False</property>
+                    <property name="homogeneous">False</property>
+                    <property name="spacing">6</property>
+                    <property name="valign">fill</property>
+                    <property name="vexpand">False</property>
+                    <child>
+                      <object class="GtkButton">
+                        <property name="action-name">win.run</property>
                         <property name="child">
-                          <object class="AdwClamp">
-                            <property name="child">
-                              <object class="GtkBox">
-                                <property name="margin-bottom">24</property>
-                                <property name="margin-end">12</property>
-                                <property name="margin-start">12</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="AdwPreferencesGroup" id="pref-group-studio">
-                                    <property name="title">Roblox Studio</property>
-                                    <child>
-                                      <object class="AdwButtonRow" id="btn-studio-run">
-                                        <property name="start-icon-name">media-playback-start-symbolic</property>
-                                        <property name="title">Launch</property>
-                                        <style>
-                                          <class name="suggested-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="btn-studio-install">
-                                        <property name="start-icon-name">document-save-symbolic</property>
-                                        <property name="title">Install</property>
-                                        <style>
-                                          <class name="suggested-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="btn-studio-uninstall">
-                                        <property name="start-icon-name">user-trash-symbolic</property>
-                                        <property name="title">Uninstall</property>
-                                        <style>
-                                          <class name="destructive-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="AdwPreferencesGroup" id="pref-group-wine">
-                                    <property name="title">Wine</property>
-                                    <child>
-                                      <object class="AdwButtonRow" id="btn-prefix-init">
-                                        <property name="start-icon-name">list-add-symbolic</property>
-                                        <property name="title">Initialize Data</property>
-                                        <style>
-                                          <class name="pill"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="btn-prefix-kill">
-                                        <property name="start-icon-name">process-stop-symbolic</property>
-                                        <property name="title">Terminate</property>
-                                        <style>
-                                          <class name="destructive-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwButtonRow" id="btn-prefix-delete">
-                                        <property name="start-icon-name">view-refresh-symbolic</property>
-                                        <property name="title">Clear Data</property>
-                                        <style>
-                                          <class name="destructive-action"/>
-                                        </style>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="AdwEntryRow" id="entry-prefix-run">
-                                        <property name="show-apply-button">True</property>
-                                        <property name="title">Run Wine Command</property>
-                                        <!-- Custom object fragments -->
-                                        <child type="suffix">
-                                          <object class="GtkButton" id="btn-prefix-config">
-                                            <property name="icon-name">preferences-system-symbolic</property>
-                                            <property name="valign">center</property>
-                                            <property name="focusable">False</property>
-                                          </object>
-                                        </child>
-                                      </object>
-                                    </child>
-                                  </object>
-                                </child>
-                              </object>
-                            </property>
-                            <property name="maximum-size">384</property>
+                          <object class="AdwButtonContent" id="btn-run">
+                            <property name="icon-name">media-playback-start-symbolic</property>
+                            <property name="label">Uninitialized</property>
                           </object>
                         </property>
-                        <property name="hscrollbar-policy">never</property>
-                        <property name="propagate-natural-height">True</property>
-                      </object>
-                    </property>
-                    <child type="top">
-                      <object class="AdwHeaderBar">
-                        <child type="start">
-                          <object class="GtkButton">
-                            <property name="action-name">navigation.push</property>
-                            <property name="action-target">'configure-text'</property>
-                            <property name="icon-name">emblem-system-symbolic</property>
-                          </object>
-                        </child>
-                        <child type="end">
-                          <object class="GtkMenuButton">
-                            <property name="icon-name">open-menu-symbolic</property>
-                            <property name="menu-model">menu-model-app</property>
-                            <property name="primary">True</property>
-                          </object>
-                        </child>
+                        <style>
+                          <class name="pill"/>
+                          <class name="suggested-action"/>
+                        </style>
                       </object>
                     </child>
-                    <style/>
+                    <child>
+                      <object class="GtkMenuButton">
+                        <property name="active">False</property>
+                        <property name="has-frame">True</property>
+                        <property name="icon-name">view-more-symbolic</property>
+                        <property name="menu-model">menumodel-run</property>
+                        <property name="primary">False</property>
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="circular"/>
+                        </style>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
             <child>
-              <object class="AdwNavigationPage" id="config-text-nav-page">
-                <property name="tag">configure-text</property>
-                <property name="title">Configuration</property>
+              <object class="AdwPreferencesGroup" id="prefgroup-wine">
+                <property name="header-suffix">
+                  <object class="GtkButton" id="btn-prefix-config">
+                    <property name="icon-name">preferences-system-symbolic</property>
+                    <property name="tooltip-text">Additional Options</property>
+                  </object>
+                </property>
+                <property name="separate-rows">True</property>
+                <property name="title">Wine</property>
                 <child>
-                  <object class="AdwToolbarView">
-                    <property name="content">
-                      <object class="GtkTextView" id="config-view">
-                        <property name="bottom-margin">24</property>
-                        <property name="input-purpose">alpha</property>
-                        <property name="left-margin">24</property>
-                        <property name="monospace">True</property>
-                        <property name="right-margin">24</property>
-                        <property name="top-margin">24</property>
-                        <property name="wrap-mode">word-char</property>
-                        <style/>
-                      </object>
-                    </property>
-                    <child type="top">
-                      <object class="AdwHeaderBar">
-                        <child type="end">
-                          <object class="GtkLinkButton">
-                            <property name="css-classes">suggested-action</property>
-                            <property name="icon-name">accessories-dictionary-symbolic</property>
-                            <property name="uri">https://vinegarhq.org/Configuration</property>
-                            <property name="visited">True</property>
-                            <style>
-                              <class name="suggested-action"/>
-                            </style>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="GtkButton" id="config-save">
-                            <property name="action-name">ctl.save-config</property>
-                            <property name="icon-name">media-floppy-symbolic</property>
-                            <child>
-                              <object class="GtkShortcutController">
-                                <property name="scope">managed</property>
-                                <child>
-                                  <object class="GtkShortcut">
-                                    <property name="action">activate</property>
-                                    <property name="trigger">&lt;Control&gt;s</property>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                      </object>
-                    </child>
+                  <object class="AdwEntryRow" id="entry-prefix-run">
+                    <property name="show-apply-button">True</property>
+                    <property name="title">Run Wine Command</property>
                   </object>
                 </child>
               </object>
             </child>
           </object>
         </property>
-      </object>
-    </child>
-  </object>
-  <object class="AdwDialog" id="dialog-working">
-    <property name="can-close">False</property>
-    <property name="content-width">512</property>
-    <property name="presentation-mode">floating</property>
-    <child>
-      <object class="GtkBox">
-        <property name="css-classes">medium</property>
-        <property name="margin-bottom">12</property>
-        <property name="margin-top">12</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">24</property>
-        <property name="valign">center</property>
-        <child>
-          <object class="GtkLabel">
-            <property name="css-classes">title-2</property>
-            <property name="label">Working on it...</property>
-            <property name="margin-top">12</property>
-          </object>
-        </child>
-        <child>
-          <object class="GtkScrolledWindow">
-            <property name="min-content-height">256</property>
-            <property name="propagate-natural-height">True</property>
-            <property name="propagate-natural-width">True</property>
-            <child>
-              <object class="GtkTextView" id="textview-log">
-                <property name="cursor-visible">False</property>
-                <property name="editable">False</property>
-                <property name="height-request">0</property>
-                <property name="left-margin">12</property>
-                <property name="margin-end">12</property>
-                <property name="margin-start">12</property>
-                <property name="monospace">True</property>
-                <property name="right-margin">12</property>
-                <property name="top-margin">12</property>
-                <style>
-                  <class name="terminal"/>
-                  <class name="card"/>
-                </style>
+        <child type="top">
+          <object class="AdwHeaderBar">
+            <child type="end">
+              <object class="GtkMenuButton">
+                <property name="icon-name">open-menu-symbolic</property>
+                <property name="menu-model">menumodel-app</property>
+                <property name="primary">True</property>
               </object>
             </child>
           </object>
         </child>
       </object>
-    </child>
+    </property>
+    <property name="default-height">512</property>
+    <property name="default-width">480</property>
+    <property name="title">Vinegar</property>
   </object>
-  <menu id="menu-model-app">
+  <menu id="menumodel-run">
+    <section>
+      <item>
+        <attribute name="action">win.prefix-kill</attribute>
+        <attribute name="icon">process-stop-symbolic</attribute>
+        <attribute name="label">Stop Processes</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="action">win.open-prefix</attribute>
+        <attribute name="label">Open Files</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="action">win.delete-studio</attribute>
+        <attribute name="label">Uninstall Studio</attribute>
+      </item>
+      <item>
+        <attribute name="action">win.delete-prefix</attribute>
+        <attribute name="label">Delete All Data</attribute>
+      </item>
+    </section>
+  </menu>
+  <menu id="menumodel-app">
     <item>
-      <attribute name="action">app.about</attribute>
+      <attribute name="action">win.about</attribute>
       <attribute name="label">About Vinegar</attribute>
     </item>
     <item>
-      <attribute name="action">ctl.clear-cache</attribute>
+      <attribute name="action">win.clear-cache</attribute>
       <attribute name="label">Clear Cache</attribute>
     </item>
     <item>
-      <attribute name="action">ctl.open-logs</attribute>
+      <attribute name="action">win.open-logs</attribute>
       <attribute name="label">Open Logs</attribute>
     </item>
   </menu>

@@ -17,30 +17,31 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
-// Studio is a representation of the deployment and behavior
-// of Roblox Studio.
 type Studio struct {
-	GameMode      bool          `toml:"gamemode"`
-	WineRoot      string        `toml:"wineroot"`
-	Launcher      string        `toml:"launcher"`
-	Quiet         bool          `toml:"quiet"`
-	DiscordRPC    bool          `toml:"discord_rpc"`
-	ForcedVersion string        `toml:"forced_version"`
-	Channel       string        `toml:"channel"`
-	Dxvk          bool          `toml:"dxvk"`
-	DxvkVersion   string        `toml:"dxvk_version"`
-	WebView       string        `toml:"webview"`
-	ForcedGpu     string        `toml:"gpu"`
-	Renderer      string        `toml:"renderer"`
-	Env           Environment   `toml:"env"`
-	FFlags        rbxbin.FFlags `toml:"fflags"`
+	GameMode bool `toml:"gamemode" group:"Performance" row:"Apply system optimizations. May improve performance."`
+
+	ForcedGpu   string `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated, prime-discrete, 0)"`
+	DXVK        bool   `toml:"dxvk" group:"Rendering" row:"Improve Direct3D compatibility by translating it to Vulkan"`
+	DXVKVersion string `toml:"dxvk_version" group:"Rendering" row:"DXVK Version"`
+	Renderer    string `toml:"renderer" group:"Rendering" row:"D3D11 for DXVK,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
+
+	WineRoot string `toml:"wineroot" group:"Custom Wine" row:"Installation Directory,path"`
+	WebView  string `toml:"webview" group:"Custom Wine" row:"WebView2 Runtime Version"`
+	Launcher string `toml:"launcher" group:"Custom Wine" row:"Launcher Command"`
+
+	ForcedVersion string `toml:"forced_version" group:"Deployment Overrides" row:"Studio Deployment Version"`
+	Channel       string `toml:"channel" group:"Deployment Overrides" row:"Studio Update Channel"`
+
+	Quiet      bool          `toml:"quiet" group:"Behavior" row:"Prevent capturing of Studio's debugging logs"`
+	DiscordRPC bool          `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
+	Env        Environment   `toml:"env" group:"Studio Environment Variables"`
+	FFlags     rbxbin.FFlags `toml:"fflags" group:"Studio Fast Flags"`
 }
 
-// Config is a representation of the Vinegar configuration.
 type Config struct {
-	Debug  bool        `toml:"debug"`
+	Debug  bool        `toml:"debug" group:"Behavior" row:"Show API requests made and disable safety checks"`
 	Studio Studio      `toml:"studio"`
-	Env    Environment `toml:"env"`
+	Env    Environment `toml:"env" group:"Environment"`
 }
 
 var (
@@ -82,8 +83,8 @@ func Default() *Config {
 		},
 
 		Studio: Studio{
-			Dxvk:        false,
-			DxvkVersion: "2.7",
+			DXVK:        false,
+			DXVKVersion: "2.7",
 			WebView:     "109.0.1518.140", // Last known win7
 			GameMode:    true,
 			ForcedGpu:   "prime-discrete",
@@ -113,7 +114,7 @@ func (c *Config) Setup() error {
 	}
 
 	c.Env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
-	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.Dxvk)
+	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.DXVK)
 	c.Env.Setenv()
 
 	if err := c.Studio.setup(); err != nil {
@@ -143,7 +144,7 @@ func (s *Studio) setup() error {
 
 	if pfx.IsProton() {
 		// https://github.com/bottlesdevs/Bottles/issues/3485
-		s.Dxvk = true
+		s.DXVK = true
 	}
 
 	if err := s.FFlags.SetRenderer(s.Renderer); err != nil {

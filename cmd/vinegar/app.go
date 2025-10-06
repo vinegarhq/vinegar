@@ -18,6 +18,7 @@ import (
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/state"
 )
@@ -73,7 +74,7 @@ func newApp() *app {
 }
 
 func (a *app) appInfo() *gio.AppInfoBase {
-	for app := range listSeq[gio.AppInfoBase](gio.AppInfoGetAll()) {
+	for app := range gtkutil.List[gio.AppInfoBase](gio.AppInfoGetAll()) {
 		if strings.HasPrefix(app.GetId(), a.GetApplicationId()) {
 			return app
 		}
@@ -162,6 +163,10 @@ func (a *app) Write(b []byte) (int, error) {
 
 func (a *app) loadConfig() error {
 	// will fallback to default configuration if there is an error
+	//
+	// TODO TODO TODO TODO TODO: remove this behavior of loading configs
+	// obviously every time the config changes there shouldnt be some Setup()
+	// function. it should have been to set up values at runtime whenever needed.
 	cfg, err := config.Load()
 
 	a.pfx = wine.New(
@@ -171,7 +176,8 @@ func (a *app) loadConfig() error {
 	a.pfx.Stderr = a
 	a.pfx.Stdout = a
 
-	a.cfg = cfg
+	// Required to avoid changing original pointer value
+	*a.cfg = *cfg
 
 	if cfg.Debug {
 		a.rbx.Client.Transport = &debugTransport{
@@ -189,7 +195,7 @@ func (a *app) loadConfig() error {
 func (a *app) errThread(fn func() error) {
 	go func() {
 		if err := fn(); err != nil {
-			uiThread(func() {
+			gtkutil.IdleAdd(func() {
 				a.showError(err)
 			})
 		}
@@ -211,7 +217,7 @@ func (a *app) showError(e error) {
 
 	var ccb gio.AsyncReadyCallback = func(_ uintptr, res uintptr, _ uintptr) {
 		defer a.Release()
-		ar := asyncResultFromInternalPtr(res)
+		ar := gtkutil.AsyncResultFromInternalPtr(res)
 		r := d.ChooseFinish(ar)
 		slog.Default()
 		uri := "file://" + logging.Path

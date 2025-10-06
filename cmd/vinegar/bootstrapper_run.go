@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/sewnie/wine"
+	"github.com/vinegarhq/vinegar/internal/gtkutil"
 )
 
 func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
@@ -63,7 +64,7 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
-	uiThread(b.win.Hide)
+	gtkutil.IdleAdd(b.win.Hide)
 
 	if err := b.registerGameMode(cmd.Process.Pid); err != nil {
 		slog.Error("Failed to register with GameMode", "err", err)

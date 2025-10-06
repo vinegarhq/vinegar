@@ -15,16 +15,17 @@ CXX ?= c++
 GO         ?= go
 GO_LDFLAGS ?= -s -w -X main.version=$(VERSION)
 
-# for automatically re-building vinegar
-SOURCES != find . -type f -name "*.go"
+SOURCES != find . -type f -name "*.go" # for automatically re-building vinegar
+
+RESOURCE = internal/gtkutil/vinegar.gresource
 
 all: vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so
 
-vinegar: $(SOURCES) cmd/vinegar/vinegar.gresource
+vinegar: $(SOURCES) $(RESOURCE)
 	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
 
-cmd/vinegar/vinegar.gresource: data/vinegar.gresource.xml data/ui/vinegar.cmb
-	glib-compile-resources --sourcedir=data --target=cmd/vinegar/vinegar.gresource data/vinegar.gresource.xml
+$(RESOURCE): data/vinegar.gresource.xml data/ui/vinegar.cmb
+	glib-compile-resources --sourcedir=data --target=$(RESOURCE) data/vinegar.gresource.xml
 
 layer/libVkLayer_VINEGAR_VinegarLayer.so:
 	$(CXX) -shared -fPIC `pkg-config --cflags vulkan` layer/vinegar_layer.cpp -o $@
@@ -54,6 +55,6 @@ uninstall:
 		$(DESTDIR)$(LAYERPREFIX)/VkLayer_VINEGAR_VinegarLayer.json
 
 clean:
-	rm -f vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so
+	rm -f vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so $(RESOURCE)
 	
 .PHONY: all install uninstall clean

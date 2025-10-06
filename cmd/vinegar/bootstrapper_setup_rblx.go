@@ -11,6 +11,7 @@ import (
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/rbxweb"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 	"golang.org/x/sync/errgroup"
 )
@@ -70,7 +71,7 @@ func (b *bootstrapper) stepFetchDeployment() error {
 		return err
 	}
 
-	uiThread(func() {
+	gtkutil.IdleAdd(func() {
 		b.info.SetLabel(d.Channel)
 	})
 
@@ -128,7 +129,7 @@ func (b *bootstrapper) stepPackagesInstall(
 
 	update := func() {
 		finished.Add(1)
-		uiThread(func() { b.pbar.SetFraction(float64(finished.Load()) / float64(total)) })
+		gtkutil.IdleAdd(func() { b.pbar.SetFraction(float64(finished.Load()) / float64(total)) })
 	}
 
 	b.message("Installing Packages", "count", len(pkgs), "dir", b.dir)

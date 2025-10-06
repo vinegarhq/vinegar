@@ -17,6 +17,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxbin"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
 )
@@ -36,7 +37,7 @@ type bootstrapper struct {
 }
 
 func (a *app) newBootstrapper() *bootstrapper {
-	builder := gtk.NewBuilderFromResource(resource("ui/bootstrapper.ui"))
+	builder := gtk.NewBuilderFromResource(gtkutil.Resource("ui/bootstrapper.ui"))
 	defer builder.Unref()
 
 	b := bootstrapper{
@@ -76,7 +77,7 @@ func (b *bootstrapper) performing() func() {
 
 func (b *bootstrapper) message(msg string, args ...any) {
 	slog.Info(msg, args...)
-	uiThread(func() { b.status.SetLabel(msg + "...") })
+	gtkutil.IdleAdd(func() { b.status.SetLabel(msg + "...") })
 }
 
 func (b *bootstrapper) start() error {
@@ -84,7 +85,7 @@ func (b *bootstrapper) start() error {
 }
 
 func (b *bootstrapper) run(args ...string) error {
-	uiThread(b.win.Present)
+	gtkutil.IdleAdd(b.win.Present)
 
 	if err := b.setup(); err != nil {
 		return fmt.Errorf("setup: %w", err)
@@ -114,14 +115,14 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 		// Roblox normally exits after submitting ANR data to
 		// ecsv2.roblox.com, but in Wine it does nothing.
 		syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-		uiThread(func() {
+		gtkutil.IdleAdd(func() {
 			b.showError(errors.New(
 				"Studio detected as unresponsive!"))
 		})
 	case strings.Contains(line, "LoginDialog Error: Embedded Web Browser fail to load"):
 		// Ensure that browser login functionality will work
 		if err := b.setMime(); err != nil {
-			uiThread(func() { b.showError(err) })
+			gtkutil.IdleAdd(func() { b.showError(err) })
 		}
 	}
 

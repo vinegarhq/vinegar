@@ -1,3 +1,7 @@
+// Logging implements levels and a custom handler for use in Vinegar.
+//
+// When this package is imported, it will automatically set itself as the
+// default slog.Handler at the info level.
 package logging
 
 import (
@@ -20,6 +24,9 @@ var Path string
 // their names.
 type Level int
 
+// LoggerLevel is the level of the default Handler.
+var LoggerLevel slog.Level
+
 const (
 	LevelWine   = Level(slog.LevelInfo + 1)
 	LevelRoblox = Level(slog.LevelInfo + 2)
@@ -30,15 +37,14 @@ const (
 type Handler struct {
 	slog.Handler
 	file slog.Handler
-
-	// Channel that can be opened & closed to read incomding
-	// log records, used to show new logs as it comes.
-	ReadRecord func(*slog.Record)
 }
 
 func init() {
 	// name-2006-01-02T15:04:05Z07:00.log
 	Path = filepath.Join(dirs.Logs, time.Now().Format(time.RFC3339)+".log")
+
+	slog.SetDefault(slog.New(
+		NewHandler(os.Stderr, slog.LevelInfo)))
 }
 
 // Level implements slog.Leveler.
@@ -103,12 +109,12 @@ func cleanupLogs() error {
 // the same handler will be used to notify the current log filepath,
 // and old logs in its directory will also be removed and printed.
 func NewHandler(w io.Writer, level slog.Level) slog.Handler {
-	h := &Handler{Handler: NewTextHandler(w, level, true)}
+	h := &Handler{Handler: NewTextHandler(w, true)}
 	l := slog.New(h)
 
 	f, err := openPath()
 	if err == nil {
-		h.file = NewTextHandler(f, level, false)
+		h.file = NewTextHandler(f, false)
 		l.Info("Logging to file", "path", Path)
 	} else {
 		l.Error("Failed to open log file", "err", err)
@@ -131,9 +137,6 @@ func (h *Handler) Handle(ctx context.Context, r slog.Record) error {
 	var ferr error
 	if h.file != nil {
 		ferr = h.file.Handle(ctx, r)
-	}
-	if h.ReadRecord != nil {
-		h.ReadRecord(&r)
 	}
 	if herr != nil || ferr != nil {
 		return errors.Join(herr, ferr)
@@ -165,9 +168,9 @@ func (h *Handler) WithGroup(name string) slog.Handler {
 
 // NewTextHandler is a wrapper for [tint.NewHandler] for handling the custom log
 // levels exported in this package.
-func NewTextHandler(w io.Writer, level slog.Level, color bool) slog.Handler {
+func NewTextHandler(w io.Writer, color bool) slog.Handler {
 	return tint.NewHandler(w, &tint.Options{
-		Level:      level,
+		Level:      &LoggerLevel,
 		TimeFormat: time.TimeOnly,
 		NoColor:    !color,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {

@@ -20,12 +20,12 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sewnie/puregotk v0.0.0-20251005215301-c0269d233573 h1:08WePmKy8aV+nZeDFrJ7YMnzHKe730b2H54N30RxM6Y=
 github.com/sewnie/puregotk v0.0.0-20251005215301-c0269d233573/go.mod h1:9FUAoCJsQgot2Zt6tvy1ZrviyMe71bNhWhwo3z36XQY=
-github.com/sewnie/rbxbin v0.0.0-20250816115250-5cf6d6f110f5 h1:WG9TiLFhfXnVrIk5XO+PCy2mm8MPO61boUgiu6yR2XA=
-github.com/sewnie/rbxbin v0.0.0-20250816115250-5cf6d6f110f5/go.mod h1:Ksjrzt8x1UY2ot2QdDrJXYhTEQOjWH8US0CHgKcH+QY=
+github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616 h1:saD5MNBSS4LsP7metPTBsm6W3Tzd6uaIqjCPBalNUMU=
+github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616/go.mod h1:Ksjrzt8x1UY2ot2QdDrJXYhTEQOjWH8US0CHgKcH+QY=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d h1:9+O1OzqsVhNJVPewE7oJqVymRlm+ej8iArdafc7vfKs=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d/go.mod h1:nSfgVAspLMsixAWAfuTXAjBsiTyMchPxTx+jD3TrM20=
-github.com/sewnie/wine v0.0.0-20250923132641-827c1e560ae0 h1:hBjWlT22ZtnkLJogH9nqifDCDHj0LB3FcT7LZdUkrq0=
-github.com/sewnie/wine v0.0.0-20250923132641-827c1e560ae0/go.mod h1:IbKiMCPd3jWSTrVXxDh4ggy3bvcaNUtI4VnPG9mRYoY=
+github.com/sewnie/wine v0.0.0-20251006165519-2387b96d0030 h1:OHcF8DWKiPqsxymQGvhRumrNqSQ1Ud28osn5si0uM44=
+github.com/sewnie/wine v0.0.0-20251006165519-2387b96d0030/go.mod h1:IbKiMCPd3jWSTrVXxDh4ggy3bvcaNUtI4VnPG9mRYoY=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 golang.org/x/sync v0.16.0 h1:ycBJEhp9p4vXvUZNszeOq0kGTPghopOL8q0fq3vstxw=

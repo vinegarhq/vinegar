@@ -3,10 +3,11 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
+	"maps"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -32,16 +33,15 @@ type Studio struct {
 	ForcedVersion string `toml:"forced_version" group:"Deployment Overrides" row:"Studio Deployment Version"`
 	Channel       string `toml:"channel" group:"Deployment Overrides" row:"Studio Update Channel"`
 
-	Quiet      bool          `toml:"quiet" group:"Behavior" row:"Prevent capturing of Studio's debugging logs"`
-	DiscordRPC bool          `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
-	Env        Environment   `toml:"env" group:"Studio Environment Variables"`
-	FFlags     rbxbin.FFlags `toml:"fflags" group:"Studio Fast Flags"`
+	DiscordRPC bool              `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
+	Env        map[string]string `toml:"env" group:"Studio Environment Variables"`
+	FFlags     rbxbin.FFlags     `toml:"fflags" group:"Studio Fast Flags"`
 }
 
 type Config struct {
-	Debug  bool        `toml:"debug" group:"Behavior" row:"Show API requests made and disable safety checks"`
-	Studio Studio      `toml:"studio"`
-	Env    Environment `toml:"env" group:"Environment"`
+	Debug  bool              `toml:"debug" group:"Behavior" row:"Enable full Wine logging and Log Roblox API requests"`
+	Studio Studio            `toml:"studio"`
+	Env    map[string]string `toml:"env" group:"Environment"`
 }
 
 var (
@@ -55,14 +55,19 @@ func Load() (*Config, error) {
 	d := Default()
 
 	if _, err := os.Stat(dirs.ConfigPath); errors.Is(err, os.ErrNotExist) {
-		return d, d.Setup()
+		return d, nil
 	}
 
 	if _, err := toml.DecodeFile(dirs.ConfigPath, &d); err != nil {
 		return d, err
 	}
 
-	return d, d.Setup()
+	logging.LoggerLevel = slog.LevelInfo
+	if d.Debug {
+		logging.LoggerLevel = slog.LevelDebug
+	}
+
+	return d, nil
 }
 
 // Default returns a default configuration.
@@ -70,16 +75,8 @@ func Default() *Config {
 	return &Config{
 		Debug: false,
 
-		Env: Environment{
-			"WINEARCH":                    "win64",
-			"WINEDEBUG":                   "fixme-all,err-kerberos,err-ntlm",
-			"WINEESYNC":                   "1",
-			"WINEDLLOVERRIDES":            "dxdiagn,winemenubuilder.exe,mscoree,mshtml=",
-			"DXVK_LOG_LEVEL":              "warn",
-			"DXVK_LOG_PATH":               "none",
-			"MESA_GL_VERSION_OVERRIDE":    "4.4",
-			"__GL_THREADED_OPTIMIZATIONS": "1",
-			"VK_LOADER_LAYERS_ENABLE":     "VK_LAYER_VINEGAR_VinegarLayer",
+		Env: map[string]string{
+			"WINEESYNC": "1",
 		},
 
 		Studio: Studio{
@@ -92,7 +89,7 @@ func Default() *Config {
 			Channel:     "LIVE",
 			DiscordRPC:  true,
 			FFlags:      make(rbxbin.FFlags),
-			Env:         make(Environment),
+			Env:         make(map[string]string),
 		},
 	}
 }
@@ -101,59 +98,60 @@ func (s *Studio) LauncherPath() (string, error) {
 	return exec.LookPath(strings.Fields(s.Launcher)[0])
 }
 
-func (c *Config) Setup() error {
-	level := slog.LevelInfo
-	if c.Debug {
-		level = slog.LevelDebug
-	}
-	slog.SetDefault(slog.New(
-		logging.NewHandler(os.Stderr, level)))
-
-	if !c.Debug && os.Getenv("WAYLAND_DISPLAY") != "" {
-		c.Env["DISPLAY"] = ""
-	}
-
-	c.Env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
-	c.Env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.DXVK)
-	c.Env.Setenv()
-
-	if err := c.Studio.setup(); err != nil {
-		return fmt.Errorf("studio: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Studio) setup() error {
-	s.Env.Setenv()
-
-	if s.Launcher != "" {
-		if _, err := s.LauncherPath(); err != nil {
-			return fmt.Errorf("bad launcher: %w", err)
-		}
-	}
-
-	pfx := wine.New("", s.WineRoot)
-
-	if s.WineRoot != "" {
-		w := pfx.Wine("")
-		if w.Err != nil {
-			return errors.New("invalid wineroot")
-		}
-	}
+func (c *Config) Prefix() (*wine.Prefix, error) {
+	pfx := wine.New(
+		path.Join(dirs.Prefixes, "studio"),
+		c.Studio.WineRoot,
+	)
 
 	if pfx.IsProton() {
 		// https://github.com/bottlesdevs/Bottles/issues/3485
-		s.DXVK = true
+		c.Studio.DXVK = true
 	}
 
-	if err := s.FFlags.SetRenderer(s.Renderer); err != nil {
-		return err
+	env := maps.Clone(c.Env)
+	maps.Copy(env, c.Studio.Env)
+
+	card, err := c.Studio.card()
+	if err != nil {
+		return nil, err
+	}
+	if card != nil {
+		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
+		env["DRI_PRIME"] = "pci-" + strings.NewReplacer(":", "_", ".", "_").
+			Replace(path.Base(card.Device))
+
+		env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
+		if strings.HasPrefix(card.Driver, "nvidia") {
+			env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+		}
 	}
 
-	if s.Channel == "LIVE" || s.Channel == "live" {
-		s.Channel = ""
+	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
+	env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.DXVK) +
+		";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
+	if !c.Debug {
+		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm"
 	}
 
-	return s.pickCard()
+	if c.Studio.DXVK {
+		env["DXVK_LOG_LEVEL"] = "warn"
+		env["DXVK_LOG_PATH"] = "none"
+	}
+	env["VK_LOADER_LAYERS_ENABLE"] = "VK_LAYER_VINEGAR_VinegarLayer"
+	env["MESA_GL_VERSION_OVERRIDE"] = "4.4"
+	env["__GL_THREADED_OPTIMIZATIONS"] = "1"
+
+	for k, v := range env {
+		pfx.Env = append(pfx.Env, k+"="+v)
+	}
+
+	if c.Studio.WineRoot != "" {
+		w := pfx.Wine("")
+		if w.Err != nil {
+			return nil, errors.New("invalid wineroot")
+		}
+	}
+
+	return pfx, nil
 }

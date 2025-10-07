@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
-	"unsafe"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -46,16 +45,12 @@ func (a *app) newBootstrapper() *bootstrapper {
 	}
 
 	builder.GetObject("window").Cast(&b.win)
-	a.AddWindow(&b.win.Window)
 	destroy := func(_ gtk.Window) bool {
-		// https://github.com/jwijenbergh/puregotk/issues/17
-		// BUG: realistically no other way to cancel
-		//      the bootstrapper, so just exit immediately!
+		// TODO: context cancellation
 		b.Quit()
 		return false
 	}
 	b.win.ConnectCloseRequest(&destroy)
-	b.win.SetData("bootstrapper", uintptr(unsafe.Pointer(&b)))
 
 	builder.GetObject("status").Cast(&b.status)
 	builder.GetObject("progress").Cast(&b.pbar)
@@ -85,7 +80,13 @@ func (b *bootstrapper) start() error {
 }
 
 func (b *bootstrapper) run(args ...string) error {
-	gtkutil.IdleAdd(b.win.Present)
+	gtkutil.IdleAdd(func() {
+		b.app.AddWindow(&b.win.Window)
+		b.win.Present()
+	})
+	defer gtkutil.IdleAdd(func() {
+		b.app.RemoveWindow(&b.win.Window)
+	})
 
 	if err := b.setup(); err != nil {
 		return fmt.Errorf("setup: %w", err)
@@ -130,10 +131,6 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 		if err := b.rp.Handle(line); err != nil {
 			slog.Error("Presence handling failed", "error", err)
 		}
-	}
-
-	if b.cfg.Studio.Quiet {
-		return
 	}
 
 	// 2025-08-17T13:13:37.469Z,11.469932,0238,6,Info [FLog::AnrDetector]

@@ -15,9 +15,9 @@ require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/jwijenbergh/puregotk v0.0.0-20250812133623-7203178b5172
 	github.com/lmittmann/tint v1.1.2
-	github.com/sewnie/rbxbin v0.0.0-20250816115250-5cf6d6f110f5
+	github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
-	github.com/sewnie/wine v0.0.0-20250923132641-827c1e560ae0
+	github.com/sewnie/wine v0.0.0-20251006165519-2387b96d0030
 	golang.org/x/sys v0.35.0
 )
 

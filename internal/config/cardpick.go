@@ -2,80 +2,54 @@ package config
 
 import (
 	"errors"
-	"path"
+	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-var (
-	ErrOpenGLBlind = errors.New("opengl is not capable of choosing the right gpu, it must be explicitly defined")
-	ErrNoCardFound = errors.New("gpu not found")
-	ErrBadGpuIndex = errors.New("gpu index cannot be negative")
-)
-
-func (s *Studio) pickCard() error {
+func (s *Studio) card() (*sysinfo.Card, error) {
 	if s.ForcedGpu == "" {
-		return nil
+		return nil, nil
 	}
 
 	n := len(sysinfo.Cards)
 	idx := -1
-	prime := false
-	aliases := map[string]int{
+	if i, ok := map[string]int{
 		"integrated":     0,
 		"prime-discrete": 1,
-	}
-
-	if i, ok := aliases[s.ForcedGpu]; ok {
+	}[s.ForcedGpu]; ok {
 		idx = i
-		prime = true
-	} else {
-		i, err := strconv.Atoi(s.ForcedGpu)
-		if err != nil {
-			return err
-		}
 
-		idx = i
-	}
-
-	if prime {
 		vk := s.DXVK || s.Renderer == "Vulkan"
 
 		if n <= 1 {
-			return nil
+			return nil, nil
 		}
 
 		if n > 2 && !vk {
-			return ErrOpenGLBlind
+			return nil, errors.New("gpu must be explicitly defined for opengl")
 		}
 
 		if !sysinfo.Cards[0].Embedded {
-			return nil
+			return nil, nil
 		}
+	} else {
+		i, err := strconv.Atoi(s.ForcedGpu)
+		if err != nil {
+			return nil, err
+		}
+
+		idx = i
 	}
 
 	if idx < 0 {
-		return ErrBadGpuIndex
+		return nil, errors.New("gpu index is negative")
 	}
 
 	if n < idx+1 {
-		return ErrNoCardFound
+		return nil, fmt.Errorf("gpu %s not found", s.ForcedGpu)
 	}
 
-	c := sysinfo.Cards[idx]
-
-	s.Env.Set("MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE", "1")
-	s.Env.Set("DRI_PRIME",
-		"pci-"+strings.NewReplacer(":", "_", ".", "_").Replace(path.Base(c.Device)),
-	)
-
-	if strings.HasPrefix(c.Driver, "nvidia") { // Workaround for OpenGL in nvidia GPUs
-		s.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
-	} else {
-		s.Env.Set("__GLX_VENDOR_LIBRARY_NAME", "mesa")
-	}
-
-	return nil
+	return &sysinfo.Cards[idx], nil
 }

@@ -41,7 +41,7 @@ func (ctl *control) saveConfig() {
 		return
 	}
 
-	err := ctl.loadConfig()
+	err := ctl.reload()
 	if err == nil {
 		return
 	}

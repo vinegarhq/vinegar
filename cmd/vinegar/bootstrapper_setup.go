@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	cp "github.com/otiai10/copy"
@@ -81,16 +83,12 @@ func (b *bootstrapper) setupOverlay() error {
 func (b *bootstrapper) stepPrepareRun() error {
 	defer b.performing()()
 
-	b.message("Renderer Status:", "renderer", b.cfg.Studio.Renderer,
-		"dxvk", b.cfg.Studio.DXVK)
-
 	if err := b.setupOverlay(); err != nil {
 		return fmt.Errorf("setup overlay: %w", err)
 	}
 
-	b.message("Applying FFlags")
-	if err := b.cfg.Studio.FFlags.Apply(b.dir); err != nil {
-		return fmt.Errorf("apply fflags: %w", err)
+	if err := b.stepApplyFFlags(); err != nil {
+		return fmt.Errorf("fflags: %w", err)
 	}
 
 	gtkutil.IdleAdd(func() { b.status.SetLabel("Launching Studio") })
@@ -106,6 +104,35 @@ func (b *bootstrapper) stepPrepareRun() error {
 	// splash window to show that studio is going to be ran.
 	if err := b.stepChangeStudioTheme(); err != nil {
 		slog.Warn("Failed to change Studio's theme!", "err", err)
+	}
+
+	return nil
+}
+
+func (b *bootstrapper) stepApplyFFlags() error {
+	var renderers = []string{
+		"OpenGL",
+		"D3D11FL10",
+		"D3D11",
+		"Vulkan",
+	}
+
+	f := maps.Clone(b.cfg.Studio.FFlags)
+	if b.cfg.Studio.Renderer != "" {
+		if !slices.Contains(renderers, b.cfg.Studio.Renderer) {
+			return fmt.Errorf("unknown renderer: %s", b.cfg.Studio.Renderer)
+		}
+
+		for _, r := range renderers {
+			isRenderer := r == b.cfg.Studio.Renderer
+			f["FFlagDebugGraphicsPrefer"+r] = isRenderer
+			f["FFlagDebugGraphicsDisable"+r] = !isRenderer
+		}
+	}
+
+	b.message("Applying FFlags")
+	if err := f.Apply(b.dir); err != nil {
+		return fmt.Errorf("apply fflags: %w", err)
 	}
 
 	return nil

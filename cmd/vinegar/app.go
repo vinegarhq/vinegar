@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -17,7 +16,6 @@ import (
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/config"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/state"
@@ -30,10 +28,10 @@ type app struct {
 	state *state.State
 	pfx   *wine.Prefix
 	rbx   *rbxweb.Client
-	bus   *gio.DBusConnection // can be null
+	bus   *gio.DBusConnection // nullable
 
 	// initialized only in Application::command-line
-	ctl  *control
+	ctl  *control      // nullable
 	boot *bootstrapper // also set if control runs boot
 
 	keepLog bool
@@ -58,6 +56,39 @@ func newApp() *app {
 		rbx:   rbxweb.NewClient(),
 	}
 
+	startup := a.startup
+	a.ConnectStartup(&startup)
+	cli := a.commandLine
+	a.ConnectCommandLine(&cli)
+	shutdown := a.shutdown
+	a.ConnectShutdown(&shutdown)
+
+	return &a
+}
+
+func (a *app) reload() error {
+	slog.Info("Reloading!")
+
+	pfx, err := a.cfg.Prefix()
+	if err != nil {
+		return fmt.Errorf("prefix configure: %w", err)
+	}
+	pfx.Stderr = a
+	pfx.Stdout = a
+
+	if a.cfg.Debug {
+		a.rbx.Client.Transport = &debugTransport{
+			underlying: http.DefaultTransport,
+		}
+	}
+
+	a.pfx = pfx
+	return nil
+}
+
+func (a *app) startup(_ gio.Application) {
+	a.boot = a.newBootstrapper()
+
 	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
 	if err != nil {
 		slog.Error("Failed to retrieve session bus, all DBus operations will be ignored", "err", err)
@@ -65,12 +96,49 @@ func newApp() *app {
 		a.bus = conn
 	}
 
-	clcb := a.commandLine
-	a.ConnectCommandLine(&clcb)
-	scb := a.shutdown
-	a.ConnectShutdown(&scb)
+	cfg, err := config.Load()
+	if err != nil {
+		a.showError(fmt.Errorf("config error: %w", err))
+	} else {
+		a.cfg = cfg
+	}
 
-	return &a
+	if err := a.reload(); err != nil {
+		a.showError(err)
+	}
+}
+
+func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
+	if a.keepLog {
+		// Error dialog is open currently
+		return 0
+	}
+
+	cl := gio.ApplicationCommandLineNewFromInternalPtr(clPtr)
+	args := cl.GetArguments(0)[1:] // skip argv0
+	if len(args) >= 1 && args[0] == "run" {
+		args = args[1:] // skip 'run' cmd
+	}
+
+	if len(args) == 1 && args[0] == "config" {
+		if a.ctl == nil {
+			a.ctl = a.newControl()
+		}
+		a.ctl.win.Present()
+		return 0
+	}
+
+	a.errThread(func() error {
+		return a.boot.run(args[:]...)
+	})
+	return 0
+}
+
+func (a *app) shutdown(_ gio.Application) {
+	if !a.keepLog && !a.cfg.Debug {
+		_ = os.Remove(logging.Path)
+	}
+	slog.Info("Goodbye!")
 }
 
 func (a *app) appInfo() *gio.AppInfoBase {
@@ -96,49 +164,6 @@ func (a *app) setMime() error {
 	return nil
 }
 
-func (a *app) shutdown(_ gio.Application) {
-	if !a.keepLog && !a.cfg.Debug {
-		_ = os.Remove(logging.Path)
-	}
-	slog.Info("Goodbye!")
-}
-
-func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
-	cl := gio.ApplicationCommandLineNewFromInternalPtr(clPtr)
-	args := cl.GetArguments(0)[1:] // skip argv0
-	if len(args) >= 1 && args[0] == "run" {
-		args = args[1:] // skip 'run' cmd
-	}
-	if a.boot == nil {
-		a.boot = a.newBootstrapper()
-	}
-
-	err := a.loadConfig()
-	if err != nil {
-		a.showError(err)
-	}
-
-	if len(args) == 1 && args[0] == "config" {
-		if a.ctl == nil {
-			a.ctl = a.newControl()
-		}
-		a.ctl.win.Present()
-		return 0
-	}
-
-	// fatal exit on non-configure invocation
-	if err != nil {
-		return 22
-	}
-
-	a.errThread(func() error {
-		defer a.boot.win.Destroy()
-		return a.boot.run(args[:]...)
-	})
-
-	return 0
-}
-
 // Write implements io.Writer for app and is used to exclusively send all
 // data recieved to the log under the WINE log level.
 func (a *app) Write(b []byte) (int, error) {
@@ -159,37 +184,6 @@ func (a *app) Write(b []byte) (int, error) {
 		slog.Log(context.Background(), logging.LevelWine.Level(), line)
 	}
 	return len(b), nil
-}
-
-func (a *app) loadConfig() error {
-	// will fallback to default configuration if there is an error
-	//
-	// TODO TODO TODO TODO TODO: remove this behavior of loading configs
-	// obviously every time the config changes there shouldnt be some Setup()
-	// function. it should have been to set up values at runtime whenever needed.
-	cfg, err := config.Load()
-
-	a.pfx = wine.New(
-		filepath.Join(dirs.Prefixes, "studio"),
-		cfg.Studio.WineRoot,
-	)
-	a.pfx.Stderr = a
-	a.pfx.Stdout = a
-
-	// Required to avoid changing original pointer value
-	*a.cfg = *cfg
-
-	if cfg.Debug {
-		a.rbx.Client.Transport = &debugTransport{
-			underlying: http.DefaultTransport,
-		}
-	}
-
-	if err != nil {
-		return fmt.Errorf("load config: %w", err)
-	}
-
-	return nil
 }
 
 func (a *app) errThread(fn func() error) {

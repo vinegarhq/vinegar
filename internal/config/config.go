@@ -21,10 +21,10 @@ import (
 type Studio struct {
 	GameMode bool `toml:"gamemode" group:"Performance" row:"Apply system optimizations. May improve performance."`
 
-	ForcedGpu   string `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated, prime-discrete, 0)"`
-	DXVK        bool   `toml:"dxvk" group:"Rendering" row:"Improve Direct3D compatibility by translating it to Vulkan"`
+	ForcedGpu   string `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
+	DXVK        bool   `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan"`
 	DXVKVersion string `toml:"dxvk_version" group:"Rendering" row:"DXVK Version"`
-	Renderer    string `toml:"renderer" group:"Rendering" row:"D3D11 for DXVK,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
+	Renderer    string `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
 
 	WineRoot string `toml:"wineroot" group:"Custom Wine" row:"Installation Directory,path"`
 	WebView  string `toml:"webview" group:"Custom Wine" row:"WebView2 Runtime Version"`
@@ -34,7 +34,7 @@ type Studio struct {
 	Channel       string `toml:"channel" group:"Deployment Overrides" row:"Studio Update Channel"`
 
 	DiscordRPC bool              `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
-	Env        map[string]string `toml:"env" group:"Studio Environment Variables"`
+	Env        map[string]string `toml:"env" group:"hidden"`
 	FFlags     rbxbin.FFlags     `toml:"fflags" group:"Studio Fast Flags"`
 }
 

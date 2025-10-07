@@ -95,7 +95,7 @@ func (ctl *control) updateRun() {
 	var btn adw.ButtonContent
 	ctl.builder.GetObject("btn-run").Cast(&btn)
 	if ctl.pfx.Exists() {
-		btn.SetLabel("Run")
+		btn.SetLabel("Run Studio")
 	} else {
 		btn.SetLabel("Initialize")
 	}

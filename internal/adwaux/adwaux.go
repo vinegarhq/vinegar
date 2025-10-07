@@ -46,6 +46,9 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 	if groupName == "" {
 		panic("adwaux: expected group name for " + sf.Name)
 	}
+	if groupName == "hidden" {
+		return
+	}
 
 	var group *adw.PreferencesGroup
 	var ok bool

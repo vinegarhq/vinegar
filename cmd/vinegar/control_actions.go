@@ -113,9 +113,8 @@ func (ctl *control) deletePrefixes() error {
 	slog.Info("Deleting Wineprefixes!")
 	defer ctl.updateRun()
 
-	if err := ctl.pfx.Kill(); err != nil {
-		return fmt.Errorf("kill prefix: %w", err)
-	}
+	// Wineserver isn't required if it's missing.
+	_ = ctl.pfx.Kill()
 
 	if err := os.RemoveAll(dirs.Prefixes); err != nil {
 		return err

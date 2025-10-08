@@ -128,7 +128,9 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 		return 0
 	}
 
+	a.Hold()
 	a.errThread(func() error {
+		defer a.Release()
 		return a.boot.run(args[:]...)
 	})
 	return 0

@@ -17,7 +17,7 @@ require (
 	github.com/lmittmann/tint v1.1.2
 	github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
-	github.com/sewnie/wine v0.0.0-20251006165519-2387b96d0030
+	github.com/sewnie/wine v0.0.0-20251009194412-c466e323b97d
 	golang.org/x/sys v0.35.0
 )
 

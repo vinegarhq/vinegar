@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -37,6 +38,10 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 }
 
 func (b *bootstrapper) execute(args ...string) error {
+	defer gtkutil.IdleAdd(func() {
+		b.app.RemoveWindow(&b.win.Window)
+	})
+
 	cmd, err := b.command(args...)
 	if err != nil {
 		return err
@@ -63,6 +68,12 @@ func (b *bootstrapper) execute(args ...string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+	b.procs = append(b.procs, cmd.Process)
+	defer func() {
+		b.procs = slices.DeleteFunc(b.procs, func(p *os.Process) bool {
+			return p == cmd.Process
+		})
+	}()
 
 	gtkutil.IdleAdd(b.win.Hide)
 

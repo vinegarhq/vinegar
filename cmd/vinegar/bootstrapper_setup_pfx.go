@@ -17,11 +17,6 @@ import (
 func (b *bootstrapper) setupPrefix() error {
 	b.message("Setting up Wine")
 
-	// if Wine is runnable
-	if c := b.pfx.Wine(""); c.Err != nil {
-		return fmt.Errorf("wine: %w", c.Err)
-	}
-
 	// Always initialize in case Wine changes,
 	// to prevent a dialog from appearing in normal apps.
 	if err := b.stepPrefixInit(); err != nil {

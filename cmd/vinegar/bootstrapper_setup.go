@@ -16,6 +16,11 @@ import (
 )
 
 func (b *bootstrapper) setup() error {
+	gtkutil.IdleAdd(func() {
+		b.app.AddWindow(&b.win.Window)
+		b.win.Present()
+	})
+
 	b.removePlayer()
 
 	// Bootstrapper is currently running

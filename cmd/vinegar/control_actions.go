@@ -11,22 +11,48 @@ import (
 	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
+	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
-func (ctl *control) run() error {
-	var err error
-	if ctl.pfx.Exists() {
-		err = ctl.app.boot.run()
-	} else {
-		err = ctl.app.boot.setupPrefix()
+func (ctl *control) hideRunUntil() func() {
+	var button gtk.Button
+	var stack gtk.Stack
+	ctl.builder.GetObject("stack").Cast(&stack)
+	ctl.builder.GetObject("btn-run").Cast(&button)
+	stack.SetVisibleChildName("stkpage-spinner")
+	button.SetSensitive(false)
+	return func() {
+		gtkutil.IdleAdd(func() {
+			button.SetSensitive(true)
+			stack.SetVisibleChildName("stkpage-btn")
+			ctl.updateRun()
+		})
 	}
-	ctl.updateRun()
+}
 
-	return err
+func (ctl *control) run() error {
+	show := ctl.hideRunUntil()
+	defer show()
+
+	if ctl.pfx.Exists() && len(ctl.boot.procs) == 0 {
+		if err := ctl.app.boot.setup(); err != nil {
+			return fmt.Errorf("setup: %w", err)
+		}
+
+		// When command is finally executed
+		h := ctl.app.boot.win.ConnectSignal("notify::visible", &show)
+		defer func() { ctl.app.boot.win.DisconnectSignal(h) }()
+		return ctl.app.boot.run()
+	}
+
+	if len(ctl.boot.procs) > 0 {
+		return ctl.pfx.Kill()
+	}
+	return ctl.app.boot.setupPrefix()
 }
 
 // No error will be returned, error handling is displayed
@@ -110,8 +136,8 @@ func (ctl *control) deleteDeployments() error {
 }
 
 func (ctl *control) deletePrefixes() error {
+	defer ctl.hideRunUntil()()
 	slog.Info("Deleting Wineprefixes!")
-	defer ctl.updateRun()
 
 	// Wineserver isn't required if it's missing.
 	_ = ctl.pfx.Kill()

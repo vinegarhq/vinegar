@@ -32,6 +32,8 @@ type bootstrapper struct {
 	dir string
 	bin *rbxbin.Deployment
 
+	procs []*os.Process
+
 	rp *studiorpc.StudioRPC
 }
 
@@ -75,28 +77,12 @@ func (b *bootstrapper) message(msg string, args ...any) {
 	gtkutil.IdleAdd(func() { b.status.SetLabel(msg + "...") })
 }
 
-func (b *bootstrapper) start() error {
-	return b.run()
-}
-
 func (b *bootstrapper) run(args ...string) error {
-	gtkutil.IdleAdd(func() {
-		b.app.AddWindow(&b.win.Window)
-		b.win.Present()
-	})
-	defer gtkutil.IdleAdd(func() {
-		b.app.RemoveWindow(&b.win.Window)
-	})
-
 	if err := b.setup(); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}
 
-	if err := b.execute(args...); err != nil {
-		return fmt.Errorf("run: %w", err)
-	}
-
-	return nil
+	return b.execute(args...)
 }
 
 func (b *bootstrapper) removePlayer() {

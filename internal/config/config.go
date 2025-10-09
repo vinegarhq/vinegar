@@ -19,7 +19,7 @@ import (
 )
 
 type Studio struct {
-	GameMode bool `toml:"gamemode" group:"Performance" row:"Apply system optimizations. May improve performance."`
+	GameMode bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
 	ForcedGpu   string `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
 	DXVK        bool   `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan"`

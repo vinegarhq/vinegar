@@ -134,7 +134,9 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 	}
 
 	if c.Studio.DXVK {
-		env["DXVK_LOG_LEVEL"] = "warn"
+		if !c.Debug {
+			env["DXVK_LOG_LEVEL"] = "warn"
+		}
 		env["DXVK_LOG_PATH"] = "none"
 	}
 	env["VK_LOADER_LAYERS_ENABLE"] = "VK_LAYER_VINEGAR_VinegarLayer"

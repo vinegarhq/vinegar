@@ -34,6 +34,7 @@ func (b *bootstrapper) setupDeployment() error {
 	}
 
 	b.message("Installing Studio", "new", b.bin.GUID)
+	removeUniqueFiles(dirs.Versions, []string{b.bin.GUID})
 
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
@@ -95,6 +96,12 @@ func (b *bootstrapper) stepSetupPackages() error {
 		return fmt.Errorf("fetch packages: %w", err)
 	}
 
+	sums := make([]string, len(pkgs))
+	for _, pkg := range pkgs {
+		sums = append(sums, pkg.Checksum)
+	}
+	removeUniqueFiles(dirs.Downloads, sums)
+
 	// Prioritize smaller files first, to have less pressure
 	// on network and extraction
 	//
@@ -114,14 +121,6 @@ func (b *bootstrapper) stepSetupPackages() error {
 	if err := b.stepPackagesInstall(&m, pkgs, pd); err != nil {
 		return err
 	}
-
-	sums := make([]string, len(pkgs))
-	for _, pkg := range pkgs {
-		sums = append(sums, pkg.Checksum)
-	}
-
-	removeUniqueFiles(dirs.Downloads, sums)
-	removeUniqueFiles(dirs.Versions, []string{b.bin.GUID})
 
 	return nil
 }

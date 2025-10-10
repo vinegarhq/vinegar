@@ -63,6 +63,10 @@ func newMapGroup(mv reflect.Value) *adw.PreferencesGroup {
 
 	activate := func(_ gtk.Entry) {
 		key := reflect.ValueOf(addName.GetText())
+		if g.mv.MapIndex(key).IsValid() {
+			addName.AddCssClass("error")
+			return
+		}
 
 		var empty reflect.Value
 		if addKind != nil {
@@ -74,8 +78,9 @@ func newMapGroup(mv reflect.Value) *adw.PreferencesGroup {
 		}
 		g.mv.SetMapIndex(key, empty)
 
-		g.addKeyRow(key)
 		addName.SetText("")
+		addName.RemoveCssClass("error")
+		g.addKeyRow(key)
 		g.ActivateActionVariant("win.save", nil)
 		new.Hide()
 	}

@@ -117,23 +117,3 @@ func download(url, file string) error {
 
 	return nil
 }
-
-// Body retrieves the body of the named url to string form.
-func Body(url string) (string, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("%w: %s", ErrBadStatus, resp.Status)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
-
-	return string(body), nil
-}

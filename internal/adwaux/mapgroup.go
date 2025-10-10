@@ -113,15 +113,16 @@ func (g *mapGroup) addKeyRow(k reflect.Value) {
 	}
 	remove.ConnectClicked(&clicked)
 
-	changed := func() {
-		g.ActivateActionVariant("win.save", nil)
-	}
 	switch v.Type().Kind() {
 	case reflect.Bool:
 		sw := adw.NewSwitchRow()
 		row = &sw.PreferencesRow
 		sw.AddSuffix(&remove.Widget)
 		sw.SetActive(v.Bool())
+		changed := func() {
+			g.mv.SetMapIndex(k, reflect.ValueOf(sw.GetActive()))
+			g.ActivateActionVariant("win.save", nil)
+		}
 		sw.ConnectSignal("notify::active", &changed)
 	case reflect.String:
 		entry := adw.NewEntryRow()
@@ -131,11 +132,19 @@ func (g *mapGroup) addKeyRow(k reflect.Value) {
 		if strict {
 			entry.AddCssClass("monospace")
 		}
+		changed := func() {
+			g.mv.SetMapIndex(k, reflect.ValueOf(entry.GetText()))
+			g.ActivateActionVariant("win.save", nil)
+		}
 		entry.ConnectSignal("notify::text", &changed)
 	case reflect.Int:
 		spin := adw.NewSpinRow(intAdjustment, float64(v.Int()), 0)
 		row = &spin.PreferencesRow
 		spin.AddSuffix(&remove.Widget)
+		changed := func() {
+			g.mv.SetMapIndex(k, reflect.ValueOf(int64(spin.GetValue())))
+			g.ActivateActionVariant("win.save", nil)
+		}
 		spin.ConnectSignal("notify::value", &changed)
 	default:
 		panic("adwaux: unhandled type: " + v.Type().Kind().String())

@@ -44,8 +44,9 @@ func (b *bootstrapper) setupDeployment() error {
 		return err
 	}
 
-	if err := b.setupDeploymentFiles(); err != nil {
-		return err
+	b.message("Writing AppSettings")
+	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
+		return fmt.Errorf("appsettings: %w", err)
 	}
 
 	slog.Info("Successfuly installed!", "guid", b.bin.GUID)
@@ -182,23 +183,6 @@ func (b *bootstrapper) stepPackageInstall(
 		return err
 	}
 	update()
-
-	return nil
-}
-
-func (b *bootstrapper) setupDeploymentFiles() error {
-	defer b.performing()()
-
-	b.message("Writing AppSettings")
-	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
-		return fmt.Errorf("appsettings: %w", err)
-	}
-
-	brokenFont := filepath.Join(b.dir, "StudioFonts", "SourceSansPro-Black.ttf")
-	slog.Info("Removing broken font", "path", brokenFont)
-	if err := os.RemoveAll(brokenFont); err != nil {
-		return err
-	}
 
 	return nil
 }

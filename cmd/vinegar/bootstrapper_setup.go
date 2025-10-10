@@ -21,8 +21,6 @@ func (b *bootstrapper) setup() error {
 		b.win.Present()
 	})
 
-	b.removePlayer()
-
 	// Bootstrapper is currently running
 	if b.bin != nil {
 		slog.Info("Skipping setup!", "ver", b.bin.GUID)
@@ -56,10 +54,6 @@ func (b *bootstrapper) setup() error {
 
 	if err := b.stepWebviewInstall(); err != nil {
 		return fmt.Errorf("webview: %w", err)
-	}
-
-	if err := b.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
 	}
 
 	if err := b.stepPrepareRun(); err != nil {

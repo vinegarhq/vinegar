@@ -128,8 +128,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 	}
 
 	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
-	env["WINEDLLOVERRIDES"] += ";" + dxvk.EnvOverride(c.Studio.DXVK) +
-		";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
+	env["WINEDLLOVERRIDES"] += ";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
 	if !c.Debug {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm"
 	}
@@ -145,6 +144,8 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 	for k, v := range env {
 		pfx.Env = append(pfx.Env, k+"="+v)
 	}
+
+	dxvk.EnvOverride(pfx, c.Studio.DXVK)
 
 	if c.Studio.WineRoot != "" {
 		w := pfx.Wine("")

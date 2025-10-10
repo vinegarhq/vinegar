@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -15,7 +14,6 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxbin"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
@@ -83,17 +81,6 @@ func (b *bootstrapper) run(args ...string) error {
 	}
 
 	return b.execute(args...)
-}
-
-func (b *bootstrapper) removePlayer() {
-	// Player is no longer supported by Vinegar, remove unnecessary data
-	if b.state.Player.Version != "" || b.state.Player.DxvkVersion != "" {
-		os.RemoveAll(filepath.Join(dirs.Versions, b.state.Player.Version))
-		os.RemoveAll(filepath.Join(dirs.Prefixes, "player"))
-		b.state.Player.DxvkVersion = ""
-		b.state.Player.Version = ""
-		b.state.Player.Packages = nil
-	}
 }
 
 func (b *bootstrapper) handleRobloxLog(line string) {

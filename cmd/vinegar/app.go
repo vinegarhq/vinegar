@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,17 +17,15 @@ import (
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
-	"github.com/vinegarhq/vinegar/internal/state"
 )
 
 type app struct {
 	*adw.Application
 
-	cfg   *config.Config
-	state *state.State
-	pfx   *wine.Prefix
-	rbx   *rbxweb.Client
-	bus   *gio.DBusConnection // nullable
+	cfg *config.Config
+	pfx *wine.Prefix
+	rbx *rbxweb.Client
+	bus *gio.DBusConnection // nullable
 
 	// initialized only in Application::command-line
 	ctl  *control      // nullable
@@ -38,11 +35,6 @@ type app struct {
 }
 
 func newApp() *app {
-	s, err := state.Load()
-	if err != nil {
-		log.Fatalf("load state: %s", err)
-	}
-
 	a := app{
 		Application: adw.NewApplication(
 			"org.vinegarhq.Vinegar",
@@ -51,9 +43,8 @@ func newApp() *app {
 			// an effective wrapper for Studio arguments.
 			gio.GApplicationHandlesCommandLineValue,
 		),
-		state: &s,
-		cfg:   config.Default(),
-		rbx:   rbxweb.NewClient(),
+		cfg: config.Default(),
+		rbx: rbxweb.NewClient(),
 	}
 
 	startup := a.startup

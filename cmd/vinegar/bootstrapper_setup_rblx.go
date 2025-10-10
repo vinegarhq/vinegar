@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"sync/atomic"
 
@@ -27,13 +28,12 @@ func (b *bootstrapper) setupDeployment() error {
 	slog.Info("Using Deployment",
 		"guid", b.bin.GUID, "channel", b.bin.Channel)
 
-	if b.state.Studio.Version == b.bin.GUID {
+	if _, err := os.Stat(b.dir); err == nil {
 		b.message("Up to date", "guid", b.bin.GUID)
 		return nil
 	}
 
-	b.message("Installing Studio",
-		"old", b.state.Studio.Version, "new", b.bin.GUID)
+	b.message("Installing Studio", "new", b.bin.GUID)
 
 	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
 		return err
@@ -115,6 +115,14 @@ func (b *bootstrapper) stepSetupPackages() error {
 		return err
 	}
 
+	sums := make([]string, len(pkgs))
+	for _, pkg := range pkgs {
+		sums = append(sums, pkg.Checksum)
+	}
+
+	removeUniqueFiles(dirs.Downloads, sums)
+	removeUniqueFiles(dirs.Versions, []string{b.bin.GUID})
+
 	return nil
 }
 
@@ -141,11 +149,6 @@ func (b *bootstrapper) stepPackagesInstall(
 
 	if err := group.Wait(); err != nil {
 		return err
-	}
-
-	b.state.Studio.Version = b.bin.GUID
-	for _, pkg := range pkgs {
-		b.state.Studio.Packages = append(b.state.Studio.Packages, pkg.Checksum)
 	}
 
 	return nil
@@ -198,13 +201,25 @@ func (b *bootstrapper) setupDeploymentFiles() error {
 		return err
 	}
 
-	if err := b.state.CleanPackages(); err != nil {
-		return fmt.Errorf("clean packages: %w", err)
-	}
-
-	if err := b.state.CleanVersions(); err != nil {
-		return fmt.Errorf("clean versions: %w", err)
-	}
-
 	return nil
+}
+
+func removeUniqueFiles(dir string, included []string) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		slog.Error("Failed to cleanup directory", "dir", dir, "err", err)
+		return
+	}
+
+	for _, file := range files {
+		if slices.Contains(included, file.Name()) {
+			continue
+		}
+
+		slog.Info("Removing unique file", "dir", dir, "file", file.Name())
+		if err := os.RemoveAll(filepath.Join(dir, file.Name())); err != nil {
+			slog.Error("Failed to cleanup file", "err", err)
+			break
+		}
+	}
 }

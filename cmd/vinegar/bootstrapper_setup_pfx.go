@@ -72,14 +72,25 @@ func (b *bootstrapper) checkPrefix() error {
 }
 
 func (b *bootstrapper) stepSetupDxvk() error {
-	// If installed, installing won't be required since
-	// DLL overrides decide if DXVK is actually used or not.
-	if !b.cfg.Studio.DXVK ||
-		b.cfg.Studio.DXVKVersion == b.state.Studio.DxvkVersion {
+	// If DXVK is installed in the wineprefix, uninstallation
+	// won't be necessary if it's disabled as it still requires
+	// DLL overrides to be present.
+	if !b.cfg.Studio.DXVK {
 		return nil
 	}
 
-	name := filepath.Join(dirs.Cache, "dxvk-"+b.cfg.Studio.DXVKVersion+".tar.gz")
+	new := b.cfg.Studio.DXVKVersion
+	current, err := dxvk.Version(b.pfx)
+	if err != nil {
+		return fmt.Errorf("get version: %w", err)
+	}
+
+	if current == new {
+		return nil
+	}
+	b.message("Downloading DXVK", "current", current, "new", new)
+
+	name := filepath.Join(dirs.Cache, "dxvk-"+new+".tar.gz")
 	if _, err := os.Stat(name); err == nil {
 		goto install
 	}
@@ -87,8 +98,6 @@ func (b *bootstrapper) stepSetupDxvk() error {
 	if err := dirs.Mkdirs(dirs.Cache); err != nil {
 		return fmt.Errorf("prepare cache: %w", err)
 	}
-
-	b.message("Downloading DXVK", "ver", b.cfg.Studio.DXVKVersion)
 
 	if err := netutil.DownloadProgress(
 		dxvk.URL(b.cfg.Studio.DXVKVersion), name, &b.pbar); err != nil {
@@ -98,13 +107,18 @@ func (b *bootstrapper) stepSetupDxvk() error {
 install:
 	defer b.performing()()
 
-	b.message("Extracting DXVK", "ver", b.cfg.Studio.DXVKVersion)
+	f, err := os.Open(name)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
-	if err := dxvk.Extract(b.pfx, name); err != nil {
+	b.message("Extracting DXVK", "version", new)
+
+	if err := dxvk.Extract(b.pfx, f); err != nil {
 		return fmt.Errorf("extract: %w", err)
 	}
 
-	b.state.Studio.DxvkVersion = b.cfg.Studio.DXVKVersion
 	return nil
 }
 

@@ -39,6 +39,7 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 
 func (b *bootstrapper) execute(args ...string) error {
 	defer gtkutil.IdleAdd(func() {
+		b.win.Hide() // Incase bailed out
 		b.app.RemoveWindow(&b.win.Window)
 	})
 

@@ -125,14 +125,7 @@ func (ctl *control) showAbout() {
 }
 
 func (ctl *control) deleteDeployments() error {
-	if err := os.RemoveAll(dirs.Versions); err != nil {
-		return err
-	}
-
-	ctl.state.Studio.Version = ""
-	ctl.state.Studio.Packages = nil
-
-	return ctl.state.Save()
+	return os.RemoveAll(dirs.Versions)
 }
 
 func (ctl *control) deletePrefixes() error {
@@ -142,17 +135,7 @@ func (ctl *control) deletePrefixes() error {
 	// Wineserver isn't required if it's missing.
 	_ = ctl.pfx.Kill()
 
-	if err := os.RemoveAll(dirs.Prefixes); err != nil {
-		return err
-	}
-
-	ctl.state.Studio.DxvkVersion = ""
-
-	if err := ctl.state.Save(); err != nil {
-		return fmt.Errorf("save state: %w", err)
-	}
-
-	return nil
+	return os.RemoveAll(dirs.Prefixes)
 }
 
 func (ctl *control) clearCache() error {

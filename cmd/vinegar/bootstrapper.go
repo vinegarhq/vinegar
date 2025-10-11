@@ -96,7 +96,10 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 	case strings.Contains(line, "LoginDialog Error: Embedded Web Browser fail to load"):
 		// Ensure that browser login functionality will work
 		if err := b.setMime(); err != nil {
-			gtkutil.IdleAdd(func() { b.showError(err) })
+			gtkutil.IdleAdd(func() {
+				b.pfx.Kill()
+				b.showError(err)
+			})
 		}
 	}
 

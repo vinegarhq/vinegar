@@ -39,8 +39,8 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 
 func (b *bootstrapper) execute(args ...string) error {
 	defer gtkutil.IdleAdd(func() {
-		b.win.Hide() // Incase bailed out
 		b.app.RemoveWindow(&b.win.Window)
+		b.win.SetVisible(false) // Incase bailed out
 	})
 
 	cmd, err := b.command(args...)
@@ -76,7 +76,9 @@ func (b *bootstrapper) execute(args ...string) error {
 		})
 	}()
 
-	gtkutil.IdleAdd(b.win.Hide)
+	gtkutil.IdleAdd(func() {
+		b.win.SetVisible(false)
+	})
 
 	if err := b.registerGameMode(cmd.Process.Pid); err != nil {
 		slog.Error("Failed to register with GameMode", "err", err)

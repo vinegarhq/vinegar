@@ -79,6 +79,8 @@ func (b *bootstrapper) stepSetupDxvk() error {
 		return nil
 	}
 
+	b.message("Checking DXVK", "version", b.cfg.Studio.DXVKVersion)
+
 	new := b.cfg.Studio.DXVKVersion
 	current, err := dxvk.Version(b.pfx)
 	if err != nil {

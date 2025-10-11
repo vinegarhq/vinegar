@@ -16,16 +16,16 @@ import (
 )
 
 func (b *bootstrapper) setup() error {
+	// Bootstrapper is currently running
+	if b.win.GetApplication() != nil {
+		slog.Info("Skipping setup!", "ver", b.bin.GUID)
+		return nil
+	}
+
 	gtkutil.IdleAdd(func() {
 		b.app.AddWindow(&b.win.Window)
 		b.win.Present()
 	})
-
-	// Bootstrapper is currently running
-	if b.bin != nil {
-		slog.Info("Skipping setup!", "ver", b.bin.GUID)
-		return nil
-	}
 
 	pfxFirstRun := !b.pfx.Exists()
 

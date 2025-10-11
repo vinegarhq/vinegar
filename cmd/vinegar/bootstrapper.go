@@ -72,7 +72,7 @@ func (b *bootstrapper) performing() func() {
 
 func (b *bootstrapper) message(msg string, args ...any) {
 	slog.Info(msg, args...)
-	gtkutil.IdleAdd(func() { b.status.SetLabel(msg + "...") })
+	gtkutil.IdleAdd(func() { b.status.SetLabel(msg) })
 }
 
 func (b *bootstrapper) run(args ...string) error {

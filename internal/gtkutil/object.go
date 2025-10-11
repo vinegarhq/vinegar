@@ -16,16 +16,12 @@ type objectPtr[T any] interface {
 	*T
 }
 
-func Array[T any](arr uintptr, n int) iter.Seq[T] {
-	// https://go.dev/wiki/cgo#turning-c-arrays-into-go-slices
-	slice := (*[1 << 28]T)(unsafe.Pointer(arr))[:n:n]
-	return func(yield func(T) bool) {
-		for _, s := range slice {
-			if !yield(s) {
-				return
-			}
-		}
-	}
+// Slice is an adapatation of [unsafe.Slice] to allow
+// a diffrent type from the origin array.
+//
+// https://go.dev/wiki/cgo#turning-c-arrays-into-go-slices
+func Slice[T any](arr uintptr, size uint) []T {
+	return (*[1 << 28]T)(unsafe.Pointer(arr))[:size:size]
 }
 
 func List[T any, P objectPtr[T]](list *glib.List) iter.Seq[P] {

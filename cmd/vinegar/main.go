@@ -9,8 +9,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
 
-var version string
-
 func main() {
 	debug.SetPanicOnFault(true)
 

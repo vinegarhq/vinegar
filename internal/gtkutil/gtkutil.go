@@ -27,6 +27,15 @@ func Resource(elems ...string) string {
 	return path.Join(append([]string{"/org/vinegarhq/Vinegar"}, elems...)...)
 }
 
+func ResourceData(resource string) []byte {
+	gb, err := gio.ResourcesLookupData(resource, gio.GResourceLookupFlagsNoneValue)
+	if err != nil {
+		panic("gtkutil: resource " + resource + " not found")
+	}
+
+	return Slice[byte](gb.GetData(0), gb.GetSize())
+}
+
 func IdleAdd(bg func()) {
 	var idlecb glib.SourceFunc
 	idlecb = func(uintptr) bool {

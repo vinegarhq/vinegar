@@ -1,7 +1,5 @@
 .POSIX:
 
-VERSION = v1.8.1
-
 PREFIX      ?= /usr
 DATAPREFIX  = $(PREFIX)/share/vinegar
 APPPREFIX   = $(PREFIX)/share/applications
@@ -16,7 +14,7 @@ PKG_CONFIG = pkg-config
 INCS != $(PKG_CONFIG) --cflags vulkan
 
 GO         ?= go
-GO_LDFLAGS ?= -s -w -X main.version=$(VERSION)
+GO_LDFLAGS ?= -s -w
 
 SOURCES != find . -type f -name "*.go" # for automatically re-building vinegar
 

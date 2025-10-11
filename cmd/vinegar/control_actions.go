@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -76,9 +77,26 @@ func (ctl *control) saveConfig() {
 }
 
 func (ctl *control) showAbout() {
-	w := adw.NewAboutDialogFromAppdata(gtkutil.Resource("metainfo.xml"), version[1:])
-	w.Present(&ctl.win.Widget)
-	w.Unref()
+	b := gtkutil.ResourceData(gtkutil.Resource("metainfo.xml"))
+	data := struct {
+		XMLName  xml.Name `xml:"component"`
+		Releases struct {
+			Release []struct {
+				Text    string `xml:",chardata"`
+				Version string `xml:"version,attr"`
+				Date    string `xml:"date,attr"`
+			} `xml:"release"`
+		} `xml:"releases"`
+	}{}
+
+	if err := xml.Unmarshal(b, &data); err != nil {
+		panic("expected valid appstream: " + err.Error())
+	}
+
+	dialog := adw.NewAboutDialogFromAppdata(gtkutil.Resource("metainfo.xml"),
+		data.Releases.Release[0].Version)
+	dialog.Present(&ctl.win.Widget)
+	dialog.Unref()
 }
 
 func (ctl *control) deleteDeployments() error {

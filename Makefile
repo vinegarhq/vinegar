@@ -12,23 +12,27 @@ LAYERPREFIX = $(PREFIX)/share/vulkan/explicit_layer.d
 
 CXX ?= c++
 
+PKG_CONFIG = pkg-config
+INCS != $(PKG_CONFIG) --cflags vulkan
+
 GO         ?= go
 GO_LDFLAGS ?= -s -w -X main.version=$(VERSION)
 
 SOURCES != find . -type f -name "*.go" # for automatically re-building vinegar
 
 RESOURCE = internal/gtkutil/vinegar.gresource
+VKLAYER = layer/libVkLayer_VINEGAR_VinegarLayer.so
 
-all: vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so
+all: vinegar $(VKLAYER)
 
 vinegar: $(SOURCES) $(RESOURCE)
 	$(GO) build $(GOFLAGS) -ldflags="$(GO_LDFLAGS)" ./cmd/vinegar
 
-$(RESOURCE): data/vinegar.gresource.xml data/ui/vinegar.cmb
-	glib-compile-resources --sourcedir=data --target=$(RESOURCE) data/vinegar.gresource.xml
+$(RESOURCE): data/vinegar.gresource.xml
+	glib-compile-resources --sourcedir=data --target=$(RESOURCE) $<
 
-layer/libVkLayer_VINEGAR_VinegarLayer.so:
-	$(CXX) -shared -fPIC `pkg-config --cflags vulkan` layer/vinegar_layer.cpp -o $@
+$(VKLAYER): layer/vinegar_layer.cpp
+	$(CXX) -shared -fPIC $(INCS) $< -o $@
 
 install: all
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
@@ -37,14 +41,16 @@ install: all
 	install -Dm644 data/vinegar-mime.xml -t $(DESTDIR)$(MIMEPREFIX)/packages
 	install -Dm644 data/icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg
 	install -Dm644 data/icons/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.studio.svg
-	install -Dm644 layer/libVkLayer_VINEGAR_VinegarLayer.so $(DESTDIR)$(LIBPREFIX)/libVkLayer_VINEGAR_VinegarLayer.so
-	install -Dm644 layer/VkLayer_VINEGAR_VinegarLayer.json $(DESTDIR)$(LAYERPREFIX)/VkLayer_VINEGAR_VinegarLayer.json
-	gtk-update-icon-cache $(DESTDIR)$(ICONPREFIX) ||:
-	update-desktop-database $(DESTDIR)$(APPPREFIX) ||:
-	update-mime-database $(DESTDIR)$(MIMEPREFIX) ||:
+	install -Dm644 $(VKLAYER) -t $(DESTDIR)$(LIBPREFIX)
+	install -Dm644 layer/VkLayer_VINEGAR_VinegarLayer.json -t $(DESTDIR)$(LAYERPREFIX)
+
+host:
+	gtk-update-icon-cache -f -t $(DESTDIR)$(ICONPREFIX)
+	update-desktop-database $(DESTDIR)$(APPPREFIX)
+	update-mime-database -n $(DESTDIR)$(MIMEPREFIX)
 
 uninstall:
-	# Retain removal of old studio desktop & icon files
+	# Retain removal of old studio desktop
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar \
 		$(DESTDIR)$(PREFIX)/share/metainfo/org.vinegarhq.Vinegar.metainfo.xml \
 		$(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop \
@@ -55,6 +61,6 @@ uninstall:
 		$(DESTDIR)$(LAYERPREFIX)/VkLayer_VINEGAR_VinegarLayer.json
 
 clean:
-	rm -f vinegar layer/libVkLayer_VINEGAR_VinegarLayer.so $(RESOURCE)
+	rm -f vinegar $(RESOURCE) $(VKLAYER)
 	
 .PHONY: all install uninstall clean

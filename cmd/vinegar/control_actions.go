@@ -7,15 +7,12 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"runtime/debug"
-	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
-	"github.com/vinegarhq/vinegar/sysinfo"
 )
 
 func (ctl *control) hideRunUntil() func() {
@@ -81,46 +78,6 @@ func (ctl *control) saveConfig() {
 func (ctl *control) showAbout() {
 	w := adw.NewAboutDialogFromAppdata(gtkutil.Resource("metainfo.xml"), version[1:])
 	w.Present(&ctl.win.Widget)
-
-	var revision string
-	bi, _ := debug.ReadBuildInfo()
-	for _, bs := range bi.Settings {
-		if bs.Key == "vcs.revision" {
-			revision = fmt.Sprintf("(%s)", bs.Value)
-		}
-	}
-
-	var b strings.Builder
-
-	inst := "source"
-	if sysinfo.InFlatpak {
-		inst = "flatpak"
-	}
-
-	info := `* Vinegar: %s %s
-* Distro: %s
-* Processor: %s
-* Kernel: %s
-* Wine: %s
-* Installation: %s
-`
-
-	fmt.Fprintf(&b, info,
-		version, revision,
-		sysinfo.Distro,
-		sysinfo.CPU.Name,
-		sysinfo.Kernel,
-		ctl.pfx.Version(),
-		inst,
-	)
-
-	fmt.Fprintln(&b, "* Cards:")
-	for i, c := range sysinfo.Cards {
-		fmt.Fprintf(&b, "  * Card %d: %s %s %s\n",
-			i, c.Driver, filepath.Base(c.Device), c.Path)
-	}
-
-	w.SetDebugInfo(b.String())
 	w.Unref()
 }
 

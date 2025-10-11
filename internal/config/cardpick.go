@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/vinegarhq/vinegar/sysinfo"
+	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
 
 func (s *Studio) card() (*sysinfo.Card, error) {

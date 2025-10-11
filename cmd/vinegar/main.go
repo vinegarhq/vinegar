@@ -6,7 +6,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/vinegarhq/vinegar/sysinfo"
+	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
 
 var version string

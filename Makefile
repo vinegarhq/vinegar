@@ -1,5 +1,7 @@
 .POSIX:
 
+ID = org.vinegarhq.Vinegar
+
 PREFIX      ?= /usr
 DATAPREFIX  = $(PREFIX)/share/vinegar
 APPPREFIX   = $(PREFIX)/share/applications
@@ -34,11 +36,11 @@ $(VKLAYER): layer/vinegar_layer.cpp
 
 install: all
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
-	install -Dm644 data/org.vinegarhq.Vinegar.metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
-	install -Dm644 data/desktop/vinegar.desktop $(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop
+	install -Dm644 data/$(ID).metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
+	install -Dm644 data/$(ID).desktop -t $(DESTDIR)$(APPPREFIX)
 	install -Dm644 data/vinegar-mime.xml -t $(DESTDIR)$(MIMEPREFIX)/packages
-	install -Dm644 data/icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg
-	install -Dm644 data/icons/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.studio.svg
+	install -Dm644 data/icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).svg
+	install -Dm644 data/icons/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).studio.svg
 	install -Dm644 $(VKLAYER) -t $(DESTDIR)$(LIBPREFIX)
 	install -Dm644 layer/VkLayer_VINEGAR_VinegarLayer.json -t $(DESTDIR)$(LAYERPREFIX)
 
@@ -50,11 +52,12 @@ host:
 uninstall:
 	# Retain removal of old studio desktop
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar \
-		$(DESTDIR)$(PREFIX)/share/metainfo/org.vinegarhq.Vinegar.metainfo.xml \
-		$(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.desktop \
-		$(DESTDIR)$(APPPREFIX)/org.vinegarhq.Vinegar.studio.desktop \
-		$(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.svg \
-		$(DESTDIR)$(ICONPREFIX)/scalable/apps/org.vinegarhq.Vinegar.studio.svg \
+		$(DESTDIR)$(PREFIX)/share/metainfo/$(ID).metainfo.xml \
+		$(DESTDIR)$(APPPREFIX)/$(ID).desktop \
+		$(DESTDIR)$(APPPREFIX)/$(ID).studio.desktop \
+		$(DESTDIR)$(MIMEPREFIX)/packages/vinegar-mime.xml \
+		$(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).svg \
+		$(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).studio.svg \
 		$(DESTDIR)$(LIBPREFIX)/libVkLayer_VINEGAR_VinegarLayer.so \
 		$(DESTDIR)$(LAYERPREFIX)/VkLayer_VINEGAR_VinegarLayer.json
 

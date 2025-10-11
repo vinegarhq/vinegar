@@ -131,19 +131,23 @@ func (b *bootstrapper) stepPackagesInstall(
 	pkgs []rbxbin.Package,
 	pdirs rbxbin.PackageDirectories,
 ) error {
-	total := len(pkgs) * 2 // download & extraction
-	var finished atomic.Uint32
+	total := len(pkgs)
+	finished := int64(0)
 	group := new(errgroup.Group)
-
-	update := func() {
-		finished.Add(1)
-		gtkutil.IdleAdd(func() { b.pbar.SetFraction(float64(finished.Load()) / float64(total)) })
-	}
 
 	b.message("Installing Packages", "count", len(pkgs), "dir", b.dir)
 	for _, pkg := range pkgs {
 		group.Go(func() error {
-			return b.stepPackageInstall(mirror, &pkg, pdirs, update)
+			if err := b.stepPackageInstall(mirror, pdirs, &pkg); err != nil {
+				return err
+			}
+
+			atomic.AddInt64(&finished, 1)
+			gtkutil.IdleAdd(func() {
+				b.pbar.SetFraction(float64(finished) / float64(total))
+			})
+
+			return nil
 		})
 	}
 
@@ -156,9 +160,8 @@ func (b *bootstrapper) stepPackagesInstall(
 
 func (b *bootstrapper) stepPackageInstall(
 	mirror *rbxbin.Mirror,
-	pkg *rbxbin.Package,
 	pdirs rbxbin.PackageDirectories,
-	update func(),
+	pkg *rbxbin.Package,
 ) error {
 	src := filepath.Join(dirs.Downloads, pkg.Checksum)
 	dst, ok := pdirs[pkg.Name]
@@ -176,15 +179,9 @@ func (b *bootstrapper) stepPackageInstall(
 			return err
 		}
 	}
-	update()
 
 	slog.Info("Extracting package", "name", pkg.Name, "dest", dst)
-	if err := pkg.Extract(src, filepath.Join(b.dir, dst)); err != nil {
-		return err
-	}
-	update()
-
-	return nil
+	return pkg.Extract(src, filepath.Join(b.dir, dst))
 }
 
 func removeUniqueFiles(dir string, included []string) {

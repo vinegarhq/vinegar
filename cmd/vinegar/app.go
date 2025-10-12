@@ -27,9 +27,8 @@ type app struct {
 	rbx *rbxweb.Client
 	bus *gio.DBusConnection // nullable
 
-	// initialized only in Application::command-line
-	ctl  *control      // nullable
-	boot *bootstrapper // also set if control runs boot
+	mgr  *manager // nullable
+	boot *bootstrapper
 
 	keepLog bool
 }
@@ -111,11 +110,11 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 		args = args[1:] // skip 'run' cmd
 	}
 
-	if len(args) == 1 && args[0] == "config" {
-		if a.ctl == nil {
-			a.ctl = a.newControl()
+	if len(args) == 1 && args[0] == "manage" {
+		if a.mgr == nil {
+			a.mgr = a.newManager()
 		}
-		a.ctl.win.Present()
+		a.mgr.win.Present()
 		return 0
 	}
 

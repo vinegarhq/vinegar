@@ -16,56 +16,56 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
-func (ctl *control) hideRunUntil() func() {
+func (m *manager) hideRunUntil() func() {
 	var button gtk.Button
 	var stack gtk.Stack
-	ctl.builder.GetObject("stack").Cast(&stack)
-	ctl.builder.GetObject("btn-run").Cast(&button)
+	m.builder.GetObject("stack").Cast(&stack)
+	m.builder.GetObject("btn-run").Cast(&button)
 	stack.SetVisibleChildName("stkpage-spinner")
 	button.SetSensitive(false)
 	return func() {
 		gtkutil.IdleAdd(func() {
 			button.SetSensitive(true)
 			stack.SetVisibleChildName("stkpage-btn")
-			ctl.updateRun()
+			m.updateRun()
 		})
 	}
 }
 
-func (ctl *control) run() error {
-	show := ctl.hideRunUntil()
+func (m *manager) run() error {
+	show := m.hideRunUntil()
 	defer show()
 
-	if ctl.pfx.Exists() && len(ctl.boot.procs) == 0 {
-		if err := ctl.app.boot.setup(); err != nil {
+	if m.pfx.Exists() && len(m.boot.procs) == 0 {
+		if err := m.app.boot.setup(); err != nil {
 			return fmt.Errorf("setup: %w", err)
 		}
 
 		// When command is finally executed
-		h := ctl.app.boot.win.ConnectSignal("notify::visible", &show)
-		defer func() { ctl.app.boot.win.DisconnectSignal(h) }()
-		return ctl.app.boot.run()
+		h := m.app.boot.win.ConnectSignal("notify::visible", &show)
+		defer func() { m.app.boot.win.DisconnectSignal(h) }()
+		return m.app.boot.run()
 	}
 
-	if len(ctl.boot.procs) > 0 {
-		return ctl.pfx.Kill()
+	if len(m.boot.procs) > 0 {
+		return m.pfx.Kill()
 	}
-	return ctl.app.boot.setupPrefix()
+	return m.app.boot.setupPrefix()
 }
 
 // No error will be returned, error handling is displayed
 // from an AdwBanner.
-func (ctl *control) saveConfig() {
+func (m *manager) saveConfig() {
 	var banner adw.Banner
-	ctl.builder.GetObject("banner-config-error").Cast(&banner)
+	m.builder.GetObject("banner-config-error").Cast(&banner)
 	banner.SetRevealed(false)
 
-	if err := ctl.cfg.Save(); err != nil {
-		ctl.showError(err)
+	if err := m.cfg.Save(); err != nil {
+		m.showError(err)
 		return
 	}
 
-	err := ctl.reload()
+	err := m.reload()
 	if err == nil {
 		return
 	}
@@ -76,7 +76,7 @@ func (ctl *control) saveConfig() {
 	return
 }
 
-func (ctl *control) showAbout() {
+func (m *manager) showAbout() {
 	b := gtkutil.ResourceData(gtkutil.Resource("metainfo.xml"))
 	data := struct {
 		XMLName  xml.Name `xml:"component"`
@@ -95,25 +95,25 @@ func (ctl *control) showAbout() {
 
 	dialog := adw.NewAboutDialogFromAppdata(gtkutil.Resource("metainfo.xml"),
 		data.Releases.Release[0].Version)
-	dialog.Present(&ctl.win.Widget)
+	dialog.Present(&m.win.Widget)
 	dialog.Unref()
 }
 
-func (ctl *control) deleteDeployments() error {
+func (m *manager) deleteDeployments() error {
 	return os.RemoveAll(dirs.Versions)
 }
 
-func (ctl *control) deletePrefixes() error {
-	defer ctl.hideRunUntil()()
+func (m *manager) deletePrefixes() error {
+	defer m.hideRunUntil()()
 	slog.Info("Deleting Wineprefixes!")
 
 	// Wineserver isn't required if it's missing.
-	_ = ctl.pfx.Kill()
+	_ = m.pfx.Kill()
 
 	return os.RemoveAll(dirs.Prefixes)
 }
 
-func (ctl *control) clearCache() error {
+func (m *manager) clearCache() error {
 	return filepath.WalkDir(dirs.Cache, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {

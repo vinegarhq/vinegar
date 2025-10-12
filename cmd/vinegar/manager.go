@@ -13,7 +13,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 )
 
-type control struct {
+type manager struct {
 	*app
 
 	builder *gtk.Builder
@@ -22,57 +22,57 @@ type control struct {
 	runner adw.EntryRow
 }
 
-func (s *app) newControl() *control {
-	ctl := control{
-		app:     s,
+func (a *app) newManager() *manager {
+	m := manager{
+		app:     a,
 		builder: gtk.NewBuilderFromResource(gtkutil.Resource("ui/control.ui")),
 	}
 
-	ctl.builder.GetObject("window").Cast(&ctl.win)
-	ctl.win.SetApplication(&s.Application.Application)
+	m.builder.GetObject("window").Cast(&m.win)
+	m.win.SetApplication(&a.Application.Application)
 
 	var page adw.PreferencesPage
-	ctl.builder.GetObject("prefpage-main").Cast(&page)
-	adwaux.AddStructPage(&page, reflect.ValueOf(ctl.cfg).Elem())
+	m.builder.GetObject("prefpage-main").Cast(&page)
+	adwaux.AddStructPage(&page, reflect.ValueOf(m.cfg).Elem())
 
-	ctl.builder.GetObject("entry-prefix-run").Cast(&ctl.runner)
+	m.builder.GetObject("entry-prefix-run").Cast(&m.runner)
 	applyCb := func(_ adw.EntryRow) {
-		cmd := ctl.runner.GetText()
+		cmd := m.runner.GetText()
 		args := strings.Fields(cmd)
-		ctl.app.errThread(ctl.pfx.Wine(args[0], args[1:]...).Run)
+		m.app.errThread(m.pfx.Wine(args[0], args[1:]...).Run)
 	}
-	ctl.runner.ConnectApply(&applyCb)
+	m.runner.ConnectApply(&applyCb)
 
 	var r gtk.Button
-	ctl.builder.GetObject("btn-prefix-config").Cast(&r)
+	m.builder.GetObject("btn-prefix-config").Cast(&r)
 	cb := func(_ gtk.Button) {
-		ctl.runner.SetText("winecfg")
-		gobject.SignalEmitByName(&ctl.runner.Object, "apply")
+		m.runner.SetText("winecfg")
+		gobject.SignalEmitByName(&m.runner.Object, "apply")
 	}
 	r.ConnectClicked(&cb)
 
 	for name, fn := range map[string]any{
-		"save":  ctl.saveConfig,
-		"about": ctl.showAbout,
+		"save":  m.saveConfig,
+		"about": m.showAbout,
 
-		"clear-cache": ctl.clearCache,
+		"clear-cache": m.clearCache,
 		"open-prefix": func() {
-			gtk.ShowUri(&ctl.win.Window, "file://"+ctl.pfx.Dir(), 0)
+			gtk.ShowUri(&m.win.Window, "file://"+m.pfx.Dir(), 0)
 		},
 		"open-logs": func() {
-			gtk.ShowUri(&ctl.win.Window, "file://"+dirs.Logs, 0)
+			gtk.ShowUri(&m.win.Window, "file://"+dirs.Logs, 0)
 		},
 
-		"delete-studio": ctl.deleteDeployments,
-		"run":           ctl.run,
-		"prefix-kill":   ctl.pfx.Kill,
-		"delete-prefix": ctl.deletePrefixes,
+		"delete-studio": m.deleteDeployments,
+		"run":           m.run,
+		"prefix-kill":   m.pfx.Kill,
+		"delete-prefix": m.deletePrefixes,
 	} {
 		action := gio.NewSimpleAction(name, nil)
 		activate := func(_ gio.SimpleAction, p uintptr) {
 			switch v := fn.(type) {
 			case func() error:
-				ctl.app.errThread(func() error {
+				m.app.errThread(func() error {
 					return v()
 				})
 			case func():
@@ -82,25 +82,25 @@ func (s *app) newControl() *control {
 			}
 		}
 		action.ConnectActivate(&activate)
-		ctl.win.AddAction(action)
+		m.win.AddAction(action)
 		action.Unref()
 	}
 
-	ctl.updateRun()
+	m.updateRun()
 
-	return &ctl
+	return &m
 }
 
-func (ctl *control) updateRun() {
+func (m *manager) updateRun() {
 	var btn adw.ButtonContent
-	ctl.builder.GetObject("btnc-run").Cast(&btn)
+	m.builder.GetObject("btnc-run").Cast(&btn)
 	btn.SetIconName("media-playback-start-symbolic")
-	if len(ctl.boot.procs) > 0 {
+	if len(m.boot.procs) > 0 {
 		btn.SetIconName("media-playback-stop-symbolic")
 		btn.SetLabel("Stop")
 		return
 	}
-	if ctl.pfx.Exists() {
+	if m.pfx.Exists() {
 		btn.SetLabel("Run Studio")
 	} else {
 		btn.SetLabel("Initialize")

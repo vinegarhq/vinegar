@@ -66,8 +66,8 @@ func keyStream(c *rc4.Cipher, subKey []byte) string {
 	return string(sec)
 }
 
-func (b *app) getWineCredKey() ([]byte, error) {
-	k, err := b.pfx.RegistryQuery(credPath, `EncryptionKey`)
+func (a *app) getWineCredKey() ([]byte, error) {
+	k, err := a.pfx.RegistryQuery(credPath, `EncryptionKey`)
 	if err != nil {
 		return nil, fmt.Errorf("query: %w", err)
 	}
@@ -79,13 +79,13 @@ func (b *app) getWineCredKey() ([]byte, error) {
 	// Credential Manager API, not the registry.
 	enc := make([]byte, 8)
 	_, _ = rand.Read(enc[:])
-	if err := b.pfx.RegistryAdd(credPath, "EncryptionKey", enc); err != nil {
+	if err := a.pfx.RegistryAdd(credPath, "EncryptionKey", enc); err != nil {
 		return nil, fmt.Errorf("add: %w", err)
 	}
 	return enc, nil
 }
 
-func (b *app) addWineCred(key []byte, name string, blob []byte) error {
+func (a *app) addWineCred(key []byte, name string, blob []byte) error {
 	c, err := rc4.NewCipher(key)
 	if err != nil {
 		return fmt.Errorf("cipher: %w", err)
@@ -106,7 +106,7 @@ func (b *app) addWineCred(key []byte, name string, blob []byte) error {
 		{"Persist", uint32(2)},
 		{"Type", uint32(1)},
 	} {
-		if err := b.pfx.RegistryAdd(credPath+`\Generic: `+name, sk.name, sk.value); err != nil {
+		if err := a.pfx.RegistryAdd(credPath+`\Generic: `+name, sk.name, sk.value); err != nil {
 			return fmt.Errorf("add %s: %w", sk.name, err)
 		}
 	}

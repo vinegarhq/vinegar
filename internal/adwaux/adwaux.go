@@ -86,7 +86,11 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		path := newPathRow(v)
 		path.SetTitle(description)
 		group.Add(&path.Widget)
-
+	case option == "entry":
+		opt := newOptionEntryRow(v, fields[2], fields[3])
+		opt.SetTitle(title)
+		opt.SetSubtitle(description)
+		group.Add(&opt.Widget)
 	case k == reflect.Bool:
 		sw := newSwitchRow(v)
 		sw.SetTitle(title)

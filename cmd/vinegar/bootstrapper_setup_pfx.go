@@ -15,30 +15,16 @@ import (
 )
 
 func (b *bootstrapper) setupPrefix() error {
+	defer b.performing()()
 	b.message("Setting up Wine")
 
 	// Always initialize in case Wine changes,
 	// to prevent a dialog from appearing in normal apps.
-	if err := b.stepPrefixInit(); err != nil {
-		return fmt.Errorf("init: %w", err)
-	}
-
-	if err := b.checkPrefix(); err != nil {
+	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
+	if err := b.pfx.Init().Run(); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (b *bootstrapper) stepPrefixInit() error {
-	defer b.performing()()
-
-	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
-	return b.pfx.Init().Run()
-}
-
-func (b *bootstrapper) checkPrefix() error {
-	b.message("Checking Wineprefix")
 	// Latest versions of studio require a implemented call, check if the given
 	// prefix supports it
 	if b.cfg.Studio.ForcedVersion != "" {
@@ -46,6 +32,8 @@ func (b *bootstrapper) checkPrefix() error {
 		// and get a proper error afterwards :)
 		return nil
 	}
+
+	b.message("Checking Wineprefix")
 
 	f, err := peutil.Open(filepath.Join(
 		b.pfx.Dir(), "drive_c", "windows", "system32", "kernelbase.dll"))
@@ -64,8 +52,7 @@ func (b *bootstrapper) checkPrefix() error {
 	if !slices.ContainsFunc(es, func(e peutil.Export) bool {
 		return e.Name == "VirtualProtectFromApp"
 	}) {
-		// TODO: actually give a solution to the user
-		return errors.New("wine installation cannot run studio")
+		return errors.New("Wine installation cannot run studio; update wine to >=10.13")
 	}
 
 	return nil

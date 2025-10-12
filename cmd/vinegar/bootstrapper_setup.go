@@ -34,10 +34,12 @@ func (b *bootstrapper) setup() error {
 	}
 
 	if b.rbx.Security == "" && !pfxFirstRun {
+		stop := b.performing()
 		b.message("Acquiring user authentication")
 		if err := b.app.getSecurity(); err != nil {
 			slog.Warn("Retrieving authenticated user failed", "err", err)
 		}
+		stop()
 	}
 
 	if err := b.stepSetupDxvk(); err != nil {
@@ -156,6 +158,6 @@ func (b *bootstrapper) stepChangeStudioTheme() error {
 	if b.GetStyleManager().GetDark() {
 		theme = "Dark"
 	}
-	b.message("Changing Theme", "theme", theme)
+	slog.Info("Changing Theme", "theme", theme)
 	return b.pfx.RegistryAdd(key, val, theme)
 }

@@ -43,22 +43,22 @@ func (v DxvkVersion) String() string {
 }
 
 type Studio struct {
-	GameMode bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
+	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
+	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
-	ForcedGpu string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
 	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,DXVK Version,2.7"`
 	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
+	ForcedGpu string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
 
 	WineRoot string `toml:"wineroot" group:"Custom Wine" row:"Installation Directory,path"`
 	WebView  string `toml:"webview" group:"Custom Wine" row:"Installs WebView2 for web pages in Studio,entry,WebView2 Runtime Version,109.0.1518.140"`
-	Launcher string `toml:"launcher" group:"Custom Wine" row:"Launcher Command"`
+	Launcher string `toml:"launcher" group:"Custom Wine" row:"Launcher Command (ex. gamescope)"`
+
+	Env    map[string]string `toml:"env" group:"Environment"`
+	FFlags rbxbin.FFlags     `toml:"fflags" group:"Fast Flags"`
 
 	ForcedVersion string `toml:"forced_version" group:"Deployment Overrides" row:"Studio Deployment Version"`
 	Channel       string `toml:"channel" group:"Deployment Overrides" row:"Studio Update Channel"`
-
-	DiscordRPC bool              `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
-	Env        map[string]string `toml:"env" group:"Environment"`
-	FFlags     rbxbin.FFlags     `toml:"fflags" group:"Studio Fast Flags"`
 }
 
 type Config struct {

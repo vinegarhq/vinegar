@@ -24,19 +24,19 @@
 
 	<screenshots>
 		<screenshot type="default">
-			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/studio.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.8.1/data/screenshots/studio.png</image>
 			<caption>Roblox Studio running under Vinegar</caption>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/studio-edit.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.8.1/data/screenshots/studio-edit.png</image>
 			<caption>Roblox Studio running under Vinegar, displaying the script editor view</caption>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/control.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.8.1/data/screenshots/control.png</image>
 			<caption>Vinegar's control view and configuration editing</caption>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/vinegarhq/vinegar/raw/refs/heads/master/data/screenshots/bootstrapper.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.8.1/data/screenshots/bootstrapper.png</image>
 			<caption>Vinegar's bootstrapper in action</caption>
 		</screenshot>
 	</screenshots>

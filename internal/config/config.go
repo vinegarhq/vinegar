@@ -57,14 +57,15 @@ type Studio struct {
 	Channel       string `toml:"channel" group:"Deployment Overrides" row:"Studio Update Channel"`
 
 	DiscordRPC bool              `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
-	Env        map[string]string `toml:"env" group:"hidden"`
+	Env        map[string]string `toml:"env" group:"Environment"`
 	FFlags     rbxbin.FFlags     `toml:"fflags" group:"Studio Fast Flags"`
 }
 
 type Config struct {
-	Debug  bool              `toml:"debug" group:"hidden"`
-	Studio Studio            `toml:"studio"`
-	Env    map[string]string `toml:"env" group:"Environment"`
+	Debug  bool   `toml:"debug" group:"hidden"`
+	Studio Studio `toml:"studio"`
+	// Only adds to Studio.Env, reserved for backwards compatibility
+	Env map[string]string `toml:"env" group:"hidden"`
 }
 
 var (
@@ -75,22 +76,25 @@ var (
 // Load will load the configuration file; if it doesn't exist, it
 // will fallback to the default configuration.
 func Load() (*Config, error) {
-	d := Default()
+	cfg := Default()
 
 	if _, err := os.Stat(dirs.ConfigPath); errors.Is(err, os.ErrNotExist) {
-		return d, nil
+		return cfg, nil
 	}
 
-	if _, err := toml.DecodeFile(dirs.ConfigPath, &d); err != nil {
-		return d, err
+	if _, err := toml.DecodeFile(dirs.ConfigPath, &cfg); err != nil {
+		return cfg, err
 	}
+
+	maps.Copy(cfg.Studio.Env, cfg.Env)
+	cfg.Env = nil
 
 	logging.LoggerLevel = slog.LevelInfo
-	if d.Debug {
+	if cfg.Debug {
 		logging.LoggerLevel = slog.LevelDebug
 	}
 
-	return d, nil
+	return cfg, nil
 }
 
 // Default returns a default configuration.
@@ -98,9 +102,7 @@ func Default() *Config {
 	return &Config{
 		Debug: false,
 
-		Env: map[string]string{
-			"WINEESYNC": "1",
-		},
+		Env: make(map[string]string),
 
 		Studio: Studio{
 			DXVK:       "",
@@ -111,7 +113,9 @@ func Default() *Config {
 			Channel:    "LIVE",
 			DiscordRPC: true,
 			FFlags:     make(rbxbin.FFlags),
-			Env:        make(map[string]string),
+			Env: map[string]string{
+				"WINEESYNC": "1",
+			},
 		},
 	}
 }
@@ -126,8 +130,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 		c.Studio.WineRoot,
 	)
 
-	env := maps.Clone(c.Env)
-	maps.Copy(env, c.Studio.Env)
+	env := maps.Clone(c.Studio.Env)
 
 	card, err := c.Studio.card()
 	if err != nil {

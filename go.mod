@@ -1,6 +1,6 @@
 module github.com/vinegarhq/vinegar
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.5
 
@@ -8,7 +8,7 @@ require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/adrg/xdg v0.5.3
 	github.com/otiai10/copy v1.14.1
-	golang.org/x/sync v0.16.0
+	golang.org/x/sync v0.17.0
 )
 
 require (
@@ -18,7 +18,7 @@ require (
 	github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
 	github.com/sewnie/wine v0.0.0-20251010112920-4baa27ab7d4d
-	golang.org/x/sys v0.35.0
+	golang.org/x/sys v0.37.0
 )
 
 require (

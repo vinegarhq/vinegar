@@ -145,7 +145,7 @@ func (a *app) appInfo() *gio.AppInfoBase {
 func (a *app) setMime() error {
 	selfApp := a.appInfo()
 	if selfApp == nil {
-		return errors.New("Where is Vinegar's desktop file? is this a proper installation?")
+		return errors.New("Where is Vinegar's desktop file? Is this a proper installation?")
 	}
 
 	slog.Info("Setting as default application for browser login")

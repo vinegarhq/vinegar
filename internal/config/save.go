@@ -55,7 +55,7 @@ func diff(dv, v reflect.Value) map[string]any {
 			m := map[string]any{}
 			for _, k := range df.MapKeys() {
 				v1, v2 := df.MapIndex(k), f.MapIndex(k)
-				if !v2.IsValid() || !reflect.DeepEqual(v1.Interface(), v2.Interface()) {
+				if v2.IsValid() && !reflect.DeepEqual(v1.Interface(), v2.Interface()) {
 					m[k.Interface().(string)] = v2.Interface()
 				}
 			}

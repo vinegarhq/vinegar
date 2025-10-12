@@ -21,7 +21,7 @@ func (s *Studio) card() (*sysinfo.Card, error) {
 	}[s.ForcedGpu]; ok {
 		idx = i
 
-		vk := s.DXVK || s.Renderer == "Vulkan"
+		vk := s.DXVK != "" || s.Renderer == "Vulkan"
 
 		if n <= 1 {
 			return nil, nil

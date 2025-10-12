@@ -3,6 +3,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"log/slog"
 	"maps"
 	"os"
@@ -18,16 +19,38 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
+// Backwards compatibility to allow:
+// 'dxvk = true' and move to 'dxvk = [version]'
+type DxvkVersion string
+
+func (v *DxvkVersion) UnmarshalTOML(data interface{}) error {
+	switch d := data.(type) {
+	case bool:
+		*v = ""
+		if d {
+			*v = "2.7"
+		}
+	case string:
+		*v = DxvkVersion(d)
+	default:
+		return fmt.Errorf("unsupported type: %T", d)
+	}
+	return nil
+}
+
+func (v DxvkVersion) String() string {
+	return string(v)
+}
+
 type Studio struct {
 	GameMode bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
-	ForcedGpu   string `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
-	DXVK        bool   `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan"`
-	DXVKVersion string `toml:"dxvk_version" group:"Rendering" row:"DXVK Version"`
-	Renderer    string `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
+	ForcedGpu string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
+	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,DXVK Version,2.7"`
+	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
 
 	WineRoot string `toml:"wineroot" group:"Custom Wine" row:"Installation Directory,path"`
-	WebView  string `toml:"webview" group:"Custom Wine" row:"WebView2 Runtime Version"`
+	WebView  string `toml:"webview" group:"Custom Wine" row:"Installs WebView2 for web pages in Studio,entry,WebView2 Runtime Version,109.0.1518.140"`
 	Launcher string `toml:"launcher" group:"Custom Wine" row:"Launcher Command"`
 
 	ForcedVersion string `toml:"forced_version" group:"Deployment Overrides" row:"Studio Deployment Version"`
@@ -80,16 +103,15 @@ func Default() *Config {
 		},
 
 		Studio: Studio{
-			DXVK:        false,
-			DXVKVersion: "2.7",
-			WebView:     "109.0.1518.140", // Last known win7
-			GameMode:    true,
-			ForcedGpu:   "prime-discrete",
-			Renderer:    "Vulkan",
-			Channel:     "LIVE",
-			DiscordRPC:  true,
-			FFlags:      make(rbxbin.FFlags),
-			Env:         make(map[string]string),
+			DXVK:       "",
+			WebView:    "109.0.1518.140", // Last known win7
+			GameMode:   true,
+			ForcedGpu:  "prime-discrete",
+			Renderer:   "Vulkan",
+			Channel:    "LIVE",
+			DiscordRPC: true,
+			FFlags:     make(rbxbin.FFlags),
+			Env:        make(map[string]string),
 		},
 	}
 }
@@ -103,11 +125,6 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 		path.Join(dirs.Prefixes, "studio"),
 		c.Studio.WineRoot,
 	)
-
-	if pfx.IsProton() {
-		// https://github.com/bottlesdevs/Bottles/issues/3485
-		c.Studio.DXVK = true
-	}
 
 	env := maps.Clone(c.Env)
 	maps.Copy(env, c.Studio.Env)
@@ -133,7 +150,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm"
 	}
 
-	if c.Studio.DXVK {
+	if c.Studio.DXVK != "" {
 		if !c.Debug {
 			env["DXVK_LOG_LEVEL"] = "warn"
 		}
@@ -147,12 +164,12 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 		pfx.Env = append(pfx.Env, k+"="+v)
 	}
 
-	dxvk.EnvOverride(pfx, c.Studio.DXVK)
+	dxvk.EnvOverride(pfx, c.Studio.DXVK != "")
 
 	if c.Studio.WineRoot != "" {
 		w := pfx.Wine("")
 		if w.Err != nil {
-			return nil, errors.New("invalid wineroot")
+			return nil, w.Err
 		}
 	}
 

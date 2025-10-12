@@ -75,13 +75,13 @@ func (b *bootstrapper) stepSetupDxvk() error {
 	// If DXVK is installed in the wineprefix, uninstallation
 	// won't be necessary if it's disabled as it still requires
 	// DLL overrides to be present.
-	if !b.cfg.Studio.DXVK {
+	if b.cfg.Studio.DXVK == "" {
 		return nil
 	}
 
-	b.message("Checking DXVK", "version", b.cfg.Studio.DXVKVersion)
+	b.message("Checking DXVK", "version", b.cfg.Studio.DXVK)
 
-	new := b.cfg.Studio.DXVKVersion
+	new := string(b.cfg.Studio.DXVK)
 	current, err := dxvk.Version(b.pfx)
 	if err != nil {
 		return fmt.Errorf("get version: %w", err)
@@ -102,7 +102,7 @@ func (b *bootstrapper) stepSetupDxvk() error {
 	}
 
 	if err := netutil.DownloadProgress(
-		dxvk.URL(b.cfg.Studio.DXVKVersion), name, &b.pbar); err != nil {
+		dxvk.URL(b.cfg.Studio.DXVK.String()), name, &b.pbar); err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
 

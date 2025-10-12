@@ -62,7 +62,7 @@ type Studio struct {
 }
 
 type Config struct {
-	Debug  bool              `toml:"debug" group:"Behavior" row:"Enable full Wine logging and Log Roblox API requests"`
+	Debug  bool              `toml:"debug" group:"hidden"`
 	Studio Studio            `toml:"studio"`
 	Env    map[string]string `toml:"env" group:"Environment"`
 }

@@ -51,7 +51,7 @@ type Studio struct {
 	ForcedGpu string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
 
 	WineRoot string `toml:"wineroot" group:"Custom Wine" row:"Installation Directory,path"`
-	WebView  string `toml:"webview" group:"Custom Wine" row:"Installs WebView2 for web pages in Studio,entry,Version,109.0.1518.140"`
+	Webview  string `toml:"webview" group:"Custom Wine" row:"For web pages — disable if nonfunctional,entry,Version,109.0.1518.140"`
 	Launcher string `toml:"launcher" group:"Custom Wine" row:"Launcher Command (ex. gamescope)"`
 
 	Env    map[string]string `toml:"env" group:"Environment"`
@@ -106,7 +106,7 @@ func Default() *Config {
 
 		Studio: Studio{
 			DXVK:       "",
-			WebView:    "109.0.1518.140", // Last known win7
+			Webview:    "109.0.1518.140", // Last known win7
 			GameMode:   true,
 			ForcedGpu:  "prime-discrete",
 			Renderer:   "Vulkan",

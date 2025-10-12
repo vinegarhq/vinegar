@@ -125,14 +125,14 @@ install:
 }
 
 func (b *bootstrapper) webviewInstaller() string {
-	if b.cfg.Studio.WebView == "" {
+	if b.cfg.Studio.Webview == "" {
 		return ""
 	}
-	return filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
+	return filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.Webview+".exe")
 }
 
 func (b *bootstrapper) webviewPath() string {
-	return filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView/Application", b.cfg.Studio.WebView)
+	return filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView/Application", b.cfg.Studio.Webview)
 }
 
 func (b *bootstrapper) stepWebviewDownload() error {
@@ -146,8 +146,8 @@ func (b *bootstrapper) stepWebviewDownload() error {
 	}
 
 	stop := b.performing()
-	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
-	d, err := webview2.StableLegacy.Runtime(b.cfg.Studio.WebView, "x64")
+	b.message("Fetching WebView", "upload", b.cfg.Studio.Webview)
+	d, err := webview2.StableLegacy.Runtime(b.cfg.Studio.Webview, "x64")
 	if err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}

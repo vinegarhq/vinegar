@@ -169,6 +169,8 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 
 	dxvk.EnvOverride(pfx, c.Studio.DXVK != "")
 
+	slog.Debug("Using Prefix environment", "env", pfx.Env)
+
 	if c.Studio.WineRoot != "" {
 		w := pfx.Wine("")
 		if w.Err != nil {

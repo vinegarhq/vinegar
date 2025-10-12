@@ -25,7 +25,7 @@ type manager struct {
 func (a *app) newManager() *manager {
 	m := manager{
 		app:     a,
-		builder: gtk.NewBuilderFromResource(gtkutil.Resource("ui/control.ui")),
+		builder: gtk.NewBuilderFromResource(gtkutil.Resource("ui/manager.ui")),
 	}
 
 	m.builder.GetObject("window").Cast(&m.win)

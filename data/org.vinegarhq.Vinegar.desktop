@@ -7,12 +7,12 @@ Icon=org.vinegarhq.Vinegar
 Terminal=false
 Type=Application
 MimeType=application/x-roblox-place;application/x-roblox-model;x-scheme-handler/roblox-studio;x-scheme-handler/roblox-studio-auth;
-Actions=configure;
+Actions=manage;
 Categories=GNOME;GTK;Game;PackageManager;
 Keywords=gaming;launcher;flatpak;
 X-Flatpak-RenamedFrom=org.vinegarhq.Vinegar.studio.desktop;
 X-Flatpak=org.vinegarhq.Vinegar
 
-[Desktop Action configure]
-Name=Configure
-Exec=vinegar config
+[Desktop Action manage]
+Name=Manage
+Exec=vinegar manage

@@ -140,7 +140,7 @@ func (b *bootstrapper) stepWebviewDownload() error {
 	}
 	stop()
 
-	b.message("Downloading WebView", "version", d.Version)
+	b.message("Downloading WebView", "catalog", d.Delivery.CatalogID)
 	return netutil.DownloadProgress(d.URL, name, &b.pbar)
 }
 

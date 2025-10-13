@@ -47,12 +47,12 @@ type Studio struct {
 	WineRoot string `toml:"wineroot" group:"" row:"Installation Directory,path"`
 	Launcher string `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
 
-	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
-	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
-
 	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
 	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
 	ForcedGPU string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
+
+	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
+	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
 	Env    map[string]string `toml:"env" group:"Environment"`
 	FFlags rbxbin.FFlags     `toml:"fflags" group:"Fast Flags"`

@@ -42,8 +42,8 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		return
 	}
 
-	groupName := sf.Tag.Get("group")
-	if groupName == "" {
+	groupName, ok := sf.Tag.Lookup("group")
+	if !ok {
 		panic("adwaux: expected group name for " + sf.Name)
 	}
 	if groupName == "hidden" {
@@ -51,7 +51,6 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 	}
 
 	var group *adw.PreferencesGroup
-	var ok bool
 	if v.Kind() == reflect.Map {
 		group = newMapGroup(v)
 		group.SetTitle(groupName)

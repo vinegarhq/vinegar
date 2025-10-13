@@ -93,6 +93,9 @@
                       <object class="GtkButton" id="btn-prefix-config">
                         <property name="icon-name">preferences-system-symbolic</property>
                         <property name="tooltip-text">Additional Options</property>
+                        <style>
+                          <class name="flat"/>
+                        </style>
                       </object>
                     </property>
                     <property name="separate-rows">True</property>

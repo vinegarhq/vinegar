@@ -67,7 +67,11 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		return // MapKeyGroup was initialized
 	}
 
-	title := configNameExp.ReplaceAllString(sf.Name, `$1 $2`)
+	title := sf.Tag.Get("title")
+	if title == "" {
+		title = sf.Name
+	}
+
 	fields := strings.Split(sf.Tag.Get("row"), ",")
 	description := fields[0]
 	option := ""

@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Studio) card() (*sysinfo.Card, error) {
-	if s.ForcedGpu == "" {
+	if s.ForcedGPU == "" {
 		return nil, nil
 	}
 
@@ -18,7 +18,7 @@ func (s *Studio) card() (*sysinfo.Card, error) {
 	if i, ok := map[string]int{
 		"integrated":     0,
 		"prime-discrete": 1,
-	}[s.ForcedGpu]; ok {
+	}[s.ForcedGPU]; ok {
 		idx = i
 
 		vk := s.DXVK != "" || s.Renderer == "Vulkan"
@@ -35,7 +35,7 @@ func (s *Studio) card() (*sysinfo.Card, error) {
 			return nil, nil
 		}
 	} else {
-		i, err := strconv.Atoi(s.ForcedGpu)
+		i, err := strconv.Atoi(s.ForcedGPU)
 		if err != nil {
 			return nil, err
 		}
@@ -48,7 +48,7 @@ func (s *Studio) card() (*sysinfo.Card, error) {
 	}
 
 	if n < idx+1 {
-		return nil, fmt.Errorf("gpu %s not found", s.ForcedGpu)
+		return nil, fmt.Errorf("gpu %s not found", s.ForcedGPU)
 	}
 
 	return &sysinfo.Cards[idx], nil

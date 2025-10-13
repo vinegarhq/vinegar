@@ -43,15 +43,15 @@ func (v DxvkVersion) String() string {
 }
 
 type Studio struct {
-	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
+	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
 	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
 	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
 	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
-	ForcedGpu string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
+	ForcedGPU string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
 
 	WineRoot string `toml:"wineroot" group:"Custom Wine" row:"Installation Directory,path"`
-	Webview  string `toml:"webview" group:"Custom Wine" row:"For web pages — disable if nonfunctional,entry,Version,109.0.1518.140"`
+	WebView  string `toml:"webview" group:"Custom Wine" row:"Disable if nonfunctional,entry,WebView2 Version,109.0.1518.140" title:"Web Pages"`
 	Launcher string `toml:"launcher" group:"Custom Wine" row:"Launcher Command (ex. gamescope)"`
 
 	Env    map[string]string `toml:"env" group:"Environment"`
@@ -106,9 +106,9 @@ func Default() *Config {
 
 		Studio: Studio{
 			DXVK:       "",
-			Webview:    "109.0.1518.140", // Last known win7
+			WebView:    "109.0.1518.140", // Last known win7
 			GameMode:   true,
-			ForcedGpu:  "prime-discrete",
+			ForcedGPU:  "prime-discrete",
 			Renderer:   "Vulkan",
 			Channel:    "LIVE",
 			DiscordRPC: true,

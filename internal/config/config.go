@@ -28,7 +28,7 @@ func (v *DxvkVersion) UnmarshalTOML(data interface{}) error {
 	case bool:
 		*v = ""
 		if d {
-			*v = "2.7"
+			*v = "2.7.1"
 		}
 	case string:
 		*v = DxvkVersion(d)
@@ -46,7 +46,7 @@ type Studio struct {
 	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile"`
 	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
-	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7"`
+	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
 	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
 	ForcedGpu string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
 

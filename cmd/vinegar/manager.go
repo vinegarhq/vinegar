@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"reflect"
 	"strings"
 
@@ -39,6 +40,10 @@ func (a *app) newManager() *manager {
 	applyCb := func(_ adw.EntryRow) {
 		cmd := m.runner.GetText()
 		args := strings.Fields(cmd)
+		if len(args) < 1 {
+			return
+		}
+		slog.Info("Running Wine command", "args", args)
 		m.app.errThread(m.pfx.Wine(args[0], args[1:]...).Run)
 	}
 	m.runner.ConnectApply(&applyCb)

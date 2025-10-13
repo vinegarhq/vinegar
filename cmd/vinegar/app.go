@@ -151,13 +151,11 @@ func (a *app) setMime() error {
 	slog.Info("Setting as default application for browser login")
 	ok, err := selfApp.SetAsDefaultForType("x-scheme-handler/roblox-studio-auth")
 	if !ok || err != nil {
-		return fmt.Errorf("Cannot gurantee browser login: %w", err)
+		return fmt.Errorf("browser login set: %w", err)
 	}
 	return nil
 }
 
-// Write implements io.Writer for app and is used to exclusively send all
-// data recieved to the log under the WINE log level.
 func (a *app) Write(b []byte) (int, error) {
 	for line := range strings.SplitSeq(string(b), "\n") {
 		if line == "" {

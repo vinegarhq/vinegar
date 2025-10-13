@@ -17,7 +17,7 @@ type objectPtr[T any] interface {
 }
 
 // Slice is an adapatation of [unsafe.Slice] to allow
-// a diffrent type from the origin array.
+// a different type from the origin array.
 //
 // https://go.dev/wiki/cgo#turning-c-arrays-into-go-slices
 func Slice[T any](arr uintptr, size uint) []T {

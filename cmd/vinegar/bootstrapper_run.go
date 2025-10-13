@@ -57,7 +57,7 @@ func (b *bootstrapper) execute(args ...string) error {
 		s := <-c
 		signal.Stop(c)
 
-		slog.Warn("Recieved signal", "signal", s)
+		slog.Warn("Received signal", "signal", s)
 
 		// Only kill Roblox if it hasn't exited
 		if cmd.ProcessState == nil {

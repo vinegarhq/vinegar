@@ -50,7 +50,7 @@ func (b *bootstrapper) setupDeployment() error {
 		return fmt.Errorf("appsettings: %w", err)
 	}
 
-	slog.Info("Successfuly installed!", "guid", b.bin.GUID)
+	slog.Info("Successfully installed!", "guid", b.bin.GUID)
 
 	return nil
 }

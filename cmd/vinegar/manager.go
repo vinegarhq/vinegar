@@ -54,19 +54,18 @@ func (a *app) newManager() *manager {
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
 		"about": m.showAbout,
-
-		"clear-cache": m.clearCache,
 		"open-prefix": func() {
 			gtk.ShowUri(&m.win.Window, "file://"+m.pfx.Dir(), 0)
 		},
 		"open-logs": func() {
 			gtk.ShowUri(&m.win.Window, "file://"+dirs.Logs, 0)
 		},
+		"run": m.run,
 
-		"delete-studio": m.deleteDeployments,
-		"run":           m.run,
 		"prefix-kill":   m.pfx.Kill,
 		"delete-prefix": m.deletePrefixes,
+		"delete-studio": m.deleteDeployments,
+		"clear-cache":   m.clearCache,
 	} {
 		action := gio.NewSimpleAction(name, nil)
 		activate := func(_ gio.SimpleAction, p uintptr) {
@@ -105,4 +104,15 @@ func (m *manager) updateRun() {
 	} else {
 		btn.SetLabel("Initialize")
 	}
+}
+
+func (m *manager) showToast(s string) {
+	var overlay adw.ToastOverlay
+	m.builder.GetObject("overlay").Cast(&overlay)
+
+	gtkutil.IdleAdd(func() {
+		toast := adw.NewToast(s)
+		overlay.AddToast(toast)
+		toast.Unref()
+	})
 }

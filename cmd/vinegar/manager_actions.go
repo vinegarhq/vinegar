@@ -101,22 +101,40 @@ func (m *manager) showAbout() {
 	dialog.Unref()
 }
 
-func (m *manager) deleteDeployments() error {
-	return os.RemoveAll(dirs.Versions)
+func (m *manager) killPrefix() error {
+	if err := m.pfx.Kill(); err != nil {
+		return err
+	}
+
+	m.showToast("Stopped all processes")
+	return nil
 }
 
 func (m *manager) deletePrefixes() error {
 	defer m.hideRunUntil()()
-	slog.Info("Deleting Wineprefixes!")
 
-	// Wineserver isn't required if it's missing.
 	_ = m.pfx.Kill()
+	if err := os.RemoveAll(dirs.Prefixes); err != nil {
+		return err
+	}
 
-	return os.RemoveAll(dirs.Prefixes)
+	m.showToast("Deleted all data")
+	return nil
+}
+
+func (m *manager) deleteDeployments() error {
+	defer m.hideRunUntil()()
+
+	if err := os.RemoveAll(dirs.Versions); err != nil {
+		return err
+	}
+
+	m.showToast("Uninstalled studio")
+	return nil
 }
 
 func (m *manager) clearCache() error {
-	return filepath.WalkDir(dirs.Cache, func(path string, d fs.DirEntry, err error) error {
+	err := filepath.WalkDir(dirs.Cache, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			if errors.Is(err, fs.ErrNotExist) {
 				return nil
@@ -130,4 +148,10 @@ func (m *manager) clearCache() error {
 		slog.Info("Removing cache file", "path", path)
 		return os.RemoveAll(path)
 	})
+	if err != nil {
+		return err
+	}
+
+	m.showToast("Cleared cache")
+	return nil
 }

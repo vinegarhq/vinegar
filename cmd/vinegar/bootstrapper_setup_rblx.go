@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -187,6 +188,9 @@ func (b *bootstrapper) stepPackageInstall(
 func removeUniqueFiles(dir string, included []string) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return
+		}
 		slog.Error("Failed to cleanup directory", "dir", dir, "err", err)
 		return
 	}

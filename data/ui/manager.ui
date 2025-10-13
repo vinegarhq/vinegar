@@ -106,7 +106,7 @@
         </child>
       </object>
     </property>
-    <property name="default-height">512</property>
+    <property name="default-height">608</property>
     <property name="default-width">480</property>
     <property name="title">Vinegar</property>
   </object>

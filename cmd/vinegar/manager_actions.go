@@ -21,8 +21,10 @@ func (m *manager) hideRunUntil() func() {
 	var stack gtk.Stack
 	m.builder.GetObject("stack").Cast(&stack)
 	m.builder.GetObject("btn-run").Cast(&button)
-	stack.SetVisibleChildName("stkpage-spinner")
-	button.SetSensitive(false)
+	gtkutil.IdleAdd(func() {
+		stack.SetVisibleChildName("stkpage-spinner")
+		button.SetSensitive(false)
+	})
 	return func() {
 		gtkutil.IdleAdd(func() {
 			button.SetSensitive(true)

@@ -38,7 +38,7 @@ install: all
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 	install -Dm644 data/$(ID).metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
 	install -Dm644 data/$(ID).desktop -t $(DESTDIR)$(APPPREFIX)
-	install -Dm644 data/vinegar-mime.xml -t $(DESTDIR)$(MIMEPREFIX)/packages
+	install -Dm644 data/$(ID)-studio.xml -t $(DESTDIR)$(MIMEPREFIX)/packages
 	install -Dm644 data/icons/vinegar.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).svg
 	install -Dm644 data/icons/roblox-studio.svg $(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).studio.svg
 	install -Dm644 $(VKLAYER) -t $(DESTDIR)$(LIBPREFIX)
@@ -50,12 +50,13 @@ host:
 	update-mime-database -n $(DESTDIR)$(MIMEPREFIX)
 
 uninstall:
-	# Retain removal of old studio desktop
+	# Retain removal of old studio desktop & old mime name
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar \
 		$(DESTDIR)$(PREFIX)/share/metainfo/$(ID).metainfo.xml \
 		$(DESTDIR)$(APPPREFIX)/$(ID).desktop \
 		$(DESTDIR)$(APPPREFIX)/$(ID).studio.desktop \
 		$(DESTDIR)$(MIMEPREFIX)/packages/vinegar-mime.xml \
+		$(DESTDIR)$(MIMEPREFIX)/packages/$(ID)-studio.xml \
 		$(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).svg \
 		$(DESTDIR)$(ICONPREFIX)/scalable/apps/$(ID).studio.svg \
 		$(DESTDIR)$(LIBPREFIX)/libVkLayer_VINEGAR_VinegarLayer.so \

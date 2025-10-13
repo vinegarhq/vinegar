@@ -15,6 +15,7 @@ func newComboRow(v reflect.Value, list []string) *adw.ComboRow {
 		v.SetString(list[combo.GetSelected()])
 		combo.ActivateActionVariant("win.save", nil)
 	}
+	combo.SetSelected(model.Find(v.String()))
 	combo.ConnectSignal("notify::selected-item", &selectedItem)
 	return combo
 }

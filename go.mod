@@ -15,7 +15,7 @@ require (
 	github.com/altfoxie/drpc v0.0.0-20240929140334-e714e6291275
 	github.com/jwijenbergh/puregotk v0.0.0-20250812133623-7203178b5172
 	github.com/lmittmann/tint v1.1.2
-	github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616
+	github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
 	github.com/sewnie/wine v0.0.0-20251014113431-dd1f083b22a5
 )

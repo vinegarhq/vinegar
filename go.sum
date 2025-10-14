@@ -20,8 +20,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/sewnie/puregotk v0.0.0-20251005215301-c0269d233573 h1:08WePmKy8aV+nZeDFrJ7YMnzHKe730b2H54N30RxM6Y=
 github.com/sewnie/puregotk v0.0.0-20251005215301-c0269d233573/go.mod h1:9FUAoCJsQgot2Zt6tvy1ZrviyMe71bNhWhwo3z36XQY=
-github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616 h1:saD5MNBSS4LsP7metPTBsm6W3Tzd6uaIqjCPBalNUMU=
-github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616/go.mod h1:Ksjrzt8x1UY2ot2QdDrJXYhTEQOjWH8US0CHgKcH+QY=
+github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780 h1:O5c9zKWHqOSzLBhJ1sOpIqFRGCHG4t8isYcfiRb5jvQ=
+github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780/go.mod h1:Ksjrzt8x1UY2ot2QdDrJXYhTEQOjWH8US0CHgKcH+QY=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d h1:9+O1OzqsVhNJVPewE7oJqVymRlm+ej8iArdafc7vfKs=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d/go.mod h1:nSfgVAspLMsixAWAfuTXAjBsiTyMchPxTx+jD3TrM20=
 github.com/sewnie/wine v0.0.0-20251014113431-dd1f083b22a5 h1:Uf6+9mV5KOWdntzBY8MBdzXUFbuOyWTMEivXqVSceV4=

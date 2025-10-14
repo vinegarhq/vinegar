@@ -113,7 +113,7 @@ func (b *bootstrapper) setupPackages() error {
 	})
 
 	b.message("Fetching Installation Directives")
-	pd, err := m.BinaryDirectories(b.rbx, b.bin)
+	pd, err := m.BinaryDirectories(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch package dirs: %w", err)
 	}

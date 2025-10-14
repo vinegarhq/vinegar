@@ -39,12 +39,12 @@ func (m *manager) run() error {
 	defer show()
 
 	if m.pfx.Exists() && len(m.boot.procs) == 0 {
-		if err := m.app.boot.setup(); err != nil {
-			return fmt.Errorf("setup: %w", err)
+		visible := func() {
+			if !m.boot.win.GetVisible() {
+				show()
+			}
 		}
-
-		// When command is finally executed
-		h := m.app.boot.win.ConnectSignal("notify::visible", &show)
+		h := m.app.boot.win.ConnectSignal("notify::visible", &visible)
 		defer func() { m.app.boot.win.DisconnectSignal(h) }()
 		return m.app.boot.run()
 	}

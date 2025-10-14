@@ -76,6 +76,15 @@ func (b *bootstrapper) message(msg string, args ...any) {
 }
 
 func (b *bootstrapper) run(args ...string) error {
+	gtkutil.IdleAdd(func() {
+		b.app.AddWindow(&b.win.Window)
+		b.win.Present()
+	})
+	defer gtkutil.IdleAdd(func() {
+		b.app.RemoveWindow(&b.win.Window)
+		b.win.SetVisible(false) // Incase bailed out
+	})
+
 	if err := b.setup(); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}

@@ -22,11 +22,6 @@ func (b *bootstrapper) setup() error {
 		return nil
 	}
 
-	gtkutil.IdleAdd(func() {
-		b.app.AddWindow(&b.win.Window)
-		b.win.Present()
-	})
-
 	pfxFirstRun := !b.pfx.Exists()
 
 	if err := b.setupPrefix(); err != nil {

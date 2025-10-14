@@ -69,6 +69,14 @@ func (b *bootstrapper) execute(args ...string) error {
 		b.procs = slices.DeleteFunc(b.procs, func(p *os.Process) bool {
 			return p == cmd.Process
 		})
+		if len(b.procs) > 0 {
+			return
+		}
+
+		// Workaround any other stray processes holding Wine up
+		// such as WebView
+		slog.Warn("No more processes left, killing Wineprefix")
+		b.pfx.Kill()
 	}()
 
 	gtkutil.IdleAdd(func() {

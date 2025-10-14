@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
@@ -134,6 +135,7 @@ func (b *bootstrapper) stepWebviewDownload() error {
 
 	stop := b.performing()
 	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
+	webview2.Client.Transport.(*http.Transport).DisableCompression = true
 	d, err := webview2.Stable.Runtime(b.cfg.Studio.WebView, "x64")
 	if err != nil {
 		return fmt.Errorf("fetch: %w", err)

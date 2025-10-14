@@ -24,8 +24,8 @@ github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616 h1:saD5MNBSS4LsP7met
 github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616/go.mod h1:Ksjrzt8x1UY2ot2QdDrJXYhTEQOjWH8US0CHgKcH+QY=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d h1:9+O1OzqsVhNJVPewE7oJqVymRlm+ej8iArdafc7vfKs=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d/go.mod h1:nSfgVAspLMsixAWAfuTXAjBsiTyMchPxTx+jD3TrM20=
-github.com/sewnie/wine v0.0.0-20251014081238-11b6564ffdf5 h1:SvjAiNZ0l43P5fyJ5hoVRZLFte/uxeDLz2gcjEB0fYY=
-github.com/sewnie/wine v0.0.0-20251014081238-11b6564ffdf5/go.mod h1:IbKiMCPd3jWSTrVXxDh4ggy3bvcaNUtI4VnPG9mRYoY=
+github.com/sewnie/wine v0.0.0-20251014113431-dd1f083b22a5 h1:Uf6+9mV5KOWdntzBY8MBdzXUFbuOyWTMEivXqVSceV4=
+github.com/sewnie/wine v0.0.0-20251014113431-dd1f083b22a5/go.mod h1:IbKiMCPd3jWSTrVXxDh4ggy3bvcaNUtI4VnPG9mRYoY=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 golang.org/x/sync v0.17.0 h1:l60nONMj9l5drqw6jlhIELNv9I0A4OFgRsG9k2oT9Ug=

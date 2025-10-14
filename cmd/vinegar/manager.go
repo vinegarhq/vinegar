@@ -118,6 +118,5 @@ func (m *manager) showToast(s string) {
 	gtkutil.IdleAdd(func() {
 		toast := adw.NewToast(s)
 		overlay.AddToast(toast)
-		toast.Unref()
 	})
 }

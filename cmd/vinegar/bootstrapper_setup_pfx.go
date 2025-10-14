@@ -134,7 +134,7 @@ func (b *bootstrapper) stepWebviewDownload() error {
 
 	stop := b.performing()
 	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
-	d, err := webview2.StableLegacy.Runtime(b.cfg.Studio.WebView, "x64")
+	d, err := webview2.Stable.Runtime(b.cfg.Studio.WebView, "x64")
 	if err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}

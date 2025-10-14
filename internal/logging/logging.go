@@ -1,7 +1,4 @@
 // Logging implements levels and a custom handler for use in Vinegar.
-//
-// When this package is imported, it will automatically set itself as the
-// default slog.Handler at the info level.
 package logging
 
 import (
@@ -42,9 +39,6 @@ type Handler struct {
 func init() {
 	// name-2006-01-02T15:04:05Z07:00.log
 	Path = filepath.Join(dirs.Logs, time.Now().Format(time.RFC3339)+".log")
-
-	slog.SetDefault(slog.New(
-		NewHandler(os.Stderr, slog.LevelInfo)))
 }
 
 // Level implements slog.Leveler.

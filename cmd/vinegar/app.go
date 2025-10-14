@@ -77,6 +77,9 @@ func (a *app) reload() error {
 }
 
 func (a *app) startup(_ gio.Application) {
+	slog.SetDefault(slog.New(
+		logging.NewHandler(os.Stderr, slog.LevelInfo)))
+
 	a.boot = a.newBootstrapper()
 
 	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)

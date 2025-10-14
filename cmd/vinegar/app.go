@@ -171,6 +171,15 @@ func (a *app) Write(b []byte) (int, error) {
 			continue
 		}
 
+		if strings.Contains(line, "starting debugger") && !a.cfg.Debug {
+			gtkutil.IdleAdd(func() {
+				a.pfx.Kill()
+				a.showError(errors.New(
+					"Wine unexpectedly crashed, please try again or delete all data!",
+				))
+			})
+		}
+
 		slog.Log(context.Background(), logging.LevelWine.Level(), line)
 	}
 	return len(b), nil

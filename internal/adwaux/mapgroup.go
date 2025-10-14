@@ -1,7 +1,6 @@
 package adwaux
 
 import (
-	"log/slog"
 	"maps"
 	"math"
 	"reflect"
@@ -146,7 +145,6 @@ func (g *mapGroup) addKeyRow(k reflect.Value) {
 		spin := adw.NewSpinRow(adj, 1, 0)
 		row = &spin.PreferencesRow
 		spin.AddSuffix(&remove.Widget)
-		slog.Info("val", "v", v.Int())
 		spin.SetValue(float64(v.Int()))
 		changed := func() {
 			g.mv.SetMapIndex(k, reflect.ValueOf(int64(spin.GetValue())))

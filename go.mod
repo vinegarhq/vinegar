@@ -18,13 +18,13 @@ require (
 	github.com/sewnie/rbxbin v0.0.0-20251006114257-d7e318b45616
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
 	github.com/sewnie/wine v0.0.0-20251014070639-2dcf49b54017
-	golang.org/x/sys v0.37.0
 )
 
 require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/jwijenbergh/purego v0.0.0-20250812133547-b5852df1402b // indirect
 	github.com/otiai10/mint v1.6.3 // indirect
+	golang.org/x/sys v0.37.0 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 )
 

@@ -173,7 +173,7 @@ func (a *app) Write(b []byte) (int, error) {
 
 		if strings.Contains(line, "starting debugger") && !a.cfg.Debug {
 			gtkutil.IdleAdd(func() {
-				a.pfx.Kill()
+				a.pfx.Server(wine.ServerKill, "9")
 				a.showError(errors.New(
 					"Wine unexpectedly crashed, please try again or delete all data!",
 				))

@@ -2,30 +2,41 @@ name: Bug Report
 labels: "bug"
 description: Report a problem you're having
 body:
-  - type: markdown
-    attributes:
-      value: |
-        ### **Preliminary instructions**
-        - Before opening an issue, please check the [troubleshooting page](https://vinegarhq.org/Troubleshooting/index.html) to see if your problem has been addressed there.
-          - If your problem is not present, please check if it [was already reported](https://github.com/vinegarhq/vinegar/issues), and contribute a solution if needed.
-        - If more clarification on the issue is needed, and you don't respond after a month, then your issue will be closed as stale.
-  - type: checkboxes
-    id: terms
-    attributes:
-      label: Acknowledgement of preliminary instructions
+- type: input
+  id: distribution
+  attributes:
+    label: Linux distribution
+    placeholder: e.g., Bazzite, Arch Linux, Chimera Linux
+  validations:
+    required: true
+  
+- type: dropdown
+  id: installation
+  attributes:
+      label: Installation method
       options:
-        - label: I have read the preliminary instructions, and I am certain that my problem has not already been addressed.
-          required: true
-  - type: textarea
-    id: what-happened
-    attributes:
-      label: What problem did you encounter?
-      description: Provide a comprehensive description of the problem you're facing. Don't forget to attach any additional resources you may have, such as log files and screenshots. Logs can be found in `~/.cache/vinegar/logs` or `~/.var/app/org.vinegarhq.Vinegar/cache/vinegar/logs/` for Flatpak.
-    validations:
-      required: true
-  - type: textarea
-    id: sysinfo
-    attributes:
-      label: System information
-      placeholder: Data from Vinegar > About page (top-right) > Troubleshooting > Debugging Information
-      render: shell
+        - Flatpak
+        - Distribution Package
+        - Source
+  validations:
+    required: true
+
+- type: input
+  id: version
+  attributes:
+    label: Vinegar version
+    description: If you're on Flatpak, put the output of `flatpak info -c org.vinegarhq.Vinegar` here.
+  validations:
+    required: true
+    
+- type: textarea
+  id: problem
+  attributes:
+    label: What problem did you encounter?
+    description: >
+      Provide a description of the problem you're facing.
+      Don't forget to attach any log files and screenshots.
+      Logs can be found by clicking 'Open Logs' at the menu in the top-right inside Vinegar's settings page.
+  
+  validations:
+    required: true

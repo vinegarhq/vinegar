@@ -109,7 +109,7 @@ func Default() *Config {
 			WebView:    "141.0.3537.71", // YMMV
 			GameMode:   true,
 			ForcedGPU:  "prime-discrete",
-			Renderer:   "Vulkan",
+			Renderer:   "D3D11",
 			Channel:    "LIVE",
 			DiscordRPC: true,
 			FFlags:     make(rbxbin.FFlags),

@@ -76,6 +76,11 @@ func (b *bootstrapper) message(msg string, args ...any) {
 }
 
 func (b *bootstrapper) run(args ...string) error {
+	if b.win.GetApplication() != nil && b.win.IsVisible() {
+		slog.Warn("Bootstrapper currently in setup, ignoring run request")
+		return nil
+	}
+
 	gtkutil.IdleAdd(func() {
 		b.app.AddWindow(&b.win.Window)
 		b.win.Present()

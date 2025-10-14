@@ -16,8 +16,7 @@ import (
 )
 
 func (b *bootstrapper) setup() error {
-	// Bootstrapper is currently running
-	if b.win.GetApplication() != nil {
+	if len(b.procs) > 0 {
 		slog.Info("Skipping setup!", "ver", b.bin.GUID)
 		return nil
 	}

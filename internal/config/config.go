@@ -110,7 +110,7 @@ func Default() *Config {
 			GameMode:   true,
 			ForcedGPU:  "prime-discrete",
 			Renderer:   "D3D11",
-			Channel:    "LIVE",
+			Channel:    "",
 			DiscordRPC: true,
 			FFlags:     make(rbxbin.FFlags),
 			Env: map[string]string{

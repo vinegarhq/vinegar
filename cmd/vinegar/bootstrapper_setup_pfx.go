@@ -66,9 +66,9 @@ func (b *bootstrapper) stepSetupDxvk() error {
 		return nil
 	}
 
-	b.message("Checking DXVK", "version", b.cfg.Studio.DXVK)
-
 	new := string(b.cfg.Studio.DXVK)
+	b.message("Checking DXVK", "version", new)
+
 	current, err := dxvk.Version(b.pfx)
 	if err != nil {
 		return fmt.Errorf("get version: %w", err)
@@ -89,7 +89,7 @@ func (b *bootstrapper) stepSetupDxvk() error {
 	}
 
 	if err := netutil.DownloadProgress(
-		dxvk.URL(b.cfg.Studio.DXVK.String()), name, &b.pbar); err != nil {
+		dxvk.URL(new), name, &b.pbar); err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
 
@@ -118,10 +118,6 @@ func (b *bootstrapper) webviewInstaller() string {
 	return filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
 }
 
-func (b *bootstrapper) webviewPath() string {
-	return filepath.Join(b.pfx.Dir(), "drive_c/Program Files (x86)/Microsoft/EdgeWebView/Application", b.cfg.Studio.WebView)
-}
-
 func (b *bootstrapper) stepWebviewDownload() error {
 	name := b.webviewInstaller()
 	if name == "" {
@@ -145,17 +141,21 @@ func (b *bootstrapper) stepWebviewDownload() error {
 }
 
 func (b *bootstrapper) stepWebviewInstall() error {
-	name := b.webviewInstaller()
-	path := b.webviewPath()
+	new := b.cfg.Studio.WebView
+	b.message("Checking WebView", "version", new)
 
-	_, err := os.Stat(path)
-	if err == nil && name == "" {
-		b.message("Uninstalling WebView")
-
-		return os.RemoveAll(path)
-	} else if name == "" || (err == nil && name != "") {
+	current := webview2.Current(b.pfx)
+	if current != "" && current != b.cfg.Studio.WebView {
+		b.message("Uninstalling WebView", "current", current, "new", new)
+		if err := webview2.Uninstall(b.pfx, current); err != nil {
+			return fmt.Errorf("uninstall: %w", err)
+		}
+	}
+	if current == new || new == "" {
 		return nil
 	}
+
+	name := b.webviewInstaller()
 
 	b.message("Installing WebView", "path", name)
 	defer b.performing()()

@@ -42,6 +42,14 @@
 	</screenshots>
 
 	<releases>
+		<release version="1.9.1" date="2025-10-14">
+			<description>
+				<ul>
+					<li>Hotfix release, fixing bugs with WebView and FFlags</li>
+					<li>Lower CPU requirements for Wine build</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.9.0" date="2025-10-13">
 			<description>
 				<ul>

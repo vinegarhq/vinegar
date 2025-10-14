@@ -150,7 +150,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
 	env["WINEDLLOVERRIDES"] += ";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
 	if !c.Debug {
-		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm"
+		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"
 	}
 
 	if c.Studio.DXVK != "" {

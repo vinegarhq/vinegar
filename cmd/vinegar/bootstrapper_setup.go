@@ -37,20 +37,16 @@ func (b *bootstrapper) setup() error {
 		stop()
 	}
 
-	if err := b.stepSetupDxvk(); err != nil {
-		return fmt.Errorf("dxvk dl: %w", err)
+	if err := b.setupDxvk(); err != nil {
+		return fmt.Errorf("dxvk: %w", err)
 	}
 
-	if err := b.stepWebviewDownload(); err != nil {
-		return fmt.Errorf("webview dl: %w", err)
+	if err := b.setupWebView(); err != nil {
+		return fmt.Errorf("webview: %w", err)
 	}
 
 	if err := b.setupDeployment(); err != nil {
 		return err
-	}
-
-	if err := b.stepWebviewInstall(); err != nil {
-		return fmt.Errorf("webview: %w", err)
 	}
 
 	if err := b.stepPrepareRun(); err != nil {

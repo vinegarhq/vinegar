@@ -63,7 +63,7 @@ func (b *bootstrapper) setupPrefix() error {
 	return nil
 }
 
-func (b *bootstrapper) stepSetupDxvk() error {
+func (b *bootstrapper) setupDxvk() error {
 	// If DXVK is installed in the wineprefix, uninstallation
 	// won't be necessary if it's disabled as it still requires
 	// DLL overrides to be present.
@@ -116,37 +116,9 @@ install:
 	return nil
 }
 
-func (b *bootstrapper) webviewInstaller() string {
-	if b.cfg.Studio.WebView == "" {
-		return ""
-	}
-	return filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
-}
+func (b *bootstrapper) setupWebView() error {
+	installer := filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
 
-func (b *bootstrapper) stepWebviewDownload() error {
-	name := b.webviewInstaller()
-	if name == "" {
-		return nil
-	}
-
-	if _, err := os.Stat(name); err == nil {
-		return nil
-	}
-
-	stop := b.performing()
-	b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
-	webview2.Client.Transport.(*http.Transport).DisableCompression = true
-	d, err := webview2.Stable.Runtime(b.cfg.Studio.WebView, "x64")
-	if err != nil {
-		return fmt.Errorf("fetch: %w", err)
-	}
-	stop()
-
-	b.message("Downloading WebView", "catalog", d.Delivery.CatalogID)
-	return netutil.DownloadProgress(d.URL, name, &b.pbar)
-}
-
-func (b *bootstrapper) stepWebviewInstall() error {
 	new := b.cfg.Studio.WebView
 	b.message("Checking WebView", "version", new)
 
@@ -161,10 +133,24 @@ func (b *bootstrapper) stepWebviewInstall() error {
 		return nil
 	}
 
-	name := b.webviewInstaller()
+	if _, err := os.Stat(installer); err != nil {
+		stop := b.performing()
+		b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
+		webview2.Client.Transport.(*http.Transport).DisableCompression = true
+		d, err := webview2.Stable.Runtime(b.cfg.Studio.WebView, "x64")
+		if err != nil {
+			return fmt.Errorf("fetch: %w", err)
+		}
+		stop()
 
-	b.message("Installing WebView", "path", name)
+		b.message("Downloading WebView", "catalog", d.Delivery.CatalogID)
+		if err := netutil.DownloadProgress(d.URL, installer, &b.pbar); err != nil {
+			return fmt.Errorf("download: %w", err)
+		}
+	}
+
+	b.message("Installing WebView", "path", installer)
 	defer b.performing()()
 
-	return webview2.Install(b.pfx, name)
+	return webview2.Install(b.pfx, installer)
 }

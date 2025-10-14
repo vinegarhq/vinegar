@@ -21,7 +21,7 @@ import (
 var studio = rbxweb.BinaryTypeWindowsStudio64
 
 func (b *bootstrapper) setupDeployment() error {
-	if err := b.stepFetchDeployment(); err != nil {
+	if err := b.setDeployment(); err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
 	b.dir = filepath.Join(dirs.Versions, b.bin.GUID)
@@ -41,7 +41,7 @@ func (b *bootstrapper) setupDeployment() error {
 		return err
 	}
 
-	if err := b.stepSetupPackages(); err != nil {
+	if err := b.setupPackages(); err != nil {
 		return err
 	}
 
@@ -55,7 +55,7 @@ func (b *bootstrapper) setupDeployment() error {
 	return nil
 }
 
-func (b *bootstrapper) stepFetchDeployment() error {
+func (b *bootstrapper) setDeployment() error {
 	defer b.performing()()
 
 	if b.cfg.Studio.ForcedVersion != "" {
@@ -83,7 +83,7 @@ func (b *bootstrapper) stepFetchDeployment() error {
 	return nil
 }
 
-func (b *bootstrapper) stepSetupPackages() error {
+func (b *bootstrapper) setupPackages() error {
 	stop := b.performing()
 
 	b.message("Finding Mirror")
@@ -120,14 +120,14 @@ func (b *bootstrapper) stepSetupPackages() error {
 
 	stop()
 
-	if err := b.stepPackagesInstall(&m, pkgs, pd); err != nil {
+	if err := b.installPackages(&m, pkgs, pd); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (b *bootstrapper) stepPackagesInstall(
+func (b *bootstrapper) installPackages(
 	mirror *rbxbin.Mirror,
 	pkgs []rbxbin.Package,
 	pdirs rbxbin.PackageDirectories,
@@ -139,7 +139,7 @@ func (b *bootstrapper) stepPackagesInstall(
 	b.message("Installing Packages", "count", len(pkgs), "dir", b.dir)
 	for _, pkg := range pkgs {
 		group.Go(func() error {
-			if err := b.stepPackageInstall(mirror, pdirs, &pkg); err != nil {
+			if err := b.installPackage(mirror, pdirs, &pkg); err != nil {
 				return err
 			}
 
@@ -159,7 +159,7 @@ func (b *bootstrapper) stepPackagesInstall(
 	return nil
 }
 
-func (b *bootstrapper) stepPackageInstall(
+func (b *bootstrapper) installPackage(
 	mirror *rbxbin.Mirror,
 	pdirs rbxbin.PackageDirectories,
 	pkg *rbxbin.Package,

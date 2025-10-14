@@ -99,7 +99,7 @@ func (b *bootstrapper) run(args ...string) error {
 
 func (b *bootstrapper) handleRobloxLog(line string) {
 	switch {
-	case strings.Contains(line, "ANR In Progress."):
+	case strings.Contains(line, "ANR In Progress. ApplicationState: Background"):
 		// Roblox normally exits after submitting ANR data to
 		// ecsv2.roblox.com, but in Wine it does nothing.
 		syscall.Kill(syscall.Getpid(), syscall.SIGTERM)

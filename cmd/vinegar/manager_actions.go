@@ -62,13 +62,12 @@ func (m *manager) saveConfig() {
 	m.builder.GetObject("banner-config-error").Cast(&banner)
 	banner.SetRevealed(false)
 
-	if err := m.cfg.Save(); err != nil {
-		m.showError(err)
-		return
-	}
-
 	err := m.reload()
 	if err == nil {
+		slog.Info("Saving configuration!")
+		if err := m.cfg.Save(); err != nil {
+			m.showError(fmt.Errorf("save config: %w", err))
+		}
 		return
 	}
 

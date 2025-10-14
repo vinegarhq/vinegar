@@ -42,7 +42,6 @@ func newApp() *app {
 			// an effective wrapper for Studio arguments.
 			gio.GApplicationHandlesCommandLineValue,
 		),
-		cfg: config.Default(),
 		rbx: rbxweb.NewClient(),
 	}
 
@@ -57,8 +56,6 @@ func newApp() *app {
 }
 
 func (a *app) reload() error {
-	slog.Info("Reloading!")
-
 	pfx, err := a.cfg.Prefix()
 	if err != nil {
 		return fmt.Errorf("prefix configure: %w", err)
@@ -92,9 +89,9 @@ func (a *app) startup(_ gio.Application) {
 	cfg, err := config.Load()
 	if err != nil {
 		a.showError(fmt.Errorf("config error: %w", err))
-	} else {
-		a.cfg = cfg
+		return
 	}
+	a.cfg = cfg
 
 	if err := a.reload(); err != nil {
 		a.showError(err)
@@ -102,9 +99,8 @@ func (a *app) startup(_ gio.Application) {
 }
 
 func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
-	if a.keepLog {
-		// Error dialog is open currently
-		return 0
+	if a.cfg == nil || a.pfx == nil {
+		return 1
 	}
 
 	cl := gio.ApplicationCommandLineNewFromInternalPtr(clPtr)

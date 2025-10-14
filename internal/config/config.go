@@ -43,7 +43,7 @@ func (v DxvkVersion) String() string {
 }
 
 type Studio struct {
-	WebView  string `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version,109.0.1518.140" title:"Web Pages"`
+	WebView  string `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version,141.0.3537.71" title:"Web Pages"`
 	WineRoot string `toml:"wineroot" group:"" row:"Installation Directory,path"`
 	Launcher string `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
 
@@ -106,7 +106,7 @@ func Default() *Config {
 
 		Studio: Studio{
 			DXVK:       "",
-			WebView:    "109.0.1518.140", // Last known win7
+			WebView:    "141.0.3537.71", // YMMV
 			GameMode:   true,
 			ForcedGPU:  "prime-discrete",
 			Renderer:   "Vulkan",

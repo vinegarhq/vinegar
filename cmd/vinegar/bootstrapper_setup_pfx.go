@@ -30,6 +30,10 @@ func (b *bootstrapper) setupPrefix() error {
 		return fmt.Errorf("winedbg set: %w", err)
 	}
 
+	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\X11 Driver`, "UseEGL", "Y"); err != nil {
+		return fmt.Errorf("egl set: %w", err)
+	}
+
 	// Latest versions of studio require a implemented call, check if the given
 	// prefix supports it
 	if b.cfg.Studio.ForcedVersion != "" {

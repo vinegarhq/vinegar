@@ -18,7 +18,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-var studio = rbxweb.BinaryTypeWindowsStudio64
+var (
+	studio     = rbxweb.BinaryTypeWindowsStudio64
+	channelKey = `HKCU\Software\ROBLOX Corporation\Environments\RobloxStudio\Channel`
+)
 
 func (b *bootstrapper) setupDeployment() error {
 	if err := b.setDeployment(); err != nil {
@@ -45,9 +48,19 @@ func (b *bootstrapper) setupDeployment() error {
 		return err
 	}
 
+	defer b.performing()()
+
 	b.message("Writing AppSettings")
 	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
 		return fmt.Errorf("appsettings: %w", err)
+	}
+
+	// Default channel is none, but UserChannel will set LIVE.
+	if b.bin.Channel != "" && b.bin.Channel != "LIVE" {
+		b.message("Writing Registry")
+		if err := b.pfx.RegistryAdd(channelKey, "www.roblox.com", b.bin.Channel); err != nil {
+			return fmt.Errorf("set channel reg: %w")
+		}
 	}
 
 	slog.Info("Successfully installed!", "guid", b.bin.GUID)

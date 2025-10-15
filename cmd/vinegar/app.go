@@ -170,18 +170,21 @@ func (a *app) Write(b []byte) (int, error) {
 			continue
 		}
 
-		if strings.Contains(line, "starting debugger") && !a.cfg.Debug {
-			gtkutil.IdleAdd(func() {
-				a.pfx.Server(wine.ServerKill, "9")
-				a.showError(errors.New(
-					"Wine unexpectedly crashed, please try again or delete all data!",
-				))
-			})
-		}
-
-		slog.Log(context.Background(), logging.LevelWine.Level(), line)
+		a.handleWineLog(line)
 	}
 	return len(b), nil
+}
+
+func (a *app) handleWineLog(line string) {
+	if strings.Contains(line, "to unimplemented function advapi32.dll.SystemFunction036") {
+		err := errors.New("Your Wineprefix is corrupt! Please delete all data in Vinegar's settings.")
+		gtkutil.IdleAdd(func() {
+			a.pfx.Server(wine.ServerKill, "9")
+			a.showError(err)
+		})
+	}
+
+	slog.Log(context.Background(), logging.LevelWine.Level(), line)
 }
 
 func (a *app) errThread(fn func() error) {

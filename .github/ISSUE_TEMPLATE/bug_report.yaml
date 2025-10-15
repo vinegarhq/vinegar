@@ -2,6 +2,11 @@ name: Bug Report
 labels: "bug"
 description: Report a problem you're having
 body:
+- type: markdown
+  attributes:
+    value: |
+      Before submitting a bug report, please visit [Vinegar's Troubleshooting page](https://vinegarhq.org/Vinegar/Troubleshooting.html), and only
+      create a bug report if it isn't mentioned in the troubleshooting page. Ensure your bug report hasn't already been reported as well.
 - type: input
   id: distribution
   attributes:

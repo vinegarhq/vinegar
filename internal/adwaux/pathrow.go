@@ -7,7 +7,6 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
 )
 
 func newPathRow(v reflect.Value) *adw.ActionRow {
@@ -42,7 +41,7 @@ func newPathRow(v reflect.Value) *adw.ActionRow {
 	openClicked := func(_ gtk.Button) {
 		dialog := gtk.NewFileDialog()
 		var ready gio.AsyncReadyCallback = func(_, resPtr, _ uintptr) {
-			res := gtkutil.AsyncResultFromInternalPtr(resPtr)
+			res := gio.SimpleAsyncResultNewFromInternalPtr(resPtr)
 			f, err := dialog.SelectFolderFinish(res)
 			if err != nil {
 				slog.Error("FileDialog error", "err", err)

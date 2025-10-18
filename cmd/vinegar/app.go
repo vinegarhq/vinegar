@@ -210,10 +210,10 @@ func (a *app) showError(e error) {
 	d.SetDefaultResponse("okay")
 	d.SetResponseAppearance("open", adw.ResponseSuggestedValue)
 
-	var ccb gio.AsyncReadyCallback = func(_ uintptr, res uintptr, _ uintptr) {
+	var ccb gio.AsyncReadyCallback = func(_ uintptr, resPtr uintptr, _ uintptr) {
 		defer a.Release()
-		ar := gtkutil.AsyncResultFromInternalPtr(res)
-		r := d.ChooseFinish(ar)
+		res := gio.SimpleAsyncResultNewFromInternalPtr(resPtr)
+		r := d.ChooseFinish(res)
 		slog.Default()
 		uri := "file://" + logging.Path
 		if r == "open" {

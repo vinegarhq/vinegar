@@ -62,10 +62,10 @@ type Studio struct {
 }
 
 type Config struct {
-	Debug  bool   `toml:"debug" group:"hidden"`
 	Studio Studio `toml:"studio"`
 	// Only adds to Studio.Env, reserved for backwards compatibility
-	Env map[string]string `toml:"env" group:"hidden"`
+	Env   map[string]string `toml:"env" group:"hidden"`
+	Debug bool              `toml:"debug" group:"Behavior" row:"Output Studio logs and Web API requests"`
 }
 
 var (
@@ -148,6 +148,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 	}
 
 	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
+	env["XR_LOADER_DEBUG"] = "none"      // already shown in Roblox log
 	env["WINEDLLOVERRIDES"] += ";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
 	if !c.Debug {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"

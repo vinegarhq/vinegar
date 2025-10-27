@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -60,8 +61,8 @@ func (a *app) reload() error {
 	if err != nil {
 		return fmt.Errorf("prefix configure: %w", err)
 	}
-	pfx.Stderr = a
-	pfx.Stdout = a
+	pfx.Stderr = io.Writer(a)
+	pfx.Stdout = pfx.Stderr
 
 	if a.cfg.Debug {
 		a.rbx.Client.Transport = &debugTransport{
@@ -156,18 +157,14 @@ func (a *app) setMime() error {
 }
 
 func (a *app) Write(b []byte) (int, error) {
-	for line := range strings.SplitSeq(string(b), "\n") {
-		if line == "" {
-			continue
-		}
-
+	for line := range strings.SplitSeq(string(b[:len(b)-1]), "\n") {
 		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
 		if a.boot != nil && len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
 			// Avoid "\n" calls to OutputDebugStringA
-			if len(line) >= 87 {
+			if len(line) >= 44 {
 				a.boot.handleRobloxLog(line[39 : len(line)-1])
 			}
-			continue
+			return len(b), nil
 		}
 
 		a.handleWineLog(line)

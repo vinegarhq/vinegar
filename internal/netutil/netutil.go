@@ -54,8 +54,7 @@ func DownloadProgress(url, file string, pbar *gtk.ProgressBar) error {
 		pbar:  pbar,
 	}
 
-	var idlecb glib.SourceFunc
-	idlecb = func(uintptr) bool {
+	var idlecb glib.SourceFunc = func(uintptr) bool {
 		pbar.SetFraction(float64(pc.current) / float64(pc.total))
 		return pc.current != pc.total
 	}

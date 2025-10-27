@@ -11,8 +11,6 @@ import (
 	"github.com/sewnie/rbxweb"
 )
 
-const appID = "1159891020956323923"
-
 type StudioRPC struct {
 	presence drpc.Activity
 	client   *drpc.Client

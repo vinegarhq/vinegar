@@ -74,7 +74,6 @@ func (m *manager) saveConfig() {
 	banner.SetTitle(fmt.Sprintf("Invalid: %v", err))
 	banner.SetRevealed(true)
 	slog.Info("Configuration validation error", "err", err)
-	return
 }
 
 func (m *manager) showAbout() {

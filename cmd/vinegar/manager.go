@@ -67,7 +67,7 @@ func (a *app) newManager() *manager {
 		},
 		"run": m.run,
 
-		"prefix-kill":   m.pfx.Kill,
+		"prefix-kill":   m.killPrefix,
 		"delete-prefix": m.deletePrefixes,
 		"delete-studio": m.deleteDeployments,
 		"clear-cache":   m.clearCache,

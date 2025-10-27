@@ -59,7 +59,7 @@ func (b *bootstrapper) setupDeployment() error {
 	if b.bin.Channel != "" && b.bin.Channel != "LIVE" {
 		b.message("Writing Registry")
 		if err := b.pfx.RegistryAdd(channelKey, "www.roblox.com", b.bin.Channel); err != nil {
-			return fmt.Errorf("set channel reg: %w")
+			return fmt.Errorf("set channel reg: %w", err)
 		}
 	}
 

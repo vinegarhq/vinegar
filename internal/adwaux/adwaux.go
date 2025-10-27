@@ -4,14 +4,10 @@ package adwaux
 
 import (
 	"reflect"
-	"regexp"
 	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 )
-
-// Transform value names to their Title Case counterparts
-var configNameExp = regexp.MustCompile(`([a-z])([A-Z])`)
 
 type StructPage struct {
 	sv     reflect.Value

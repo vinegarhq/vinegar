@@ -2,11 +2,10 @@
 package studiorpc
 
 import (
-	"fmt"
 	"log/slog"
-	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/altfoxie/drpc"
 	"github.com/sewnie/rbxweb"
@@ -14,63 +13,93 @@ import (
 
 const appID = "1159891020956323923"
 
-const (
-	gameOpenEntry  = "[FLog::LifecycleManager] Entered PlaceSessionScope:"
-	gameCloseEntry = "[FLog::LifecycleManager] Exited PlaceSessionScope:"
-)
-
-var gameOpenEntryPattern = regexp.MustCompile(`Entered PlaceSessionScope:'([0-9]+)'`)
-
 type StudioRPC struct {
 	presence drpc.Activity
 	client   *drpc.Client
 	rbx      *rbxweb.Client
 
-	placeID rbxweb.PlaceID
+	place *rbxweb.PlaceDetail
 }
 
-func New() *StudioRPC {
-	c, _ := drpc.New("1159891020956323923")
+func New(c *rbxweb.Client) *StudioRPC {
 	return &StudioRPC{
-		client: c,
-		rbx:    rbxweb.NewClient(),
+		client: drpc.New("1159891020956323923"),
+		rbx:    c,
+		presence: drpc.Activity{
+			Assets: &drpc.Assets{
+				LargeImage: "studio",
+				LargeText:  "Vinegar",
+			},
+		},
 	}
 }
 
-// Handle implements the BinaryRichPresence interface
 func (s *StudioRPC) Handle(line string) error {
-	if strings.Contains(line, gameOpenEntry) {
-		return s.handleGameOpen(line)
-	} else if strings.Contains(line, gameCloseEntry) {
-		return s.handleGameClose()
+	for _, handler := range []func(string) error{
+		s.handleOpen,
+		s.handleEdit,
+	} {
+		if err := handler(line); err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func (s *StudioRPC) handleGameOpen(line string) error {
-	m := gameOpenEntryPattern.FindStringSubmatch(line)
-	if len(m) != 2 {
-		return fmt.Errorf("log game join report entry is invalid")
+func (s *StudioRPC) handleOpen(line string) error {
+	const entry = "[FLog::StudioKeyEvents] open place (identifier = "
+	if !strings.HasPrefix(line, entry) {
+		return nil
 	}
 
-	pid, err := strconv.ParseInt(m[1], 10, 64)
+	// open place (identifier = $id) [start]
+	i, err := strconv.ParseInt(line[len(entry):len(line)-len(") [start]")], 10, 64)
 	if err != nil {
 		return err
 	}
+	place := rbxweb.PlaceID(i)
 
-	s.placeID = rbxweb.PlaceID(pid)
+	slog.Info("studiorpc: Opened Place", "placeid", i)
 
-	slog.Info("Handled GameOpen", "placeid", s.placeID)
+	s.place, err = s.rbx.GamesV1.GetPlaceDetail(place)
+	if err != nil {
+		slog.Error("studiorpc: Failed to fetch place detail", "err", err)
+	}
 
-	return s.UpdateGamePresence()
+	s.presence.Timestamps = &drpc.Timestamps{
+		Start: time.Now(),
+	}
+
+	return nil
 }
 
-func (s *StudioRPC) handleGameClose() error {
-	s.presence = drpc.Activity{}
-	s.placeID = rbxweb.PlaceID(0)
-
-	slog.Info("Handled GameClose")
+func (s *StudioRPC) handleEdit(line string) error {
+	const entry = "[FLog::RobloxDocManager] Setting current doc to type "
+	if !strings.HasPrefix(line, entry) {
+		return nil
+	}
+	slog.Info("studiorpc: Changed main view")
+	switch line[len(entry):] {
+	case "-1":
+		s.place = nil
+		s.presence.Details = "Idling"
+		s.presence.State = ""
+		s.presence.Assets.SmallImage = ""
+		s.presence.Timestamps = &drpc.Timestamps{
+			Start: time.Now(),
+		}
+	case "0":
+		s.presence.Details = "Developing a place"
+		s.presence.State = ""
+		s.presence.Assets.SmallImage = "place"
+		if s.place != nil {
+			s.presence.Details = "Developing " + s.place.Name
+		}
+	case "2":
+		s.presence.State = "Editing Script"
+		s.presence.Assets.SmallImage = "script"
+	}
 
 	return s.client.SetActivity(s.presence)
 }

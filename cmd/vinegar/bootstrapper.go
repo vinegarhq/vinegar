@@ -41,7 +41,7 @@ func (a *app) newBootstrapper() *bootstrapper {
 
 	b := bootstrapper{
 		app: a,
-		rp:  studiorpc.New(),
+		rp:  studiorpc.New(a.rbx),
 	}
 
 	builder.GetObject("window").Cast(&b.win)

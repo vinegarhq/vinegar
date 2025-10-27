@@ -37,7 +37,7 @@ func newMapGroup(mv reflect.Value) *adw.PreferencesGroup {
 	add.AddCssClass("flat")
 
 	new := gtk.NewPopover()
-	add.SetPopover(&new.Widget)
+	add.SetPopover(new)
 
 	addName := gtk.NewEntry()
 	addName.SetPlaceholderText("Key name to add")

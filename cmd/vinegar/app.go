@@ -184,31 +184,30 @@ func (a *app) handleWineLog(line string) {
 	slog.Log(context.Background(), logging.LevelWine.Level(), line)
 }
 
-
 // GetPrefixForDesktop returns the appropriate prefix for a given desktop
 func (a *app) GetPrefixForDesktop(desktopName string) *wine.Prefix {
-if a.cfg.DesktopManager.Enabled && desktopName != "" {
-if pfx, exists := a.prefixes[desktopName]; exists {
-return pfx
-}
-// If desktop doesn't exist, create it on-demand
-if pfx, err := a.cfg.PrefixForDesktop(desktopName); err == nil {
-pfx.Stderr = io.Writer(a)
-pfx.Stdout = pfx.Stderr
-a.prefixes[desktopName] = pfx
-return pfx
-}
-}
-// Fallback to default prefix
-return a.pfx
+	if a.cfg.DesktopManager.Enabled && desktopName != "" {
+		if pfx, exists := a.prefixes[desktopName]; exists {
+			return pfx
+		}
+		// If desktop doesn't exist, create it on-demand
+		if pfx, err := a.cfg.PrefixForDesktop(desktopName); err == nil {
+			pfx.Stderr = io.Writer(a)
+			pfx.Stdout = pfx.Stderr
+			a.prefixes[desktopName] = pfx
+			return pfx
+		}
+	}
+	// Fallback to default prefix
+	return a.pfx
 }
 
 // AssignDesktopForInstance assigns a desktop for a new Roblox instance
 func (a *app) AssignDesktopForInstance() string {
-if !a.cfg.DesktopManager.Enabled {
-return "studio"
-}
-return a.cfg.AssignDesktop()
+	if !a.cfg.DesktopManager.Enabled {
+		return "studio"
+	}
+	return a.cfg.AssignDesktop()
 }
 func (a *app) errThread(fn func() error) {
 	go func() {

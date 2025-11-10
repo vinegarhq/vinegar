@@ -22,15 +22,15 @@ func (b *bootstrapper) setupPrefix() error {
 	// Always initialize in case Wine changes,
 	// to prevent a dialog from appearing in normal apps.
 	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
-	if err := b.pfx.Init().Run(); err != nil {
+	if err := b.currentPfx.Init().Run(); err != nil {
 		return err
 	}
 
-	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\WineDbg`, "ShowCrashDialog", uint(0)); err != nil {
+	if err := b.currentPfx.RegistryAdd(`HKCU\Software\Wine\WineDbg`, "ShowCrashDialog", uint(0)); err != nil {
 		return fmt.Errorf("winedbg set: %w", err)
 	}
 
-	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\X11 Driver`, "UseEGL", "Y"); err != nil {
+	if err := b.currentPfx.RegistryAdd(`HKCU\Software\Wine\X11 Driver`, "UseEGL", "Y"); err != nil {
 		return fmt.Errorf("egl set: %w", err)
 	}
 
@@ -78,7 +78,7 @@ func (b *bootstrapper) setupDxvk() error {
 	new := string(b.cfg.Studio.DXVK)
 	b.message("Checking DXVK", "version", new)
 
-	current, err := dxvk.Version(b.pfx)
+	current, err := dxvk.Version(b.currentPfx)
 	if err != nil {
 		return fmt.Errorf("get version: %w", err)
 	}
@@ -113,7 +113,7 @@ install:
 
 	b.message("Extracting DXVK", "version", new)
 
-	if err := dxvk.Extract(b.pfx, f); err != nil {
+	if err := dxvk.Extract(b.currentPfx, f); err != nil {
 		return fmt.Errorf("extract: %w", err)
 	}
 
@@ -126,10 +126,10 @@ func (b *bootstrapper) setupWebView() error {
 	new := b.cfg.Studio.WebView
 	b.message("Checking WebView", "version", new)
 
-	current := webview2.Current(b.pfx)
+	current := webview2.Current(b.currentPfx)
 	if current != "" && current != b.cfg.Studio.WebView {
 		b.message("Uninstalling WebView", "current", current, "new", new)
-		if err := webview2.Uninstall(b.pfx, current); err != nil {
+		if err := webview2.Uninstall(b.currentPfx, current); err != nil {
 			return fmt.Errorf("uninstall: %w", err)
 		}
 	}
@@ -156,5 +156,5 @@ func (b *bootstrapper) setupWebView() error {
 	b.message("Installing WebView", "path", installer)
 	defer b.performing()()
 
-	return webview2.Install(b.pfx, installer)
+	return webview2.Install(b.currentPfx, installer)
 }

@@ -19,7 +19,7 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 		args = []string{"-protocolString", args[0]}
 	}
 
-	cmd := b.pfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
+	cmd := b.currentPfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
 	if cmd.Err != nil {
 		return nil, cmd.Err
 	}
@@ -76,7 +76,7 @@ func (b *bootstrapper) execute(args ...string) error {
 		// Workaround any other stray processes holding Wine up
 		// such as WebView
 		slog.Warn("No more processes left, killing Wineprefix")
-		b.pfx.Kill()
+		b.currentPfx.Kill()
 	}()
 
 	gtkutil.IdleAdd(func() {

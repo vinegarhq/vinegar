@@ -21,7 +21,7 @@ func (b *bootstrapper) setup() error {
 		return nil
 	}
 
-	pfxFirstRun := !b.pfx.Exists()
+	pfxFirstRun := !b.currentPfx.Exists()
 
 	if err := b.setupPrefix(); err != nil {
 		return err
@@ -86,7 +86,7 @@ func (b *bootstrapper) stepPrepareRun() error {
 
 	// If no setup took place, this will go immediately.
 	slog.Info("Kickstarting Wineserver")
-	if err := b.pfx.Server(); err != nil {
+	if err := b.currentPfx.Server(); err != nil {
 		return fmt.Errorf("server: %w, check logs", err)
 	}
 

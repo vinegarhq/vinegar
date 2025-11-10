@@ -1,0 +1,60 @@
+# Vinegar Multi-Desktop Configuration Sample
+# This configuration demonstrates the new multi-desktop support features
+
+[studio]
+# Standard Studio configuration
+webview = "141.0.3537.71"
+dxvk = ""
+renderer = "D3D11"
+gpu = "prime-discrete"
+gamemode = true
+discord_rpc = true
+launcher = ""
+
+[studio.env]
+WINEESYNC = "1"
+
+[studio.fflags]
+# Add your custom fast flags here
+
+[desktop_manager]
+# Enable multi-desktop support
+enabled = true
+
+# Automatically assign desktops to new instances
+auto_assign = true
+
+# Maximum number of desktops to create
+max_desktops = 10
+
+# Default desktop name when no specific desktop is requested
+default_desktop = "desktop-1"
+
+# Prefix for automatically generated desktop names
+desktop_prefix = "desktop-"
+
+# Isolation level: "full", "basic", or "minimal"
+isolation_level = "basic"
+
+# Define specific desktop configurations
+[[desktop_manager.desktops]]
+name = "development"
+path = ""
+env = { "WINEDEBUG" = "+all", "VINEGAR_DESKTOP_TYPE" = "development" }
+
+[[desktop_manager.desktops]]
+name = "testing"
+path = ""
+env = { "WINEDEBUG" = "warn+err", "VINEGAR_DESKTOP_TYPE" = "testing" }
+
+[[desktop_manager.desktops]]
+name = "production"
+path = ""
+env = { "WINEDEBUG" = "fixme-all", "VINEGAR_DESKTOP_TYPE" = "production" }
+
+# Global environment variables (backward compatibility)
+[env]
+# Add global environment variables here
+
+# Debug settings
+debug = false

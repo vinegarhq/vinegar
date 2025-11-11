@@ -34,7 +34,6 @@ default_desktop = "desktop-1"
 desktop_prefix = "desktop-"
 
 # Isolation level: "full", "basic", or "minimal"
-isolation_level = "basic"
 
 # Define specific desktop configurations
 [[desktop_manager.desktops]]

@@ -55,7 +55,6 @@ type DesktopManager struct {
 	DefaultDesktop string          `toml:"default_desktop" group:"Desktop Management" row:"Default desktop name,entry,Name,desktop-1"`
 	DesktopPrefix  string          `toml:"desktop_prefix" group:"Desktop Management" row:"Prefix for desktop names,entry,Prefix,desktop-"`
 	Desktops       []DesktopConfig `toml:"desktops" group:"Desktop Management"`
-	IsolationLevel string          `toml:"isolation_level" group:"Desktop Management" row:"Isolation level,vals,full,basic,minimal"`
 }
 
 type Studio struct {
@@ -141,7 +140,6 @@ func Default() *Config {
 				DefaultDesktop: "desktop-1",
 				DesktopPrefix:  "desktop-",
 				Desktops:       []DesktopConfig{},
-				IsolationLevel: "basic",
 			},
 		},
 	}

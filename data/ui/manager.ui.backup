@@ -1,0 +1,160 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Created with Cambalache 0.97.9 -->
+<interface>
+  <!-- interface-name manager.ui -->
+  <requires lib="gio" version="2.0"/>
+  <requires lib="gtk" version="4.18"/>
+  <requires lib="libadwaita" version="1.6"/>
+  <object class="AdwApplicationWindow" id="window">
+    <property name="content">
+      <object class="AdwToastOverlay" id="overlay">
+        <property name="child">
+          <object class="AdwToolbarView">
+            <property name="content">prefpage-main</property>
+            <child type="top">
+              <object class="AdwHeaderBar">
+                <child type="end">
+                  <object class="GtkMenuButton">
+                    <property name="icon-name">open-menu-symbolic</property>
+                    <property name="menu-model">menumodel-app</property>
+                    <property name="primary">True</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="AdwPreferencesPage" id="prefpage-main">
+                <property name="banner">
+                  <object class="AdwBanner" id="banner-config-error"/>
+                </property>
+                <child>
+                  <object class="AdwPreferencesGroup">
+                    <child>
+                      <object class="GtkBox">
+                        <property name="halign">center</property>
+                        <property name="hexpand">False</property>
+                        <property name="homogeneous">False</property>
+                        <property name="spacing">6</property>
+                        <property name="valign">fill</property>
+                        <property name="vexpand">False</property>
+                        <child>
+                          <object class="GtkButton" id="btn-run">
+                            <property name="action-name">win.run</property>
+                            <property name="child">
+                              <object class="GtkStack" id="stack">
+                                <child>
+                                  <object class="GtkStackPage">
+                                    <property name="child">
+                                      <object class="AdwButtonContent" id="btnc-run">
+                                        <property name="icon-name">mail-mark-junk-symbolic</property>
+                                        <property name="label">Uninitialized</property>
+                                      </object>
+                                    </property>
+                                    <property name="name">stkpage-btn</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="GtkStackPage">
+                                    <property name="child">
+                                      <object class="AdwSpinner"/>
+                                    </property>
+                                    <property name="name">stkpage-spinner</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </property>
+                            <property name="sensitive">True</property>
+                            <style>
+                              <class name="pill"/>
+                              <class name="suggested-action"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkMenuButton">
+                            <property name="active">False</property>
+                            <property name="has-frame">True</property>
+                            <property name="icon-name">view-more-symbolic</property>
+                            <property name="menu-model">menumodel-run</property>
+                            <property name="primary">False</property>
+                            <property name="valign">center</property>
+                            <style>
+                              <class name="circular"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child>
+                  <object class="AdwPreferencesGroup" id="prefgroup-wine">
+                    <property name="header-suffix">
+                      <object class="GtkButton" id="btn-prefix-config">
+                        <property name="icon-name">preferences-system-symbolic</property>
+                        <property name="tooltip-text">Additional Options</property>
+                        <style>
+                          <class name="flat"/>
+                        </style>
+                      </object>
+                    </property>
+                    <property name="separate-rows">False</property>
+                    <property name="title">Wine</property>
+                    <child>
+                      <object class="AdwEntryRow" id="entry-prefix-run">
+                        <property name="show-apply-button">True</property>
+                        <property name="title">Run Wine Command</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </property>
+      </object>
+    </property>
+    <property name="default-height">608</property>
+    <property name="default-width">480</property>
+    <property name="title">Vinegar</property>
+  </object>
+  <menu id="menumodel-run">
+    <section>
+      <item>
+        <attribute name="action">win.prefix-kill</attribute>
+        <attribute name="icon">process-stop-symbolic</attribute>
+        <attribute name="label">Stop Processes</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="action">win.open-prefix</attribute>
+        <attribute name="label">Open Files</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
+        <attribute name="action">win.delete-studio</attribute>
+        <attribute name="label">Uninstall Studio</attribute>
+      </item>
+      <item>
+        <attribute name="action">win.delete-prefix</attribute>
+        <attribute name="label">Delete All Data</attribute>
+      </item>
+    </section>
+  </menu>
+  <menu id="menumodel-app">
+    <item>
+      <attribute name="action">win.about</attribute>
+      <attribute name="label">About Vinegar</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.clear-cache</attribute>
+      <attribute name="label">Clear Cache</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.open-logs</attribute>
+      <attribute name="label">Open Logs</attribute>
+    </item>
+  </menu>
+</interface>

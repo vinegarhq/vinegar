@@ -23,11 +23,11 @@ import (
 type app struct {
 	*adw.Application
 
-	cfg *config.Config
-	pfx *wine.Prefix
-prefixes map[string]*wine.Prefix
-	rbx *rbxweb.Client
-	bus *gio.DBusConnection // nullable
+	cfg      *config.Config
+	pfx      *wine.Prefix
+	prefixes map[string]*wine.Prefix
+	rbx      *rbxweb.Client
+	bus      *gio.DBusConnection // nullable
 
 	mgr  *manager // nullable
 	boot *bootstrapper
@@ -202,7 +202,6 @@ func (a *app) GetPrefixForDesktop(desktopName string) *wine.Prefix {
 	// Fallback to default prefix
 	return a.pfx
 }
-
 func (a *app) AssignDesktopForInstance() string {
 	if !a.cfg.DesktopManager.Enabled {
 		return "studio"

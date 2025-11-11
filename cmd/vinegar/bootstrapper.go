@@ -14,10 +14,10 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxbin"
+	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
-"github.com/sewnie/wine"
 )
 
 type bootstrapper struct {
@@ -28,9 +28,9 @@ type bootstrapper struct {
 	status gtk.Label
 	info   gtk.Label
 
-	dir string
-	bin *rbxbin.Deployment
-currentPfx *wine.Prefix
+	dir        string
+	bin        *rbxbin.Deployment
+	currentPfx *wine.Prefix
 
 	procs []*os.Process
 

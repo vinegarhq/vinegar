@@ -153,3 +153,20 @@ func (m *manager) clearCache() error {
 	m.showToast("Cleared cache")
 	return nil
 }
+
+// Desktop management functions
+
+func (m *manager) createDesktop() error {
+	m.showToast("Create desktop not implemented yet")
+	return nil
+}
+
+func (m *manager) deleteDesktop() error {
+	m.showToast("Delete desktop not implemented yet")
+	return nil
+}
+
+func (m *manager) switchDesktop(name string) error {
+	m.showToast("Switch desktop not implemented yet")
+	return nil
+}

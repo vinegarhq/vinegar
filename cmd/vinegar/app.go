@@ -25,6 +25,7 @@ type app struct {
 
 	cfg *config.Config
 	pfx *wine.Prefix
+prefixes map[string]*wine.Prefix
 	rbx *rbxweb.Client
 	bus *gio.DBusConnection // nullable
 

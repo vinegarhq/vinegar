@@ -114,6 +114,7 @@ func Load() (*Config, error) {
 }
 
 // Default returns a default configuration.
+// Default returns a default configuration.
 func Default() *Config {
 	return &Config{
 		Debug: false,
@@ -132,15 +133,15 @@ func Default() *Config {
 			Env: map[string]string{
 				"WINEESYNC": "1",
 			},
+		},
 
-			DesktopManager: DesktopManager{
-				Enabled:        false,
-				AutoAssign:     true,
-				MaxDesktops:    10,
-				DefaultDesktop: "desktop-1",
-				DesktopPrefix:  "desktop-",
-				Desktops:       []DesktopConfig{},
-			},
+		DesktopManager: DesktopManager{
+			Enabled:        false,
+			AutoAssign:     true,
+			MaxDesktops:    10,
+			DefaultDesktop: "desktop-1",
+			DesktopPrefix:  "desktop-",
+			Desktops:       []DesktopConfig{},
 		},
 	}
 }

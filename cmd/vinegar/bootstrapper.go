@@ -17,6 +17,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
+"github.com/sewnie/wine"
 )
 
 type bootstrapper struct {
@@ -29,6 +30,7 @@ type bootstrapper struct {
 
 	dir string
 	bin *rbxbin.Deployment
+currentPfx *wine.Prefix
 
 	procs []*os.Process
 

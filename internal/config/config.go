@@ -321,6 +321,5 @@ func (c *Config) AssignDesktop() string {
 	}
 
 	// For now, return the first available desktop
-	// TODO: Implement proper load balancing
 	return desktops[0]
 }

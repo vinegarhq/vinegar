@@ -202,7 +202,6 @@ func (a *app) GetPrefixForDesktop(desktopName string) *wine.Prefix {
 	return a.pfx
 }
 
-// AssignDesktopForInstance assigns a desktop for a new Roblox instance
 func (a *app) AssignDesktopForInstance() string {
 	if !a.cfg.DesktopManager.Enabled {
 		return "studio"

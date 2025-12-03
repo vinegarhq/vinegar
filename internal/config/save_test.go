@@ -23,7 +23,7 @@ func TestConfigEncode(t *testing.T) {
 	cfg.Studio.WebView = ""
 	cfg.Studio.FFlags["DFIntFoo"] = 960
 	cfg.Studio.Env["FOO"] = "1"
-	delete(cfg.Env, "WINEESYNC") // It's only temporary.
+	delete(cfg.Env, "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS") // It's only temporary.
 
 	if err := cfg.Encode(buf); err != nil {
 		t.Error(err)

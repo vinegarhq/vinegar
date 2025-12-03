@@ -114,7 +114,7 @@ func Default() *Config {
 			DiscordRPC: true,
 			FFlags:     make(rbxbin.FFlags),
 			Env: map[string]string{
-				"WINEESYNC": "1",
+				"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--use-angle=gl",
 			},
 		},
 	}

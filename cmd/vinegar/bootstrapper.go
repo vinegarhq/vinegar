@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"syscall"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -99,14 +98,6 @@ func (b *bootstrapper) run(args ...string) error {
 
 func (b *bootstrapper) handleRobloxLog(line string) {
 	switch {
-	case strings.Contains(line, "ANR In Progress. ApplicationState: Background"):
-		// Roblox normally exits after submitting ANR data to
-		// ecsv2.roblox.com, but in Wine it does nothing.
-		syscall.Kill(syscall.Getpid(), syscall.SIGTERM)
-		gtkutil.IdleAdd(func() {
-			b.showError(errors.New(
-				"Studio detected as unresponsive!"))
-		})
 	case strings.Contains(line, "LoginDialog Error: Embedded Web Browser fail to load"):
 		// Ensure that browser login functionality will work
 		if err := b.setMime(); err != nil {

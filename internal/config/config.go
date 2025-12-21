@@ -16,6 +16,7 @@ import (
 	"github.com/sewnie/wine/dxvk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
+	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
 
 type Studio struct {
@@ -23,9 +24,8 @@ type Studio struct {
 	WineRoot string `toml:"wineroot" group:"" row:"Installation Directory,path"`
 	Launcher string `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
 
-	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
-	Renderer  Renderer    `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
-	ForcedGPU string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
+	DXVK     DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
+	Renderer Renderer    `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
 
 	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
 	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
@@ -84,7 +84,6 @@ func Default() *Config {
 			DXVK:       "",
 			WebView:    "141.0.3537.71", // YMMV
 			GameMode:   true,
-			ForcedGPU:  "prime-discrete",
 			Renderer:   "D3D11",
 			Channel:    "",
 			DiscordRPC: true,
@@ -108,19 +107,8 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 
 	env := maps.Clone(c.Studio.Env)
 
-	card, err := c.Studio.card()
-	if err != nil {
-		return nil, err
-	}
-	if card != nil {
+	if len(sysinfo.Cards) > 1 {
 		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
-		env["DRI_PRIME"] = "pci-" + strings.NewReplacer(":", "_", ".", "_").
-			Replace(path.Base(card.Device))
-
-		env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
-		if strings.HasPrefix(card.Driver, "nvidia") {
-			env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
-		}
 	}
 
 	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs

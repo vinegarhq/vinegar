@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	cp "github.com/otiai10/copy"
+	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gtkutil"
 )
@@ -101,21 +102,16 @@ func (b *bootstrapper) stepPrepareRun() error {
 }
 
 func (b *bootstrapper) stepApplyFFlags() error {
-	var renderers = []string{
-		"OpenGL",
-		"D3D11FL10",
-		"D3D11",
-		"Vulkan",
-	}
+	renderers := config.Renderer("").Values()
 
 	f := maps.Clone(b.cfg.Studio.FFlags)
 	if b.cfg.Studio.Renderer != "" {
-		if !slices.Contains(renderers, b.cfg.Studio.Renderer) {
+		if !slices.Contains(renderers, string(b.cfg.Studio.Renderer)) {
 			return fmt.Errorf("unknown renderer: %s", b.cfg.Studio.Renderer)
 		}
 
 		for _, r := range renderers {
-			isRenderer := r == b.cfg.Studio.Renderer
+			isRenderer := r == string(b.cfg.Studio.Renderer)
 			f["FFlagDebugGraphicsPrefer"+r] = isRenderer
 			f["FFlagDebugGraphicsDisable"+r] = !isRenderer
 		}

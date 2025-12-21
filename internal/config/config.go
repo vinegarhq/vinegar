@@ -3,7 +3,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"log/slog"
 	"maps"
 	"os"
@@ -19,36 +18,13 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
-// Backwards compatibility to allow:
-// 'dxvk = true' and move to 'dxvk = [version]'
-type DxvkVersion string
-
-func (v *DxvkVersion) UnmarshalTOML(data interface{}) error {
-	switch d := data.(type) {
-	case bool:
-		*v = ""
-		if d {
-			*v = "2.7.1"
-		}
-	case string:
-		*v = DxvkVersion(d)
-	default:
-		return fmt.Errorf("unsupported type: %T", d)
-	}
-	return nil
-}
-
-func (v DxvkVersion) String() string {
-	return string(v)
-}
-
 type Studio struct {
 	WebView  string `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version,141.0.3537.71" title:"Web Pages"`
 	WineRoot string `toml:"wineroot" group:"" row:"Installation Directory,path"`
 	Launcher string `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
 
 	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
-	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
+	Renderer  Renderer    `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
 	ForcedGPU string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
 
 	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`

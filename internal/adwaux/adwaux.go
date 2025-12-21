@@ -9,6 +9,13 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/adw"
 )
 
+// Enum reflection is impossible without an interface to get
+// the enum values
+type Selector interface {
+	Values() []string
+	Select(string)
+}
+
 type StructPage struct {
 	sv     reflect.Value
 	groups map[string]*adw.PreferencesGroup
@@ -74,13 +81,16 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		option = fields[1]
 	}
 
-	switch k := v.Kind(); {
-
-	case option == "vals":
-		combo := newComboRow(v, fields[2:])
+	i := v.Addr().Interface()
+	if s, ok := i.(Selector); ok {
+		combo := newComboRow(v, s.Values())
 		combo.SetTitle(title)
 		combo.SetSubtitle(description)
 		group.Add(&combo.Widget)
+		return
+	}
+
+	switch k := v.Kind(); {
 	case option == "path":
 		path := newPathRow(v)
 		path.SetTitle(description)
@@ -99,7 +109,6 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		ent := newEntryRow(v)
 		ent.SetTitle(description)
 		group.Add(&ent.Widget)
-
 	default:
 		panic("adwaux: unhandled type " + v.Kind().String() + " from " + sf.Name)
 	}

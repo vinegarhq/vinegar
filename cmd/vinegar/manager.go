@@ -11,7 +11,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/adwaux"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
+	"github.com/vinegarhq/vinegar/internal/gutil"
 )
 
 type manager struct {
@@ -26,7 +26,7 @@ type manager struct {
 func (a *app) newManager() *manager {
 	m := manager{
 		app:     a,
-		builder: gtk.NewBuilderFromResource(gtkutil.Resource("ui/manager.ui")),
+		builder: gtk.NewBuilderFromResource(gutil.Resource("ui/manager.ui")),
 	}
 
 	m.builder.GetObject("window").Cast(&m.win)
@@ -115,7 +115,7 @@ func (m *manager) showToast(s string) {
 	var overlay adw.ToastOverlay
 	m.builder.GetObject("overlay").Cast(&overlay)
 
-	gtkutil.IdleAdd(func() {
+	gutil.IdleAdd(func() {
 		toast := adw.NewToast(s)
 		overlay.AddToast(toast)
 	})

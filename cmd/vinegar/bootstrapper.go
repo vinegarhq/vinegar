@@ -13,7 +13,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxbin"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
+	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
 )
@@ -35,7 +35,7 @@ type bootstrapper struct {
 }
 
 func (a *app) newBootstrapper() *bootstrapper {
-	builder := gtk.NewBuilderFromResource(gtkutil.Resource("ui/bootstrapper.ui"))
+	builder := gtk.NewBuilderFromResource(gutil.Resource("ui/bootstrapper.ui"))
 	defer builder.Unref()
 
 	b := bootstrapper{
@@ -71,7 +71,7 @@ func (b *bootstrapper) performing() func() {
 
 func (b *bootstrapper) message(msg string, args ...any) {
 	slog.Info(msg, args...)
-	gtkutil.IdleAdd(func() { b.status.SetLabel(msg) })
+	gutil.IdleAdd(func() { b.status.SetLabel(msg) })
 }
 
 func (b *bootstrapper) run(args ...string) error {
@@ -80,11 +80,11 @@ func (b *bootstrapper) run(args ...string) error {
 		return nil
 	}
 
-	gtkutil.IdleAdd(func() {
+	gutil.IdleAdd(func() {
 		b.app.AddWindow(&b.win.Window)
 		b.win.Present()
 	})
-	defer gtkutil.IdleAdd(func() {
+	defer gutil.IdleAdd(func() {
 		b.app.RemoveWindow(&b.win.Window)
 		b.win.SetVisible(false) // Incase bailed out
 	})
@@ -101,7 +101,7 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 	case strings.Contains(line, "LoginDialog Error: Embedded Web Browser fail to load"):
 		// Ensure that browser login functionality will work
 		if err := b.setMime(); err != nil {
-			gtkutil.IdleAdd(func() {
+			gutil.IdleAdd(func() {
 				b.pfx.Kill()
 				b.showError(err)
 			})

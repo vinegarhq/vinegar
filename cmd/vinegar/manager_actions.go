@@ -12,7 +12,7 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
+	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
@@ -21,12 +21,12 @@ func (m *manager) hideRunUntil() func() {
 	var stack gtk.Stack
 	m.builder.GetObject("stack").Cast(&stack)
 	m.builder.GetObject("btn-run").Cast(&button)
-	gtkutil.IdleAdd(func() {
+	gutil.IdleAdd(func() {
 		stack.SetVisibleChildName("stkpage-spinner")
 		button.SetSensitive(false)
 	})
 	return func() {
-		gtkutil.IdleAdd(func() {
+		gutil.IdleAdd(func() {
 			button.SetSensitive(true)
 			stack.SetVisibleChildName("stkpage-btn")
 			m.updateRun()
@@ -77,7 +77,7 @@ func (m *manager) saveConfig() {
 }
 
 func (m *manager) showAbout() {
-	b := gtkutil.ResourceData(gtkutil.Resource("metainfo.xml"))
+	b := gutil.ResourceData(gutil.Resource("metainfo.xml"))
 	data := struct {
 		XMLName  xml.Name `xml:"component"`
 		Releases struct {
@@ -93,7 +93,7 @@ func (m *manager) showAbout() {
 		panic("expected valid appstream: " + err.Error())
 	}
 
-	dialog := adw.NewAboutDialogFromAppdata(gtkutil.Resource("metainfo.xml"),
+	dialog := adw.NewAboutDialogFromAppdata(gutil.Resource("metainfo.xml"),
 		data.Releases.Release[0].Version)
 	dialog.Present(&m.win.Widget)
 	dialog.Unref()

@@ -1,4 +1,4 @@
-package gtkutil
+package gutil
 
 import (
 	"github.com/jwijenbergh/puregotk/v4/gio"

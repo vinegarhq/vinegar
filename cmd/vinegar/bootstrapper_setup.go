@@ -13,7 +13,7 @@ import (
 	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
+	"github.com/vinegarhq/vinegar/internal/gutil"
 )
 
 func (b *bootstrapper) setup() error {
@@ -83,7 +83,7 @@ func (b *bootstrapper) stepPrepareRun() error {
 		return fmt.Errorf("fflags: %w", err)
 	}
 
-	gtkutil.IdleAdd(func() { b.status.SetLabel("Launching Studio") })
+	gutil.IdleAdd(func() { b.status.SetLabel("Launching Studio") })
 
 	// If no setup took place, this will go immediately.
 	slog.Info("Kickstarting Wineserver")

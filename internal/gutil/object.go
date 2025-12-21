@@ -1,4 +1,4 @@
-package gtkutil
+package gutil
 
 import (
 	_ "embed"

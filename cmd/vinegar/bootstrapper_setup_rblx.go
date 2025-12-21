@@ -13,7 +13,7 @@ import (
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/rbxweb"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
+	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 	"golang.org/x/sync/errgroup"
 )
@@ -87,7 +87,7 @@ func (b *bootstrapper) setDeployment() error {
 		return err
 	}
 
-	gtkutil.IdleAdd(func() {
+	gutil.IdleAdd(func() {
 		b.info.SetLabel(d.Channel)
 	})
 
@@ -157,7 +157,7 @@ func (b *bootstrapper) installPackages(
 			}
 
 			atomic.AddInt64(&finished, 1)
-			gtkutil.IdleAdd(func() {
+			gutil.IdleAdd(func() {
 				b.pbar.SetFraction(float64(finished) / float64(total))
 			})
 

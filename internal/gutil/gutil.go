@@ -1,4 +1,4 @@
-package gtkutil
+package gutil
 
 import (
 	_ "embed"
@@ -30,7 +30,7 @@ func Resource(elems ...string) string {
 func ResourceData(resource string) []byte {
 	gb, err := gio.ResourcesLookupData(resource, gio.GResourceLookupFlagsNoneValue)
 	if err != nil {
-		panic("gtkutil: resource " + resource + " not found")
+		panic("gutil: resource " + resource + " not found")
 	}
 
 	return Slice[byte](gb.GetData(0), gb.GetSize())

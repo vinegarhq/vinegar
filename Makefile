@@ -20,7 +20,7 @@ GO_LDFLAGS ?= -s -w
 
 SOURCES != find . -type f -name "*.go" # for automatically re-building vinegar
 
-RESOURCE = internal/gtkutil/vinegar.gresource
+RESOURCE = internal/gutil/vinegar.gresource
 VKLAYER = layer/libVkLayer_VINEGAR_VinegarLayer.so
 
 all: vinegar $(VKLAYER)

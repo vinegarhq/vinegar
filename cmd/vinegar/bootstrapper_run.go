@@ -11,7 +11,7 @@ import (
 	"syscall"
 
 	"github.com/sewnie/wine"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
+	"github.com/vinegarhq/vinegar/internal/gutil"
 )
 
 func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
@@ -79,7 +79,7 @@ func (b *bootstrapper) execute(args ...string) error {
 		b.pfx.Kill()
 	}()
 
-	gtkutil.IdleAdd(func() {
+	gutil.IdleAdd(func() {
 		b.win.SetVisible(false)
 	})
 

@@ -16,7 +16,7 @@ import (
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/config"
-	"github.com/vinegarhq/vinegar/internal/gtkutil"
+	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
@@ -134,7 +134,7 @@ func (a *app) shutdown(_ gio.Application) {
 }
 
 func (a *app) appInfo() *gio.AppInfoBase {
-	for app := range gtkutil.List[gio.AppInfoBase](gio.AppInfoGetAll()) {
+	for app := range gutil.List[gio.AppInfoBase](gio.AppInfoGetAll()) {
 		if strings.HasPrefix(app.GetId(), a.GetApplicationId()) {
 			return app
 		}
@@ -175,7 +175,7 @@ func (a *app) Write(b []byte) (int, error) {
 func (a *app) handleWineLog(line string) {
 	if strings.Contains(line, "to unimplemented function advapi32.dll.SystemFunction036") {
 		err := errors.New("Your Wineprefix is corrupt! Please delete all data in Vinegar's settings.")
-		gtkutil.IdleAdd(func() {
+		gutil.IdleAdd(func() {
 			a.pfx.Server(wine.ServerKill, "9")
 			a.showError(err)
 		})
@@ -187,7 +187,7 @@ func (a *app) handleWineLog(line string) {
 func (a *app) errThread(fn func() error) {
 	go func() {
 		if err := fn(); err != nil {
-			gtkutil.IdleAdd(func() {
+			gutil.IdleAdd(func() {
 				a.showError(err)
 			})
 		}

@@ -161,8 +161,6 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 		env["DXVK_LOG_PATH"] = "none"
 	}
 	env["VK_LOADER_LAYERS_ENABLE"] = "VK_LAYER_VINEGAR_VinegarLayer"
-	env["MESA_GL_VERSION_OVERRIDE"] = "4.4"
-	env["__GL_THREADED_OPTIMIZATIONS"] = "1"
 
 	for k, v := range env {
 		pfx.Env = append(pfx.Env, k+"="+v)

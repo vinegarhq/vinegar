@@ -106,7 +106,7 @@ func Default() *Config {
 
 		Studio: Studio{
 			DXVK:       "",
-			WebView:    "141.0.3537.71", // YMMV
+			WebView:    "143.0.3650.96", // YMMV
 			GameMode:   true,
 			ForcedGPU:  "prime-discrete",
 			Renderer:   "D3D11",

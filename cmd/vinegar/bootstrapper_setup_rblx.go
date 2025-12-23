@@ -29,7 +29,7 @@ func (b *bootstrapper) setupDeployment() error {
 	}
 	b.dir = filepath.Join(dirs.Versions, b.bin.GUID)
 
-	slog.Info("Using Deployment",
+	slog.Info("Using deployment",
 		"guid", b.bin.GUID, "channel", b.bin.Channel)
 
 	if _, err := os.Stat(b.dir); err == nil {
@@ -57,7 +57,7 @@ func (b *bootstrapper) setupDeployment() error {
 
 	// Default channel is none, but UserChannel will set LIVE.
 	if b.bin.Channel != "" && b.bin.Channel != "LIVE" {
-		b.message("Writing Registry")
+		b.message("Writing registry")
 		if err := b.pfx.RegistryAdd(channelKey, "www.roblox.com", b.bin.Channel); err != nil {
 			return fmt.Errorf("set channel reg: %w", err)
 		}
@@ -99,13 +99,13 @@ func (b *bootstrapper) setDeployment() error {
 func (b *bootstrapper) setupPackages() error {
 	stop := b.performing()
 
-	b.message("Finding Mirror")
+	b.message("Finding mirror")
 	m, err := rbxbin.GetMirror()
 	if err != nil {
 		return fmt.Errorf("fetch mirror: %w", err)
 	}
 
-	b.message("Fetching Package List")
+	b.message("Fetching package list")
 	pkgs, err := m.GetPackages(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
@@ -125,7 +125,7 @@ func (b *bootstrapper) setupPackages() error {
 		return pkgs[i].ZipSize < pkgs[j].ZipSize
 	})
 
-	b.message("Fetching Installation Directives")
+	b.message("Fetching installation directives")
 	pd, err := m.BinaryDirectories(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch package dirs: %w", err)
@@ -149,7 +149,7 @@ func (b *bootstrapper) installPackages(
 	finished := int64(0)
 	group := new(errgroup.Group)
 
-	b.message("Installing Packages", "count", len(pkgs), "dir", b.dir)
+	b.message("Installing packages", "count", len(pkgs), "dir", b.dir)
 	for _, pkg := range pkgs {
 		group.Go(func() error {
 			if err := b.installPackage(mirror, pdirs, &pkg); err != nil {

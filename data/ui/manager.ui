@@ -92,7 +92,7 @@
                     <property name="header-suffix">
                       <object class="GtkButton" id="btn-prefix-config">
                         <property name="icon-name">preferences-system-symbolic</property>
-                        <property name="tooltip-text">Additional Options</property>
+                        <property name="tooltip-text">Additional options</property>
                         <style>
                           <class name="flat"/>
                         </style>
@@ -103,7 +103,7 @@
                     <child>
                       <object class="AdwEntryRow" id="entry-prefix-run">
                         <property name="show-apply-button">True</property>
-                        <property name="title">Run Wine Command</property>
+                        <property name="title">Run Wine command</property>
                       </object>
                     </child>
                   </object>
@@ -123,13 +123,13 @@
       <item>
         <attribute name="action">win.prefix-kill</attribute>
         <attribute name="icon">process-stop-symbolic</attribute>
-        <attribute name="label">Stop Processes</attribute>
+        <attribute name="label">Stop processes</attribute>
       </item>
     </section>
     <section>
       <item>
         <attribute name="action">win.open-prefix</attribute>
-        <attribute name="label">Open Files</attribute>
+        <attribute name="label">Open files</attribute>
       </item>
     </section>
     <section>
@@ -139,7 +139,7 @@
       </item>
       <item>
         <attribute name="action">win.delete-prefix</attribute>
-        <attribute name="label">Delete All Data</attribute>
+        <attribute name="label">Delete all data</attribute>
       </item>
     </section>
   </menu>
@@ -150,11 +150,11 @@
     </item>
     <item>
       <attribute name="action">win.clear-cache</attribute>
-      <attribute name="label">Clear Cache</attribute>
+      <attribute name="label">Clear cache</attribute>
     </item>
     <item>
       <attribute name="action">win.open-logs</attribute>
-      <attribute name="label">Open Logs</attribute>
+      <attribute name="label">Open logs</attribute>
     </item>
   </menu>
 </interface>

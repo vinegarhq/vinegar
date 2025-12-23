@@ -82,7 +82,7 @@ func (a *app) startup(_ gio.Application) {
 
 	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
 	if err != nil {
-		slog.Error("Failed to retrieve session bus, all DBus operations will be ignored", "err", err)
+		slog.Error("Failed to retrieve session bus, all D-Bus operations will be ignored", "err", err)
 	} else {
 		a.bus = conn
 	}
@@ -174,7 +174,7 @@ func (a *app) Write(b []byte) (int, error) {
 
 func (a *app) handleWineLog(line string) {
 	if strings.Contains(line, "to unimplemented function advapi32.dll.SystemFunction036") {
-		err := errors.New("Your Wineprefix is corrupt! Please delete all data in Vinegar's settings.")
+		err := errors.New("Your Wine prefix is corrupt! Please delete all data in Vinegar's settings.")
 		gtkutil.IdleAdd(func() {
 			a.pfx.Server(wine.ServerKill, "9")
 			a.showError(err)
@@ -201,7 +201,7 @@ func (a *app) showError(e error) {
 	// In a bootstrapper context, the window is destroyed to show the
 	// error instead, which will make the GtkApplication exit.
 	a.Hold()
-	d := adw.NewAlertDialog("Something went wrong", e.Error())
+	d := adw.NewAlertDialog("Something went wrong.", e.Error())
 	d.AddResponses("okay", "Ok", "open", "Open Log")
 	d.SetCloseResponse("okay")
 	d.SetDefaultResponse("okay")

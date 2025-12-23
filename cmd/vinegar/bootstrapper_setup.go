@@ -66,7 +66,7 @@ func (b *bootstrapper) setupOverlay() error {
 		return err
 	}
 
-	b.message("Copying Overlay")
+	b.message("Copying overlay")
 
 	return cp.Copy(dir, b.dir)
 }
@@ -85,7 +85,7 @@ func (b *bootstrapper) stepPrepareRun() error {
 	gtkutil.IdleAdd(func() { b.status.SetLabel("Launching Studio") })
 
 	// If no setup took place, this will go immediately.
-	slog.Info("Kickstarting Wineserver")
+	slog.Info("Kickstarting Wine server")
 	if err := b.pfx.Server(); err != nil {
 		return fmt.Errorf("server: %w, check logs", err)
 	}

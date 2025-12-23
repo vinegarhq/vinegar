@@ -75,7 +75,7 @@ func (b *bootstrapper) execute(args ...string) error {
 
 		// Workaround any other stray processes holding Wine up
 		// such as WebView
-		slog.Warn("No more processes left, killing Wineprefix")
+		slog.Warn("No more processes left, killing Wine prefix")
 		b.pfx.Kill()
 	}()
 

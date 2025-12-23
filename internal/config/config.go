@@ -43,34 +43,34 @@ func (v DxvkVersion) String() string {
 }
 
 type Studio struct {
-	WebView  string `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version,141.0.3537.71" title:"Web Pages"`
-	WineRoot string `toml:"wineroot" group:"" row:"Installation Directory,path"`
-	Launcher string `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
+	WebView  string `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 version,141.0.3537.71" title:"Web pages"`
+	WineRoot string `toml:"wineroot" group:"" row:"Wine installation,path"`
+	Launcher string `toml:"launcher" group:"" row:"Launcher command (ex. gamescope)"`
 
 	DXVK      DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
-	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
-	ForcedGPU string      `toml:"gpu" group:"Rendering" row:"Named or Indexed GPU (ex. integrated or 0)"`
+	Renderer  string      `toml:"renderer" group:"Rendering" row:"Studio's graphics mode,vals,D3D11,D3D11FL10,Vulkan,OpenGL"` // Enum reflection is impossible
+	ForcedGPU string      `toml:"gpu" group:"Rendering" row:"Named or indexed GPU (ex. integrated or 0)"`
 
-	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
+	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share activity on Discord"`
 	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
 	Env    map[string]string `toml:"env" group:"Environment"`
 	FFlags rbxbin.FFlags     `toml:"fflags" group:"Fast Flags"`
 
-	ForcedVersion string `toml:"forced_version" group:"Deployment Overrides" row:"Studio Deployment Version"`
-	Channel       string `toml:"channel" group:"Deployment Overrides" row:"Studio Update Channel"`
+	ForcedVersion string `toml:"forced_version" group:"Deployment overrides" row:"Studio deployment version"`
+	Channel       string `toml:"channel" group:"Deployment overrides" row:"Studio update channel"`
 }
 
 type Config struct {
 	Studio Studio `toml:"studio"`
 	// Only adds to Studio.Env, reserved for backwards compatibility
 	Env   map[string]string `toml:"env" group:"hidden"`
-	Debug bool              `toml:"debug" group:"Behavior" row:"Output Studio logs and Web API requests"`
+	Debug bool              `toml:"debug" group:"Behavior" row:"Output Studio logs and web API requests"`
 }
 
 var (
-	ErrWineRootAbs     = errors.New("wine root path is not an absolute path")
-	ErrWineRootInvalid = errors.New("no wine binary present in wine root")
+	ErrWineRootAbs     = errors.New("Wine root path is not an absolute path")
+	ErrWineRootInvalid = errors.New("No Wine binary present in Wine root")
 )
 
 // Load will load the configuration file; if it doesn't exist, it
@@ -168,7 +168,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 
 	dxvk.EnvOverride(pfx, c.Studio.DXVK != "")
 
-	slog.Debug("Using Prefix environment", "env", pfx.Env)
+	slog.Debug("Using prefix environment", "env", pfx.Env)
 
 	if c.Studio.WineRoot != "" {
 		w := pfx.Wine("")

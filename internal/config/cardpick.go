@@ -28,7 +28,7 @@ func (s *Studio) card() (*sysinfo.Card, error) {
 		}
 
 		if n > 2 && !vk {
-			return nil, errors.New("gpu must be explicitly defined for opengl")
+			return nil, errors.New("GPU must be explicitly defined for OpenGL")
 		}
 
 		if !sysinfo.Cards[0].Embedded {
@@ -44,7 +44,7 @@ func (s *Studio) card() (*sysinfo.Card, error) {
 	}
 
 	if idx < 0 {
-		return nil, errors.New("gpu index is negative")
+		return nil, errors.New("GPU index is negative")
 	}
 
 	if n < idx+1 {

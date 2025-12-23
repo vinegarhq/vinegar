@@ -21,7 +21,7 @@ func (b *bootstrapper) setupPrefix() error {
 
 	// Always initialize in case Wine changes,
 	// to prevent a dialog from appearing in normal apps.
-	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
+	b.message("Initializing Wine prefix", "dir", b.pfx.Dir())
 	if err := b.pfx.Init().Run(); err != nil {
 		return err
 	}
@@ -42,7 +42,7 @@ func (b *bootstrapper) setupPrefix() error {
 		return nil
 	}
 
-	b.message("Checking Wineprefix")
+	b.message("Checking Wine prefix")
 
 	f, err := peutil.Open(filepath.Join(
 		b.pfx.Dir(), "drive_c", "windows", "system32", "kernelbase.dll"))
@@ -61,14 +61,14 @@ func (b *bootstrapper) setupPrefix() error {
 	if !slices.ContainsFunc(es, func(e peutil.Export) bool {
 		return e.Name == "VirtualProtectFromApp"
 	}) {
-		return errors.New("Wine installation cannot run studio; update wine to >=10.13")
+		return errors.New("Wine installation cannot run Studio; update Wine to >=10.13")
 	}
 
 	return nil
 }
 
 func (b *bootstrapper) setupDxvk() error {
-	// If DXVK is installed in the wineprefix, uninstallation
+	// If DXVK is installed in the Wine prefix, uninstallation
 	// won't be necessary if it's disabled as it still requires
 	// DLL overrides to be present.
 	if b.cfg.Studio.DXVK == "" {

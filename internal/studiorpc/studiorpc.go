@@ -58,7 +58,7 @@ func (s *StudioRPC) handleOpen(line string) error {
 	}
 	place := rbxweb.PlaceID(i)
 
-	slog.Info("studiorpc: Opened Place", "placeid", i)
+	slog.Info("studiorpc: Opened place", "placeid", i)
 
 	s.place, err = s.rbx.GamesV1.GetPlaceDetail(place)
 	if err != nil {

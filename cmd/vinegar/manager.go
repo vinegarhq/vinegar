@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"reflect"
 	"strings"
@@ -47,6 +48,45 @@ func (a *app) newManager() *manager {
 		m.app.errThread(m.pfx.Wine(args[0], args[1:]...).Run)
 	}
 	m.runner.ConnectApply(&applyCb)
+
+	var (
+		vdesktop adw.ExpanderRow
+		width    gtk.Adjustment
+		height   gtk.Adjustment
+	)
+	m.builder.GetObject("switch-prefix-vdesktop").Cast(&vdesktop)
+	m.builder.GetObject("adj-vdesktop-width").Cast(&width)
+	m.builder.GetObject("adj-vdesktop-height").Cast(&height)
+	expansionCb := func() {
+		enable := vdesktop.GetEnableExpansion()
+		slog.Info("Enabling Virtual Desktop", "state", enable)
+		if vdesktop.GetEnableExpansion() {
+			gobject.SignalEmitByName(&width.Object, "value-changed")
+		}
+
+		var err error
+		if enable {
+			err = m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer`, "Desktop", "Default")
+		} else {
+			err = m.pfx.RegistryDelete(`HKCU\Software\Wine\Explorer`, "")
+		}
+		if err != nil {
+			m.showError(err)
+		}
+	}
+	changedCb := func() {
+		res := fmt.Sprintf("%.0fx%.0f", width.GetValue(), height.GetValue())
+
+		slog.Info("Changing Virtual Desktop resolution", "res", res)
+
+		err := m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer\Desktops`, "Default", res)
+		if err != nil {
+			m.showError(err)
+		}
+	}
+	width.ConnectSignal("value-changed", &changedCb)
+	height.ConnectSignal("value-changed", &changedCb)
+	vdesktop.ConnectSignal("notify::enable-expansion", &expansionCb)
 
 	var r gtk.Button
 	m.builder.GetObject("btn-prefix-config").Cast(&r)

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Created with Cambalache 0.97.9 -->
+<!-- Created with Cambalache 0.96.3 -->
 <interface>
   <!-- interface-name manager.ui -->
   <requires lib="gio" version="2.0"/>
@@ -104,6 +104,37 @@
                       <object class="AdwEntryRow" id="entry-prefix-run">
                         <property name="show-apply-button">True</property>
                         <property name="title">Run Wine Command</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwExpanderRow" id="switch-prefix-vdesktop">
+                        <property name="show-enable-switch">True</property>
+                        <property name="subtitle">Create an isolated window for Studio's windows and widgets</property>
+                        <property name="title">Virtual Desktop</property>
+                        <child>
+                          <object class="AdwSpinRow">
+                            <property name="adjustment">
+                              <object class="GtkAdjustment" id="adj-vdesktop-width">
+                                <property name="step-increment">106.0</property>
+                                <property name="upper">3840.0</property>
+                                <property name="value">1814.0</property>
+                              </object>
+                            </property>
+                            <property name="title">Width</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwSpinRow">
+                            <property name="adjustment">
+                              <object class="GtkAdjustment" id="adj-vdesktop-height">
+                                <property name="step-increment">120.0</property>
+                                <property name="upper">3840.0</property>
+                                <property name="value">1024.0</property>
+                              </object>
+                            </property>
+                            <property name="title">Height</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

@@ -26,7 +26,7 @@ const (
 
 type Studio struct {
 	WebView  WebViewOption `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version" title:"Web Pages"`
-	WineRoot string        `toml:"wineroot" group:"" row:"Installation Directory,path"`
+	WineRoot string        `toml:"wineroot" group:"" row:"Wine Installation,path"`
 	Launcher string        `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
 
 	DXVK     DXVKOption `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`

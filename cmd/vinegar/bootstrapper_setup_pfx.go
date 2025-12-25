@@ -26,7 +26,7 @@ func (b *bootstrapper) setupPrefix() error {
 		return err
 	}
 
-	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\WineDbg`, "ShowCrashDialog", uint(0)); err != nil {
+	if err := b.pfx.RegistryAdd(`HKCU\Software\Wine\WineDbg`, "ShowCrashDialog", uint32(0)); err != nil {
 		return fmt.Errorf("winedbg set: %w", err)
 	}
 

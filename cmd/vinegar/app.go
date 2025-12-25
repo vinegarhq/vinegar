@@ -105,7 +105,7 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	}
 
 	cl := gio.ApplicationCommandLineNewFromInternalPtr(clPtr)
-	args := cl.GetArguments(0)[1:] // skip argv0
+	args := cl.GetArguments(nil)[1:] // skip argv0
 	if len(args) >= 1 && args[0] == "run" {
 		args = args[1:] // skip 'run' cmd
 	}

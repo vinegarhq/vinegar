@@ -5,54 +5,37 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"slices"
 )
 
-var (
-	credPath = `HKEY_CURRENT_USER\Software\Wine\Credential Manager`
-	// UserID comes afterwards
-	authPrefix = credPath + `\Generic: https://www.roblox.com:RobloxStudioAuth`
-	secPrefix  = authPrefix + `.ROBLOSECURITY`
-	userPrefix = authPrefix + `userid`
-)
+var authNamePrefix = `Generic: https://www.roblox.com:RobloxStudioAuth`
 
 func (a *app) getSecurity() error {
-	keys, err := a.pfx.RegistryQuery(credPath, ``)
+	cred, err := a.pfx.RegistryQuery(`HKCU\Software\Wine\Credential Manager`)
 	if err != nil {
 		return fmt.Errorf("query: %w", err)
 	}
-
-	if len(keys) == 0 {
-		return errors.New("no authentication")
+	if cred == nil {
+		return errors.New("credential manager missing")
 	}
 
-	// Credential Manager first root subkey
-	c, err := rc4.NewCipher(keys[0].Subkeys[0].Value.([]byte))
+	c, err := rc4.NewCipher(
+		cred.GetValue(`EncryptionKey`).Data.([]byte))
 	if err != nil {
 		return fmt.Errorf("cipher: %w", err)
 	}
 
-	var user string
-	// The current user comes last. Read in reverse order to get the key
-	// and get the ROBLOSECURITY entries.
-	// A race condition is most likely to occur here, as it assumes Wine
-	// retains and has a specific order for how keys are displayed.
-	for _, k := range slices.Backward(keys) {
-		switch k.Key {
-		case userPrefix:
-			user = keyStream(c, k.Subkeys[3].Value.([]byte))
-		case secPrefix + user:
-			a.rbx.Security = keyStream(c, k.Subkeys[3].Value.([]byte))
-			slog.Info("Using user for authentication", "user", user)
-			return nil
-		}
+	uk := cred.Query(authNamePrefix + `userid`)
+	if uk == nil {
+		return errors.New("no current user")
 	}
+	user := keyStream(c, uk.GetValue("Password").Data.([]byte))
+	slog.Info("Using user for authentication", "user", user)
 
-	if user == "" {
-		return fmt.Errorf("not logged in")
-	}
-
-	return fmt.Errorf("user %s cookie not found", user)
+	// Surely Roblox Studio would set the userid and then forget
+	// to create the ROBLOSECURITY cookie for that user?
+	sec := cred.Query(authNamePrefix + `.ROBLOSECURITY` + user)
+	a.rbx.Security = keyStream(c, sec.GetValue("Password").Data.([]byte))
+	return nil
 }
 
 // workaround rc4.Cipher KSA to keep the original key intact

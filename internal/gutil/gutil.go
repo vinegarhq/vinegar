@@ -33,7 +33,7 @@ func ResourceData(resource string) []byte {
 		panic("gutil: resource " + resource + " not found")
 	}
 
-	return Slice[byte](gb.GetData(0), gb.GetSize())
+	return Slice[byte](gb.GetData(nil), gb.GetSize())
 }
 
 func IdleAdd(bg func()) {

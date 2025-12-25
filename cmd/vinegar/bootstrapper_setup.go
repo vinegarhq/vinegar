@@ -126,17 +126,16 @@ func (b *bootstrapper) stepApplyFFlags() error {
 }
 
 func (b *bootstrapper) stepChangeStudioTheme() error {
-	key := `HKEY_CURRENT_USER\Software\Roblox\RobloxStudio\Themes`
-	val := "CurrentTheme"
-	q, err := b.pfx.RegistryQuery(key, val)
-	if err != nil {
+	k, err := b.pfx.RegistryQuery(
+		`HKCU\Software\Roblox\RobloxStudio\Themes`)
+	if err != nil || k == nil {
 		slog.Warn("Failed to retrieve current Studio theme", "err", err)
 		return nil
 	}
 
 	// If the user set an explicit theme rather than the default
 	// Studio system theme, do not attempt to change the theme accordingly.
-	if len(q) != 0 && q[0].Subkeys[0].Value != "Default" {
+	if k.GetValue("CurrentTheme").Data != "Default" {
 		return nil
 	}
 
@@ -145,5 +144,5 @@ func (b *bootstrapper) stepChangeStudioTheme() error {
 		theme = "Dark"
 	}
 	slog.Info("Changing Theme", "theme", theme)
-	return b.pfx.RegistryAdd(key, val, theme)
+	return b.pfx.RegistryAdd(k.Path(), "CurrentTheme", theme)
 }

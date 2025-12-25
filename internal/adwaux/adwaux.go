@@ -16,6 +16,10 @@ type Selector interface {
 	Select(string)
 }
 
+type EntryToggler interface {
+	Default() string
+}
+
 type StructPage struct {
 	sv     reflect.Value
 	groups map[string]*adw.PreferencesGroup
@@ -81,8 +85,13 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		option = fields[1]
 	}
 
-	i := v.Addr().Interface()
-	if s, ok := i.(Selector); ok {
+	if t, ok := reflect.TypeAssert[EntryToggler](v); ok {
+		opt := newOptionEntryRow(v, fields[1], t.Default())
+		opt.SetTitle(title)
+		opt.SetSubtitle(description)
+		group.Add(&opt.Widget)
+		return
+	} else if s, ok := reflect.TypeAssert[Selector](v); ok {
 		combo := newComboRow(v, s.Values())
 		combo.SetTitle(title)
 		combo.SetSubtitle(description)
@@ -95,11 +104,6 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		path := newPathRow(v)
 		path.SetTitle(description)
 		group.Add(&path.Widget)
-	case option == "entry":
-		opt := newOptionEntryRow(v, fields[2], fields[3])
-		opt.SetTitle(title)
-		opt.SetSubtitle(description)
-		group.Add(&opt.Widget)
 	case k == reflect.Bool:
 		sw := newSwitchRow(v)
 		sw.SetTitle(title)

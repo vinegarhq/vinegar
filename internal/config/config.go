@@ -19,13 +19,18 @@ import (
 	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
 
-type Studio struct {
-	WebView  string `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version,141.0.3537.71" title:"Web Pages"`
-	WineRoot string `toml:"wineroot" group:"" row:"Installation Directory,path"`
-	Launcher string `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
+const (
+	dxvkVersion    = "2.7.1"
+	webViewVersion = "141.0.3537.71"
+)
 
-	DXVK     DxvkVersion `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
-	Renderer Renderer    `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
+type Studio struct {
+	WebView  WebViewOption `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version" title:"Web Pages"`
+	WineRoot string        `toml:"wineroot" group:"" row:"Installation Directory,path"`
+	Launcher string        `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
+
+	DXVK     DXVKOption `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
+	Renderer Renderer   `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
 
 	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
 	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
@@ -82,7 +87,7 @@ func Default() *Config {
 
 		Studio: Studio{
 			DXVK:       "",
-			WebView:    "141.0.3537.71", // YMMV
+			WebView:    WebViewOption(webViewVersion),
 			GameMode:   true,
 			Renderer:   "D3D11",
 			Channel:    "",

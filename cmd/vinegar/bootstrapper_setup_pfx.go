@@ -71,11 +71,11 @@ func (b *bootstrapper) setupDxvk() error {
 	// If DXVK is installed in the wineprefix, uninstallation
 	// won't be necessary if it's disabled as it still requires
 	// DLL overrides to be present.
-	if b.cfg.Studio.DXVK == "" {
+	if b.cfg.Studio.DXVK.Enabled() {
 		return nil
 	}
 
-	new := string(b.cfg.Studio.DXVK)
+	new := b.cfg.Studio.DXVK.String()
 	b.message("Checking DXVK", "version", new)
 
 	current, err := dxvk.Version(b.pfx)
@@ -121,19 +121,19 @@ install:
 }
 
 func (b *bootstrapper) setupWebView() error {
-	installer := filepath.Join(dirs.Cache, "webview-"+b.cfg.Studio.WebView+".exe")
+	new := b.cfg.Studio.WebView.String()
 
-	new := b.cfg.Studio.WebView
+	installer := filepath.Join(dirs.Cache, "webview-"+new+".exe")
 	b.message("Checking WebView", "version", new)
 
 	current := webview2.Current(b.pfx)
-	if current != "" && current != b.cfg.Studio.WebView {
+	if current != "" && current != new {
 		b.message("Uninstalling WebView", "current", current, "new", new)
 		if err := webview2.Uninstall(b.pfx, current); err != nil {
 			return fmt.Errorf("uninstall: %w", err)
 		}
 	}
-	if current == new || new == "" {
+	if current == new || b.cfg.Studio.WebView.Enabled() {
 		return nil
 	}
 
@@ -141,7 +141,7 @@ func (b *bootstrapper) setupWebView() error {
 		stop := b.performing()
 		b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
 		webview2.Client.Transport.(*http.Transport).DisableCompression = true
-		d, err := webview2.Stable.Runtime(b.cfg.Studio.WebView, "x64")
+		d, err := webview2.Stable.Runtime(new, "x64")
 		if err != nil {
 			return fmt.Errorf("fetch: %w", err)
 		}

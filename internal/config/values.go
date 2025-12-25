@@ -51,7 +51,7 @@ func (o DXVKOption) String() string {
 }
 
 func (o DXVKOption) Enabled() bool {
-	return string(o) != ""
+	return string(o) == ""
 }
 
 type WebViewOption string
@@ -87,7 +87,7 @@ func (o WebViewOption) String() string {
 }
 
 func (o WebViewOption) Enabled() bool {
-	return string(o) != ""
+	return string(o) == ""
 }
 
 var _ adwaux.Selector = (*Renderer)(nil)

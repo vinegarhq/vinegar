@@ -85,10 +85,14 @@ func (b *bootstrapper) stepPrepareRun() error {
 
 	gutil.IdleAdd(func() { b.status.SetLabel("Launching Studio") })
 
-	// If no setup took place, this will go immediately.
+	// The following registry modifications starts and prepares Wine.
 	slog.Info("Kickstarting Wineserver")
-	if err := b.pfx.Server(); err != nil {
-		return fmt.Errorf("server: %w, check logs", err)
+
+	dpi := 96.0 * b.win.GetNative().GetSurface().GetScale()
+	slog.Info("Updating Wine DPI", "dpi", dpi)
+	if err := b.pfx.RegistryAdd(`HKEY_CURRENT_USER\Control Panel\Desktop`,
+		"LogPixels", uint32(dpi)); err != nil {
+		return fmt.Errorf("scale set: %w, err")
 	}
 
 	// Running this command will initialize Wine for

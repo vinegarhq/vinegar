@@ -32,6 +32,8 @@ github.com/sewnie/wine v0.0.0-20251014113431-dd1f083b22a5 h1:Uf6+9mV5KOWdntzBY8M
 github.com/sewnie/wine v0.0.0-20251014113431-dd1f083b22a5/go.mod h1:IbKiMCPd3jWSTrVXxDh4ggy3bvcaNUtI4VnPG9mRYoY=
 github.com/sewnie/wine v0.0.0-20251225175541-f9fe822c1e4e h1:tG4XOxJMUNUjE08Ql/7une4XgNFe2Pd3gUWakiPQJz8=
 github.com/sewnie/wine v0.0.0-20251225175541-f9fe822c1e4e/go.mod h1:Wynen8QVBT+aVlsqiSLes3MM0zi2zfY4Ipq817/VPiI=
+github.com/sewnie/wine v0.0.0-20251225185304-c5863b26ab5a h1:1WRcUl+iVCm7Baos445FeBaSavp2EO1nsI1IepTipfI=
+github.com/sewnie/wine v0.0.0-20251225185304-c5863b26ab5a/go.mod h1:Wynen8QVBT+aVlsqiSLes3MM0zi2zfY4Ipq817/VPiI=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 golang.org/x/sync v0.17.0 h1:l60nONMj9l5drqw6jlhIELNv9I0A4OFgRsG9k2oT9Ug=

@@ -14,6 +14,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 func (b *bootstrapper) setup() error {
@@ -31,7 +33,7 @@ func (b *bootstrapper) setup() error {
 	// was initialized just now
 	if b.rbx.Security == "" && !firstSetup {
 		stop := b.performing()
-		b.message("Acquiring user authentication")
+		b.message(L("Acquiring user authentication"))
 		if err := b.app.getSecurity(); err != nil {
 			slog.Warn("Retrieving authenticated user failed", "err", err)
 		}
@@ -68,7 +70,7 @@ func (b *bootstrapper) copyOverlay() error {
 		return err
 	}
 
-	b.message("Copying Overlay")
+	b.message(L("Copying Overlay"))
 
 	return cp.Copy(dir, b.dir)
 }
@@ -84,7 +86,7 @@ func (b *bootstrapper) preRun() error {
 		return fmt.Errorf("fflags: %w", err)
 	}
 
-	gutil.IdleAdd(func() { b.status.SetLabel("Launching Studio") })
+	gutil.IdleAdd(func() { b.status.SetLabel(L("Launching Studio")) })
 
 	dpi := 96.0 * b.win.GetNative().GetSurface().GetScale()
 	slog.Info("Updating Wine DPI", "dpi", dpi)
@@ -113,6 +115,6 @@ func (b *bootstrapper) applyFFlags() error {
 		}
 	}
 
-	b.message("Applying FFlags")
+	b.message(L("Applying FFlags"))
 	return f.Apply(b.dir)
 }

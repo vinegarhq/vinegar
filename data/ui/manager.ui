@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.96.3 -->
-<interface>
+<interface domain="vinegar">
   <!-- interface-name manager.ui -->
   <requires lib="gio" version="2.0"/>
   <requires lib="gtk" version="4.18"/>
@@ -48,7 +48,7 @@
                                     <property name="child">
                                       <object class="AdwButtonContent" id="run-content">
                                         <property name="icon-name">mail-mark-junk-symbolic</property>
-                                        <property name="label">Uninitialized</property>
+                                        <property name="label" translatable="yes">Uninitialized</property>
                                       </object>
                                     </property>
                                     <style>
@@ -84,7 +84,7 @@
                                     <property name="child">
                                       <object class="GtkEntry" id="cmd">
                                         <property name="activates-default">True</property>
-                                        <property name="placeholder-text">Custom Command</property>
+                                        <property name="placeholder-text" translatable="yes">Custom Command</property>
                                       </object>
                                     </property>
                                   </object>
@@ -96,12 +96,12 @@
                             </property>
                             <property name="sensitive">False</property>
                             <property name="separate-rows">False</property>
-                            <property name="title">Components</property>
+                            <property name="title" translatable="yes">Components</property>
                             <child>
                               <object class="AdwActionRow" id="winecfg">
                                 <property name="action-name">win.winecfg</property>
                                 <property name="activatable">True</property>
-                                <property name="title">Advanced Wine Settings</property>
+                                <property name="title" translatable="yes">Advanced Wine Settings</property>
                                 <child type="suffix">
                                   <object class="GtkImage">
                                     <property name="icon-name">go-next-symbolic</property>
@@ -140,22 +140,22 @@
                             <child>
                               <object class="AdwActionRow">
                                 <property name="icon-name">help-about-symbolic</property>
-                                <property name="subtitle">Under the hood, Vinegar configures and manages Wine, using &lt;a href='https://github.com/vinegarhq/kombucha'&gt;a patched version&lt;/a&gt; by default to enhance the Studio experience. However, Wine's instability may vary from system to system.</property>
-                                <property name="title">Components</property>
+                                <property name="subtitle" translatable="yes">Under the hood, Vinegar configures and manages Wine, using &lt;a href='https://github.com/vinegarhq/kombucha'&gt;a patched version&lt;/a&gt; by default to enhance the Studio experience. However, Wine's instability may vary from system to system.</property>
+                                <property name="title" translatable="yes">Components</property>
                               </object>
                             </child>
                             <child>
                               <object class="AdwActionRow">
                                 <property name="icon-name">help-faq-symbolic</property>
-                                <property name="subtitle">Vinegarʼs settings can be configured to fix multiple window or rendering issues, if any occur. See &lt;a href='https://vinegarhq.org/Vinegar/Troubleshooting.html'&gt;Common problems and their fixes&lt;/a&gt; for further information.</property>
-                                <property name="title">Troubleshooting Wine</property>
+                                <property name="subtitle" translatable="yes">Vinegar's settings can be configured to fix multiple window or rendering issues, if any occur. See &lt;a href='https://vinegarhq.org/Vinegar/Troubleshooting.html'&gt;Common problems and their fixes&lt;/a&gt; for further information.</property>
+                                <property name="title" translatable="yes">Troubleshooting Wine</property>
                               </object>
                             </child>
                             <child>
                               <object class="AdwActionRow">
                                 <property name="icon-name">preferences-system-symbolic</property>
-                                <property name="subtitle">You may tweak Vinegar's settings or manage your Wine data from the manager page, which can be accessed by right clicking on Vinegar's icon on your desktop or searching for "Manage" in your application launcher.</property>
-                                <property name="title">Configuration</property>
+                                <property name="subtitle" translatable="yes">You may tweak Vinegar's settings or manage your Wine data from the manager page, which can be accessed by right clicking on Vinegar's icon on your desktop or searching for "Manage" in your application launcher.</property>
+                                <property name="title" translatable="yes">Configuration</property>
                               </object>
                             </child>
                             <style>
@@ -167,7 +167,7 @@
                           <object class="GtkButton">
                             <property name="action-name">navigation.pop</property>
                             <property name="halign">center</property>
-                            <property name="label">Configure</property>
+                            <property name="label" translatable="yes">Configure</property>
                             <style>
                               <class name="pill"/>
                               <class name="suggested-action"/>
@@ -176,7 +176,7 @@
                         </child>
                       </object>
                     </property>
-                    <property name="title">Welcome to Vinegar</property>
+                    <property name="title" translatable="yes">Welcome to Vinegar</property>
                   </object>
                 </property>
                 <child type="top">
@@ -188,7 +188,7 @@
               </object>
             </property>
             <property name="tag">welcome</property>
-            <property name="title">Welcome to Vinegar</property>
+            <property name="title" translatable="yes">Welcome to Vinegar</property>
           </object>
         </child>
       </object>
@@ -199,44 +199,44 @@
       <item>
         <attribute name="action">win.prefix-kill</attribute>
         <attribute name="icon">process-stop-symbolic</attribute>
-        <attribute name="label">Stop Processes</attribute>
+        <attribute name="label" translatable="yes">Stop Processes</attribute>
       </item>
     </section>
     <section>
       <item>
         <attribute name="action">win.open-data</attribute>
-        <attribute name="label">Open Files</attribute>
+        <attribute name="label" translatable="yes">Open Files</attribute>
       </item>
     </section>
     <section>
       <item>
         <attribute name="action">win.update</attribute>
-        <attribute name="label">Update Wine Installation</attribute>
+        <attribute name="label" translatable="yes">Update Wine Installation</attribute>
       </item>
     </section>
     <section>
       <item>
         <attribute name="action">win.delete-studio</attribute>
-        <attribute name="label">Uninstall Studio</attribute>
+        <attribute name="label" translatable="yes">Uninstall Studio</attribute>
       </item>
       <item>
         <attribute name="action">win.delete-prefix</attribute>
-        <attribute name="label">Delete Prefix Data</attribute>
+        <attribute name="label" translatable="yes">Delete Prefix Data</attribute>
       </item>
     </section>
   </menu>
   <menu id="app-menu">
     <item>
       <attribute name="action">win.about</attribute>
-      <attribute name="label">About Vinegar</attribute>
+      <attribute name="label" translatable="yes">About Vinegar</attribute>
     </item>
     <item>
       <attribute name="action">win.clear-cache</attribute>
-      <attribute name="label">Clear Cache</attribute>
+      <attribute name="label" translatable="yes">Clear Cache</attribute>
     </item>
     <item>
       <attribute name="action">win.open-logs</attribute>
-      <attribute name="label">Open Logs</attribute>
+      <attribute name="label" translatable="yes">Open Logs</attribute>
     </item>
   </menu>
 </interface>

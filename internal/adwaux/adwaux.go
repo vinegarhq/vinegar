@@ -8,6 +8,8 @@ import (
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 // Enum reflection is impossible without an interface to get
@@ -106,9 +108,14 @@ func (p *structGroups) add(v reflect.Value, sf reflect.StructField) {
 		return
 	}
 
+	displayGroup := groupName
+	if displayGroup != "" {
+		displayGroup = L(groupName)
+	}
+
 	if v.Kind() == reflect.Map {
 		group := newMapGroup(v)
-		group.SetTitle(groupName)
+		group.SetTitle(displayGroup)
 		p.page.Add(group)
 		return
 	}
@@ -116,13 +123,17 @@ func (p *structGroups) add(v reflect.Value, sf reflect.StructField) {
 	if !ok {
 		group = adw.NewPreferencesGroup()
 		p.groups[groupName] = group
-		group.SetTitle(groupName)
+		group.SetTitle(displayGroup)
 		p.page.Add(group)
 	}
 
 	title := sf.Tag.Get("title")
 	if title == "" {
 		title = sf.Name
+	}
+
+	if title != "" {
+		title = L(title)
 	}
 
 	fields := strings.Split(sf.Tag.Get("row"), ",")
@@ -132,12 +143,18 @@ func (p *structGroups) add(v reflect.Value, sf reflect.StructField) {
 		option = fields[1]
 	}
 
+	if description != "" {
+		description = L(description)
+	}
 	if p, ok := reflect.TypeAssert[PathSelector](v); ok {
 		path := newPathRow(v, p.Default())
 		path.SetTitle(description)
 		group.Add(&path.Widget)
 	} else if t, ok := reflect.TypeAssert[Defaulter](v); ok {
-		opt := newOptionEntryRow(v, fields[1], t.Default())
+		if option != "" {
+			option = L(option)
+		}
+		opt := newOptionEntryRow(v, option, t.Default())
 		opt.SetTitle(title)
 		opt.SetSubtitle(description)
 		group.Add(&opt.Widget)

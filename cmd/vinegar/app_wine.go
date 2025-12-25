@@ -16,6 +16,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/netutil"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 // Reports whether a Wine Prefix was initialized.
@@ -33,7 +35,7 @@ func (a *app) prepareWine() (bool, error) {
 		return false, nil
 	}
 
-	a.boot.message("Setting up Wine", "first-time", firstRun)
+	a.boot.message(L("Setting up Wine"), "first-time", firstRun)
 
 	if err := a.pfx.Prepare(); err != nil {
 		return firstRun, err
@@ -52,7 +54,7 @@ func (a *app) prepareWine() (bool, error) {
 	folders.SetValue("Documents", dirs.Windows(xdg.UserDirs.Documents))
 	folders.SetValue("My Pictures", dirs.Windows(xdg.UserDirs.Pictures))
 
-	a.boot.message("Updating Paths")
+	a.boot.message(L("Updating Paths"))
 	err = a.pfx.RegistryImportKey(folders)
 	if err != nil {
 		return true, fmt.Errorf("paths: %w", err)
@@ -92,7 +94,7 @@ func (a *app) updateWine() error {
 			return fmt.Errorf("readlink: %w", err)
 		}
 		if filepath.Base(path) == filepath.Base(dir) {
-			a.mgr.showToast("Build up to date")
+			a.mgr.showToast(L("Build up to date"))
 			return nil
 		}
 
@@ -126,7 +128,7 @@ func (a *app) updateWine() error {
 	}
 
 	if a.mgr != nil {
-		a.mgr.showToast("Updated Wine")
+		a.mgr.showToast(L("Updated Wine"))
 	}
 
 install:

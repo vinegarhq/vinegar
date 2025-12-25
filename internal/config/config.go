@@ -21,7 +21,7 @@ import (
 
 const (
 	dxvkVersion    = "2.7.1"
-	webViewVersion = "141.0.3537.71"
+	webViewVersion = "143.0.3650.96"
 )
 
 type Studio struct {

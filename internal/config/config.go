@@ -22,7 +22,7 @@ import (
 
 const (
 	dxvkVersion      = "2.7.1"
-	dxvkSarekVersion = "1.11.0-async"
+	dxvkSarekVersion = "Sarek-1.11.0-async"
 	webViewVersion   = "143.0.3650.96"
 )
 

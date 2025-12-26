@@ -98,6 +98,7 @@
                         </style>
                       </object>
                     </property>
+                    <property name="sensitive">False</property>
                     <property name="separate-rows">False</property>
                     <property name="title">Wine</property>
                     <child>

@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
@@ -15,6 +16,19 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
+
+func (m *manager) runWineCmd() error {
+	cmd := m.runner.GetText()
+	args := strings.Fields(cmd)
+	if len(args) < 1 {
+		return nil
+	}
+	if err := m.startWine(); err != nil {
+		return err
+	}
+	slog.Info("Running Wine command", "args", args)
+	return m.pfx.Wine(args[0], args[1:]...).Run()
+}
 
 func (m *manager) hideRunUntil() func() {
 	var button gtk.Button
@@ -79,6 +93,13 @@ func (m *manager) saveConfig() {
 		return
 	}
 
+	u, err := m.pfx.NeedsUpdate()
+	if err != nil {
+		m.showError(fmt.Errorf("determine update: %w", err))
+	} else if u {
+		m.errThread(m.startWine)
+	}
+
 	banner.SetTitle(fmt.Sprintf("Invalid: %v", err))
 	banner.SetRevealed(true)
 	slog.Info("Configuration validation error", "err", err)
@@ -125,6 +146,7 @@ func (m *manager) deletePrefixes() error {
 	}
 
 	m.showToast("Deleted all data")
+	m.wine.SetSensitive(true)
 	return nil
 }
 

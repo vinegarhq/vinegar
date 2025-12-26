@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )
@@ -21,6 +22,14 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 	cmd := b.pfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
 	if cmd.Err != nil {
 		return nil, cmd.Err
+	}
+
+	// I was called a "noob" for my implementation by someone who creates
+	// an entirely new Wineprefix for this feature.
+	if d := string(b.cfg.Studio.Desktop); d != "" {
+		cmd.Args = append([]string{
+			"explorer", "/desktop=" + glib.UuidStringRandom() + "," + d,
+		}, cmd.Args[1:]...)
 	}
 
 	launcher := strings.Fields(b.cfg.Studio.Launcher)

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"reflect"
 
@@ -22,15 +21,6 @@ type manager struct {
 
 	runner adw.EntryRow
 	wine   adw.PreferencesGroup
-
-	handlers struct {
-		// Virtual desktop rows and their spin row handler IDs
-		// Signal blockers necessary as to not modify the underlying registry, only
-		// modifying the view to the user.
-		vdrow    uint32
-		vdwidth  uint32
-		vdheight uint32
-	}
 }
 
 func (a *app) newManager() *manager {
@@ -60,30 +50,8 @@ func (a *app) newManager() *manager {
 	}
 	r.ConnectClicked(&cb)
 
-	var (
-		row       adw.ExpanderRow
-		widthAdj  gtk.Adjustment
-		heightAdj gtk.Adjustment
-	)
-	m.builder.GetObject("switch-prefix-vdesktop").Cast(&row)
-	m.builder.GetObject("adj-vdesktop-width").Cast(&widthAdj)
-	m.builder.GetObject("adj-vdesktop-height").Cast(&heightAdj)
-
-	expansionCb := m.virtualDesktopEnabled
-	changedCb := m.adjustVirtualDesktopChanged
-	m.handlers.vdrow = row.ConnectSignal("notify::enable-expansion", &expansionCb)
-	m.handlers.vdwidth = widthAdj.ConnectSignal("value-changed", &changedCb)
-	m.handlers.vdheight = heightAdj.ConnectSignal("value-changed", &changedCb)
-
 	m.builder.GetObject("prefgroup-wine").Cast(&m.wine)
 	m.wine.SetSensitive(m.pfx.Running())
-	sensitiveCb := func() {
-		if m.wine.GetSensitive() {
-			m.setVirtualDesktopAdjustment()
-		}
-		slog.Info("Running", m.wine.GetSensitive(), m.pfx.Running())
-	}
-	m.wine.ConnectSignal("notify::sensitive", &sensitiveCb)
 	m.errThread(m.startWine)
 
 	for name, fn := range map[string]any{
@@ -169,79 +137,4 @@ func (m *manager) startWine() error {
 	}()
 	slog.Info("Starting Wine")
 	return m.pfx.Start()
-}
-
-func (m *manager) adjustVirtualDesktopChanged() {
-	var (
-		widthAdj  gtk.Adjustment
-		heightAdj gtk.Adjustment
-	)
-	m.builder.GetObject("adj-vdesktop-width").Cast(&widthAdj)
-	m.builder.GetObject("adj-vdesktop-height").Cast(&heightAdj)
-
-	res := fmt.Sprintf("%.0fx%.0f", widthAdj.GetValue(), heightAdj.GetValue())
-
-	slog.Info("Changing Virtual Desktop resolution", "res", res)
-	err := m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer\Desktops`, "Default", res)
-	if err != nil {
-		m.showError(fmt.Errorf("virtual desktop set: %w", err))
-	}
-}
-
-func (m *manager) virtualDesktopEnabled() {
-	var row adw.ExpanderRow
-	m.builder.GetObject("switch-prefix-vdesktop").Cast(&row)
-	enable := row.GetEnableExpansion()
-
-	slog.Info("Enabling Virtual Desktop", "state", enable)
-	var err error
-	if enable {
-		err = m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer`, "Desktop", "Default")
-	} else {
-		err = m.pfx.RegistryDelete(`HKCU\Software\Wine\Explorer`, "")
-	}
-	if err != nil {
-		m.showError(fmt.Errorf("virtual desktop adj: %w", err))
-	} else if enable { // If enabling it fails, then setting would probably fail
-		m.adjustVirtualDesktopChanged()
-	}
-}
-
-func (m *manager) setVirtualDesktopAdjustment() {
-	var (
-		row       adw.ExpanderRow
-		widthAdj  gtk.Adjustment
-		heightAdj gtk.Adjustment
-	)
-	m.builder.GetObject("switch-prefix-vdesktop").Cast(&row)
-	m.builder.GetObject("adj-vdesktop-width").Cast(&widthAdj)
-	m.builder.GetObject("adj-vdesktop-height").Cast(&heightAdj)
-
-	k, err := m.pfx.RegistryQuery(`HKCU\Software\Wine\Explorer\Desktops`)
-	if err != nil {
-		m.showError(fmt.Errorf("virtual desktop state: %w", err))
-		return
-	}
-	gobject.SignalHandlerBlock(&row.Object, m.handlers.vdrow)
-	defer func() { gobject.SignalHandlerUnblock(&row.Object, m.handlers.vdrow) }()
-	if k == nil {
-		row.SetEnableExpansion(false)
-		return
-	}
-
-	gobject.SignalHandlerBlock(&widthAdj.Object, m.handlers.vdwidth)
-	gobject.SignalHandlerBlock(&heightAdj.Object, m.handlers.vdheight)
-
-	var width, height float64
-	fmt.Sscanf(k.GetValue("Default").Data.(string), "%fx%f", &width, &height)
-	if widthAdj.GetValue() != width {
-		widthAdj.SetValue(width)
-	}
-	if heightAdj.GetValue() != height {
-		heightAdj.SetValue(height)
-	}
-	row.SetEnableExpansion(true)
-
-	gobject.SignalHandlerUnblock(&widthAdj.Object, m.handlers.vdwidth)
-	gobject.SignalHandlerUnblock(&heightAdj.Object, m.handlers.vdheight)
 }

@@ -25,11 +25,12 @@ const (
 )
 
 type Studio struct {
-	WebView  WebViewOption `toml:"webview" group:"" row:"Disable if nonfunctional,entry,WebView2 Version" title:"Web Pages"`
+	WebView  WebViewOption `toml:"webview" group:"" row:"Disable if nonfunctional,WebView2 Version" title:"Web Pages"`
 	WineRoot string        `toml:"wineroot" group:"" row:"Wine Installation,path"`
 	Launcher string        `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
+	Desktop  DesktopOption `toml:"virtual_desktop" group:"" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
 
-	DXVK     DXVKOption `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,entry,Version,2.7.1"`
+	DXVK     DXVKOption `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,Version"`
 	Renderer Renderer   `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
 
 	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`

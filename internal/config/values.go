@@ -13,6 +13,12 @@ func (r Renderer) Values() []string {
 	return []string{"D3D11", "D3D11FL10", "Vulkan", "OpenGL"}
 }
 
+type DesktopOption string
+
+func (DesktopOption) Default() string {
+	return "1814x1024"
+}
+
 func (r *Renderer) Select(s string) {
 	// No enum parsing necessary
 	*r = Renderer(s)

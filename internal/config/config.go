@@ -2,6 +2,7 @@
 package config
 
 import (
+	"bytes"
 	"errors"
 	"log/slog"
 	"maps"
@@ -20,8 +21,9 @@ import (
 )
 
 const (
-	dxvkVersion    = "2.7.1"
-	webViewVersion = "143.0.3650.96"
+	dxvkVersion      = "2.7.1"
+	dxvkSarekVersion = "1.11.0-async"
+	webViewVersion   = "143.0.3650.96"
 )
 
 type Studio struct {
@@ -30,8 +32,7 @@ type Studio struct {
 	Launcher string        `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
 	Desktop  DesktopOption `toml:"virtual_desktop" group:"" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
 
-	DXVK     DXVKOption `toml:"dxvk" group:"Rendering" row:"Improve D3D11 compatibility by translating it to Vulkan,Version"`
-	Renderer Renderer   `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
+	Renderer Renderer `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
 
 	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
 	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
@@ -87,7 +88,6 @@ func Default() *Config {
 		Env: make(map[string]string),
 
 		Studio: Studio{
-			DXVK:       "",
 			WebView:    WebViewOption(webViewVersion),
 			GameMode:   true,
 			Renderer:   "D3D11",
@@ -99,6 +99,32 @@ func Default() *Config {
 			},
 		},
 	}
+}
+
+func (s *Studio) UnmarshalTOML(data interface{}) error {
+	// prevent recursion by typing
+	type Alias Studio
+	proxy := struct {
+		*Alias
+		DXVK string `toml:"dxvk"`
+	}{Alias: (*Alias)(s)}
+
+	// encode to and back to retrieve all options from raw TOML
+	var buf bytes.Buffer
+	if err := toml.NewEncoder(&buf).Encode(data); err != nil {
+		return err
+	}
+	if _, err := toml.Decode(buf.String(), &proxy); err != nil {
+		return err
+	}
+
+	s = (*Studio)(proxy.Alias)
+
+	if proxy.DXVK != "" {
+		slog.Warn("The DXVK option alongside it's versioning has been deprecated, setting Renderer")
+		s.Renderer = "DXVK"
+	}
+	return nil
 }
 
 func (s *Studio) LauncherPath() (string, error) {
@@ -124,7 +150,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"
 	}
 
-	if c.Studio.DXVK != "" {
+	if c.Studio.Renderer.IsDXVK() {
 		if !c.Debug {
 			env["DXVK_LOG_LEVEL"] = "warn"
 		}
@@ -136,7 +162,7 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 		pfx.Env = append(pfx.Env, k+"="+v)
 	}
 
-	dxvk.EnvOverride(pfx, c.Studio.DXVK != "")
+	dxvk.EnvOverride(pfx, c.Studio.Renderer.IsDXVK())
 
 	slog.Debug("Using Prefix environment", "env", pfx.Env)
 

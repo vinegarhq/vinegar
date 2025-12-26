@@ -58,14 +58,15 @@ func (b *bootstrapper) setupPrefix() error {
 }
 
 func (b *bootstrapper) setupDxvk() error {
-	// If DXVK is installed in the wineprefix, uninstallation
-	// won't be necessary if it's disabled as it still requires
-	// DLL overrides to be present.
-	if b.cfg.Studio.DXVK.Enabled() {
+	if !b.cfg.Studio.Renderer.IsDXVK() {
 		return nil
 	}
 
-	new := b.cfg.Studio.DXVK.String()
+	// If DXVK is installed in the wineprefix, uninstallation
+	// won't be necessary if it's disabled as it still requires
+	// DLL overrides to be present.
+
+	new := b.cfg.Studio.Renderer.DXVKVersion()
 	b.message("Checking DXVK", "version", new)
 
 	current, err := dxvk.Version(b.pfx)

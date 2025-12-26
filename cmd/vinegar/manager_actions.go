@@ -52,6 +52,7 @@ func (m *manager) run() error {
 	show := m.hideRunUntil()
 	defer show()
 
+	// "Run Studio"
 	if m.pfx.Exists() && len(m.boot.procs) == 0 {
 		visible := func() {
 			if !m.boot.win.GetVisible() {
@@ -73,8 +74,11 @@ func (m *manager) run() error {
 		return nil
 	}
 
-	// "Run"
-	return m.app.boot.setupPrefix()
+	// "Initialize"
+	if err := m.startWine(); err != nil {
+		return err
+	}
+	return nil
 }
 
 // No error will be returned, error handling is displayed
@@ -85,11 +89,15 @@ func (m *manager) saveConfig() {
 	banner.SetRevealed(false)
 
 	err := m.reload()
-	if err == nil {
-		slog.Info("Saving configuration!")
-		if err := m.cfg.Save(); err != nil {
-			m.showError(fmt.Errorf("save config: %w", err))
-		}
+	if err != nil {
+		banner.SetTitle(fmt.Sprintf("Invalid: %v", err))
+		banner.SetRevealed(true)
+		slog.Error("Configuration validation error", "err", err)
+		return
+	}
+	slog.Info("Saving configuration!")
+	if err := m.cfg.Save(); err != nil {
+		m.showError(fmt.Errorf("save config: %w", err))
 		return
 	}
 
@@ -99,10 +107,6 @@ func (m *manager) saveConfig() {
 	} else if u {
 		m.errThread(m.startWine)
 	}
-
-	banner.SetTitle(fmt.Sprintf("Invalid: %v", err))
-	banner.SetRevealed(true)
-	slog.Info("Configuration validation error", "err", err)
 }
 
 func (m *manager) showAbout() {
@@ -146,7 +150,7 @@ func (m *manager) deletePrefixes() error {
 	}
 
 	m.showToast("Deleted all data")
-	m.wine.SetSensitive(true)
+	m.wine.SetSensitive(false)
 	return nil
 }
 

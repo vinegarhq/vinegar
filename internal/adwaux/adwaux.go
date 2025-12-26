@@ -13,7 +13,6 @@ import (
 // the enum values
 type Selector interface {
 	Values() []string
-	Select(string)
 }
 
 type EntryToggler interface {

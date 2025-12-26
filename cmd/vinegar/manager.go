@@ -51,8 +51,7 @@ func (a *app) newManager() *manager {
 	r.ConnectClicked(&cb)
 
 	m.builder.GetObject("prefgroup-wine").Cast(&m.wine)
-	m.wine.SetSensitive(m.pfx.Running())
-	m.errThread(m.startWine)
+	m.wine.SetSensitive(m.pfx.Exists())
 
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
@@ -69,6 +68,7 @@ func (a *app) newManager() *manager {
 		"delete-prefix": m.deletePrefixes,
 		"delete-studio": m.deleteDeployments,
 		"clear-cache":   m.clearCache,
+		"update":        m.updateWine,
 	} {
 		action := gio.NewSimpleAction(name, nil)
 		activate := func(_ gio.SimpleAction, p uintptr) {
@@ -125,7 +125,6 @@ func (m *manager) startWine() error {
 	gutil.IdleAdd(func() {
 		m.wine.SetSensitive(false)
 	})
-
 	defer func() {
 		if !m.pfx.Running() {
 			return // Error occured
@@ -135,6 +134,6 @@ func (m *manager) startWine() error {
 			m.wine.SetSensitive(true)
 		})
 	}()
-	slog.Info("Starting Wine")
+	slog.Info("Starting Wineserver")
 	return m.pfx.Start()
 }

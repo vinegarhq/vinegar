@@ -88,6 +88,7 @@ func Default() *Config {
 		Env: make(map[string]string),
 
 		Studio: Studio{
+			WineRoot:   dirs.WinePath,
 			WebView:    WebViewOption(webViewVersion),
 			GameMode:   true,
 			Renderer:   "D3D11",
@@ -174,13 +175,6 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 	dxvk.EnvOverride(pfx, c.Studio.Renderer.IsDXVK())
 
 	slog.Debug("Using Prefix environment", "env", pfx.Env)
-
-	if c.Studio.WineRoot != "" {
-		w := pfx.Wine("")
-		if w.Err != nil {
-			return nil, w.Err
-		}
-	}
 
 	return pfx, nil
 }

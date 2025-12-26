@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -16,6 +15,7 @@ import (
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/config"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
@@ -67,6 +67,13 @@ func (a *app) reload() error {
 	if a.cfg.Debug {
 		a.rbx.Client.Transport = &debugTransport{
 			underlying: http.DefaultTransport,
+		}
+	}
+
+	if a.cfg.Studio.WineRoot != dirs.WinePath {
+		path, err := os.Readlink(dirs.WinePath)
+		if err != nil {
+			_ = os.RemoveAll(path)
 		}
 	}
 
@@ -130,7 +137,9 @@ func (a *app) shutdown(_ gio.Application) {
 	if !a.keepLog && !a.cfg.Debug {
 		_ = os.Remove(logging.Path)
 	}
-	_ = a.pfx.Kill()
+	if a.pfx != nil {
+		_ = a.pfx.Kill()
+	}
 	slog.Info("Goodbye!")
 }
 
@@ -155,34 +164,6 @@ func (a *app) setMime() error {
 		return fmt.Errorf("browser login set: %w", err)
 	}
 	return nil
-}
-
-func (a *app) Write(b []byte) (int, error) {
-	for line := range strings.SplitSeq(string(b[:len(b)-1]), "\n") {
-		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
-		if a.boot != nil && len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
-			// Avoid "\n" calls to OutputDebugStringA
-			if len(line) >= 44 {
-				a.boot.handleRobloxLog(line[39 : len(line)-1])
-			}
-			return len(b), nil
-		}
-
-		a.handleWineLog(line)
-	}
-	return len(b), nil
-}
-
-func (a *app) handleWineLog(line string) {
-	if strings.Contains(line, "to unimplemented function advapi32.dll.SystemFunction036") {
-		err := errors.New("Your Wineprefix is corrupt! Please delete all data in Vinegar's settings.")
-		gutil.IdleAdd(func() {
-			a.pfx.Server(wine.ServerKill, "9")
-			a.showError(err)
-		})
-	}
-
-	slog.Log(context.Background(), logging.LevelWine.Level(), line)
 }
 
 func (a *app) errThread(fn func() error) {

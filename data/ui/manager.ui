@@ -135,12 +135,18 @@
     </section>
     <section>
       <item>
+        <attribute name="action">win.update</attribute>
+        <attribute name="label">Update Wine Installation</attribute>
+      </item>
+    </section>
+    <section>
+      <item>
         <attribute name="action">win.delete-studio</attribute>
         <attribute name="label">Uninstall Studio</attribute>
       </item>
       <item>
         <attribute name="action">win.delete-prefix</attribute>
-        <attribute name="label">Delete All Data</attribute>
+        <attribute name="label">Delete Prefix Data</attribute>
       </item>
     </section>
   </menu>

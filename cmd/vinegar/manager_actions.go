@@ -75,10 +75,7 @@ func (m *manager) run() error {
 	}
 
 	// "Initialize"
-	if err := m.startWine(); err != nil {
-		return err
-	}
-	return nil
+	return m.startWine()
 }
 
 // No error will be returned, error handling is displayed
@@ -99,13 +96,6 @@ func (m *manager) saveConfig() {
 	if err := m.cfg.Save(); err != nil {
 		m.showError(fmt.Errorf("save config: %w", err))
 		return
-	}
-
-	u, err := m.pfx.NeedsUpdate()
-	if err != nil {
-		m.showError(fmt.Errorf("determine update: %w", err))
-	} else if u {
-		m.errThread(m.startWine)
 	}
 }
 

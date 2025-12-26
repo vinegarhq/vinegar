@@ -94,9 +94,7 @@ func Default() *Config {
 			Channel:    "",
 			DiscordRPC: true,
 			FFlags:     make(rbxbin.FFlags),
-			Env: map[string]string{
-				"WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS": "--use-angle=gl --in-process-gpu",
-			},
+			Env:        make(map[string]string),
 		},
 	}
 }
@@ -148,6 +146,16 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 	env["WINEDLLOVERRIDES"] += ";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
 	if !c.Debug {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"
+	}
+
+	env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--in-process-gpu "
+
+	switch c.Studio.Renderer {
+	case "D3D11", "OpenGL":
+		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=gl"
+	default: // all other options are vulkan-esque
+		env["WINE_D3D_CONFIG"] = "renderer=vulkan"
+		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=d3d11"
 	}
 
 	if c.Studio.Renderer.IsDXVK() {

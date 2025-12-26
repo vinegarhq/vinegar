@@ -11,7 +11,7 @@ import (
 type Renderer string
 
 func (r Renderer) Values() []string {
-	return []string{"D3D11", "DXVK", "DXVK-Sarek", "D3D11FL10", "Vulkan", "OpenGL"}
+	return []string{"D3D11", "DXVK", "DXVK-Sarek", "Vulkan", "OpenGL"}
 }
 
 func (r Renderer) IsDXVK() bool {

@@ -22,6 +22,15 @@ type manager struct {
 
 	runner adw.EntryRow
 	wine   adw.PreferencesGroup
+
+	handlers struct {
+		// Virtual desktop rows and their spin row handler IDs
+		// Signal blockers necessary as to not modify the underlying registry, only
+		// modifying the view to the user.
+		vdrow    uint32
+		vdwidth  uint32
+		vdheight uint32
+	}
 }
 
 func (a *app) newManager() *manager {
@@ -51,12 +60,28 @@ func (a *app) newManager() *manager {
 	}
 	r.ConnectClicked(&cb)
 
+	var (
+		row       adw.ExpanderRow
+		widthAdj  gtk.Adjustment
+		heightAdj gtk.Adjustment
+	)
+	m.builder.GetObject("switch-prefix-vdesktop").Cast(&row)
+	m.builder.GetObject("adj-vdesktop-width").Cast(&widthAdj)
+	m.builder.GetObject("adj-vdesktop-height").Cast(&heightAdj)
+
+	expansionCb := m.virtualDesktopEnabled
+	changedCb := m.adjustVirtualDesktopChanged
+	m.handlers.vdrow = row.ConnectSignal("notify::enable-expansion", &expansionCb)
+	m.handlers.vdwidth = widthAdj.ConnectSignal("value-changed", &changedCb)
+	m.handlers.vdheight = heightAdj.ConnectSignal("value-changed", &changedCb)
+
 	m.builder.GetObject("prefgroup-wine").Cast(&m.wine)
 	m.wine.SetSensitive(m.pfx.Running())
 	sensitiveCb := func() {
 		if m.wine.GetSensitive() {
-			m.setupVirtualDesktopAdjustment()
+			m.setVirtualDesktopAdjustment()
 		}
+		slog.Info("Running", m.wine.GetSensitive(), m.pfx.Running())
 	}
 	m.wine.ConnectSignal("notify::sensitive", &sensitiveCb)
 	m.errThread(m.startWine)
@@ -119,6 +144,7 @@ func (m *manager) updateRun() {
 func (m *manager) showToast(s string) {
 	var overlay adw.ToastOverlay
 	m.builder.GetObject("overlay").Cast(&overlay)
+	slog.Info(s)
 
 	gutil.IdleAdd(func() {
 		toast := adw.NewToast(s)
@@ -128,16 +154,60 @@ func (m *manager) showToast(s string) {
 }
 
 func (m *manager) startWine() error {
+	gutil.IdleAdd(func() {
+		m.wine.SetSensitive(false)
+	})
+
 	defer func() {
-		if m.pfx.Running() {
-			m.wine.SetSensitive(true)
-			m.showToast("Wine initialized")
+		if !m.pfx.Running() {
+			return // Error occured
 		}
+		gutil.IdleAdd(func() {
+			m.showToast("Wine initialized")
+			m.wine.SetSensitive(true)
+		})
 	}()
+	slog.Info("Starting Wine")
 	return m.pfx.Start()
 }
 
-func (m *manager) setupVirtualDesktopAdjustment() {
+func (m *manager) adjustVirtualDesktopChanged() {
+	var (
+		widthAdj  gtk.Adjustment
+		heightAdj gtk.Adjustment
+	)
+	m.builder.GetObject("adj-vdesktop-width").Cast(&widthAdj)
+	m.builder.GetObject("adj-vdesktop-height").Cast(&heightAdj)
+
+	res := fmt.Sprintf("%.0fx%.0f", widthAdj.GetValue(), heightAdj.GetValue())
+
+	slog.Info("Changing Virtual Desktop resolution", "res", res)
+	err := m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer\Desktops`, "Default", res)
+	if err != nil {
+		m.showError(fmt.Errorf("virtual desktop set: %w", err))
+	}
+}
+
+func (m *manager) virtualDesktopEnabled() {
+	var row adw.ExpanderRow
+	m.builder.GetObject("switch-prefix-vdesktop").Cast(&row)
+	enable := row.GetEnableExpansion()
+
+	slog.Info("Enabling Virtual Desktop", "state", enable)
+	var err error
+	if enable {
+		err = m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer`, "Desktop", "Default")
+	} else {
+		err = m.pfx.RegistryDelete(`HKCU\Software\Wine\Explorer`, "")
+	}
+	if err != nil {
+		m.showError(fmt.Errorf("virtual desktop adj: %w", err))
+	} else if enable { // If enabling it fails, then setting would probably fail
+		m.adjustVirtualDesktopChanged()
+	}
+}
+
+func (m *manager) setVirtualDesktopAdjustment() {
 	var (
 		row       adw.ExpanderRow
 		widthAdj  gtk.Adjustment
@@ -146,56 +216,32 @@ func (m *manager) setupVirtualDesktopAdjustment() {
 	m.builder.GetObject("switch-prefix-vdesktop").Cast(&row)
 	m.builder.GetObject("adj-vdesktop-width").Cast(&widthAdj)
 	m.builder.GetObject("adj-vdesktop-height").Cast(&heightAdj)
-	expansionCb := func() {
-		enable := row.GetEnableExpansion()
 
-		slog.Info("Enabling Virtual Desktop", "state", enable)
-		var err error
-		if enable {
-			err = m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer`, "Desktop", "Default")
-		} else {
-			err = m.pfx.RegistryDelete(`HKCU\Software\Wine\Explorer`, "")
-		}
-		if err != nil {
-			m.showError(fmt.Errorf("virtual desktop adj: %w", err))
-		} else if enable { // If enabling it fails, then setting would probably fail
-			gobject.SignalEmitByName(&widthAdj.Object, "value-changed")
-		}
+	k, err := m.pfx.RegistryQuery(`HKCU\Software\Wine\Explorer\Desktops`)
+	if err != nil {
+		m.showError(fmt.Errorf("virtual desktop state: %w", err))
+		return
 	}
-	changedCb := func() {
-		res := fmt.Sprintf("%.0fx%.0f", widthAdj.GetValue(), heightAdj.GetValue())
-
-		slog.Info("Changing Virtual Desktop resolution", "res", res)
-		err := m.pfx.RegistryAdd(`HKCU\Software\Wine\Explorer\Desktops`, "Default", res)
-		if err != nil {
-			m.showError(fmt.Errorf("virtual desktop set: %w", err))
-		}
+	gobject.SignalHandlerBlock(&row.Object, m.handlers.vdrow)
+	defer func() { gobject.SignalHandlerUnblock(&row.Object, m.handlers.vdrow) }()
+	if k == nil {
+		row.SetEnableExpansion(false)
+		return
 	}
 
-	row.SetSensitive(false)
+	gobject.SignalHandlerBlock(&widthAdj.Object, m.handlers.vdwidth)
+	gobject.SignalHandlerBlock(&heightAdj.Object, m.handlers.vdheight)
 
-	m.errThread(func() error {
-		defer func() {
-			row.SetSensitive(true)
-		}()
-		k, err := m.pfx.RegistryQuery(`HKCU\Software\Wine\Explorer\Desktops`)
-		if err != nil {
-			return fmt.Errorf("virtual desktop state: %w", err)
-		}
-		if k == nil {
-			row.SetEnableExpansion(false)
-			return nil
-		}
+	var width, height float64
+	fmt.Sscanf(k.GetValue("Default").Data.(string), "%fx%f", &width, &height)
+	if widthAdj.GetValue() != width {
+		widthAdj.SetValue(width)
+	}
+	if heightAdj.GetValue() != height {
+		heightAdj.SetValue(height)
+	}
+	row.SetEnableExpansion(true)
 
-		var width, height int
-		fmt.Sscanf(k.GetValue("Default").Data.(string), "%dx%d", &width, &height)
-		widthAdj.SetValue(float64(width))
-		heightAdj.SetValue(float64(height))
-		row.SetEnableExpansion(true)
-		return nil
-	})
-
-	widthAdj.ConnectSignal("value-changed", &changedCb)
-	heightAdj.ConnectSignal("value-changed", &changedCb)
-	row.ConnectSignal("notify::enable-expansion", &expansionCb)
+	gobject.SignalHandlerUnblock(&widthAdj.Object, m.handlers.vdwidth)
+	gobject.SignalHandlerUnblock(&heightAdj.Object, m.handlers.vdheight)
 }

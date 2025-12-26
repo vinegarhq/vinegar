@@ -46,13 +46,13 @@ func (s *StudioRPC) Handle(line string) error {
 }
 
 func (s *StudioRPC) handleOpen(line string) error {
-	const entry = "[FLog::StudioKeyEvents] open place (identifier = "
+	const entry = "[FLog::CloseDataModel] Setting place ID "
 	if !strings.HasPrefix(line, entry) {
 		return nil
 	}
 
-	// open place (identifier = $id) [start]
-	i, err := strconv.ParseInt(line[len(entry):len(line)-len(") [start]")], 10, 64)
+	// Setting place ID $id
+	i, err := strconv.ParseInt(strings.TrimPrefix(line, entry), 10, 64)
 	if err != nil {
 		return err
 	}

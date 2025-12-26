@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"slices"
 	"strings"
 	"syscall"
 
@@ -64,21 +63,8 @@ func (b *bootstrapper) execute(args ...string) error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+
 	b.procs = append(b.procs, cmd.Process)
-	defer func() {
-		b.procs = slices.DeleteFunc(b.procs, func(p *os.Process) bool {
-			return p == cmd.Process
-		})
-		if len(b.procs) > 0 {
-			return
-		}
-
-		// Workaround any other stray processes holding Wine up
-		// such as WebView
-		slog.Warn("No more processes left, killing Wineprefix")
-		b.pfx.Kill()
-	}()
-
 	gutil.IdleAdd(func() {
 		b.win.SetVisible(false)
 	})

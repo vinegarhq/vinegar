@@ -49,9 +49,17 @@ func (m *manager) run() error {
 		return m.app.boot.run()
 	}
 
+	// "Stop"
 	if len(m.boot.procs) > 0 {
-		return m.pfx.Kill()
+		for _, p := range m.boot.procs {
+			slog.Info("Killing Studio", "pid", p.Pid)
+			p.Kill()
+		}
+		m.boot.procs = nil
+		return nil
 	}
+
+	// "Run"
 	return m.app.boot.setupPrefix()
 }
 

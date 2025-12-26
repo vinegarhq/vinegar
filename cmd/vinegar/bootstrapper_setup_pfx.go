@@ -19,10 +19,8 @@ func (b *bootstrapper) setupPrefix() error {
 	defer b.performing()()
 	b.message("Setting up Wine")
 
-	// Always initialize in case Wine changes,
-	// to prevent a dialog from appearing in normal apps.
-	b.message("Initializing Wineprefix", "dir", b.pfx.Dir())
-	if err := b.pfx.Init().Run(); err != nil {
+	// Handles Wineprefix initialization as necessary
+	if err := b.pfx.Start(); err != nil {
 		return err
 	}
 

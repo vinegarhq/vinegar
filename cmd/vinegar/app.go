@@ -130,6 +130,7 @@ func (a *app) shutdown(_ gio.Application) {
 	if !a.keepLog && !a.cfg.Debug {
 		_ = os.Remove(logging.Path)
 	}
+	_ = a.pfx.Kill()
 	slog.Info("Goodbye!")
 }
 

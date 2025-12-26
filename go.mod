@@ -17,7 +17,7 @@ require (
 	github.com/lmittmann/tint v1.1.2
 	github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
-	github.com/sewnie/wine v0.0.0-20251226133556-b61857e6297d
+	github.com/sewnie/wine v0.0.0-20251226160009-b9143335dd9b
 )
 
 require (

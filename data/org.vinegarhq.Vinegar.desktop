@@ -2,6 +2,7 @@
 Name=Vinegar
 GenericName=Studio Launcher
 Comment=Run Roblox Studio on Linux
+Comment[pt_BR]=Use o Roblox Studio no Linux
 Exec=vinegar %u
 Icon=org.vinegarhq.Vinegar
 Terminal=false
@@ -15,4 +16,5 @@ X-Flatpak=org.vinegarhq.Vinegar
 
 [Desktop Action manage]
 Name=Manage
+Name[pt_BR]=Gerenciar
 Exec=vinegar manage

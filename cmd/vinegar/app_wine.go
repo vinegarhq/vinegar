@@ -17,13 +17,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
-func (a *app) setupWine() error {
-	if a.cfg.Studio.WineRoot.IsDefault() {
-		return nil
-	}
-	return a.updateWine()
-}
-
 func (a *app) updateWine() error {
 	client := github.NewClient(nil)
 	ctx := context.Background()
@@ -45,6 +38,7 @@ func (a *app) updateWine() error {
 			return fmt.Errorf("readlink: %w", err)
 		}
 		if filepath.Base(path) == filepath.Base(dir) {
+			a.mgr.showToast("Up to date")
 			slog.Info("Wine build up to date", "link", path)
 			return nil
 		}
@@ -74,6 +68,7 @@ func (a *app) updateWine() error {
 		return fmt.Errorf("create link: %w", err)
 	}
 
+	a.mgr.showToast("Download successful")
 	slog.Info("Set local Wine installation", "tag", tag)
 	if a.cfg.Studio.WineRoot.IsDefault() {
 		return nil

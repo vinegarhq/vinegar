@@ -72,13 +72,16 @@ func (a *app) newManager() *manager {
 	} {
 		action := gio.NewSimpleAction(name, nil)
 		activate := func(_ gio.SimpleAction, p uintptr) {
+			stop := m.loading()
 			switch v := fn.(type) {
 			case func() error:
 				m.app.errThread(func() error {
+					defer stop()
 					return v()
 				})
 			case func():
 				v()
+				stop()
 			default:
 				panic("unreachable")
 			}
@@ -91,6 +94,18 @@ func (a *app) newManager() *manager {
 	m.updateRun()
 
 	return &m
+}
+
+func (m *manager) loading() func() {
+	var bar adw.HeaderBar
+	m.builder.GetObject("headerbar").Cast(&bar)
+	spinner := adw.NewSpinner()
+	bar.PackStart(&spinner.Widget)
+	bar.SetMarginStart(6)
+	bar.SetMarginEnd(6)
+	return func() {
+		bar.Remove(&spinner.Widget)
+	}
 }
 
 func (m *manager) updateRun() {
@@ -110,6 +125,9 @@ func (m *manager) updateRun() {
 }
 
 func (m *manager) showToast(s string) {
+	if m == nil {
+		return
+	}
 	var overlay adw.ToastOverlay
 	m.builder.GetObject("overlay").Cast(&overlay)
 	slog.Info(s)

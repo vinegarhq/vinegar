@@ -12,7 +12,7 @@
           <object class="AdwToolbarView">
             <property name="content">prefpage-main</property>
             <child type="top">
-              <object class="AdwHeaderBar">
+              <object class="AdwHeaderBar" id="headerbar">
                 <child type="end">
                   <object class="GtkMenuButton">
                     <property name="icon-name">open-menu-symbolic</property>

@@ -7,11 +7,18 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/internal/adwaux"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
 
 type WineOption string
 
 func (WineOption) Default() string {
+	// Kombucha only has glibc builds currently.
+	//
+	// Ironic because I use a musl system.
+	if strings.Contains(sysinfo.LibC, "musl") {
+		return ""
+	}
 	return dirs.WinePath
 }
 
@@ -87,6 +94,10 @@ func (o WebViewOption) String() string {
 
 func (o WebViewOption) Enabled() bool {
 	return string(o) == ""
+}
+
+func (o *WebViewOption) SetDefault() {
+	*o = WebViewOption(o.Default())
 }
 
 var _ adwaux.Selector = (*Renderer)(nil)

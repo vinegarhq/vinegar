@@ -81,15 +81,13 @@ func Load() (*Config, error) {
 }
 
 // Default returns a default configuration.
-func Default() *Config {
-	return &Config{
+func Default() (cfg *Config) {
+	cfg = &Config{
 		Debug: false,
 
 		Env: make(map[string]string),
 
 		Studio: Studio{
-			WineRoot:   WineOption(dirs.WinePath),
-			WebView:    WebViewOption(webViewVersion),
 			GameMode:   true,
 			Renderer:   "D3D11",
 			Channel:    "",
@@ -98,6 +96,12 @@ func Default() *Config {
 			Env:        make(map[string]string),
 		},
 	}
+	// TODO: allow zero values of Defaulters to be default.
+	//       only way to implement this is using a TOML (un)marshaler,
+	//       with a unidiomatic Go generic.
+	cfg.Studio.WebView.SetDefault()
+	cfg.Studio.WineRoot.SetDefault()
+	return
 }
 
 func (s *Studio) UnmarshalTOML(data interface{}) error {

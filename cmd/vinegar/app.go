@@ -58,6 +58,10 @@ func newApp() *app {
 }
 
 func (a *app) reload() error {
+	if a.pfx != nil && a.pfx.Root != string(a.cfg.Studio.WineRoot) && a.pfx.Running() {
+		err := a.pfx.Server(wine.ServerKill, "9")
+		slog.Info("Wine installation changed, killing Wine", "err", err)
+	}
 	pfx, err := a.cfg.Prefix()
 	if err != nil {
 		return fmt.Errorf("prefix configure: %w", err)

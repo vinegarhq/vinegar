@@ -6,7 +6,24 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/vinegarhq/vinegar/internal/adwaux"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 )
+
+type WineOption string
+
+func (WineOption) Default() string {
+	return dirs.WinePath
+}
+
+func (o WineOption) IsDefault() bool {
+	return string(o) == o.Default()
+}
+
+func (o *WineOption) SetDefault() {
+	*o = WineOption(o.Default())
+}
+
+func (WineOption) SelectPath() {}
 
 type Renderer string
 
@@ -73,5 +90,7 @@ func (o WebViewOption) Enabled() bool {
 }
 
 var _ adwaux.Selector = (*Renderer)(nil)
+var _ adwaux.Defaulter = (*DesktopOption)(nil)
+var _ adwaux.PathSelector = (*WineOption)(nil)
 var _ toml.Marshaler = (*WebViewOption)(nil)
 var _ toml.Unmarshaler = (*WebViewOption)(nil)

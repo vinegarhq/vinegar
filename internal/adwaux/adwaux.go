@@ -15,7 +15,12 @@ type Selector interface {
 	Values() []string
 }
 
-type EntryToggler interface {
+type PathSelector interface {
+	SelectPath() // Stub function, only declares that type is path
+	Defaulter
+}
+
+type Defaulter interface {
 	Default() string
 }
 
@@ -84,7 +89,11 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		option = fields[1]
 	}
 
-	if t, ok := reflect.TypeAssert[EntryToggler](v); ok {
+	if p, ok := reflect.TypeAssert[PathSelector](v); ok {
+		path := newPathRow(v, p.Default())
+		path.SetTitle(description)
+		group.Add(&path.Widget)
+	} else if t, ok := reflect.TypeAssert[Defaulter](v); ok {
 		opt := newOptionEntryRow(v, fields[1], t.Default())
 		opt.SetTitle(title)
 		opt.SetSubtitle(description)
@@ -100,9 +109,7 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 
 	switch k := v.Kind(); {
 	case option == "path":
-		path := newPathRow(v)
-		path.SetTitle(description)
-		group.Add(&path.Widget)
+
 	case k == reflect.Bool:
 		sw := newSwitchRow(v)
 		sw.SetTitle(title)

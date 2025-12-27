@@ -28,7 +28,7 @@ const (
 
 type Studio struct {
 	WebView  WebViewOption `toml:"webview" group:"" row:"Disable if nonfunctional,WebView2 Version" title:"Web Pages"`
-	WineRoot string        `toml:"wineroot" group:"" row:"Wine Installation,path"`
+	WineRoot WineOption    `toml:"wineroot" group:"" row:"Wine Installation,path"`
 	Launcher string        `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
 	Desktop  DesktopOption `toml:"virtual_desktop" group:"" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
 
@@ -88,7 +88,7 @@ func Default() *Config {
 		Env: make(map[string]string),
 
 		Studio: Studio{
-			WineRoot:   dirs.WinePath,
+			WineRoot:   WineOption(dirs.WinePath),
 			WebView:    WebViewOption(webViewVersion),
 			GameMode:   true,
 			Renderer:   "D3D11",
@@ -133,7 +133,7 @@ func (s *Studio) LauncherPath() (string, error) {
 func (c *Config) Prefix() (*wine.Prefix, error) {
 	pfx := wine.New(
 		path.Join(dirs.Prefixes, "studio"),
-		c.Studio.WineRoot,
+		string(c.Studio.WineRoot),
 	)
 
 	env := maps.Clone(c.Studio.Env)

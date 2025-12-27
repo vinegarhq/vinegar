@@ -17,6 +17,13 @@ import (
 	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
+func (a *app) setupWine() error {
+	if a.cfg.Studio.WineRoot.IsDefault() {
+		return nil
+	}
+	return a.updateWine()
+}
+
 func (a *app) updateWine() error {
 	client := github.NewClient(nil)
 	ctx := context.Background()
@@ -67,7 +74,16 @@ func (a *app) updateWine() error {
 		return fmt.Errorf("create link: %w", err)
 	}
 
-	slog.Info("Updated local Wine installation", "tag", tag)
+	slog.Info("Set local Wine installation", "tag", tag)
+	if a.cfg.Studio.WineRoot.IsDefault() {
+		return nil
+	}
+	// BUG: this is would not be reflected in the GUI
+	a.cfg.Studio.WineRoot.SetDefault()
+
+	if err := a.cfg.Save(); err != nil {
+		return fmt.Errorf("update config: %w", err)
+	}
 	return nil
 }
 

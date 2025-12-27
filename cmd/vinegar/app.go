@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -70,10 +71,15 @@ func (a *app) reload() error {
 		}
 	}
 
-	if a.cfg.Studio.WineRoot != dirs.WinePath {
-		path, err := os.Readlink(dirs.WinePath)
-		if err != nil {
+	if string(a.cfg.Studio.WineRoot) != dirs.WinePath {
+		path, err := filepath.EvalSymlinks(dirs.WinePath)
+		if err == nil {
+			slog.Info("Removing unused Wine build", "path", path)
 			_ = os.RemoveAll(path)
+			_ = os.RemoveAll(dirs.WinePath)
+			if err != nil {
+				slog.Error("Failed to remove Kombucha", "err", err)
+			}
 		}
 	}
 

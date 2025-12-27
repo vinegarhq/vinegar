@@ -9,12 +9,9 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 )
 
-func newPathRow(v reflect.Value) *adw.ActionRow {
+func newPathRow(v reflect.Value, defaultValue string) *adw.ActionRow {
 	row := adw.NewActionRow()
 	row.SetSubtitle(v.String())
-	if v.String() != "" {
-		row.AddCssClass("property")
-	}
 
 	changed := func() {
 		v.SetString(row.GetSubtitle())
@@ -27,10 +24,12 @@ func newPathRow(v reflect.Value) *adw.ActionRow {
 	reset.AddCssClass("flat")
 	reset.SetTooltipText("Reset to Default")
 	resetClicked := func(_ gtk.Button) {
-		if v.String() == "" {
+		if v.String() != "" {
 			row.RemoveCssClass("property")
+			row.SetSubtitle("")
+		} else {
+			row.SetSubtitle(defaultValue)
 		}
-		row.SetSubtitle("")
 	}
 	reset.ConnectClicked(&resetClicked)
 	row.AddSuffix(&reset.Widget)

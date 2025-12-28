@@ -17,25 +17,49 @@ import (
 	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
-func (a *app) prepareWine() error {
+// Reports whether a Wine Prefix was initialized.
+func (a *app) prepareWine() (bool, error) {
+	firstRun := !a.pfx.Exists()
+	a.boot.message("Setting up Wine", "first-time", firstRun)
+
 	_, err := os.Stat(dirs.WinePath)
 	// Check against symlink in case the default is empty (musl)
 	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && err != nil {
 		if err := a.updateWine(); err != nil {
-			return fmt.Errorf("dl: %w", err)
+			return false, fmt.Errorf("dl: %w", err)
 		}
 	}
-
 	if a.pfx.Running() {
-		return nil
+		return false, nil
 	}
 
-	slog.Info("Starting Wine")
-	if err := a.pfx.Start(); err != nil {
-		return err
+	if err := a.pfx.Prepare(); err != nil {
+		return firstRun, err
 	}
 	a.updateWineTheme()
-	return nil
+
+	// Do _not_ do this on prefixes that already exist, only new ones,
+	// as to not discard the existing appdata directory.
+	if !firstRun {
+		return false, nil
+	}
+
+	a.boot.message("Updating Paths")
+	err = a.pfx.RegistryAdd(foldersRegPath, "Local AppData",
+		dirs.Windows(dirs.AppDataPath))
+	if err != nil {
+		return true, fmt.Errorf("appdata set: %w", err)
+	}
+
+	// Required for app data to propagate, and also prepares
+	// the application environment.
+	a.boot.message("Setting up Wine")
+	err = a.pfx.Boot(wine.BootRestart).Run()
+	if err != nil {
+		return true, fmt.Errorf("restart: %w", err)
+	}
+
+	return true, nil
 }
 
 func (a *app) updateWine() error {

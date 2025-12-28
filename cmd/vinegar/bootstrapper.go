@@ -18,6 +18,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
 )
 
+var regPath = `HKCU\Software\Roblox\RobloxStudio`
+
 type bootstrapper struct {
 	*app
 	win adw.Window

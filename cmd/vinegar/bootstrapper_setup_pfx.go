@@ -17,10 +17,9 @@ import (
 
 func (b *bootstrapper) prepareWine() error {
 	defer b.performing()()
-	b.message("Setting up Wine")
 
 	// Handles Wineprefix initialization as necessary
-	if err := b.app.prepareWine(); err != nil {
+	if _, err := b.app.prepareWine(); err != nil {
 		return err
 	}
 

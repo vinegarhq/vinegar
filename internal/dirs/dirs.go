@@ -2,6 +2,7 @@ package dirs
 
 import (
 	"path/filepath"
+	"strings"
 
 	"github.com/adrg/xdg"
 )
@@ -18,7 +19,16 @@ var (
 )
 
 var (
-	StatePath  = filepath.Join(Data, "state.json")
-	ConfigPath = filepath.Join(Config, "config.toml")
-	WinePath   = filepath.Join(Data, "kombucha")
+	StatePath   = filepath.Join(Data, "state.json")
+	ConfigPath  = filepath.Join(Config, "config.toml")
+	WinePath    = filepath.Join(Data, "kombucha")
+	AppDataPath = filepath.Join(Data, "appdata")
 )
+
+func Windows(name string) string {
+	// You never know.
+	if !filepath.IsAbs(name) {
+		panic("dirs: unhandled local path")
+	}
+	return "Z:" + strings.ReplaceAll(name, "/", "\\")
+}

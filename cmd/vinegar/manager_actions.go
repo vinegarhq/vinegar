@@ -50,7 +50,8 @@ func (m *manager) run() error {
 	}
 
 	// "Initialize"
-	return m.prepareWine()
+	_, err := m.prepareWine()
+	return err
 }
 
 func (m *manager) runWineCmd(e gtk.Entry) {
@@ -61,7 +62,7 @@ func (m *manager) runWineCmd(e gtk.Entry) {
 	}
 	m.errThread(func() error {
 		defer stop()
-		if err := m.prepareWine(); err != nil {
+		if _, err := m.prepareWine(); err != nil {
 			return err
 		}
 		return m.pfx.Wine(args[0], args[1:]...).Run()

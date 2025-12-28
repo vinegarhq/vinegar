@@ -16,21 +16,22 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )
 
+var foldersRegPath = `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders`
+
 func (b *bootstrapper) setup() error {
 	if len(b.procs) > 0 {
 		slog.Info("Skipping setup!", "ver", b.bin.GUID)
 		return nil
 	}
 
-	pfxFirstRun := !b.pfx.Exists()
-
+	firstSetup := !b.pfx.Exists()
 	if err := b.prepareWine(); err != nil {
 		return err
 	}
 
 	// Don't bother retrieving the security if the wineprefix
 	// was initialized just now
-	if b.rbx.Security == "" && !pfxFirstRun {
+	if b.rbx.Security == "" && !firstSetup {
 		stop := b.performing()
 		b.message("Acquiring user authentication")
 		if err := b.app.getSecurity(); err != nil {

@@ -57,16 +57,15 @@ func newApp() *app {
 	return &a
 }
 
-func (a *app) reload() error {
+func (a *app) applyConfig() {
+	// https://github.com/vinegarhq/vinegar/issues/746
+	// Check currently initialized prefix against the new configuration
 	if a.pfx != nil && a.pfx.Root != string(a.cfg.Studio.WineRoot) && a.pfx.Running() {
 		slog.Info("Wine installation changed, killing Wine", "err", a.pfx.Kill())
 	}
-	pfx, err := a.cfg.Prefix()
-	if err != nil {
-		return fmt.Errorf("prefix: %w", err)
-	}
-	pfx.Stderr = io.Writer(a)
-	pfx.Stdout = pfx.Stderr
+	a.pfx = a.cfg.Prefix()
+	a.pfx.Stderr = io.Writer(a)
+	a.pfx.Stdout = a.pfx.Stderr
 
 	if a.cfg.Debug {
 		a.rbx.Client.Transport = &debugTransport{
@@ -74,20 +73,17 @@ func (a *app) reload() error {
 		}
 	}
 
-	if string(a.cfg.Studio.WineRoot) != dirs.WinePath {
-		path, err := filepath.EvalSymlinks(dirs.WinePath)
-		if err == nil {
-			slog.Info("Removing unused Wine build", "path", path)
-			_ = os.RemoveAll(path)
-			_ = os.RemoveAll(dirs.WinePath)
-			if err != nil {
-				slog.Error("Failed to remove Kombucha", "err", err)
-			}
-		}
+	if string(a.cfg.Studio.WineRoot) == dirs.WinePath {
+		return
 	}
 
-	a.pfx = pfx
-	return nil
+	// User is currently using another wine build
+	path, err := filepath.EvalSymlinks(dirs.WinePath)
+	if err == nil {
+		slog.Info("Removing unused Wine build", "path", path)
+		_ = os.RemoveAll(path)
+		_ = os.RemoveAll(dirs.WinePath)
+	}
 }
 
 func (a *app) startup(_ gio.Application) {
@@ -96,6 +92,7 @@ func (a *app) startup(_ gio.Application) {
 
 	a.boot = a.newBootstrapper()
 
+	// Required for GameMode
 	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
 	if err != nil {
 		slog.Error("Failed to retrieve session bus, all DBus operations will be ignored", "err", err)
@@ -103,16 +100,16 @@ func (a *app) startup(_ gio.Application) {
 		a.bus = conn
 	}
 
-	cfg, err := config.Load()
+	// Whenever the configuration is edited using the manager, if for
+	// any reason an error occur, it would show up and not save the
+	// configuration. Any error that can occur here however such as
+	// I/O failure or the user edited the file manually, bail out.
+	a.cfg, err = config.Load()
 	if err != nil {
 		a.showError(fmt.Errorf("config error: %w", err))
 		return
 	}
-	a.cfg = cfg
-
-	if err := a.reload(); err != nil {
-		a.showError(err)
-	}
+	a.applyConfig()
 
 	sm := a.GetStyleManager()
 	cb := a.updateWineTheme
@@ -131,6 +128,8 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 	}
 
 	if len(args) == 1 && args[0] == "manage" {
+		// Prevent multiple windows of manager
+		// existing at once
 		if a.mgr == nil {
 			a.mgr = a.newManager()
 		}
@@ -138,6 +137,9 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 		return 0
 	}
 
+	// As bootstrapper runs in a thread, it may add itself as a
+	// window too late for Gtk to register. Prevent GtkApplication
+	// from closing for when there are no windows.
 	a.Hold()
 	a.errThread(func() error {
 		defer a.Release()

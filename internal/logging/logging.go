@@ -14,7 +14,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 )
 
-// Path to the log file that is scoped to the entire program runtime
+// Path to the log file that is scoped to the entire program runtime.
 var Path string
 
 // Level is a custom type to represent custom log levels with
@@ -65,7 +65,7 @@ func (l Level) String() string {
 }
 
 func openPath() (*os.File, error) {
-	if err := dirs.Mkdirs(filepath.Dir(Path)); err != nil {
+	if err := os.MkdirAll(filepath.Dir(Path), 0o755); err != nil {
 		return nil, err
 	}
 

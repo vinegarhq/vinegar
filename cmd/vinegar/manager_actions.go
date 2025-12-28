@@ -27,6 +27,8 @@ func (m *manager) run() error {
 				stop()
 			}
 		}
+		// Bootstrapper automatically hides itself after running Studio,
+		// hook on it to signify to the manager
 		h := m.app.boot.win.ConnectSignal("notify::visible", &visible)
 		defer func() {
 			m.app.boot.win.DisconnectSignal(h)
@@ -66,22 +68,13 @@ func (m *manager) runWineCmd(e gtk.Entry) {
 	})
 }
 
-// No error will be returned, error handling is displayed
-// from an AdwBanner.
 func (m *manager) saveConfig() {
-	var banner adw.Banner
-	m.builder.GetObject("banner-config-error").Cast(&banner)
-	banner.SetRevealed(false)
+	m.applyConfig()
 
-	err := m.reload()
-	if err != nil {
-		banner.SetTitle(fmt.Sprintf("Invalid: %v", err))
-		banner.SetRevealed(true)
-		slog.Error("Configuration validation error", "err", err)
-		return
-	}
 	slog.Info("Saving configuration!")
 	if err := m.cfg.Save(); err != nil {
+		// in this case, it would probably be a TOML or
+		// I/O error.
 		m.showError(fmt.Errorf("save config: %w", err))
 		return
 	}

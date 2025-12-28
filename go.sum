@@ -31,8 +31,8 @@ github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780 h1:O5c9zKWHqOSzLBhJ1
 github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780/go.mod h1:Ksjrzt8x1UY2ot2QdDrJXYhTEQOjWH8US0CHgKcH+QY=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d h1:9+O1OzqsVhNJVPewE7oJqVymRlm+ej8iArdafc7vfKs=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d/go.mod h1:nSfgVAspLMsixAWAfuTXAjBsiTyMchPxTx+jD3TrM20=
-github.com/sewnie/wine v0.0.0-20251228132428-41905ba49003 h1:Q0CSTJA2ML06GGu8J9l1VYB233sCnDhaZIOKeFgZHTE=
-github.com/sewnie/wine v0.0.0-20251228132428-41905ba49003/go.mod h1:Wynen8QVBT+aVlsqiSLes3MM0zi2zfY4Ipq817/VPiI=
+github.com/sewnie/wine v0.0.0-20251228171727-dd88cfbabcc9 h1:uVJ3e4QHMqNJfLv0s+PRuMq4c4uz6+oovtDhJXUPS8k=
+github.com/sewnie/wine v0.0.0-20251228171727-dd88cfbabcc9/go.mod h1:Wynen8QVBT+aVlsqiSLes3MM0zi2zfY4Ipq817/VPiI=
 github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
 github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 github.com/ulikunitz/xz v0.5.15 h1:9DNdB5s+SgV3bQ2ApL10xRc35ck0DuIX/isZvIk+ubY=

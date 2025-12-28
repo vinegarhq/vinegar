@@ -24,10 +24,12 @@ func (b *bootstrapper) setup() error {
 
 	pfxFirstRun := !b.pfx.Exists()
 
-	if err := b.setupPrefix(); err != nil {
+	if err := b.prepareWine(); err != nil {
 		return err
 	}
 
+	// Don't bother retrieving the security if the wineprefix
+	// was initialized just now
 	if b.rbx.Security == "" && !pfxFirstRun {
 		stop := b.performing()
 		b.message("Acquiring user authentication")
@@ -45,18 +47,18 @@ func (b *bootstrapper) setup() error {
 		return fmt.Errorf("webview: %w", err)
 	}
 
-	if err := b.setupDeployment(); err != nil {
+	if err := b.updateDeployment(); err != nil {
 		return err
 	}
 
-	if err := b.stepPrepareRun(); err != nil {
+	if err := b.preRun(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (b *bootstrapper) setupOverlay() error {
+func (b *bootstrapper) copyOverlay() error {
 	dir := filepath.Join(dirs.Overlays, strings.ToLower(studio.Short()))
 
 	// Don't copy Overlay if it doesn't exist
@@ -72,21 +74,18 @@ func (b *bootstrapper) setupOverlay() error {
 	return cp.Copy(dir, b.dir)
 }
 
-func (b *bootstrapper) stepPrepareRun() error {
+func (b *bootstrapper) preRun() error {
 	defer b.performing()()
 
-	if err := b.setupOverlay(); err != nil {
-		return fmt.Errorf("setup overlay: %w", err)
+	if err := b.copyOverlay(); err != nil {
+		return fmt.Errorf("overlay: %w", err)
 	}
 
-	if err := b.stepApplyFFlags(); err != nil {
+	if err := b.applyFFlags(); err != nil {
 		return fmt.Errorf("fflags: %w", err)
 	}
 
 	gutil.IdleAdd(func() { b.status.SetLabel("Launching Studio") })
-
-	// The following registry modifications starts and prepares Wine.
-	slog.Info("Kickstarting Wineserver")
 
 	dpi := 96.0 * b.win.GetNative().GetSurface().GetScale()
 	slog.Info("Updating Wine DPI", "dpi", dpi)
@@ -98,7 +97,8 @@ func (b *bootstrapper) stepPrepareRun() error {
 	return nil
 }
 
-func (b *bootstrapper) stepApplyFFlags() error {
+func (b *bootstrapper) applyFFlags() error {
+	// This actually includes DXVK.
 	renderers := config.Renderer("").Values()
 
 	f := maps.Clone(b.cfg.Studio.FFlags)
@@ -115,9 +115,5 @@ func (b *bootstrapper) stepApplyFFlags() error {
 	}
 
 	b.message("Applying FFlags")
-	if err := f.Apply(b.dir); err != nil {
-		return fmt.Errorf("apply fflags: %w", err)
-	}
-
-	return nil
+	return f.Apply(b.dir)
 }

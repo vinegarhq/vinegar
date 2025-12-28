@@ -24,7 +24,7 @@ func (c *Config) Diff() map[string]any {
 
 // Save calls [Encode] to the default configuration path.
 func (c *Config) Save() error {
-	if err := dirs.Mkdirs(dirs.Config); err != nil {
+	if err := os.MkdirAll(dirs.Config, 0o755); err != nil {
 		return err
 	}
 

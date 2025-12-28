@@ -134,7 +134,7 @@ func (s *Studio) LauncherPath() (string, error) {
 	return exec.LookPath(strings.Fields(s.Launcher)[0])
 }
 
-func (c *Config) Prefix() (*wine.Prefix, error) {
+func (c *Config) Prefix() *wine.Prefix {
 	pfx := wine.New(
 		path.Join(dirs.Prefixes, "studio"),
 		string(c.Studio.WineRoot),
@@ -180,5 +180,5 @@ func (c *Config) Prefix() (*wine.Prefix, error) {
 
 	slog.Debug("Using Prefix environment", "env", pfx.Env)
 
-	return pfx, nil
+	return pfx
 }

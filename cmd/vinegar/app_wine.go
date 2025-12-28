@@ -104,9 +104,7 @@ install:
 	slog.Info("Set local Wine installation", "tag", tag)
 
 	// re-initializes the wine prefix struct
-	if err := a.reload(); err != nil {
-		return fmt.Errorf("config: %w", err)
-	}
+	a.applyConfig()
 
 	if a.cfg.Studio.WineRoot.IsDefault() {
 		return nil
@@ -120,6 +118,7 @@ install:
 	return nil
 }
 
+// Implements io.Writer for reading the log from Wine
 func (a *app) Write(b []byte) (int, error) {
 	for line := range strings.SplitSeq(string(b[:len(b)-1]), "\n") {
 		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
@@ -149,6 +148,9 @@ func (a *app) handleWineLog(line string) {
 }
 
 func (a *app) updateWineTheme() {
+	// If the studio theme is "Default", the wine theme change will effect
+	// studio as well.
+
 	if !a.pfx.Running() {
 		slog.Debug("Not changing theme: Wine is not running")
 	}

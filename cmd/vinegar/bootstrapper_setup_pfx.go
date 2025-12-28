@@ -15,12 +15,12 @@ import (
 	"github.com/vinegarhq/vinegar/internal/netutil"
 )
 
-func (b *bootstrapper) setupPrefix() error {
+func (b *bootstrapper) prepareWine() error {
 	defer b.performing()()
 	b.message("Setting up Wine")
 
 	// Handles Wineprefix initialization as necessary
-	if err := b.prepareWine(); err != nil {
+	if err := b.app.prepareWine(); err != nil {
 		return err
 	}
 
@@ -66,30 +66,30 @@ func (b *bootstrapper) setupDxvk() error {
 	// won't be necessary if it's disabled as it still requires
 	// DLL overrides to be present.
 
-	new := b.cfg.Studio.Renderer.DXVKVersion()
-	b.message("Checking DXVK", "version", new)
+	version := b.cfg.Studio.Renderer.DXVKVersion()
+	b.message("Checking DXVK", "against", version)
 
-	current, err := dxvk.Version(b.pfx)
+	installed, err := dxvk.Version(b.pfx)
 	if err != nil {
 		return fmt.Errorf("get version: %w", err)
 	}
 
-	if current == new {
+	if installed == version {
 		return nil
 	}
-	b.message("Downloading DXVK", "current", current, "new", new)
+	b.message("Downloading DXVK", "current", installed, "new", version)
 
-	name := filepath.Join(dirs.Cache, "dxvk-"+new+".tar.gz")
+	name := filepath.Join(dirs.Cache, "dxvk-"+version+".tar.gz")
 	if _, err := os.Stat(name); err == nil {
 		goto install
 	}
 
-	if err := dirs.Mkdirs(dirs.Cache); err != nil {
+	if err := os.Mkdir(dirs.Cache, 0o755); err != nil {
 		return fmt.Errorf("prepare cache: %w", err)
 	}
 
 	if err := netutil.DownloadProgress(
-		dxvk.URL(new), name, &b.pbar); err != nil {
+		dxvk.URL(version), name, &b.pbar); err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
 
@@ -102,7 +102,7 @@ install:
 	}
 	defer f.Close()
 
-	b.message("Extracting DXVK", "version", new)
+	b.message("Extracting DXVK", "version", version)
 
 	if err := dxvk.Extract(b.pfx, f); err != nil {
 		return fmt.Errorf("extract: %w", err)
@@ -112,27 +112,28 @@ install:
 }
 
 func (b *bootstrapper) setupWebView() error {
-	new := b.cfg.Studio.WebView.String()
+	version := b.cfg.Studio.WebView.String()
 
-	installer := filepath.Join(dirs.Cache, "webview-"+new+".exe")
-	b.message("Checking WebView", "version", new)
+	installer := filepath.Join(dirs.Cache, "webview-"+version+".exe")
+	b.message("Checking WebView", "against", version)
 
-	current := webview2.Current(b.pfx)
-	if current != "" && current != new {
-		b.message("Uninstalling WebView", "current", current, "new", new)
-		if err := webview2.Uninstall(b.pfx, current); err != nil {
+	installed := webview2.Current(b.pfx)
+	if installed != "" && installed != version {
+		b.message("Uninstalling WebView", "current", installed, "new", version)
+		if err := webview2.Uninstall(b.pfx, installed); err != nil {
 			return fmt.Errorf("uninstall: %w", err)
 		}
 	}
-	if current == new || b.cfg.Studio.WebView.Enabled() {
+	if installed == version || b.cfg.Studio.WebView.Enabled() {
 		return nil
 	}
 
 	if _, err := os.Stat(installer); err != nil {
 		stop := b.performing()
 		b.message("Fetching WebView", "upload", b.cfg.Studio.WebView)
+		// Microsoft doesn't like compressed requests
 		webview2.Client.Transport.(*http.Transport).DisableCompression = true
-		d, err := webview2.Stable.Runtime(new, "x64")
+		d, err := webview2.Stable.Runtime(version, "x64")
 		if err != nil {
 			return fmt.Errorf("fetch: %w", err)
 		}
@@ -144,7 +145,7 @@ func (b *bootstrapper) setupWebView() error {
 		}
 	}
 
-	b.message("Installing WebView", "path", installer)
+	b.message("Installing WebView", "version", version, "path", installer)
 	defer b.performing()()
 
 	return webview2.Install(b.pfx, installer)

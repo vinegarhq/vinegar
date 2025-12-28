@@ -1,7 +1,6 @@
 package dirs
 
 import (
-	"os"
 	"path/filepath"
 
 	"github.com/adrg/xdg"
@@ -23,28 +22,3 @@ var (
 	ConfigPath = filepath.Join(Config, "config.toml")
 	WinePath   = filepath.Join(Data, "kombucha")
 )
-
-func Mkdirs(dirs ...string) error {
-	for _, dir := range dirs {
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func Empty(name string) bool {
-	dir, err := os.Open(name)
-	if err != nil {
-		return true
-	}
-	defer dir.Close()
-
-	files, err := dir.Readdirnames(1)
-	if err != nil {
-		return true
-	}
-
-	return len(files) == 0
-}

@@ -60,6 +60,7 @@ func (r *Renderer) Select(s string) {
 	*r = Renderer(s)
 }
 
+// Allow 'webview = true' when the internal value is set to the default.
 type WebViewOption string
 
 func (o *WebViewOption) UnmarshalTOML(data interface{}) error {

@@ -23,7 +23,7 @@ var (
 	channelKey = `HKCU\Software\ROBLOX Corporation\Environments\RobloxStudio\Channel`
 )
 
-func (b *bootstrapper) setupDeployment() error {
+func (b *bootstrapper) updateDeployment() error {
 	if err := b.setDeployment(); err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
@@ -38,13 +38,14 @@ func (b *bootstrapper) setupDeployment() error {
 	}
 
 	b.message("Installing Studio", "new", b.bin.GUID)
+	// Remove all other deployments
 	removeUniqueFiles(dirs.Versions, []string{b.bin.GUID})
 
-	if err := dirs.Mkdirs(dirs.Downloads); err != nil {
+	if err := os.MkdirAll(dirs.Downloads, 0o755); err != nil {
 		return err
 	}
 
-	if err := b.setupPackages(); err != nil {
+	if err := b.installDeployment(); err != nil {
 		return err
 	}
 
@@ -55,6 +56,9 @@ func (b *bootstrapper) setupDeployment() error {
 		return fmt.Errorf("appsettings: %w", err)
 	}
 
+	// Required for Studio to recognize its own channel:
+	// https://github.com/vinegarhq/vinegar/issues/649
+	//
 	// Default channel is none, but UserChannel will set LIVE.
 	if b.bin.Channel != "" && b.bin.Channel != "LIVE" {
 		b.message("Writing Registry")
@@ -64,7 +68,6 @@ func (b *bootstrapper) setupDeployment() error {
 	}
 
 	slog.Info("Successfully installed!", "guid", b.bin.GUID)
-
 	return nil
 }
 
@@ -92,11 +95,10 @@ func (b *bootstrapper) setDeployment() error {
 	})
 
 	b.bin = d
-
 	return nil
 }
 
-func (b *bootstrapper) setupPackages() error {
+func (b *bootstrapper) installDeployment() error {
 	stop := b.performing()
 
 	b.message("Finding Mirror")
@@ -115,6 +117,7 @@ func (b *bootstrapper) setupPackages() error {
 	for _, pkg := range pkgs {
 		sums = append(sums, pkg.Checksum)
 	}
+	// Remove old cached downloads
 	removeUniqueFiles(dirs.Downloads, sums)
 
 	// Prioritize smaller files first, to have less pressure
@@ -133,11 +136,7 @@ func (b *bootstrapper) setupPackages() error {
 
 	stop()
 
-	if err := b.installPackages(&m, pkgs, pd); err != nil {
-		return err
-	}
-
-	return nil
+	return b.installPackages(&m, pkgs, pd)
 }
 
 func (b *bootstrapper) installPackages(

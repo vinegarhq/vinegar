@@ -19,36 +19,26 @@ type manager struct {
 	builder *gtk.Builder
 	win     adw.ApplicationWindow
 
-	runner adw.EntryRow
-	wine   adw.PreferencesGroup
+	wine adw.PreferencesGroup
 }
 
 func (a *app) newManager() *manager {
 	m := manager{
-		app:     a,
-		builder: gtk.NewBuilderFromResource(gutil.Resource("ui/manager.ui")),
+		app: a,
 	}
 
+	m.builder = gtk.NewBuilderFromResource(gutil.Resource("ui/manager.ui"))
 	m.builder.GetObject("window").Cast(&m.win)
 	m.win.SetApplication(&a.Application.Application)
+
+	var cmd gtk.Entry
+	m.builder.GetObject("entry-cmd").Cast(&cmd)
+	cb := m.runWineCmd
+	cmd.ConnectActivate(&cb)
 
 	var page adw.PreferencesPage
 	m.builder.GetObject("prefpage-main").Cast(&page)
 	adwaux.AddStructPage(&page, reflect.ValueOf(m.cfg).Elem())
-
-	m.builder.GetObject("entry-prefix-run").Cast(&m.runner)
-	applyCb := func(_ adw.EntryRow) {
-		m.errThread(m.runWineCmd)
-	}
-	m.runner.ConnectApply(&applyCb)
-
-	var r gtk.Button
-	m.builder.GetObject("btn-prefix-config").Cast(&r)
-	cb := func(_ gtk.Button) {
-		m.runner.SetText("winecfg")
-		gobject.SignalEmitByName(&m.runner.Object, "apply")
-	}
-	r.ConnectClicked(&cb)
 
 	m.builder.GetObject("prefgroup-wine").Cast(&m.wine)
 	m.wine.SetSensitive(m.pfx.Exists())
@@ -69,19 +59,22 @@ func (a *app) newManager() *manager {
 		"delete-studio": m.deleteDeployments,
 		"clear-cache":   m.clearCache,
 		"update":        m.updateWine,
+
+		"winecfg": func() {
+			cmd.SetText("winecfg")
+			gobject.SignalEmitByName(&cmd.Object, "activate")
+		},
 	} {
 		action := gio.NewSimpleAction(name, nil)
 		activate := func(_ gio.SimpleAction, p uintptr) {
-			stop := m.loading()
 			switch v := fn.(type) {
 			case func() error:
 				m.app.errThread(func() error {
-					defer stop()
+					defer m.loading()()
 					return v()
 				})
 			case func():
 				v()
-				stop()
 			default:
 				panic("unreachable")
 			}

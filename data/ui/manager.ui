@@ -90,9 +90,18 @@
                 <child>
                   <object class="AdwPreferencesGroup" id="prefgroup-wine">
                     <property name="header-suffix">
-                      <object class="GtkButton" id="btn-prefix-config">
-                        <property name="icon-name">preferences-system-symbolic</property>
-                        <property name="tooltip-text">Additional Options</property>
+                      <object class="GtkMenuButton">
+                        <property name="icon-name">system-run-symbolic</property>
+                        <property name="popover">
+                          <object class="GtkPopover">
+                            <property name="child">
+                              <object class="GtkEntry" id="entry-cmd">
+                                <property name="activates-default">True</property>
+                                <property name="placeholder-text">Custom Command</property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
                         <style>
                           <class name="flat"/>
                         </style>
@@ -102,9 +111,15 @@
                     <property name="separate-rows">False</property>
                     <property name="title">Wine</property>
                     <child>
-                      <object class="AdwEntryRow" id="entry-prefix-run">
-                        <property name="show-apply-button">True</property>
-                        <property name="title">Run Wine Command</property>
+                      <object class="AdwActionRow" id="winecfg">
+                        <property name="action-name">win.winecfg</property>
+                        <property name="activatable">True</property>
+                        <property name="title">Advanced Wine Settings</property>
+                        <child type="suffix">
+                          <object class="GtkImage">
+                            <property name="icon-name">go-next-symbolic</property>
+                          </object>
+                        </child>
                       </object>
                     </child>
                   </object>

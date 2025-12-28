@@ -17,17 +17,22 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
-func (m *manager) runWineCmd() error {
-	cmd := m.runner.GetText()
-	args := strings.Fields(cmd)
+func (m *manager) runWineCmd(e gtk.Entry) {
+	slog.Info("reached")
+	stop := m.loading()
+	args := strings.Fields(e.GetText())
 	if len(args) < 1 {
-		return nil
+		return
 	}
-	if err := m.startWine(); err != nil {
-		return err
-	}
-	slog.Info("Running Wine command", "args", args)
-	return m.pfx.Wine(args[0], args[1:]...).Run()
+	m.errThread(func() error {
+		defer stop()
+
+		if err := m.startWine(); err != nil {
+			return err
+		}
+		slog.Info("Running Wine command", "args", args)
+		return m.pfx.Wine(args[0], args[1:]...).Run()
+	})
 }
 
 func (m *manager) hideRunUntil() func() {

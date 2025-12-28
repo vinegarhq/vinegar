@@ -48,7 +48,7 @@ func (m *manager) run() error {
 	}
 
 	// "Initialize"
-	return m.startWine()
+	return m.prepareWine()
 }
 
 func (m *manager) runWineCmd(e gtk.Entry) {
@@ -59,11 +59,9 @@ func (m *manager) runWineCmd(e gtk.Entry) {
 	}
 	m.errThread(func() error {
 		defer stop()
-
-		if err := m.startWine(); err != nil {
+		if err := m.prepareWine(); err != nil {
 			return err
 		}
-		slog.Info("Running Wine command", "args", args)
 		return m.pfx.Wine(args[0], args[1:]...).Run()
 	})
 }
@@ -118,6 +116,7 @@ func (m *manager) killPrefix() error {
 	}
 
 	m.showToast("Stopped all processes")
+	slog.Debug("Processes", "boot", m.boot.procs, "pfx", m.pfx.Running())
 	return nil
 }
 
@@ -128,7 +127,6 @@ func (m *manager) deletePrefixes() error {
 	}
 
 	m.showToast("Deleted all data")
-	m.wine.SetSensitive(false)
 	return nil
 }
 

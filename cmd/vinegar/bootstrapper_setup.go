@@ -95,13 +95,6 @@ func (b *bootstrapper) stepPrepareRun() error {
 		return fmt.Errorf("scale set: %w, err")
 	}
 
-	// Running this command will initialize Wine for
-	// running applications, which gives more time to the
-	// splash window to show that studio is going to be ran.
-	if err := b.stepChangeStudioTheme(); err != nil {
-		slog.Warn("Failed to change Studio's theme!", "err", err)
-	}
-
 	return nil
 }
 
@@ -127,30 +120,4 @@ func (b *bootstrapper) stepApplyFFlags() error {
 	}
 
 	return nil
-}
-
-func (b *bootstrapper) stepChangeStudioTheme() error {
-	path := `HKCU\Software\Roblox\RobloxStudio\Themes`
-	k, err := b.pfx.RegistryQuery(
-		path)
-	if err != nil {
-		slog.Warn("Failed to retrieve current Studio theme", "err", err)
-		return nil
-	}
-
-	// If Studio was just installed (missing key) or the user set an explicit
-	// theme rather than the default Studio system theme, do not attempt to
-	// change the theme accordingly.
-	// Yes this will slow down the process for everyone (60ms) involved but some people
-	// insist on using desktop environments that do not use proper portals.
-	if k != nil && k.GetValue("CurrentTheme").Data != "Default" {
-		return nil
-	}
-
-	theme := "Light"
-	if b.GetStyleManager().GetDark() {
-		theme = "Dark"
-	}
-	slog.Info("Changing Theme", "theme", theme)
-	return b.pfx.RegistryAdd(path, "CurrentTheme", theme)
 }

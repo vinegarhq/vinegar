@@ -114,6 +114,10 @@ func (a *app) startup(_ gio.Application) {
 	if err := a.reload(); err != nil {
 		a.showError(err)
 	}
+
+	sm := a.GetStyleManager()
+	cb := a.updateWineTheme
+	sm.ConnectSignal("notify::dark", &cb)
 }
 
 func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {

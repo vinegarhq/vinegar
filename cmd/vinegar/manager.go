@@ -19,8 +19,6 @@ type manager struct {
 
 	builder *gtk.Builder
 	win     adw.ApplicationWindow
-
-	wine adw.PreferencesGroup
 }
 
 func (a *app) newManager() *manager {
@@ -40,9 +38,6 @@ func (a *app) newManager() *manager {
 	var page adw.PreferencesPage
 	m.builder.GetObject("prefpage-main").Cast(&page)
 	adwaux.AddStructPage(&page, reflect.ValueOf(m.cfg).Elem())
-
-	m.builder.GetObject("prefgroup-wine").Cast(&m.wine)
-	m.wine.SetSensitive(m.pfx.Exists())
 
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
@@ -103,8 +98,10 @@ func (m *manager) addAction(name string, fn any) {
 func (m *manager) loading() func() {
 	var button gtk.Button
 	var bar adw.HeaderBar
+	var wine adw.HeaderBar
 	m.builder.GetObject("session").Cast(&button)
 	m.builder.GetObject("headerbar").Cast(&bar)
+	m.builder.GetObject("prefgroup-wine").Cast(&wine)
 	spinner := adw.NewSpinner()
 
 	gutil.IdleAdd(func() {
@@ -112,12 +109,14 @@ func (m *manager) loading() func() {
 		bar.PackStart(&spinner.Widget)
 		bar.SetMarginStart(6)
 		bar.SetMarginEnd(6)
+		wine.SetSensitive(m.pfx.Exists())
 	})
 
 	return func() {
 		gutil.IdleAdd(func() {
 			bar.Remove(&spinner.Widget)
 			button.SetSensitive(true)
+			wine.SetSensitive(m.pfx.Exists())
 			m.updateRunContent()
 		})
 	}
@@ -152,21 +151,4 @@ func (m *manager) showToast(s string) {
 		toast.SetPriority(adw.ToastPriorityHighValue)
 		overlay.AddToast(toast)
 	})
-}
-
-func (m *manager) startWine() error {
-	gutil.IdleAdd(func() {
-		m.wine.SetSensitive(false)
-	})
-	defer func() {
-		if !m.pfx.Running() {
-			return // Error occured
-		}
-		gutil.IdleAdd(func() {
-			m.showToast("Wine initialized")
-			m.wine.SetSensitive(true)
-		})
-	}()
-	slog.Info("Starting Wineserver")
-	return m.pfx.Start()
 }

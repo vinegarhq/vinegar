@@ -17,8 +17,41 @@ import (
 	"github.com/vinegarhq/vinegar/internal/logging"
 )
 
+func (m *manager) run() error {
+	stop := m.loading()
+
+	// "Run Studio"
+	if m.pfx.Exists() && len(m.boot.procs) == 0 {
+		visible := func() {
+			if !m.boot.win.GetVisible() {
+				stop()
+			}
+		}
+		h := m.app.boot.win.ConnectSignal("notify::visible", &visible)
+		defer func() {
+			m.app.boot.win.DisconnectSignal(h)
+			m.updateRunContent()
+		}()
+		return m.app.boot.run()
+	}
+
+	defer stop()
+
+	// "Stop"
+	if len(m.boot.procs) > 0 {
+		for _, p := range m.boot.procs {
+			slog.Info("Killing Studio", "pid", p.Pid)
+			p.Kill()
+		}
+		m.boot.procs = nil
+		return nil
+	}
+
+	// "Initialize"
+	return m.startWine()
+}
+
 func (m *manager) runWineCmd(e gtk.Entry) {
-	slog.Info("reached")
 	stop := m.loading()
 	args := strings.Fields(e.GetText())
 	if len(args) < 1 {
@@ -33,54 +66,6 @@ func (m *manager) runWineCmd(e gtk.Entry) {
 		slog.Info("Running Wine command", "args", args)
 		return m.pfx.Wine(args[0], args[1:]...).Run()
 	})
-}
-
-func (m *manager) hideRunUntil() func() {
-	var button gtk.Button
-	var stack gtk.Stack
-	m.builder.GetObject("stack").Cast(&stack)
-	m.builder.GetObject("btn-run").Cast(&button)
-	gutil.IdleAdd(func() {
-		stack.SetVisibleChildName("stkpage-spinner")
-		button.SetSensitive(false)
-	})
-	return func() {
-		gutil.IdleAdd(func() {
-			button.SetSensitive(true)
-			stack.SetVisibleChildName("stkpage-btn")
-			m.updateRun()
-		})
-	}
-}
-
-func (m *manager) run() error {
-	show := m.hideRunUntil()
-	defer show()
-
-	// "Run Studio"
-	if m.pfx.Exists() && len(m.boot.procs) == 0 {
-		visible := func() {
-			if !m.boot.win.GetVisible() {
-				show()
-			}
-		}
-		h := m.app.boot.win.ConnectSignal("notify::visible", &visible)
-		defer func() { m.app.boot.win.DisconnectSignal(h) }()
-		return m.app.boot.run()
-	}
-
-	// "Stop"
-	if len(m.boot.procs) > 0 {
-		for _, p := range m.boot.procs {
-			slog.Info("Killing Studio", "pid", p.Pid)
-			p.Kill()
-		}
-		m.boot.procs = nil
-		return nil
-	}
-
-	// "Initialize"
-	return m.startWine()
 }
 
 // No error will be returned, error handling is displayed
@@ -137,8 +122,6 @@ func (m *manager) killPrefix() error {
 }
 
 func (m *manager) deletePrefixes() error {
-	defer m.hideRunUntil()()
-
 	_ = m.pfx.Kill()
 	if err := os.RemoveAll(dirs.Prefixes); err != nil {
 		return err
@@ -150,8 +133,6 @@ func (m *manager) deletePrefixes() error {
 }
 
 func (m *manager) deleteDeployments() error {
-	defer m.hideRunUntil()()
-
 	if err := os.RemoveAll(dirs.Versions); err != nil {
 		return err
 	}

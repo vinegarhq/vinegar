@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"reflect"
 
@@ -52,7 +53,6 @@ func (a *app) newManager() *manager {
 		"open-logs": func() {
 			gtk.ShowUri(&m.win.Window, "file://"+dirs.Logs, 0)
 		},
-		"run": m.run,
 
 		"prefix-kill":   m.killPrefix,
 		"delete-prefix": m.deletePrefixes,
@@ -65,55 +65,77 @@ func (a *app) newManager() *manager {
 			gobject.SignalEmitByName(&cmd.Object, "activate")
 		},
 	} {
-		action := gio.NewSimpleAction(name, nil)
-		activate := func(_ gio.SimpleAction, p uintptr) {
-			switch v := fn.(type) {
-			case func() error:
-				m.app.errThread(func() error {
-					defer m.loading()()
-					return v()
-				})
-			case func():
-				v()
-			default:
-				panic("unreachable")
-			}
-		}
-		action.ConnectActivate(&activate)
-		m.win.AddAction(action)
-		action.Unref()
+		m.addAction(name, fn)
 	}
 
-	m.updateRun()
+	run := gio.NewSimpleAction("run", nil)
+	activate := func(_ gio.SimpleAction, p uintptr) {
+		m.app.errThread(m.run)
+	}
+	run.ConnectActivate(&activate)
+	m.win.AddAction(run)
+	run.Unref()
+	m.updateRunContent()
 
 	return &m
 }
 
+func (m *manager) addAction(name string, fn any) {
+	action := gio.NewSimpleAction(name, nil)
+	activate := func(_ gio.SimpleAction, p uintptr) {
+		switch v := fn.(type) {
+		case func() error:
+			m.app.errThread(func() error {
+				defer m.loading()()
+				return v()
+			})
+		case func():
+			v()
+		default:
+			panic(fmt.Sprintf("unhandled function type: %T", fn))
+		}
+	}
+	action.ConnectActivate(&activate)
+	m.win.AddAction(action)
+	action.Unref()
+}
+
 func (m *manager) loading() func() {
+	var button gtk.Button
 	var bar adw.HeaderBar
+	m.builder.GetObject("session").Cast(&button)
 	m.builder.GetObject("headerbar").Cast(&bar)
 	spinner := adw.NewSpinner()
-	bar.PackStart(&spinner.Widget)
-	bar.SetMarginStart(6)
-	bar.SetMarginEnd(6)
+
+	gutil.IdleAdd(func() {
+		button.SetSensitive(false)
+		bar.PackStart(&spinner.Widget)
+		bar.SetMarginStart(6)
+		bar.SetMarginEnd(6)
+	})
+
 	return func() {
-		bar.Remove(&spinner.Widget)
+		gutil.IdleAdd(func() {
+			bar.Remove(&spinner.Widget)
+			button.SetSensitive(true)
+			m.updateRunContent()
+		})
 	}
 }
 
-func (m *manager) updateRun() {
-	var btn adw.ButtonContent
-	m.builder.GetObject("btnc-run").Cast(&btn)
-	btn.SetIconName("media-playback-start-symbolic")
+func (m *manager) updateRunContent() {
+	var c adw.ButtonContent
+	m.builder.GetObject("session-content").Cast(&c)
+	c.SetIconName("media-playback-start-symbolic")
 	if len(m.boot.procs) > 0 {
-		btn.SetIconName("media-playback-stop-symbolic")
-		btn.SetLabel("Stop")
+		c.SetIconName("media-playback-stop-symbolic")
+		c.SetLabel("Stop")
 		return
 	}
 	if m.pfx.Exists() {
-		btn.SetLabel("Run Studio")
+		c.SetLabel("Run Studio")
 	} else {
-		btn.SetLabel("Initialize")
+		c.SetLabel("Initialize")
 	}
 }
 

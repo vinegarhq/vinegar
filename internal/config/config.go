@@ -89,7 +89,7 @@ func Default() (cfg *Config) {
 
 		Studio: Studio{
 			GameMode:   true,
-			Renderer:   "D3D11",
+			Renderer:   "DXVK",
 			Channel:    "",
 			DiscordRPC: true,
 			FFlags:     make(rbxbin.FFlags),

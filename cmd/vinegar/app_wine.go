@@ -19,7 +19,8 @@ import (
 
 func (a *app) prepareWine() error {
 	_, err := os.Stat(dirs.WinePath)
-	if a.cfg.Studio.WineRoot.IsDefault() && err != nil {
+	// Check against symlink in case the default is empty (musl)
+	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && err != nil {
 		if err := a.updateWine(); err != nil {
 			return fmt.Errorf("dl: %w", err)
 		}

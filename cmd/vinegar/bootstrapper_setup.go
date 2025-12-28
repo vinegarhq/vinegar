@@ -130,16 +130,20 @@ func (b *bootstrapper) stepApplyFFlags() error {
 }
 
 func (b *bootstrapper) stepChangeStudioTheme() error {
+	path := `HKCU\Software\Roblox\RobloxStudio\Themes`
 	k, err := b.pfx.RegistryQuery(
-		`HKCU\Software\Roblox\RobloxStudio\Themes`)
-	if err != nil || k == nil {
+		path)
+	if err != nil {
 		slog.Warn("Failed to retrieve current Studio theme", "err", err)
 		return nil
 	}
 
-	// If the user set an explicit theme rather than the default
-	// Studio system theme, do not attempt to change the theme accordingly.
-	if k.GetValue("CurrentTheme").Data != "Default" {
+	// If Studio was just installed (missing key) or the user set an explicit
+	// theme rather than the default Studio system theme, do not attempt to
+	// change the theme accordingly.
+	// Yes this will slow down the process for everyone (60ms) involved but some people
+	// insist on using desktop environments that do not use proper portals.
+	if k != nil && k.GetValue("CurrentTheme").Data != "Default" {
 		return nil
 	}
 
@@ -148,5 +152,5 @@ func (b *bootstrapper) stepChangeStudioTheme() error {
 		theme = "Dark"
 	}
 	slog.Info("Changing Theme", "theme", theme)
-	return b.pfx.RegistryAdd(k.Path(), "CurrentTheme", theme)
+	return b.pfx.RegistryAdd(path, "CurrentTheme", theme)
 }

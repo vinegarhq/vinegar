@@ -97,6 +97,7 @@ func (s *StudioRPC) handleEdit(line string) error {
 		s.place = nil
 		s.presence.Details = "Idling"
 		s.presence.State = ""
+		s.presence.Assets.LargeImage = ""
 		s.presence.Assets.SmallImage = ""
 		s.presence.Timestamps = &drpc.Timestamps{
 			Start: time.Now(),

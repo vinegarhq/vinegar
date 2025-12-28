@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -74,6 +75,12 @@ func (b *bootstrapper) execute(args ...string) error {
 	}
 
 	b.procs = append(b.procs, cmd.Process)
+	defer func() {
+		b.procs = slices.DeleteFunc(b.procs, func(p *os.Process) bool {
+			return p == cmd.Process
+		})
+	}()
+
 	gutil.IdleAdd(func() {
 		b.win.SetVisible(false)
 	})

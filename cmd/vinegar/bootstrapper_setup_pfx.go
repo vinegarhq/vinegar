@@ -19,15 +19,8 @@ func (b *bootstrapper) setupPrefix() error {
 	defer b.performing()()
 	b.message("Setting up Wine")
 
-	_, err := os.Stat(dirs.WinePath)
-	if b.cfg.Studio.WineRoot.IsDefault() && err != nil {
-		if err := b.updateWine(); err != nil {
-			return fmt.Errorf("dl: %w", err)
-		}
-	}
-
 	// Handles Wineprefix initialization as necessary
-	if err := b.pfx.Start(); err != nil {
+	if err := b.prepareWine(); err != nil {
 		return err
 	}
 

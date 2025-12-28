@@ -18,6 +18,13 @@ import (
 )
 
 func (a *app) prepareWine() error {
+	_, err := os.Stat(dirs.WinePath)
+	if a.cfg.Studio.WineRoot.IsDefault() && err != nil {
+		if err := a.updateWine(); err != nil {
+			return fmt.Errorf("dl: %w", err)
+		}
+	}
+
 	if a.pfx.Running() {
 		return nil
 	}
@@ -66,27 +73,45 @@ func (a *app) updateWine() error {
 		}
 	}
 
+	if _, err := os.Stat(dir); err == nil {
+		slog.Info("Wine build already present!")
+		goto install
+	}
+
 	if len(release.Assets) == 0 &&
 		release.Assets[0].GetContentType() == "application/x-xz" {
 		return errors.New("expected .tar.xz release")
 	}
-	url := release.Assets[0].GetBrowserDownloadURL()
 
-	slog.Info("Downloading Wine build", "url", url)
-	if err := netutil.ExtractURL(url, dirs.Data); err != nil {
-		return err
+	{
+		url := release.Assets[0].GetBrowserDownloadURL()
+
+		slog.Info("Downloading Wine build", "url", url)
+		if err := netutil.ExtractURL(url, dirs.Data); err != nil {
+			return err
+		}
 	}
 
+	if a.mgr != nil {
+		a.mgr.showToast("Updated Wine")
+	}
+
+install:
 	if err := os.Symlink("kombucha-"+tag, dirs.WinePath); err != nil {
 		return fmt.Errorf("create link: %w", err)
 	}
 
-	a.mgr.showToast("Download successful")
 	slog.Info("Set local Wine installation", "tag", tag)
+
+	// re-initializes the wine prefix struct
+	if err := a.reload(); err != nil {
+		return fmt.Errorf("config: %w", err)
+	}
+
 	if a.cfg.Studio.WineRoot.IsDefault() {
 		return nil
 	}
-	// BUG: this is would not be reflected in the GUI
+	// BUG: this is would not be reflected in the manager
 	a.cfg.Studio.WineRoot.SetDefault()
 
 	if err := a.cfg.Save(); err != nil {

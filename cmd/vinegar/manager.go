@@ -98,10 +98,10 @@ func (m *manager) addAction(name string, fn any) {
 func (m *manager) loading() func() {
 	var button gtk.Button
 	var bar adw.HeaderBar
-	var wine adw.HeaderBar
+
 	m.builder.GetObject("session").Cast(&button)
 	m.builder.GetObject("headerbar").Cast(&bar)
-	m.builder.GetObject("prefgroup-wine").Cast(&wine)
+
 	spinner := adw.NewSpinner()
 
 	gutil.IdleAdd(func() {
@@ -109,20 +109,22 @@ func (m *manager) loading() func() {
 		bar.PackStart(&spinner.Widget)
 		bar.SetMarginStart(6)
 		bar.SetMarginEnd(6)
-		wine.SetSensitive(m.pfx.Exists())
 	})
 
 	return func() {
 		gutil.IdleAdd(func() {
 			bar.Remove(&spinner.Widget)
 			button.SetSensitive(true)
-			wine.SetSensitive(m.pfx.Exists())
 			m.updateRunContent()
 		})
 	}
 }
 
 func (m *manager) updateRunContent() {
+	var wine adw.HeaderBar
+	m.builder.GetObject("prefgroup-wine").Cast(&wine)
+	wine.SetSensitive(m.pfx.Exists())
+
 	var c adw.ButtonContent
 	m.builder.GetObject("session-content").Cast(&c)
 	c.SetIconName("media-playback-start-symbolic")

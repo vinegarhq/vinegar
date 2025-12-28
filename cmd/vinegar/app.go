@@ -59,12 +59,11 @@ func newApp() *app {
 
 func (a *app) reload() error {
 	if a.pfx != nil && a.pfx.Root != string(a.cfg.Studio.WineRoot) && a.pfx.Running() {
-		err := a.pfx.Server(wine.ServerKill, "9")
-		slog.Info("Wine installation changed, killing Wine", "err", err)
+		slog.Info("Wine installation changed, killing Wine", "err", a.pfx.Kill())
 	}
 	pfx, err := a.cfg.Prefix()
 	if err != nil {
-		return fmt.Errorf("prefix configure: %w", err)
+		return fmt.Errorf("prefix: %w", err)
 	}
 	pfx.Stderr = io.Writer(a)
 	pfx.Stdout = pfx.Stderr

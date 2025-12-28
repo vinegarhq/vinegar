@@ -16,7 +16,8 @@ type StudioRPC struct {
 	client   *drpc.Client
 	rbx      *rbxweb.Client
 
-	place *rbxweb.PlaceDetail
+	place     *rbxweb.PlaceDetail
+	thumbnail *rbxweb.Thumbnail
 }
 
 func New(c *rbxweb.Client) *StudioRPC {
@@ -65,6 +66,19 @@ func (s *StudioRPC) handleOpen(line string) error {
 		slog.Error("studiorpc: Failed to fetch place detail", "err", err)
 	}
 
+	if s.place != nil {
+		s.thumbnail, err = s.rbx.ThumbnailsV1.GetGameIcon(s.place.UniverseID, &rbxweb.GameIconOptions{
+			Size:        "512x512",
+			Rectangular: true,
+			Format:      rbxweb.ThumbnailFormatPng,
+		})
+		if err != nil {
+			slog.Error("studiorpc: Failed to fetch game icon", "err", err)
+		}
+	} else {
+		s.thumbnail = nil
+	}
+
 	s.presence.Timestamps = &drpc.Timestamps{
 		Start: time.Now(),
 	}
@@ -91,8 +105,15 @@ func (s *StudioRPC) handleEdit(line string) error {
 		s.presence.Details = "Developing a place"
 		s.presence.State = ""
 		s.presence.Assets.SmallImage = "place"
+
 		if s.place != nil {
 			s.presence.Details = "Developing " + s.place.Name
+		}
+
+		if s.thumbnail != nil {
+			s.presence.Assets.LargeImage = s.thumbnail.ImageURL
+		} else {
+			s.presence.Assets.LargeImage = ""
 		}
 	case "2":
 		s.presence.State = "Editing Script"

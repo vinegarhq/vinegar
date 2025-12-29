@@ -7,10 +7,13 @@ import (
 	"log/slog"
 )
 
-var authNamePrefix = `Generic: https://www.roblox.com:RobloxStudioAuth`
+var (
+	authNamePrefix = `Generic: https://www.roblox.com:RobloxStudioAuth`
+	credRegPath    = `HKCU\Software\Wine\Credential Manager`
+)
 
 func (a *app) getSecurity() error {
-	cred, err := a.pfx.RegistryQuery(`HKCU\Software\Wine\Credential Manager`)
+	cred, err := a.pfx.RegistryQuery(credRegPath)
 	if err != nil {
 		return fmt.Errorf("query: %w", err)
 	}

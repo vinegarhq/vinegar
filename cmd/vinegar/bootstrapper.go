@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
@@ -13,12 +14,17 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 	"github.com/sewnie/rbxbin"
+	"github.com/sewnie/wine"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/studiorpc"
 )
 
-var regPath = `HKCU\Software\Roblox\RobloxStudio`
+var (
+	studioRegPath = `HKCU\Software\Roblox\RobloxStudio`
+	backupExport  = filepath.Join(dirs.Data, "settings.reg")
+)
 
 type bootstrapper struct {
 	*app
@@ -95,7 +101,71 @@ func (b *bootstrapper) run(args ...string) error {
 		return fmt.Errorf("setup: %w", err)
 	}
 
-	return b.execute(args...)
+	err := b.execute(args...)
+
+	if err := b.backupSettings(); err != nil {
+		slog.Error("Failed to backup Studio settings", "err", err)
+	}
+
+	return err
+}
+
+func (b *bootstrapper) restoreSettings() error {
+	if !b.pfx.Exists() {
+		return nil
+	}
+	_, err := os.Stat(backupExport)
+	if err != nil {
+		return nil
+	}
+
+	slog.Info("Restoring Studio settings")
+	return b.pfx.RegistryImportFile(backupExport)
+}
+
+func (b *bootstrapper) backupSettings() error {
+	if err := b.prepareWine(); err != nil {
+		return err
+	}
+	if !b.pfx.Running() {
+		return nil
+	}
+
+	// Studio stores its layout information as a multiline XML
+	// in the registry. This is problematic for [Prefix.RegistryQuery]
+	// as it is infeasible to parse. Grab the entire registry instead.
+
+	r, err := b.pfx.Registry()
+	if err != nil {
+		return fmt.Errorf("query: %w", err)
+	}
+
+	stripped := wine.NewRegistryKey(`HKCU\`)
+	s := r.Query(studioRegPath)
+	if s == nil {
+		// were to be added to a key, HKCU gets deleted :p
+		slog.Warn("Nothing to backup!")
+		return nil
+	}
+
+	stripped.AddKey(s)
+	if s := r.Query(credRegPath); s != nil {
+		stripped.AddKey(s)
+	}
+
+	f, err := os.OpenFile(backupExport,
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o644)
+	if err != nil {
+		return fmt.Errorf("file: %w", err)
+	}
+
+	if err := stripped.Export(f); err != nil {
+		return err
+	}
+
+	slog.Debug("Backed up Studio Registry")
+
+	return nil
 }
 
 func (b *bootstrapper) handleRobloxLog(line string) {

@@ -54,6 +54,7 @@ func (a *app) newManager() *manager {
 		"delete-studio": m.deleteDeployments,
 		"clear-cache":   m.clearCache,
 		"update":        m.updateWine,
+		"restore":       m.boot.restoreSettings,
 
 		"winecfg": func() {
 			cmd.SetText("winecfg")

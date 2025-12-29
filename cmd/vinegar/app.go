@@ -127,6 +127,11 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
 		args = args[1:] // skip 'run' cmd
 	}
 
+	// Override arguments to prioritize welcome screen
+	if !a.pfx.Exists() {
+		args = []string{"manage"}
+	}
+
 	if len(args) == 1 && args[0] == "manage" {
 		// Prevent multiple windows of manager
 		// existing at once

@@ -30,6 +30,12 @@ func (a *app) newManager() *manager {
 	m.builder.GetObject("window").Cast(&m.win)
 	m.win.SetApplication(&a.Application.Application)
 
+	var view adw.NavigationView
+	m.builder.GetObject("navigation").Cast(&view)
+	if !a.pfx.Exists() {
+		view.PushByTag("welcome")
+	}
+
 	var cmd gtk.Entry
 	m.builder.GetObject("entry-cmd").Cast(&cmd)
 	cb := m.runWineCmd

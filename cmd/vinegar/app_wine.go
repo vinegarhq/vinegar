@@ -20,7 +20,6 @@ import (
 // Reports whether a Wine Prefix was initialized.
 func (a *app) prepareWine() (bool, error) {
 	firstRun := !a.pfx.Exists()
-	a.boot.message("Setting up Wine", "first-time", firstRun)
 
 	_, err := os.Stat(dirs.WinePath)
 	// Check against symlink in case the default is empty (musl)
@@ -32,6 +31,8 @@ func (a *app) prepareWine() (bool, error) {
 	if a.pfx.Running() {
 		return false, nil
 	}
+
+	a.boot.message("Setting up Wine", "first-time", firstRun)
 
 	if err := a.pfx.Prepare(); err != nil {
 		return firstRun, err

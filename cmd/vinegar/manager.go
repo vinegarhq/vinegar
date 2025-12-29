@@ -42,8 +42,8 @@ func (a *app) newManager() *manager {
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
 		"about": m.showAbout,
-		"open-prefix": func() {
-			gtk.ShowUri(&m.win.Window, "file://"+m.pfx.Dir(), 0)
+		"open-data": func() {
+			gtk.ShowUri(&m.win.Window, "file://"+dirs.Data, 0)
 		},
 		"open-logs": func() {
 			gtk.ShowUri(&m.win.Window, "file://"+dirs.Logs, 0)

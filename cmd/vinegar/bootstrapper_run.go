@@ -16,13 +16,15 @@ import (
 )
 
 func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
-	if strings.HasPrefix(strings.Join(args, " "), "roblox-studio:1") {
-		args = []string{"-protocolString", args[0]}
-	}
-
 	cmd := b.pfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
 	if cmd.Err != nil {
 		return nil, cmd.Err
+	}
+
+	if len(args) > 0 && strings.HasPrefix(args[0], "roblox-studio:1") {
+		cmd.Args = append([]string{"-protocolString"}, cmd.Args...)
+	} else if len(args) > 0 && strings.HasPrefix(args[0], "roblox-studio-auth:") {
+		return cmd, nil
 	}
 
 	// I was called a "noob" for my implementation by someone who creates

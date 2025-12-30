@@ -140,14 +140,14 @@
                             <child>
                               <object class="AdwActionRow">
                                 <property name="icon-name">help-about-symbolic</property>
-                                <property name="subtitle">Vinegar configures and manages Wine to run Roblox Studio on Linux. Under the hood, Vinegar uses &lt;a href='https://github.com/vinegarhq/kombucha'&gt;a patched version of Wine&lt;/a&gt; to enhance the Studio experience. Wine may be unstable; Some issues may be unsolveable by Vinegar and may be &lt;b&gt;underlying issues of Wine.&lt;/b&gt;</property>
-                                <property name="title">Manages Wine and Studio</property>
+                                <property name="subtitle">Under the hood, Vinegar configures and manages Wine, using &lt;a href='https://github.com/vinegarhq/kombucha'&gt;a patched version&lt;/a&gt; by default to enhance the Studio experience. However, Wine's instability may vary from system to system.</property>
+                                <property name="title">Components</property>
                               </object>
                             </child>
                             <child>
                               <object class="AdwActionRow">
                                 <property name="icon-name">help-faq-symbolic</property>
-                                <property name="subtitle">You may tweak Vinegar's settings to fix multiple windows or rendering issues, if any occur. You may also visit the &lt;a href='https://vinegarhq.org/Vinegar/Troubleshooting.html'&gt;Common problems and their fixes&lt;/a&gt; page, which can be found on the About page, where you can report a bug on &lt;a href='https://github.com/vinegarhq/vinegar/issues'&gt;the issue tracker&lt;/a&gt; if needed.</property>
+                                <property name="subtitle">Vinegarʼs settings can be configured to fix multiple window or rendering issues, if any occur. See &lt;a href='https://vinegarhq.org/Vinegar/Troubleshooting.html'&gt;Common problems and their fixes&lt;/a&gt; for further information.</property>
                                 <property name="title">Troubleshooting Wine</property>
                               </object>
                             </child>
@@ -155,7 +155,7 @@
                               <object class="AdwActionRow">
                                 <property name="icon-name">preferences-system-symbolic</property>
                                 <property name="subtitle">You may tweak Vinegar's settings or manage your Wine data from the manager page, which can be accessed by right clicking on Vinegar's icon on your desktop or searching for "Manage" in your application launcher.</property>
-                                <property name="title">How to configure Vinegar</property>
+                                <property name="title">Configuration</property>
                               </object>
                             </child>
                             <style>
@@ -176,7 +176,7 @@
                         </child>
                       </object>
                     </property>
-                    <property name="title">Thanks for using Vinegar</property>
+                    <property name="title">Welcome to Vinegar</property>
                   </object>
                 </property>
                 <child type="top">

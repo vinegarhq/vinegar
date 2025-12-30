@@ -204,7 +204,7 @@
     </section>
     <section>
       <item>
-        <attribute name="action">win.open-prefix</attribute>
+        <attribute name="action">win.open-data</attribute>
         <attribute name="label">Open Files</attribute>
       </item>
     </section>

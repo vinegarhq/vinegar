@@ -16,8 +16,6 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )
 
-var foldersRegPath = `HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders`
-
 func (b *bootstrapper) setup() error {
 	if len(b.procs) > 0 {
 		slog.Info("Skipping setup!", "ver", b.bin.GUID)

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/adrg/xdg"
 	"github.com/google/go-github/v80/github"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/dirs"
@@ -45,11 +46,16 @@ func (a *app) prepareWine() (bool, error) {
 		return false, nil
 	}
 
+	folders := wine.NewRegistryKey(
+		`HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders`)
+	folders.SetValue("Local AppData", dirs.Windows(dirs.AppDataPath))
+	folders.SetValue("Documents", dirs.Windows(xdg.UserDirs.Documents))
+	folders.SetValue("My Pictures", dirs.Windows(xdg.UserDirs.Pictures))
+
 	a.boot.message("Updating Paths")
-	err = a.pfx.RegistryAdd(foldersRegPath, "Local AppData",
-		dirs.Windows(dirs.AppDataPath))
+	err = a.pfx.RegistryImportKey(folders)
 	if err != nil {
-		return true, fmt.Errorf("appdata set: %w", err)
+		return true, fmt.Errorf("paths: %w", err)
 	}
 
 	// Required for app data to propagate, and also prepares

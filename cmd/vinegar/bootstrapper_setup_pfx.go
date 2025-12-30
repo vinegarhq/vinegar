@@ -83,7 +83,7 @@ func (b *bootstrapper) setupDxvk() error {
 		goto install
 	}
 
-	if err := os.Mkdir(dirs.Cache, 0o755); err != nil {
+	if err := os.MkdirAll(dirs.Cache, 0o755); err != nil {
 		return fmt.Errorf("prepare cache: %w", err)
 	}
 

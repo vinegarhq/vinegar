@@ -17,24 +17,21 @@
               <object class="AdwToastOverlay" id="overlay">
                 <property name="child">
                   <object class="AdwToolbarView">
-                    <property name="content">prefpage-main</property>
+                    <property name="content">main-page</property>
                     <child type="top">
                       <object class="AdwHeaderBar" id="headerbar">
                         <property name="show-back-button">False</property>
                         <child type="end">
                           <object class="GtkMenuButton">
                             <property name="icon-name">open-menu-symbolic</property>
-                            <property name="menu-model">menumodel-app</property>
+                            <property name="menu-model">app-menu</property>
                             <property name="primary">True</property>
                           </object>
                         </child>
                       </object>
                     </child>
                     <child>
-                      <object class="AdwPreferencesPage" id="prefpage-main">
-                        <property name="banner">
-                          <object class="AdwBanner" id="banner-config-error"/>
-                        </property>
+                      <object class="AdwPreferencesPage" id="main-page">
                         <child>
                           <object class="AdwPreferencesGroup">
                             <child>
@@ -46,10 +43,10 @@
                                 <property name="valign">fill</property>
                                 <property name="vexpand">False</property>
                                 <child>
-                                  <object class="GtkButton" id="session">
+                                  <object class="GtkButton">
                                     <property name="action-name">win.run</property>
                                     <property name="child">
-                                      <object class="AdwButtonContent" id="session-content">
+                                      <object class="AdwButtonContent" id="run-content">
                                         <property name="icon-name">mail-mark-junk-symbolic</property>
                                         <property name="label">Uninitialized</property>
                                       </object>
@@ -65,7 +62,7 @@
                                     <property name="active">False</property>
                                     <property name="has-frame">True</property>
                                     <property name="icon-name">view-more-symbolic</property>
-                                    <property name="menu-model">menumodel-run</property>
+                                    <property name="menu-model">run-menu</property>
                                     <property name="primary">False</property>
                                     <property name="valign">center</property>
                                     <style>
@@ -78,14 +75,14 @@
                           </object>
                         </child>
                         <child>
-                          <object class="AdwPreferencesGroup" id="prefgroup-wine">
+                          <object class="AdwPreferencesGroup" id="wine-prefgroup">
                             <property name="header-suffix">
                               <object class="GtkMenuButton">
                                 <property name="icon-name">system-run-symbolic</property>
                                 <property name="popover">
                                   <object class="GtkPopover">
                                     <property name="child">
-                                      <object class="GtkEntry" id="entry-cmd">
+                                      <object class="GtkEntry" id="cmd">
                                         <property name="activates-default">True</property>
                                         <property name="placeholder-text">Custom Command</property>
                                       </object>
@@ -99,7 +96,7 @@
                             </property>
                             <property name="sensitive">False</property>
                             <property name="separate-rows">False</property>
-                            <property name="title">Wine</property>
+                            <property name="title">Components</property>
                             <child>
                               <object class="AdwActionRow" id="winecfg">
                                 <property name="action-name">win.winecfg</property>
@@ -197,7 +194,7 @@
       </object>
     </child>
   </object>
-  <menu id="menumodel-run">
+  <menu id="run-menu">
     <section>
       <item>
         <attribute name="action">win.prefix-kill</attribute>
@@ -206,10 +203,6 @@
       </item>
     </section>
     <section>
-      <item>
-        <attribute name="action">win.restore</attribute>
-        <attribute name="label">Restore Settings</attribute>
-      </item>
       <item>
         <attribute name="action">win.open-prefix</attribute>
         <attribute name="label">Open Files</attribute>
@@ -232,7 +225,7 @@
       </item>
     </section>
   </menu>
-  <menu id="menumodel-app">
+  <menu id="app-menu">
     <item>
       <attribute name="action">win.about</attribute>
       <attribute name="label">About Vinegar</attribute>

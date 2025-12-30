@@ -27,15 +27,15 @@ const (
 )
 
 type Studio struct {
-	WebView  WebViewOption `toml:"webview" group:"" row:"Disable if nonfunctional,WebView2 Version" title:"Web Pages"`
-	WineRoot WineOption    `toml:"wineroot" group:"" row:"Wine Installation,path"`
-	Launcher string        `toml:"launcher" group:"" row:"Launcher Command (ex. gamescope)"`
-	Desktop  DesktopOption `toml:"virtual_desktop" group:"" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
+	WebView  WebViewOption `toml:"webview"  group:"Components" row:"May be used for UI elements and logging in,WebView2 Version" title:"Web Pages"`
+	WineRoot WineOption    `toml:"wineroot" group:"Components" row:"Wine Installation,path"`
 
-	Renderer Renderer `toml:"renderer" group:"Rendering" row:"Studio's Graphics Mode"` // Enum reflection is impossible
+	Renderer Renderer      `toml:"renderer" group:"Display" row:"Studio's Graphics Mode"` // Enum reflection is impossible
+	Desktop  DesktopOption `toml:"virtual_desktop" group:"Display" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
 
-	DiscordRPC bool `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
-	GameMode   bool `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
+	Launcher   string `toml:"launcher" group:"Behavior" row:"Launcher Command (ex. gamescope)"`
+	DiscordRPC bool   `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
+	GameMode   bool   `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
 
 	Env    map[string]string `toml:"env" group:"Environment"`
 	FFlags rbxbin.FFlags     `toml:"fflags" group:"Fast Flags"`

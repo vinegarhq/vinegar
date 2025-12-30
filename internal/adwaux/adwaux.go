@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
+	"github.com/jwijenbergh/puregotk/v4/gtk"
 )
 
 // Enum reflection is impossible without an interface to get
@@ -24,31 +25,75 @@ type Defaulter interface {
 	Default() string
 }
 
-type StructPage struct {
-	sv     reflect.Value
-	groups map[string]*adw.PreferencesGroup
+type Groups map[string]*adw.PreferencesGroup
 
-	*adw.PreferencesPage
+type structGroups struct {
+	groups Groups
+	page   *adw.PreferencesPage
 }
 
-func AddStructPage(page *adw.PreferencesPage, sv reflect.Value) {
-	p := StructPage{
-		sv:              sv,
-		groups:          make(map[string]*adw.PreferencesGroup),
-		PreferencesPage: page,
+func AddStructGroups(page *adw.PreferencesPage, a any) Groups {
+	sg := structGroups{
+		groups: make(map[string]*adw.PreferencesGroup),
+		page:   page,
 	}
 
-	for _, sf := range reflect.VisibleFields(sv.Type()) {
-		v := sv.FieldByIndex(sf.Index)
-		p.addField(sf, v)
+	for i := uint(0); ; i++ {
+		group := sg.page.GetGroup(i)
+		if group == nil {
+			break
+		}
+		// Prepend struct rows to existing rows
+		// by removing and adding them as you cannot insert
+		// by an index.
+		rows := rows(group)
+		for _, r := range rows {
+			group.Remove(r)
+		}
+		sg.groups[group.GetTitle()] = group
+		defer func() {
+			for _, r := range rows {
+				group.Add(r)
+			}
+		}()
 	}
+
+	v := reflect.ValueOf(a).Elem()
+	for _, sf := range reflect.VisibleFields(v.Type()) {
+		v := v.FieldByIndex(sf.Index)
+		sg.add(v, sf)
+	}
+
+	return sg.groups
 }
 
-func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
+func groups(page *adw.PreferencesPage) (s []*adw.PreferencesGroup) {
+	for i := uint(0); ; i++ {
+		group := page.GetGroup(i)
+		if group == nil {
+			break
+		}
+		s = append(s, group)
+	}
+	return
+}
+
+func rows(group *adw.PreferencesGroup) (s []*gtk.Widget) {
+	for i := uint(0); ; i++ {
+		w := group.GetRow(i)
+		if w == nil {
+			break
+		}
+		s = append(s, w)
+	}
+	return
+}
+
+func (p *structGroups) add(v reflect.Value, sf reflect.StructField) {
 	if v.Kind() == reflect.Struct {
 		for _, vsf := range reflect.VisibleFields(v.Type()) {
 			vv := v.FieldByIndex(vsf.Index)
-			p.addField(vsf, vv)
+			p.add(vv, vsf)
 		}
 		return
 	}
@@ -61,20 +106,18 @@ func (p *StructPage) addField(sf reflect.StructField, v reflect.Value) {
 		return
 	}
 
-	var group *adw.PreferencesGroup
 	if v.Kind() == reflect.Map {
-		group = newMapGroup(v)
+		group := newMapGroup(v)
 		group.SetTitle(groupName)
-		p.PreferencesPage.Add(group)
-	} else if group, ok = p.groups[groupName]; !ok {
+		p.page.Add(group)
+		return
+	}
+	group, ok := p.groups[groupName]
+	if !ok {
 		group = adw.NewPreferencesGroup()
 		p.groups[groupName] = group
 		group.SetTitle(groupName)
-		p.PreferencesPage.Add(group)
-	}
-
-	if v.Kind() == reflect.Map {
-		return // MapKeyGroup was initialized
+		p.page.Add(group)
 	}
 
 	title := sf.Tag.Get("title")

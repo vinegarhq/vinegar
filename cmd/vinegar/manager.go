@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log/slog"
-	"reflect"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gio"
@@ -37,13 +36,13 @@ func (a *app) newManager() *manager {
 	}
 
 	var cmd gtk.Entry
-	m.builder.GetObject("entry-cmd").Cast(&cmd)
+	m.builder.GetObject("cmd").Cast(&cmd)
 	cb := m.runWineCmd
 	cmd.ConnectActivate(&cb)
 
 	var page adw.PreferencesPage
-	m.builder.GetObject("prefpage-main").Cast(&page)
-	adwaux.AddStructPage(&page, reflect.ValueOf(m.cfg).Elem())
+	m.builder.GetObject("main-page").Cast(&page)
+	adwaux.AddStructGroups(&page, a.cfg)
 
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
@@ -103,25 +102,18 @@ func (m *manager) addAction(name string, fn any) {
 }
 
 func (m *manager) loading() func() {
-	var button gtk.Button
 	var bar adw.HeaderBar
-
-	m.builder.GetObject("session").Cast(&button)
 	m.builder.GetObject("headerbar").Cast(&bar)
 
 	spinner := adw.NewSpinner()
-
 	gutil.IdleAdd(func() {
-		button.SetSensitive(false)
 		bar.PackStart(&spinner.Widget)
 		bar.SetMarginStart(6)
 		bar.SetMarginEnd(6)
 	})
-
 	return func() {
 		gutil.IdleAdd(func() {
 			bar.Remove(&spinner.Widget)
-			button.SetSensitive(true)
 			m.updateRunContent()
 		})
 	}
@@ -129,11 +121,11 @@ func (m *manager) loading() func() {
 
 func (m *manager) updateRunContent() {
 	var wine adw.HeaderBar
-	m.builder.GetObject("prefgroup-wine").Cast(&wine)
+	m.builder.GetObject("wine-prefgroup").Cast(&wine)
 	wine.SetSensitive(m.pfx.Exists())
 
 	var c adw.ButtonContent
-	m.builder.GetObject("session-content").Cast(&c)
+	m.builder.GetObject("run-content").Cast(&c)
 	c.SetIconName("media-playback-start-symbolic")
 	if len(m.boot.procs) > 0 {
 		c.SetIconName("media-playback-stop-symbolic")

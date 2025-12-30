@@ -54,7 +54,6 @@ func (a *app) prepareWine() (bool, error) {
 
 	// Required for app data to propagate, and also prepares
 	// the application environment.
-	a.boot.message("Setting up Wine")
 	if err := a.pfx.Boot(wine.BootRestart).Run(); err != nil {
 		return true, fmt.Errorf("restart: %w", err)
 	}

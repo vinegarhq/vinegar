@@ -92,8 +92,7 @@ func (a *app) updateWine() error {
 			return fmt.Errorf("readlink: %w", err)
 		}
 		if filepath.Base(path) == filepath.Base(dir) {
-			a.mgr.showToast("Up to date")
-			slog.Info("Wine build up to date", "link", path)
+			a.mgr.showToast("Build up to date")
 			return nil
 		}
 

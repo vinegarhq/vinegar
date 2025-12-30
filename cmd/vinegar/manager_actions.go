@@ -120,7 +120,7 @@ func (m *manager) deletePrefixes() error {
 		return err
 	}
 
-	m.showToast("Deleted all data")
+	m.showToast("Deleted Wine data")
 	return nil
 }
 

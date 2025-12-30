@@ -9,7 +9,7 @@
 		<p>Vinegar is an open-source, configurable, fast bootstrapper for running Roblox Studio on Linux.</p>
 	</description>
 	<url type="homepage">https://vinegarhq.org</url>
-	<url type="help">https://vinegarhq.org</url>
+	<url type="help">https://vinegarhq.org/Vinegar/Troubleshooting.html</url>
 	<url type="contribute">https://github.com/vinegarhq/vinegar</url>
 	<url type="vcs-browser">https://github.com/vinegarhq/vinegar</url>
 	<url type="bugtracker">https://github.com/vinegarhq/vinegar/issues</url>

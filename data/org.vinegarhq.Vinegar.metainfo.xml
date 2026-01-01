@@ -42,6 +42,22 @@
 	</screenshots>
 
 	<releases>
+		<release version="1.9.2" date="2026-01-01">
+			<description>
+				<ul>
+					<li>Added automatically backing up and restoring Studio authentication and settings</li>
+					<li>Added setting AppData and user folders to the system equivalent on new prefixes</li>
+					<li>Added multiple virtual desktops</li>
+					<li>Added a welcome screen on new installations</li>
+					<li>Added system-dependent Wine+Studio dark/light theme</li>
+					<li>Added localization support</li>
+					<li>Fixed Studio authenticated deployment channels</li>
+					<li>Fixed and improved Studio Rich Presence for Discord</li>
+					<li>Fixed WebView2 rendering</li>
+					<li>Fixed WineD3D on Nvidia GPUs</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.9.1" date="2025-10-14">
 			<description>
 				<ul>

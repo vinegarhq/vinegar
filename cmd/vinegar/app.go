@@ -19,6 +19,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 type app struct {
@@ -203,8 +205,8 @@ func (a *app) showError(e error) {
 	// In a bootstrapper context, the window is destroyed to show the
 	// error instead, which will make the GtkApplication exit.
 	a.Hold()
-	d := adw.NewAlertDialog("Something went wrong", e.Error())
-	d.AddResponses("okay", "Ok", "open", "Open Log")
+	d := adw.NewAlertDialog(L("Something went wrong"), e.Error())
+	d.AddResponses("okay", L("Ok"), "open", L("Open Log"))
 	d.SetCloseResponse("okay")
 	d.SetDefaultResponse("okay")
 	d.SetResponseAppearance("open", adw.ResponseSuggestedValue)

@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Created with Cambalache 0.97.9 -->
-<interface>
+<interface domain="vinegar">
   <!-- interface-name bootstrapper.ui -->
   <requires lib="gtk" version="4.18"/>
   <requires lib="libadwaita" version="1.0"/>
@@ -24,7 +24,7 @@
         <child>
           <object class="GtkLabel" id="status">
             <property name="css-classes">title-2</property>
-            <property name="label">Initializing Vinegar</property>
+            <property name="label" translatable="yes">Initializing Vinegar</property>
             <property name="margin-bottom">24</property>
             <style>
               <class name="title"/>
@@ -50,7 +50,7 @@
           <object class="GtkButton">
             <property name="action-name">window.close</property>
             <property name="halign">center</property>
-            <property name="label">Cancel</property>
+            <property name="label" translatable="yes">Cancel</property>
             <property name="margin-top">10</property>
             <property name="valign">center</property>
             <property name="width-request">40</property>

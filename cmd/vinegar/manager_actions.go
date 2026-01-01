@@ -15,6 +15,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 func (m *manager) run() error {
@@ -109,7 +111,7 @@ func (m *manager) killPrefix() error {
 		return err
 	}
 
-	m.showToast("Stopped all processes")
+	m.showToast(L("Stopped all processes"))
 	slog.Debug("Processes", "boot", m.boot.procs, "pfx", m.pfx.Running())
 	return nil
 }
@@ -120,7 +122,7 @@ func (m *manager) deletePrefixes() error {
 		return err
 	}
 
-	m.showToast("Deleted Wine data")
+	m.showToast(L("Deleted Wine data"))
 	return nil
 }
 
@@ -129,7 +131,7 @@ func (m *manager) deleteDeployments() error {
 		return err
 	}
 
-	m.showToast("Uninstalled studio")
+	m.showToast(L("Uninstalled studio"))
 	return nil
 }
 
@@ -152,6 +154,6 @@ func (m *manager) clearCache() error {
 		return err
 	}
 
-	m.showToast("Cleared cache")
+	m.showToast(L("Cleared cache"))
 	return nil
 }

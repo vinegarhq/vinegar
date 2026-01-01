@@ -11,6 +11,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/adwaux"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 type manager struct {
@@ -129,13 +131,13 @@ func (m *manager) updateRunContent() {
 	c.SetIconName("media-playback-start-symbolic")
 	if len(m.boot.procs) > 0 {
 		c.SetIconName("media-playback-stop-symbolic")
-		c.SetLabel("Stop")
+		c.SetLabel(L("Stop"))
 		return
 	}
 	if m.pfx.Exists() {
-		c.SetLabel("Run Studio")
+		c.SetLabel(L("Run Studio"))
 	} else {
-		c.SetLabel("Initialize")
+		c.SetLabel(L("Initialize"))
 	}
 }
 

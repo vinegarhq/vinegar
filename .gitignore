@@ -2,3 +2,4 @@
 /vendor
 *.gresource
 *.so
+*.mo

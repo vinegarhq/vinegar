@@ -3,25 +3,30 @@
 ID = org.vinegarhq.Vinegar
 
 PREFIX      ?= /usr
-DATAPREFIX  = $(PREFIX)/share/vinegar
-APPPREFIX   = $(PREFIX)/share/applications
-MIMEPREFIX  = $(PREFIX)/share/mime
-ICONPREFIX  = $(PREFIX)/share/icons/hicolor
-LIBPREFIX   = $(PREFIX)/lib
-LAYERPREFIX = $(PREFIX)/share/vulkan/explicit_layer.d
+DATAPREFIX    = $(PREFIX)/share/vinegar
+APPPREFIX     = $(PREFIX)/share/applications
+MIMEPREFIX    = $(PREFIX)/share/mime
+ICONPREFIX    = $(PREFIX)/share/icons/hicolor
+LIBPREFIX     = $(PREFIX)/lib
+LAYERPREFIX   = $(PREFIX)/share/vulkan/explicit_layer.d
+LOCALEPREFIX  = $(PREFIX)/share/locale
 
 CXX ?= c++
+MSGFMT ?= msgfmt
 
 PKG_CONFIG = pkg-config
 INCS != $(PKG_CONFIG) --cflags vulkan
 
 GO         ?= go
-GO_LDFLAGS ?= -s -w
+GO_LDFLAGS ?= -s -w -X main.LocaleDir="$(LOCALEPREFIX)"
 
 SOURCES != find . -type f -name "*.go" # for automatically re-building vinegar
 
 RESOURCE = internal/gutil/vinegar.gresource
 VKLAYER = layer/libVkLayer_VINEGAR_VinegarLayer.so
+
+TRANS   != find data/po -type f -name "*.po" -printf '%f\n'
+LOCALES = $(TRANS:.po=)
 
 all: vinegar $(VKLAYER)
 
@@ -34,7 +39,13 @@ $(RESOURCE): data/vinegar.gresource.xml
 $(VKLAYER): layer/vinegar_layer.cpp
 	$(CXX) -shared -fPIC $(INCS) $< -o $@
 
-install: all
+# Locale .mo files are compiled upon installation
+$(LOCALES): LOCALEDIR = $(DESTDIR)$(LOCALEPREFIX)/$@/LC_MESSAGES
+$(LOCALES):
+	mkdir -p $(LOCALEDIR)
+	$(MSGFMT) data/po/$@.po -o $(LOCALEDIR)/vinegar.mo
+
+install: all $(LOCALES)
 	install -Dm755 vinegar $(DESTDIR)$(PREFIX)/bin/vinegar
 	install -Dm644 data/$(ID).metainfo.xml -t $(DESTDIR)$(PREFIX)/share/metainfo
 	install -Dm644 data/$(ID).desktop -t $(DESTDIR)$(APPPREFIX)
@@ -52,6 +63,7 @@ host:
 uninstall:
 	# Retain removal of old studio desktop & old mime name
 	rm -f $(DESTDIR)$(PREFIX)/bin/vinegar \
+		$(DESTDIR)$(LOCALEPREFIX)/*/LC_MESSAGES/vinegar.mo \
 		$(DESTDIR)$(PREFIX)/share/metainfo/$(ID).metainfo.xml \
 		$(DESTDIR)$(APPPREFIX)/$(ID).desktop \
 		$(DESTDIR)$(APPPREFIX)/$(ID).studio.desktop \

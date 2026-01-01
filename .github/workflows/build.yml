@@ -16,7 +16,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y libglib2.0-dev libvulkan-dev
+        sudo apt-get install -y libglib2.0-dev libvulkan-dev gettext
     - name: Checkout Repository
       uses: actions/checkout@v3
     - name: Build Vinegar

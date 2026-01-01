@@ -8,6 +8,8 @@ import (
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 var kindEmpty = map[string]reflect.Value{
@@ -40,7 +42,7 @@ func newMapGroup(mv reflect.Value) *adw.PreferencesGroup {
 	add.SetPopover(new)
 
 	addName := gtk.NewEntry()
-	addName.SetPlaceholderText("Key name to add")
+	addName.SetPlaceholderText(L("Key name to add"))
 
 	var addKind *gtk.DropDown
 	if g.mv.Type().Elem().Kind() == reflect.Interface {

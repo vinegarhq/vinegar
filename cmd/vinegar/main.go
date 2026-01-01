@@ -6,8 +6,11 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/pojntfx/go-gettext/pkg/i18n"
 	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
+
+var LocaleDir = "/usr/share/locale"
 
 func main() {
 	debug.SetPanicOnFault(true)
@@ -21,6 +24,10 @@ func main() {
 	}
 	// VK_SUBOPTIMAL_KHR
 	os.Setenv("GDK_DISABLE", "vulkan")
+
+	if err := i18n.InitI18n("vinegar", LocaleDir); err != nil {
+		panic(err)
+	}
 
 	if code := newApp().Run(len(os.Args), os.Args); code > 0 {
 		os.Exit(code)

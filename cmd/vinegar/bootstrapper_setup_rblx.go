@@ -16,6 +16,8 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/netutil"
 	"golang.org/x/sync/errgroup"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 var (
@@ -33,11 +35,11 @@ func (b *bootstrapper) updateDeployment() error {
 		"guid", b.bin.GUID, "channel", b.bin.Channel)
 
 	if _, err := os.Stat(b.dir); err == nil {
-		b.message("Up to date", "guid", b.bin.GUID)
+		b.message(L("Up to date"), "guid", b.bin.GUID)
 		return nil
 	}
 
-	b.message("Installing Studio", "new", b.bin.GUID)
+	b.message(L("Installing Studio"), "new", b.bin.GUID)
 	// Remove all other deployments
 	removeUniqueFiles(dirs.Versions, []string{b.bin.GUID})
 
@@ -51,7 +53,7 @@ func (b *bootstrapper) updateDeployment() error {
 
 	defer b.performing()()
 
-	b.message("Writing AppSettings")
+	b.message(L("Writing AppSettings"))
 	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
 		return fmt.Errorf("appsettings: %w", err)
 	}
@@ -61,7 +63,7 @@ func (b *bootstrapper) updateDeployment() error {
 	//
 	// Default channel is none, but UserChannel will set LIVE.
 	if b.bin.Channel != "" && b.bin.Channel != "LIVE" {
-		b.message("Writing Registry")
+		b.message(L("Writing Registry"))
 		if err := b.pfx.RegistryAdd(channelKey, "www.roblox.com", b.bin.Channel); err != nil {
 			return fmt.Errorf("set channel reg: %w", err)
 		}
@@ -83,7 +85,7 @@ func (b *bootstrapper) setDeployment() error {
 		return nil
 	}
 
-	b.message("Checking for updates")
+	b.message(L("Checking for updates"))
 
 	d, err := rbxbin.GetDeployment(b.rbx, studio, b.cfg.Studio.Channel)
 	if err != nil {
@@ -101,13 +103,13 @@ func (b *bootstrapper) setDeployment() error {
 func (b *bootstrapper) installDeployment() error {
 	stop := b.performing()
 
-	b.message("Finding Mirror")
+	b.message(L("Finding Mirror"))
 	m, err := rbxbin.GetMirror()
 	if err != nil {
 		return fmt.Errorf("fetch mirror: %w", err)
 	}
 
-	b.message("Fetching Package List")
+	b.message(L("Fetching Package List"))
 	pkgs, err := m.GetPackages(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch packages: %w", err)
@@ -128,7 +130,7 @@ func (b *bootstrapper) installDeployment() error {
 		return pkgs[i].ZipSize < pkgs[j].ZipSize
 	})
 
-	b.message("Fetching Installation Directives")
+	b.message(L("Fetching Installation Directives"))
 	pd, err := m.BinaryDirectories(b.bin)
 	if err != nil {
 		return fmt.Errorf("fetch package dirs: %w", err)
@@ -148,7 +150,7 @@ func (b *bootstrapper) installPackages(
 	finished := int64(0)
 	group := new(errgroup.Group)
 
-	b.message("Installing Packages", "count", len(pkgs), "dir", b.dir)
+	b.message(L("Installing Packages"), "count", len(pkgs), "dir", b.dir)
 	for _, pkg := range pkgs {
 		group.Go(func() error {
 			if err := b.installPackage(mirror, pdirs, &pkg); err != nil {

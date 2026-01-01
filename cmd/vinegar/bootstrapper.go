@@ -124,9 +124,6 @@ func (b *bootstrapper) restoreSettings() error {
 }
 
 func (b *bootstrapper) backupSettings() error {
-	if err := b.prepareWine(); err != nil {
-		return err
-	}
 	if !b.pfx.Running() {
 		return nil
 	}

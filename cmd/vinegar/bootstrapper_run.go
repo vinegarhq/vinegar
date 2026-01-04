@@ -12,11 +12,12 @@ import (
 
 	"github.com/jwijenbergh/puregotk/v4/glib"
 	"github.com/sewnie/wine"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )
 
 func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
-	cmd := b.pfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
+	cmd := b.pfx.Wine(filepath.Join(dirs.Deployment, "RobloxStudioBeta.exe"), args...)
 	if cmd.Err != nil {
 		return nil, cmd.Err
 	}

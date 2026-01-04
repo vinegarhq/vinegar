@@ -58,7 +58,7 @@ func (a *app) newManager() *manager {
 
 		"prefix-kill":   m.killPrefix,
 		"delete-prefix": m.deletePrefixes,
-		"delete-studio": m.deleteDeployments,
+		"delete-studio": m.deleteDeployment,
 		"clear-cache":   m.clearCache,
 		"update":        m.updateWine,
 		"restore":       m.boot.restoreSettings,

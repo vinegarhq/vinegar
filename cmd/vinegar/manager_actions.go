@@ -126,8 +126,8 @@ func (m *manager) deletePrefixes() error {
 	return nil
 }
 
-func (m *manager) deleteDeployments() error {
-	if err := os.RemoveAll(dirs.Versions); err != nil {
+func (m *manager) deleteDeployment() error {
+	if err := os.RemoveAll(dirs.Deployment); err != nil {
 		return err
 	}
 

@@ -1,3 +1,11 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-1-4 18:35\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
 #: cmd/vinegar/app.go:208
 msgid "Something went wrong"
 msgstr "Etwas ist falsch gelaufen"

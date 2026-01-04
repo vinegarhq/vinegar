@@ -110,10 +110,10 @@ func (b *bootstrapper) applyFFlags() error {
 			return fmt.Errorf("unknown renderer: %s", r)
 		}
 
-		for _, r := range renderers {
-			isRenderer := r == string(b.cfg.Studio.Renderer)
-			f["FFlagDebugGraphicsPrefer"+r] = isRenderer
-			f["FFlagDebugGraphicsDisable"+r] = !isRenderer
+		for _, avail := range renderers {
+			isRenderer := avail == string(r)
+			f["FFlagDebugGraphicsPrefer"+avail] = isRenderer
+			f["FFlagDebugGraphicsDisable"+avail] = !isRenderer
 		}
 	}
 

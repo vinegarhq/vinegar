@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log/slog"
 	"os"
 	"runtime/debug"
 	"slices"
@@ -26,7 +27,7 @@ func main() {
 	os.Setenv("GDK_DISABLE", "vulkan")
 
 	if err := i18n.InitI18n("vinegar", LocaleDir); err != nil {
-		panic(err)
+		slog.Error("Failed to set locale", "err", err)
 	}
 
 	if code := newApp().Run(len(os.Args), os.Args); code > 0 {

@@ -1,0 +1,334 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-1-4 18:35\n"
+"Language: de\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: cmd/vinegar/app.go:208
+msgid "Something went wrong"
+msgstr "Etwas ist falsch gelaufen"
+
+#: cmd/vinegar/app.go:209
+msgid "Ok"
+msgstr "Ok"
+
+#: cmd/vinegar/app.go:209
+msgid "Open Log"
+msgstr "Log öffnen"
+
+#: cmd/vinegar/app_wine.go:38
+msgid "Setting up Wine"
+msgstr "Wine wird vorbereitet"
+
+#: cmd/vinegar/app_wine.go:57
+msgid "Updating Paths"
+msgstr "Pfade werden aktualisiert"
+
+#: cmd/vinegar/app_wine.go:97
+msgid "Build up to date"
+msgstr "Software auf dem aktuellen stand"
+
+#: cmd/vinegar/app_wine.go:131
+msgid "Updated Wine"
+msgstr "Wine aktualisiert"
+
+#: cmd/vinegar/bootstrapper_setup.go:36
+msgid "Acquiring user authentication"
+msgstr "Nutzerauthentifizierung wird akquiriert"
+
+#: cmd/vinegar/bootstrapper_setup.go:73
+msgid "Copying Overlay"
+msgstr "Overlay wird kopiert"
+
+#: cmd/vinegar/bootstrapper_setup.go:89
+msgid "Launching Studio"
+msgstr "Studio wird gestartet"
+
+#: cmd/vinegar/bootstrapper_setup.go:118
+msgid "Applying FFlags"
+msgstr "FFlags werden angewendet"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:36
+msgid "Checking Wineprefix"
+msgstr "Wineprefix wird überprüft"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:71
+msgid "Checking DXVK"
+msgstr "DXVK wird überprüft"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:81
+msgid "Downloading DXVK"
+msgstr "DXVK wird heruntergeladen"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:106
+msgid "Extracting DXVK"
+msgstr "DXVK wird extrahiert"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:119
+msgid "Checking WebView"
+msgstr "WebView wird überprüft"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:123
+msgid "Uninstalling WebView"
+msgstr "WebView wird gelöscht"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:134
+msgid "Fetching WebView"
+msgstr "WebView wird geholt"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:143
+msgid "Downloading WebView"
+msgstr "WebView wird heruntergeladen"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:149
+msgid "Installing WebView"
+msgstr "WebView wird installiert"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:38
+msgid "Up to date"
+msgstr "Auf dem aktuellen Stand"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:42
+msgid "Installing Studio"
+msgstr "Studio wird installiert"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:56
+msgid "Writing AppSettings"
+msgstr "AppSettings werden geschrieben"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:66
+msgid "Writing Registry"
+msgstr "Register wird geschrieben"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:88
+msgid "Checking for updates"
+msgstr "Aktualität wird überprüft"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:106
+msgid "Finding Mirror"
+msgstr "Mirror wird gesucht"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:112
+msgid "Fetching Package List"
+msgstr "Paketliste wird geholt"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:133
+msgid "Fetching Installation Directives"
+msgstr "Installierungsrichtlinien werden geholt"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:153
+msgid "Installing Packages"
+msgstr "Pakete werden installiert"
+
+#: cmd/vinegar/manager.go:134
+msgid "Stop"
+msgstr "Anhalten"
+
+#: cmd/vinegar/manager.go:138
+msgid "Run Studio"
+msgstr "Studio starten"
+
+#: cmd/vinegar/manager.go:140
+msgid "Initialize"
+msgstr "Initialisieren"
+
+#: cmd/vinegar/manager_actions.go:114
+msgid "Stopped all processes"
+msgstr "Alle Prozesse wurden angehalten"
+
+#: cmd/vinegar/manager_actions.go:125
+msgid "Deleted Wine data"
+msgstr "Wine-Daten wurden gelöscht"
+
+#: cmd/vinegar/manager_actions.go:134
+msgid "Uninstalled studio"
+msgstr "Studio wurde gelöscht"
+
+#: cmd/vinegar/manager_actions.go:157
+msgid "Cleared cache"
+msgstr "Cache wurde geleert"
+
+#: internal/adwaux/mapgroup.go:45
+msgid "Key name to add"
+msgstr "Zu hinzuzufügender Schlüsselname"
+
+#: data/ui/bootstrapper.ui:27
+msgid "Initializing Vinegar"
+msgstr "Vinegar wird initialisiert"
+
+#: data/ui/bootstrapper.ui:53
+msgid "Cancel"
+msgstr "Abbrechen"
+
+#: data/ui/manager.ui:51
+msgid "Uninitialized"
+msgstr "Entinitialisiert"
+
+#: data/ui/manager.ui:87
+msgid "Custom Command"
+msgstr "Benutzerdefinierter Befehl"
+
+#: data/ui/manager.ui:99 data/ui/manager.ui:144
+msgid "Components"
+msgstr "Komponenten"
+
+#: data/ui/manager.ui:104
+msgid "Advanced Wine Settings"
+msgstr "Fortgeschrittene Wine-Einstellungen"
+
+#: data/ui/manager.ui:143
+msgid ""
+"Under the hood, Vinegar configures and manages Wine, using <a href='https://"
+"github.com/vinegarhq/kombucha'>a patched version</a> by default to enhance "
+"the Studio experience. However, Wine's instability may vary from system to "
+"system."
+msgstr ""
+"Standardmäßig konfiguriert und verwaltet Vinegar Wine intern mit <a href='https://"
+"github.com/vinegarhq/kombucha'> einer gepatchten Version</a>, um die Erfahrung "
+"der Studiobenutzung zu verbessen. Jedoch kann die instabilität von Wine von "
+"System zu System variieren."
+
+#: data/ui/manager.ui:150
+msgid ""
+"Vinegar's settings can be configured to fix multiple window or rendering "
+"issues, if any occur. See <a href='https://vinegarhq.org/Vinegar/"
+"Troubleshooting.html'>Common problems and their fixes</a> for further "
+"information."
+msgstr ""
+"Vinegar's Einstellungen können konfiguriert werden, um Probleme mit "
+"mehreren Fenstern oder dem Rendering zu beheben, falls welche auftreten."
+"Siehe <a href='https://vinegarhq.org/Vinegar/"
+"Troubleshooting.html'>Einfache probleme und ihre Lösungen</a> für weitere "
+"Informationen"
+
+#: data/ui/manager.ui:151
+msgid "Troubleshooting Wine"
+msgstr "Problembehebung bei Wine"
+
+#: data/ui/manager.ui:157
+msgid ""
+"You may tweak Vinegar's settings or manage your Wine data from the manager "
+"page, which can be accessed by right clicking on Vinegar's icon on your "
+"desktop or searching for \"Manage\" in your application launcher."
+msgstr ""
+"Vinegar's Einstellungen und die Wine-Daten können von der Manager-Seite "
+"aus verwaltet werden, welches sie durch einen Rechtsklick auf das Vinegar-icon "
+"aufrufen können, oder indem sie in ihrem Anwendungs-starter \"Manage\" suchen."
+
+#: data/ui/manager.ui:158
+msgid "Configuration"
+msgstr "Konfiguration"
+
+#: data/ui/manager.ui:170
+msgid "Configure"
+msgstr "Konfigurieren"
+
+#: data/ui/manager.ui:179 data/ui/manager.ui:191
+msgid "Welcome to Vinegar"
+msgstr "Willkommen zu Vinegar"
+
+#: data/ui/manager.ui:202
+msgid "Stop Processes"
+msgstr "Prozesse anhalten"
+
+#: data/ui/manager.ui:208
+msgid "Open Files"
+msgstr "Dateien öffnen"
+
+#: data/ui/manager.ui:214
+msgid "Update Wine Installation"
+msgstr "Wine-Installation aktualisieren"
+
+#: data/ui/manager.ui:220
+msgid "Uninstall Studio"
+msgstr "Studio löschen"
+
+#: data/ui/manager.ui:224
+msgid "Delete Prefix Data"
+msgstr "Prefix-Daten löschen"
+
+#: data/ui/manager.ui:231
+msgid "About Vinegar"
+msgstr "Über Vinegar"
+
+#: data/ui/manager.ui:235
+msgid "Clear Cache"
+msgstr "Cache leeren"
+
+#: data/ui/manager.ui:239
+msgid "Open Logs"
+msgstr "Logs öffnen"
+
+msgid "Rendering"
+msgstr "Rendering"
+
+msgid "Behavior"
+msgstr "Verhalten"
+
+msgid "Environment"
+msgstr "Umgebung"
+
+msgid "Fast Flags"
+msgstr "Fast Flags"
+
+msgid "Deployment Overrides"
+msgstr "Verteilungsüberschreibungen"
+
+msgid "May be used for UI elements and logging in"
+msgstr "Kann für UI Elemente und fürs einloggen verwendet werden"
+
+msgid "Web Pages"
+msgstr "Webseiten"
+
+msgid "WebView2 Version"
+msgstr "WebView2 Version"
+
+msgid "Wine Installation"
+msgstr "Wineinstallation"
+
+msgid "Launcher Command (ex. gamescope)"
+msgstr "Startbefehl (z.B gamescope)"
+
+msgid "Virtual Desktops"
+msgstr "Virtuelle Desktops"
+
+msgid "Create an isolated window for each Studio instance"
+msgstr "Erstellt ein isoliertes Fenster für jede Studioinstanz"
+
+msgid "Window resolution (eg. 1920x1080)"
+msgstr "Fensterauflösung (z.B. 1920x1080)"
+
+msgid "Improve D3D11 compatibility by translating it to Vulkan"
+msgstr "Verbessert D3D11 kompatibilität, indem es es zu Vulkan übersetzt"
+
+msgid "Version"
+msgstr "Version"
+
+msgid "Renderer"
+msgstr "Renderer"
+
+msgid "Studio's Graphics Mode"
+msgstr "Studio's Grafikmodus"
+
+msgid "Display your development status on your Discord profile"
+msgstr "Zeigt ihren Entwicklungsstatus auf ihrem Discordprofil an"
+
+msgid "Share Activity on Discord"
+msgstr "Aktivität auf Discord teilen"
+
+msgid "Apply system optimizations. May improve performance."
+msgstr "Systemoptimierungen anwenden. Kann performance verbessern"
+
+msgid "Studio Deployment Version"
+msgstr "Studioverteilungsversion"
+
+msgid "Studio Update Channel"
+msgstr "Studioaktualisierungskanal"
+
+msgid "Debug"
+msgstr "Debug"
+
+msgid "Output Studio logs and Web API requests"
+msgstr "Studio logs und Web API anfragen ausgeben"

@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	cp "github.com/otiai10/copy"
-	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 
@@ -99,13 +98,16 @@ func (b *bootstrapper) preRun() error {
 }
 
 func (b *bootstrapper) applyFFlags() error {
-	// This actually includes DXVK.
-	renderers := config.Renderer("").Values()
-
 	f := maps.Clone(b.cfg.Studio.FFlags)
-	if b.cfg.Studio.Renderer != "" {
-		if !slices.Contains(renderers, string(b.cfg.Studio.Renderer)) {
-			return fmt.Errorf("unknown renderer: %s", b.cfg.Studio.Renderer)
+
+	if r := b.cfg.Studio.Renderer; r != "" {
+		renderers := []string{"D3D11", "Vulkan", "D3D11FL10", "OpenGL"}
+		if r.IsDXVK() {
+			r = "D3D11"
+		}
+
+		if !slices.Contains(renderers, string(r)) {
+			return fmt.Errorf("unknown renderer: %s", r)
 		}
 
 		for _, r := range renderers {

@@ -156,9 +156,9 @@ func (c *Config) Prefix() *wine.Prefix {
 	env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--in-process-gpu "
 
 	switch c.Studio.Renderer {
-	case "D3D11", "OpenGL":
+	case "D3D11", "D3D11FL10", "OpenGL":
 		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=gl"
-	default: // all other options are vulkan-esque
+	case "DXVK", "DXVK-Sarek", "Vulkan":
 		env["WINE_D3D_CONFIG"] = "renderer=vulkan"
 		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=d3d11"
 	}

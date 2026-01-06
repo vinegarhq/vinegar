@@ -34,9 +34,11 @@ func (a *app) getSecurity() error {
 	user := keyStream(c, uk.GetValue("Password").Data.([]byte))
 	slog.Info("Using user for authentication", "user", user)
 
-	// Surely Roblox Studio would set the userid and then forget
-	// to create the ROBLOSECURITY cookie for that user?
 	sec := cred.Query(authNamePrefix + `.ROBLOSECURITY` + user)
+	if sec == nil {
+	    slog.Warn("ROBLOSECURITY cookie not found", "user", user)
+	    return nil
+	}
 	a.rbx.Security = keyStream(c, sec.GetValue("Password").Data.([]byte))
 	return nil
 }

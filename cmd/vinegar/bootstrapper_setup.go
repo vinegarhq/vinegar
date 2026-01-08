@@ -91,7 +91,7 @@ func (b *bootstrapper) preRun() error {
 	slog.Info("Updating Wine DPI", "dpi", dpi)
 	if err := b.pfx.RegistryAdd(`HKEY_CURRENT_USER\Control Panel\Desktop`,
 		"LogPixels", uint32(dpi)); err != nil {
-		return fmt.Errorf("scale set: %w, err")
+		return fmt.Errorf("scale set: %w", err)
 	}
 
 	return nil

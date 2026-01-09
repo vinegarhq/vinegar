@@ -87,13 +87,6 @@ func (b *bootstrapper) preRun() error {
 
 	gutil.IdleAdd(func() { b.status.SetLabel(L("Launching Studio")) })
 
-	dpi := 96.0 * b.win.GetNative().GetSurface().GetScale()
-	slog.Info("Updating Wine DPI", "dpi", dpi)
-	if err := b.pfx.RegistryAdd(`HKEY_CURRENT_USER\Control Panel\Desktop`,
-		"LogPixels", uint32(dpi)); err != nil {
-		return fmt.Errorf("scale set: %w, err")
-	}
-
 	return nil
 }
 

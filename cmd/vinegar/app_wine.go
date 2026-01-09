@@ -113,9 +113,9 @@ func (a *app) updateWine() error {
 		goto install
 	}
 
-	if len(release.Assets) == 0 &&
-		release.Assets[0].GetContentType() == "application/x-xz" {
-		return errors.New("expected .tar.xz release")
+	if len(release.Assets) != 1 ||
+		release.Assets[0].GetContentType() != "application/x-xz" {
+		return errors.New("expected single .tar.xz release")
 	}
 
 	{

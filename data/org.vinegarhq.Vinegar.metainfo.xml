@@ -42,6 +42,14 @@
 	</screenshots>
 
 	<releases>
+		<release version="1.9.3" date="2026-01-09">
+			<description>
+				<ul>
+					<li>Added German localization</li>
+					<li>General bug fixes and improvements</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.9.2" date="2026-01-01">
 			<description>
 				<ul>

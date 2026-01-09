@@ -1,13 +1,16 @@
 package main
 
 import (
-	"errors"
+	"archive/zip"
+	"compress/zlib"
+	"encoding/gob"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"slices"
 	"sort"
+	"strings"
+	"sync"
 	"sync/atomic"
 
 	"github.com/sewnie/rbxbin"
@@ -25,36 +28,83 @@ var (
 	channelKey = `HKCU\Software\ROBLOX Corporation\Environments\RobloxStudio\Channel`
 )
 
+type DeploymentPackage struct {
+	Name  string   `json:"name"`
+	Files []string `json:"files"`
+}
+
+type DeploymentData struct {
+	Version  string                       `json:"version"`
+	Packages map[string]DeploymentPackage `json:"packages"`
+}
+
 func (b *bootstrapper) updateDeployment() error {
 	if err := b.setDeployment(); err != nil {
 		return fmt.Errorf("fetch: %w", err)
 	}
-	b.dir = filepath.Join(dirs.Versions, b.bin.GUID)
 
 	slog.Info("Using Deployment",
 		"guid", b.bin.GUID, "channel", b.bin.Channel)
 
-	if _, err := os.Stat(b.dir); err == nil {
-		b.message(L("Up to date"), "guid", b.bin.GUID)
-		return nil
+	currentDeployment := DeploymentData{
+		Version:  "",
+		Packages: map[string]DeploymentPackage{},
+	}
+
+	deploymentPath := filepath.Join(dirs.Deployment, "deployment.vinegar")
+	if _, err := os.Stat(deploymentPath); err == nil {
+		err := func() error {
+			file, err := os.Open(deploymentPath)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+
+			decompressed, err := zlib.NewReader(file)
+			if err != nil {
+				slog.Error("Failed to decompress the Vinegar deployment file", "err", err)
+				return nil
+			}
+			defer decompressed.Close()
+
+			decoder := gob.NewDecoder(decompressed)
+			err = decoder.Decode(&currentDeployment)
+			if err != nil {
+				slog.Error("Failed to decode the Vinegar deployment file", "err", err)
+			}
+
+			return nil
+		}()
+
+		if err != nil {
+			return err
+		}
+
+		if currentDeployment.Version == b.bin.GUID {
+			b.message(L("Up to date"), "guid", b.bin.GUID)
+			return nil
+		}
+	}
+
+	// No packages imply an inexisting or corrupt installation,
+	// just to be safe delete everything and start over
+	if len(currentDeployment.Packages) == 0 {
+		slog.Warn("No packages installed, resetting deployment")
+		if err := os.RemoveAll(dirs.Deployment); err != nil {
+			return err
+		}
 	}
 
 	b.message(L("Installing Studio"), "new", b.bin.GUID)
-	// Remove all other deployments
-	removeUniqueFiles(dirs.Versions, []string{b.bin.GUID})
 
-	if err := os.MkdirAll(dirs.Downloads, 0o755); err != nil {
-		return err
-	}
-
-	if err := b.installDeployment(); err != nil {
+	if err := b.installDeployment(currentDeployment); err != nil {
 		return err
 	}
 
 	defer b.performing()()
 
 	b.message(L("Writing AppSettings"))
-	if err := rbxbin.WriteAppSettings(b.dir); err != nil {
+	if err := rbxbin.WriteAppSettings(dirs.Deployment); err != nil {
 		return fmt.Errorf("appsettings: %w", err)
 	}
 
@@ -100,7 +150,7 @@ func (b *bootstrapper) setDeployment() error {
 	return nil
 }
 
-func (b *bootstrapper) installDeployment() error {
+func (b *bootstrapper) installDeployment(previousDeployment DeploymentData) error {
 	stop := b.performing()
 
 	b.message(L("Finding Mirror"))
@@ -119,8 +169,6 @@ func (b *bootstrapper) installDeployment() error {
 	for _, pkg := range pkgs {
 		sums = append(sums, pkg.Checksum)
 	}
-	// Remove old cached downloads
-	removeUniqueFiles(dirs.Downloads, sums)
 
 	// Prioritize smaller files first, to have less pressure
 	// on network and extraction
@@ -130,6 +178,32 @@ func (b *bootstrapper) installDeployment() error {
 		return pkgs[i].ZipSize < pkgs[j].ZipSize
 	})
 
+	// Create a temporary directory to store package files and
+	// delete it when we are done installing
+	downloadPath, err := os.MkdirTemp("", "vinegar-downloads")
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(downloadPath)
+
+	newDeployment := DeploymentData{
+		Version:  b.bin.GUID,
+		Packages: map[string]DeploymentPackage{},
+	}
+
+	newPkgs := []rbxbin.Package{}
+
+	// Packages that exist in previous deployment are already
+	// installed, so we just copy their data into the new
+	// deployment's metadata
+	for _, pkg := range pkgs {
+		if installedPkg, ok := previousDeployment.Packages[pkg.Checksum]; !ok {
+			newPkgs = append(newPkgs, pkg)
+		} else {
+			newDeployment.Packages[pkg.Checksum] = installedPkg
+		}
+	}
+
 	b.message(L("Fetching Installation Directives"))
 	pd, err := m.BinaryDirectories(b.bin)
 	if err != nil {
@@ -138,22 +212,69 @@ func (b *bootstrapper) installDeployment() error {
 
 	stop()
 
-	return b.installPackages(&m, pkgs, pd)
+	// Uninstall packages that no longer exist in the newer version,
+	// this uses the file list we generate on installation
+	stalePkgs := []DeploymentPackage{}
+	for checksum, pkgData := range previousDeployment.Packages {
+		if _, ok := newDeployment.Packages[checksum]; !ok {
+			stalePkgs = append(stalePkgs, pkgData)
+		}
+	}
+
+	total := len(stalePkgs)
+	if total > 0 {
+		finished := int64(0)
+		group := new(errgroup.Group)
+
+		b.message(L("Cleaning Packages"))
+		for _, pkg := range stalePkgs {
+			group.Go(func() error {
+				slog.Info("Uninstalling package", "name", pkg.Name)
+				for _, file := range pkg.Files {
+					path := filepath.Join(dirs.Deployment, file)
+
+					_, err := os.Stat(path)
+					if err == nil {
+						err := os.Remove(path)
+						if err != nil {
+							return err
+						}
+					}
+				}
+
+				atomic.AddInt64(&finished, 1)
+				gutil.IdleAdd(func() {
+					b.pbar.SetFraction(float64(finished) / float64(total))
+				})
+
+				return nil
+			})
+		}
+
+		if err := group.Wait(); err != nil {
+			return err
+		}
+	}
+
+	return b.installPackages(&m, newPkgs, pd, downloadPath, newDeployment)
 }
 
 func (b *bootstrapper) installPackages(
 	mirror *rbxbin.Mirror,
 	pkgs []rbxbin.Package,
 	pdirs rbxbin.PackageDirectories,
+	downloadPath string,
+	newDeployment DeploymentData,
 ) error {
 	total := len(pkgs)
 	finished := int64(0)
 	group := new(errgroup.Group)
 
-	b.message(L("Installing Packages"), "count", len(pkgs), "dir", b.dir)
+	b.message(L("Installing Packages"), "count", len(pkgs), "dir", dirs.Deployment)
+	deploymentMutex := sync.Mutex{}
 	for _, pkg := range pkgs {
 		group.Go(func() error {
-			if err := b.installPackage(mirror, pdirs, &pkg); err != nil {
+			if err := b.installPackage(mirror, pdirs, &pkg, downloadPath, &newDeployment, &deploymentMutex); err != nil {
 				return err
 			}
 
@@ -170,6 +291,21 @@ func (b *bootstrapper) installPackages(
 		return err
 	}
 
+	file, err := os.Create(filepath.Join(dirs.Deployment, "deployment.vinegar"))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	compressed := zlib.NewWriter(file)
+	defer compressed.Close()
+
+	encoder := gob.NewEncoder(compressed)
+	err = encoder.Encode(newDeployment)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -177,8 +313,11 @@ func (b *bootstrapper) installPackage(
 	mirror *rbxbin.Mirror,
 	pdirs rbxbin.PackageDirectories,
 	pkg *rbxbin.Package,
+	downloadPath string,
+	newDeployment *DeploymentData,
+	deploymentMutex *sync.Mutex,
 ) error {
-	src := filepath.Join(dirs.Downloads, pkg.Checksum)
+	src := filepath.Join(downloadPath, pkg.Checksum)
 	dst, ok := pdirs[pkg.Name]
 	if !ok {
 		return fmt.Errorf("unhandled: %s", pkg.Name)
@@ -195,29 +334,36 @@ func (b *bootstrapper) installPackage(
 		}
 	}
 
-	slog.Info("Extracting package", "name", pkg.Name, "dest", dst)
-	return pkg.Extract(src, filepath.Join(b.dir, dst))
-}
+	// List all files in the package and store their paths
+	// in the metadata file
+	err := func() error {
+		r, err := zip.OpenReader(src)
+		if err != nil {
+			return err
+		}
+		defer r.Close()
 
-func removeUniqueFiles(dir string, included []string) {
-	files, err := os.ReadDir(dir)
+		filePaths := []string{}
+		for _, f := range r.File {
+			if !f.FileInfo().IsDir() {
+				filePaths = append(filePaths, filepath.Join(dst, strings.ReplaceAll(f.Name, `\`, "/")))
+			}
+		}
+
+		deploymentMutex.Lock()
+		newDeployment.Packages[pkg.Checksum] = DeploymentPackage{
+			Name:  pkg.Name,
+			Files: filePaths,
+		}
+		deploymentMutex.Unlock()
+
+		return nil
+	}()
+
 	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			return
-		}
-		slog.Error("Failed to cleanup directory", "dir", dir, "err", err)
-		return
+		return err
 	}
 
-	for _, file := range files {
-		if slices.Contains(included, file.Name()) {
-			continue
-		}
-
-		slog.Info("Removing unique file", "dir", dir, "file", file.Name())
-		if err := os.RemoveAll(filepath.Join(dir, file.Name())); err != nil {
-			slog.Error("Failed to cleanup file", "err", err)
-			break
-		}
-	}
+	slog.Info("Extracting package", "name", pkg.Name, "dest", dst)
+	return pkg.Extract(src, filepath.Join(dirs.Deployment, dst))
 }

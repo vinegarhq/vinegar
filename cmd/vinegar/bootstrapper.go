@@ -34,7 +34,6 @@ type bootstrapper struct {
 	status gtk.Label
 	info   gtk.Label
 
-	dir string
 	bin *rbxbin.Deployment
 
 	procs []*os.Process

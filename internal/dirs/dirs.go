@@ -8,14 +8,13 @@ import (
 )
 
 var (
-	Cache     = filepath.Join(xdg.CacheHome, "vinegar")
-	Config    = filepath.Join(xdg.ConfigHome, "vinegar")
-	Data      = filepath.Join(xdg.DataHome, "vinegar")
-	Overlays  = filepath.Join(Config, "overlays")
-	Downloads = filepath.Join(Cache, "downloads")
-	Logs      = filepath.Join(Cache, "logs")
-	Prefixes  = filepath.Join(Data, "prefixes")
-	Versions  = filepath.Join(Data, "versions")
+	Cache      = filepath.Join(xdg.CacheHome, "vinegar")
+	Config     = filepath.Join(xdg.ConfigHome, "vinegar")
+	Data       = filepath.Join(xdg.DataHome, "vinegar")
+	Overlays   = filepath.Join(Config, "overlays")
+	Logs       = filepath.Join(Cache, "logs")
+	Prefixes   = filepath.Join(Data, "prefixes")
+	Deployment = filepath.Join(Data, "deployment")
 )
 
 var (

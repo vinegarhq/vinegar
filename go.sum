@@ -31,6 +31,8 @@ github.com/sewnie/drpc v0.0.0-20251027131846-60568f62ffb3 h1:6fpbNYIPwHciuuPVr4d
 github.com/sewnie/drpc v0.0.0-20251027131846-60568f62ffb3/go.mod h1:vV4ApNpKIGN4PT5NYmWqw1IEIsFzqj0pspTUSltS+gk=
 github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780 h1:O5c9zKWHqOSzLBhJ1sOpIqFRGCHG4t8isYcfiRb5jvQ=
 github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780/go.mod h1:Ksjrzt8x1UY2ot2QdDrJXYhTEQOjWH8US0CHgKcH+QY=
+github.com/sewnie/rbxbin v0.0.0-20251228183315-8c321727936e h1:gIVKDHqky9549aoIBK9Un8blizqVlBgZbIX2IgZDpKk=
+github.com/sewnie/rbxbin v0.0.0-20251228183315-8c321727936e/go.mod h1:gXO8Z0B62sjfHzkdl9vCt+DzOaSy97wrSCcVj/LjOpw=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d h1:9+O1OzqsVhNJVPewE7oJqVymRlm+ej8iArdafc7vfKs=
 github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d/go.mod h1:nSfgVAspLMsixAWAfuTXAjBsiTyMchPxTx+jD3TrM20=
 github.com/sewnie/wine v0.0.0-20251229152920-167ad5e895fe h1:1/FMCQJpEdGnApBTUbUSJRgNYuIpVsX4CgfG/rz4Qw4=

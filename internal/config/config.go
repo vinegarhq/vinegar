@@ -170,7 +170,6 @@ func (c *Config) Prefix() *wine.Prefix {
 		env["DXVK_LOG_PATH"] = "none"
 		env["DXVK_STATE_CACHE_PATH"] = dirs.Cache
 	}
-	env["VK_LOADER_LAYERS_ENABLE"] = "VK_LAYER_VINEGAR_VinegarLayer"
 
 	for k, v := range env {
 		pfx.Env = append(pfx.Env, k+"="+v)

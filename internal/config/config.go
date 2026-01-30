@@ -160,7 +160,7 @@ func (c *Config) Prefix() *wine.Prefix {
 		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=gl"
 	case "DXVK", "DXVK-Sarek", "Vulkan":
 		env["WINE_D3D_CONFIG"] = "renderer=vulkan"
-		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=d3d11"
+		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=vulkan"
 	}
 
 	if c.Studio.Renderer.IsDXVK() {

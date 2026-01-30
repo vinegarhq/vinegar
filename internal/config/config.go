@@ -23,7 +23,7 @@ import (
 const (
 	dxvkVersion      = "2.7.1"
 	dxvkSarekVersion = "Sarek-1.11.0-async"
-	webViewVersion   = "143.0.3650.96"
+	webViewVersion   = "144.0.3719.92"
 )
 
 type Studio struct {

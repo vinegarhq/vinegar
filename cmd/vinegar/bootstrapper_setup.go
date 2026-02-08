@@ -71,7 +71,7 @@ func (b *bootstrapper) copyOverlay() error {
 
 	b.message(L("Copying Overlay"))
 
-	return cp.Copy(dir, b.dir)
+	return cp.Copy(dir, dirs.Deployment)
 }
 
 func (b *bootstrapper) preRun() error {
@@ -111,5 +111,5 @@ func (b *bootstrapper) applyFFlags() error {
 	}
 
 	b.message(L("Applying FFlags"))
-	return f.Apply(b.dir)
+	return f.Apply(dirs.Deployment)
 }

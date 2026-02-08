@@ -15,7 +15,7 @@ require (
 	github.com/jwijenbergh/puregotk v0.0.0-20251201161753-28ec1479c381
 	github.com/lmittmann/tint v1.1.2
 	github.com/pojntfx/go-gettext v0.2.0
-	github.com/sewnie/rbxbin v0.0.0-20251014195941-5c5a3767d780
+	github.com/sewnie/rbxbin v0.0.0-20251228183315-8c321727936e
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
 	github.com/sewnie/wine v0.0.0-20251229152920-167ad5e895fe
 	github.com/ulikunitz/xz v0.5.15

@@ -114,6 +114,8 @@ func (m *manager) loading() func() {
 		bar.SetMarginEnd(6)
 	})
 	return func() {
+		// BUG: this function can be called multiple times, leading
+		// to a Adwaita CRITICAL log entry being printed if so.
 		gutil.IdleAdd(func() {
 			bar.Remove(&spinner.Widget)
 			m.updateRunContent()

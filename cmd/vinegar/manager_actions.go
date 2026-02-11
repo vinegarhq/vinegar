@@ -21,6 +21,7 @@ import (
 
 func (m *manager) run() error {
 	stop := m.loading()
+	defer stop()
 
 	// "Run Studio"
 	if m.pfx.Exists() && m.boot.count == 0 {
@@ -30,7 +31,7 @@ func (m *manager) run() error {
 			}
 		}
 		// Bootstrapper automatically hides itself after running Studio,
-		// hook on it to signify to the manager
+		// hook on it to signify to the manager.
 		h := m.app.boot.win.ConnectSignal("notify::visible", &visible)
 		defer func() {
 			m.app.boot.win.DisconnectSignal(h)
@@ -38,8 +39,6 @@ func (m *manager) run() error {
 		}()
 		return m.app.boot.run()
 	}
-
-	defer stop()
 
 	// "Stop"
 	if m.boot.count > 0 {

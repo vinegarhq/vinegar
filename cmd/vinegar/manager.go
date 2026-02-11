@@ -129,7 +129,7 @@ func (m *manager) updateRunContent() {
 	var c adw.ButtonContent
 	m.builder.GetObject("run-content").Cast(&c)
 	c.SetIconName("media-playback-start-symbolic")
-	if len(m.boot.procs) > 0 {
+	if m.boot.count > 0 {
 		c.SetIconName("media-playback-stop-symbolic")
 		c.SetLabel(L("Stop"))
 		return

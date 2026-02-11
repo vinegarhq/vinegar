@@ -37,7 +37,8 @@ type bootstrapper struct {
 	dir string
 	bin *rbxbin.Deployment
 
-	procs []*os.Process
+	// amount of Roblox processes that are open
+	count uint
 
 	rp *studiorpc.StudioRPC
 }
@@ -175,6 +176,10 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 				b.showError(err)
 			})
 		}
+	case strings.Contains(line, "launching new studio instance"):
+		slog.Warn("New studio instance ran!")
+		b.count++
+		return
 	}
 
 	// time,runtime,code,code2[,level ] ...

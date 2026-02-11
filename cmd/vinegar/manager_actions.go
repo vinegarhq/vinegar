@@ -23,7 +23,7 @@ func (m *manager) run() error {
 	stop := m.loading()
 
 	// "Run Studio"
-	if m.pfx.Exists() && len(m.boot.procs) == 0 {
+	if m.pfx.Exists() && m.boot.count == 0 {
 		visible := func() {
 			if !m.boot.win.GetVisible() {
 				stop()
@@ -42,12 +42,9 @@ func (m *manager) run() error {
 	defer stop()
 
 	// "Stop"
-	if len(m.boot.procs) > 0 {
-		for _, p := range m.boot.procs {
-			slog.Info("Killing Studio", "pid", p.Pid)
-			p.Kill()
-		}
-		m.boot.procs = nil
+	if m.boot.count > 0 {
+		slog.Info("Killing all Studio instances!")
+		_ = m.pfx.Wine("taskkill", "/im", "RobloxStudioBeta.exe").Run()
 		return nil
 	}
 
@@ -112,7 +109,6 @@ func (m *manager) killPrefix() error {
 	}
 
 	m.showToast(L("Stopped all processes"))
-	slog.Debug("Processes", "boot", m.boot.procs, "pfx", m.pfx.Running())
 	return nil
 }
 

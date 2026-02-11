@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
-	"slices"
 	"strings"
 	"syscall"
 
@@ -67,7 +66,7 @@ func (b *bootstrapper) execute(args ...string) error {
 
 		// Only kill Roblox if it hasn't exited
 		if cmd.ProcessState == nil {
-			slog.Warn("Killing Roblox", "pid", cmd.Process.Pid)
+			slog.Debug("Killing Roblox", "pid", cmd.Process.Pid)
 			cmd.Process.Kill()
 		}
 	}()
@@ -76,11 +75,9 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
-	b.procs = append(b.procs, cmd.Process)
+	b.count++
 	defer func() {
-		b.procs = slices.DeleteFunc(b.procs, func(p *os.Process) bool {
-			return p == cmd.Process
-		})
+		b.count--
 	}()
 
 	gutil.IdleAdd(func() {

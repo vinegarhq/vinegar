@@ -224,7 +224,7 @@ func (a *app) updateWineTheme() {
 	// refresh its theme, run a small application to open a GUI for just a
 	// second. Yes this results in a flicker and requires the user to
 	// focus on Studio, but there's no other way to allow live updates :/
-	if len(a.boot.procs) > 0 {
+	if a.boot.count > 0 {
 		_ = a.pfx.Wine("start", "cmd", "/c", "exit").Run()
 	}
 }

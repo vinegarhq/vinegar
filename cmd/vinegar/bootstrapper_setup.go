@@ -18,7 +18,7 @@ import (
 )
 
 func (b *bootstrapper) setup() error {
-	if len(b.procs) > 0 {
+	if b.count > 0 {
 		slog.Info("Skipping setup!", "ver", b.bin.GUID)
 		return nil
 	}

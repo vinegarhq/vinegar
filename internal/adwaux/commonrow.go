@@ -1,18 +1,21 @@
 package adwaux
 
 import (
+	"maps"
 	"reflect"
+	"slices"
 
 	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
 )
 
-func newComboRow(v reflect.Value, list []string) *adw.ComboRow {
+func newComboRow(v reflect.Value, values map[string]string) *adw.ComboRow {
+	// TODO: Should use a GtkExpression for this.
 	combo := adw.NewComboRow()
-	model := gtk.NewStringList(list)
+	model := gtk.NewStringList(slices.Collect(maps.Keys(values)))
 	combo.SetModel(model)
 	selectedItem := func() {
-		v.SetString(list[combo.GetSelected()])
+		v.SetString(values[model.GetString(combo.GetSelected())])
 		combo.ActivateActionVariant("win.save", nil)
 	}
 	combo.SetSelected(model.Find(v.String()))

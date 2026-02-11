@@ -34,8 +34,14 @@ func (WineOption) SelectPath() {}
 
 type Renderer string
 
-func (r Renderer) Values() []string {
-	return []string{"D3D11", "D3D11FL10", "DXVK", "DXVK-Sarek", "Vulkan"}
+func (r Renderer) Values() map[string]string {
+	return map[string]string{
+		"WineD3D":          "D3D11",
+		"WineD3D (Legacy)": "D3D11FL10",
+		"DXVK":             "DXVK",
+		"DXVK (Legacy)":    "DXVK-Sarek",
+		"Vulkan":           "Vulkan",
+	}
 }
 
 func (r Renderer) IsDXVK() bool {

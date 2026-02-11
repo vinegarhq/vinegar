@@ -15,7 +15,7 @@ import (
 // Enum reflection is impossible without an interface to get
 // the enum values
 type Selector interface {
-	Values() []string
+	Values() map[string]string
 }
 
 type PathSelector interface {

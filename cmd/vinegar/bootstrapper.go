@@ -102,13 +102,7 @@ func (b *bootstrapper) run(args ...string) error {
 		return fmt.Errorf("setup: %w", err)
 	}
 
-	err := b.execute(args...)
-
-	if err := b.backupSettings(); err != nil {
-		slog.Error("Failed to backup Studio settings", "err", err)
-	}
-
-	return err
+	return b.execute(args...)
 }
 
 func (b *bootstrapper) restoreSettings() error {
@@ -179,6 +173,12 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 	case strings.Contains(line, "launching new studio instance"):
 		slog.Warn("New studio instance ran!")
 		b.count++
+		return
+	case strings.Contains(line, "About to exit the application"):
+		if b.count > 1 {
+			slog.Warn("Extra studio instance closed!")
+			b.count--
+		}
 		return
 	}
 

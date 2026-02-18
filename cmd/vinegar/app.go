@@ -159,7 +159,17 @@ func (a *app) shutdown(_ gio.Application) {
 	if !a.keepLog && !a.cfg.Debug {
 		_ = os.Remove(logging.Path)
 	}
-	slog.Info("Goodbye!")
+
+	if err := a.boot.backupSettings(); err != nil {
+		slog.Error("Failed to backup Studio settings", "err", err)
+	}
+
+	// TODO: Wait for studio processes or Wineserver to die
+	if a.boot.count > 1 {
+		slog.Warn("Handing off Wineserver control!")
+	} else {
+		slog.Info("Goodbye!")
+	}
 }
 
 func (a *app) appInfo() *gio.AppInfoBase {

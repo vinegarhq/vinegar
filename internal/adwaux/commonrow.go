@@ -12,13 +12,22 @@ import (
 func newComboRow(v reflect.Value, values map[string]string) *adw.ComboRow {
 	// TODO: Should use a GtkExpression for this.
 	combo := adw.NewComboRow()
-	model := gtk.NewStringList(slices.Collect(maps.Keys(values)))
+	model := gtk.NewStringList(nil)
+
+	for i, name := range slices.Collect(maps.Keys(values)) {
+		if v.String() == values[name] {
+			defer combo.SetSelected(uint(i))
+		}
+		model.Append(name)
+	}
+	// Prefer implicit "None" in Selector implementation
+	combo.SetSelected(0)
+
 	combo.SetModel(model)
 	selectedItem := func() {
 		v.SetString(values[model.GetString(combo.GetSelected())])
 		combo.ActivateActionVariant("win.save", nil)
 	}
-	combo.SetSelected(model.Find(v.String()))
 	combo.ConnectSignal("notify::selected-item", &selectedItem)
 	return combo
 }

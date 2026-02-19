@@ -13,6 +13,8 @@ github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/google/uuid v1.6.0 h1:NIvaJDMOsjHA8n1jAhLSgzrAzy1Hgr+hNrb57e+94F0=
 github.com/google/uuid v1.6.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
+github.com/jaypipes/pcidb v1.1.1 h1:QmPhpsbmmnCwZmHeYAATxEaoRuiMAJusKYkUncMC0ro=
+github.com/jaypipes/pcidb v1.1.1/go.mod h1:x27LT2krrUgjf875KxQXKB0Ha/YXLdZRVmw6hH0G7g8=
 github.com/jwijenbergh/purego v0.0.0-20251017112123-b71757b9ba42 h1:kQ0LX4ffJvtONhymro3HzrB8XUa6dIGgrbnkl38Rgl0=
 github.com/jwijenbergh/purego v0.0.0-20251017112123-b71757b9ba42/go.mod h1:amE5lVGstyh2GTEIHFEbgJHmoMD0llIuapnzIlZx7Fc=
 github.com/jwijenbergh/puregotk v0.0.0-20251201161753-28ec1479c381 h1:Cy6in3ph8eGnl0w71S0NnH8ZCj0YhZZHzrwYEgtbtII=

@@ -10,6 +10,48 @@ import (
 	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
 
+type GPUOption string
+
+func (GPUOption) Values() map[string]string {
+	v := make(map[string]string, len(sysinfo.Cards)+1)
+	v["None"] = ""
+	for _, c := range sysinfo.Cards {
+		var b strings.Builder
+		fmt.Fprintf(&b, "%d: %s", c.Index, c.Product)
+		if c.Embedded {
+			b.WriteString(" (Integrated)")
+		}
+		v[b.String()] = c.String()
+	}
+
+	return v
+}
+
+func (g GPUOption) Card() *sysinfo.Card {
+	for i, c := range sysinfo.Cards {
+		if string(g) == c.String() {
+			return &sysinfo.Cards[i]
+		}
+	}
+
+	return nil
+}
+
+// Do not implement adwaux.Defaulter here.
+func (o *GPUOption) SetDefault() {
+	// No need to select if there is only a single GPU.
+	if len(sysinfo.Cards) <= 1 {
+		return
+	}
+
+	// Prefer PRIME discrete behavior:
+	if !sysinfo.Cards[0].Embedded {
+		// First GPU is not a iGPU
+		return
+	}
+	*o = GPUOption(sysinfo.Cards[1].String())
+}
+
 type WineOption string
 
 func (WineOption) Default() string {

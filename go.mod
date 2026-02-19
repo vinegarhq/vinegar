@@ -12,6 +12,7 @@ require (
 require (
 	github.com/altfoxie/drpc v0.0.0-20251029175103-30d5f68745fb
 	github.com/google/go-github/v80 v80.0.0
+	github.com/jaypipes/pcidb v1.1.1
 	github.com/jwijenbergh/puregotk v0.0.0-20251201161753-28ec1479c381
 	github.com/lmittmann/tint v1.1.2
 	github.com/pojntfx/go-gettext v0.2.0

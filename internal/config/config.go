@@ -30,8 +30,9 @@ type Studio struct {
 	WebView  WebViewOption `toml:"webview"  group:"Components" row:"May be used for UI elements and logging in,WebView2 Version" title:"Web Pages"`
 	WineRoot WineOption    `toml:"wineroot" group:"Components" row:"Wine Installation,path"`
 
-	Renderer Renderer      `toml:"renderer" group:"Display" row:"Studio's Graphics Mode"` // Enum reflection is impossible
-	Desktop  DesktopOption `toml:"virtual_desktop" group:"Display" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
+	Renderer  Renderer      `toml:"renderer" group:"Display" row:"Studio's Graphics Mode"` // Enum reflection is impossible
+	Desktop   DesktopOption `toml:"virtual_desktop" group:"Display" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
+	ForcedGpu GPUOption     `toml:"gpu" group:"Display" row:"Specific graphics card to use for rendering" title:"Graphics Card"`
 
 	Launcher   string `toml:"launcher" group:"Behavior" row:"Launcher Command (ex. gamescope)"`
 	DiscordRPC bool   `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
@@ -100,6 +101,7 @@ func Default() (cfg *Config) {
 	//       only way to implement this is using a TOML (un)marshaler,
 	//       with a unidiomatic Go generic.
 	cfg.Studio.WebView.SetDefault()
+	cfg.Studio.ForcedGpu.SetDefault()
 	cfg.Studio.WineRoot.SetDefault()
 	return
 }
@@ -144,6 +146,18 @@ func (c *Config) Prefix() *wine.Prefix {
 
 	if len(sysinfo.Cards) > 1 {
 		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
+	}
+
+	if card := c.Studio.ForcedGpu.Card(); card != nil {
+		slog.Debug("Using GPU", "index", card.Index, "card", card.Product)
+		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
+		env["DRI_PRIME"] = "pci-" + strings.NewReplacer(":", "_", ".", "_").
+			Replace(path.Base(card.Device))
+
+		env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
+		if strings.HasPrefix(card.Driver, "nvidia") {
+			env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+		}
 	}
 
 	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs

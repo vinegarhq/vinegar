@@ -23,12 +23,17 @@ func getCards() (cs []Card) {
 		driver, _ := filepath.EvalSymlinks(path.Join(dev, "driver"))
 		driver = path.Base(driver)
 
+		vendor, _ := os.ReadFile(filepath.Join(dev, "vendor"))
+		product, _ := os.ReadFile(filepath.Join(dev, "device"))
+
 		cs = append(cs, Card{
 			Index:    i,
 			Path:     c,
 			Device:   dev,
 			Driver:   driver,
 			Embedded: embedded(c),
+			Vendor:   strings.TrimPrefix(strings.TrimSpace(string(vendor)), "0x"),
+			Product:  strings.TrimPrefix(strings.TrimSpace(string(product)), "0x"),
 		})
 	}
 

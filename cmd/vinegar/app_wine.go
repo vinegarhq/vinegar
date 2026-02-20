@@ -11,6 +11,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/google/go-github/v80/github"
+	"github.com/jwijenbergh/puregotk/v4/adw"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
@@ -24,6 +25,8 @@ import (
 func (a *app) prepareWine() (bool, error) {
 	firstRun := !a.pfx.Exists()
 
+	a.boot.message(L("Setting up Wine"), "first-time", firstRun)
+
 	_, err := os.Stat(dirs.WinePath)
 	// Check against symlink in case the default is empty (musl)
 	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && err != nil {
@@ -34,8 +37,6 @@ func (a *app) prepareWine() (bool, error) {
 	if a.pfx.Running() {
 		return false, nil
 	}
-
-	a.boot.message(L("Setting up Wine"), "first-time", firstRun)
 
 	if err := a.pfx.Prepare(); err != nil {
 		return firstRun, err
@@ -138,18 +139,25 @@ install:
 
 	slog.Info("Set local Wine installation", "tag", tag)
 
-	// re-initializes the wine prefix struct
-	a.applyConfig()
-
-	if a.cfg.Studio.WineRoot.IsDefault() {
+	// No need to save wineroot is already set
+	if a.cfg.Studio.WineRoot == dirs.WinePath {
 		return nil
 	}
-	// BUG: this is would not be reflected in the manager
-	a.cfg.Studio.WineRoot.SetDefault()
 
-	if err := a.cfg.Save(); err != nil {
-		return fmt.Errorf("update config: %w", err)
+	if path := dirs.WinePath; a.mgr != nil {
+		// Thanks to the signals setup in the bindings procedure, this
+		// will also handle setting the wine root as well.
+		gutil.IdleAdd(func() {
+			row := gutil.GetObject[adw.ActionRow](a.mgr.builder, "wine_row")
+			row.SetSubtitle(path)
+		})
+		return nil
 	}
+	a.cfg.Studio.WineRoot = dirs.WinePath
+
+	// Reload current configuration and save
+	a.ActivateAction("win.save", nil)
+
 	return nil
 }
 

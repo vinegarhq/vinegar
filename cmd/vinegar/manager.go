@@ -8,7 +8,6 @@ import (
 	"github.com/jwijenbergh/puregotk/v4/gio"
 	"github.com/jwijenbergh/puregotk/v4/gobject"
 	"github.com/jwijenbergh/puregotk/v4/gtk"
-	"github.com/vinegarhq/vinegar/internal/adwaux"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 
@@ -44,7 +43,9 @@ func (a *app) newManager() *manager {
 
 	var page adw.PreferencesPage
 	m.builder.GetObject("main-page").Cast(&page)
-	adwaux.AddStructGroups(&page, a.cfg)
+
+	m.connectElements()
+	// adwaux.AddStructGroups(&page, a.cfg)
 
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
@@ -125,7 +126,7 @@ func (m *manager) loading() func() {
 
 func (m *manager) updateRunContent() {
 	var wine adw.HeaderBar
-	m.builder.GetObject("wine-prefgroup").Cast(&wine)
+	m.builder.GetObject("components_group").Cast(&wine)
 	wine.SetSensitive(m.pfx.Exists())
 
 	var c adw.ButtonContent

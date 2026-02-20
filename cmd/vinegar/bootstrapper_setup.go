@@ -95,7 +95,7 @@ func (b *bootstrapper) applyFFlags() error {
 
 	if r := b.cfg.Studio.Renderer; r != "" {
 		renderers := []string{"D3D11", "Vulkan", "D3D11FL10", "OpenGL"}
-		if r.IsDXVK() {
+		if v := b.cfg.Studio.DXVKVersion(); v != "" {
 			r = "D3D11"
 		}
 

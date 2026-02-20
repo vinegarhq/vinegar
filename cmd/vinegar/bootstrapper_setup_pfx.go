@@ -59,15 +59,14 @@ func (b *bootstrapper) prepareWine() error {
 }
 
 func (b *bootstrapper) setupDxvk() error {
-	if !b.cfg.Studio.Renderer.IsDXVK() {
+	version := b.cfg.Studio.DXVKVersion()
+	if version == "" {
 		return nil
 	}
 
 	// If DXVK is installed in the wineprefix, uninstallation
 	// won't be necessary if it's disabled as it still requires
 	// DLL overrides to be present.
-
-	version := b.cfg.Studio.Renderer.DXVKVersion()
 	b.message(L("Checking DXVK"), "against", version)
 
 	installed, err := dxvk.Version(b.pfx)
@@ -113,7 +112,7 @@ install:
 }
 
 func (b *bootstrapper) setupWebView() error {
-	version := b.cfg.Studio.WebView.String()
+	version := b.cfg.Studio.WebView
 
 	installer := filepath.Join(dirs.Cache, "webview-"+version+".exe")
 	b.message(L("Checking WebView"), "against", version)
@@ -125,7 +124,7 @@ func (b *bootstrapper) setupWebView() error {
 			return fmt.Errorf("uninstall: %w", err)
 		}
 	}
-	if installed == version || b.cfg.Studio.WebView.Enabled() {
+	if installed == version || version == "" {
 		return nil
 	}
 

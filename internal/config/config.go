@@ -4,11 +4,13 @@ package config
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"log/slog"
 	"maps"
 	"os"
 	"os/exec"
 	"path"
+	"slices"
 	"strings"
 
 	"github.com/BurntSushi/toml"
@@ -21,35 +23,46 @@ import (
 )
 
 const (
-	dxvkVersion      = "2.7.1"
-	dxvkSarekVersion = "Sarek-1.11.0-async"
-	webViewVersion   = "144.0.3719.92"
+	DXVKVersion      = "2.7.1"
+	DXVKSarekVersion = "Sarek-1.11.0-async"
+	WebViewVersion   = "144.0.3719.92"
+
+	DesktopsResolution = "1814x1024"
 )
 
+// Order must be the same as the renderer model in the configurator.
+var RendererValues = []string{
+	"D3D11",
+	"D3D11FL10",
+	"DXVK",
+	"DXVK-Sarek",
+	"Vulkan",
+}
+
 type Studio struct {
-	WebView  WebViewOption `toml:"webview"  group:"Components" row:"May be used for UI elements and logging in,WebView2 Version" title:"Web Pages"`
-	WineRoot WineOption    `toml:"wineroot" group:"Components" row:"Wine Installation,path"`
+	WebView  string `toml:"webview"`
+	WineRoot string `toml:"wineroot"`
 
-	Renderer  Renderer      `toml:"renderer" group:"Display" row:"Studio's Graphics Mode"` // Enum reflection is impossible
-	Desktop   DesktopOption `toml:"virtual_desktop" group:"Display" row:"Create an isolated window for each Studio instance,Window resolution (eg. 1920x1080)" title:"Virtual Desktops"`
-	ForcedGpu GPUOption     `toml:"gpu" group:"Display" row:"Specific graphics card to use for rendering" title:"Graphics Card"`
+	Renderer  string `toml:"renderer"`
+	Desktop   string `toml:"virtual_desktop"`
+	ForcedGpu string `toml:"gpu"`
 
-	Launcher   string `toml:"launcher" group:"Behavior" row:"Launcher Command (ex. gamescope)"`
-	DiscordRPC bool   `toml:"discord_rpc" group:"Behavior" row:"Display your development status on your Discord profile" title:"Share Activity on Discord"`
-	GameMode   bool   `toml:"gamemode" group:"Behavior" row:"Apply system optimizations. May improve performance."`
+	Launcher   string `toml:"launcher"`
+	DiscordRPC bool   `toml:"discord_rpc"`
+	GameMode   bool   `toml:"gamemode"`
 
-	Env    map[string]string `toml:"env" group:"Environment"`
-	FFlags rbxbin.FFlags     `toml:"fflags" group:"Fast Flags"`
+	Env    map[string]string `toml:"env"`
+	FFlags rbxbin.FFlags     `toml:"fflags"`
 
-	ForcedVersion string `toml:"forced_version" group:"Deployment Overrides" row:"Studio Deployment Version"`
-	Channel       string `toml:"channel" group:"Deployment Overrides" row:"Studio Update Channel"`
+	ForcedVersion string `toml:"forced_version"`
+	Channel       string `toml:"channel"`
 }
 
 type Config struct {
 	Studio Studio `toml:"studio"`
 	// Only adds to Studio.Env, reserved for backwards compatibility
-	Env   map[string]string `toml:"env" group:"hidden"`
-	Debug bool              `toml:"debug" group:"Behavior" row:"Output Studio logs and Web API requests"`
+	Env   map[string]string `toml:"env"`
+	Debug bool              `toml:"debug"`
 }
 
 var (
@@ -83,12 +96,14 @@ func Load() (*Config, error) {
 
 // Default returns a default configuration.
 func Default() (cfg *Config) {
+
 	cfg = &Config{
 		Debug: false,
 
 		Env: make(map[string]string),
 
 		Studio: Studio{
+			WebView:    WebViewVersion,
 			GameMode:   true,
 			Renderer:   "DXVK",
 			Channel:    "",
@@ -97,16 +112,24 @@ func Default() (cfg *Config) {
 			Env:        make(map[string]string),
 		},
 	}
-	// TODO: allow zero values of Defaulters to be default.
-	//       only way to implement this is using a TOML (un)marshaler,
-	//       with a unidiomatic Go generic.
-	cfg.Studio.WebView.SetDefault()
-	cfg.Studio.ForcedGpu.SetDefault()
-	cfg.Studio.WineRoot.SetDefault()
+	// No need to select if there is only a single GPU, and to
+	// prefer PRIME discrete behavior by default, incase the first
+	// GPU is not integrated.
+	if len(sysinfo.Cards) >= 2 && !sysinfo.Cards[0].Embedded {
+		cfg.Studio.ForcedGpu = sysinfo.Cards[1].String()
+	}
+
+	// Prefer to use the VinegarHQ Kombucha builds to be
+	// downloaded at runtime, on non musl systems.
+	// Note: Author of this code uses a musl system. (me)
+	if !strings.Contains(sysinfo.LibC, "musl") {
+		cfg.Studio.WineRoot = dirs.WinePath
+	}
+
 	return
 }
 
-func (s *Studio) UnmarshalTOML(data interface{}) error {
+func (s *Studio) UnmarshalTOML(data any) error {
 	// prevent recursion by typing
 	type Alias Studio
 	proxy := struct {
@@ -129,11 +152,24 @@ func (s *Studio) UnmarshalTOML(data interface{}) error {
 		slog.Warn("The DXVK option alongside it's versioning has been deprecated, setting Renderer")
 		s.Renderer = "DXVK"
 	}
+	if !slices.Contains(RendererValues, s.Renderer) {
+		return fmt.Errorf("renderer must be one of %s", RendererValues)
+	}
 	return nil
 }
 
 func (s *Studio) LauncherPath() (string, error) {
 	return exec.LookPath(strings.Fields(s.Launcher)[0])
+}
+
+func (s *Studio) DXVKVersion() string {
+	switch s.Renderer {
+	case "DXVK":
+		return DXVKVersion
+	case "DXVK-Sarek":
+		return DXVKSarekVersion
+	}
+	return ""
 }
 
 func (c *Config) Prefix() *wine.Prefix {
@@ -148,7 +184,11 @@ func (c *Config) Prefix() *wine.Prefix {
 		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
 	}
 
-	if card := c.Studio.ForcedGpu.Card(); card != nil {
+	for _, card := range sysinfo.Cards {
+		if string(c.Studio.ForcedGpu) != card.String() {
+			continue
+		}
+
 		slog.Debug("Using GPU", "index", card.Index, "card", card.Product)
 		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
 		env["DRI_PRIME"] = "pci-" + strings.NewReplacer(":", "_", ".", "_").
@@ -177,7 +217,9 @@ func (c *Config) Prefix() *wine.Prefix {
 		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=vulkan"
 	}
 
-	if c.Studio.Renderer.IsDXVK() {
+	useDXVK := c.Studio.DXVKVersion() != ""
+
+	if useDXVK {
 		if !c.Debug {
 			env["DXVK_LOG_LEVEL"] = "warn"
 		}
@@ -189,7 +231,7 @@ func (c *Config) Prefix() *wine.Prefix {
 		pfx.Env = append(pfx.Env, k+"="+v)
 	}
 
-	dxvk.EnvOverride(pfx, c.Studio.Renderer.IsDXVK())
+	dxvk.EnvOverride(pfx, useDXVK)
 
 	slog.Debug("Using Prefix environment", "env", pfx.Env)
 

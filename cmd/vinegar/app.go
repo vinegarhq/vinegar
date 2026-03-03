@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jwijenbergh/puregotk/v4/adw"
-	"github.com/jwijenbergh/puregotk/v4/gio"
-	"github.com/jwijenbergh/puregotk/v4/gtk"
+	"codeberg.org/puregotk/puregotk/v4/adw"
+	"codeberg.org/puregotk/puregotk/v4/gio"
+	"codeberg.org/puregotk/puregotk/v4/gtk"
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/config"
@@ -118,7 +118,7 @@ func (a *app) startup(_ gio.Application) {
 	sm.ConnectSignal("notify::dark", &cb)
 }
 
-func (a *app) commandLine(_ gio.Application, clPtr uintptr) int {
+func (a *app) commandLine(_ gio.Application, clPtr uintptr) int32 {
 	if a.cfg == nil || a.pfx == nil {
 		return 1
 	}

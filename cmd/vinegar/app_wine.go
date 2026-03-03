@@ -11,7 +11,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/google/go-github/v80/github"
-	"github.com/jwijenbergh/puregotk/v4/adw"
+	"codeberg.org/puregotk/puregotk/v4/adw"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"

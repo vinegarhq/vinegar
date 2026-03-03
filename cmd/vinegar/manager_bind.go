@@ -6,10 +6,10 @@ import (
 	"math"
 	"slices"
 
-	"github.com/jwijenbergh/puregotk/v4/adw"
-	"github.com/jwijenbergh/puregotk/v4/gio"
-	"github.com/jwijenbergh/puregotk/v4/gobject"
-	"github.com/jwijenbergh/puregotk/v4/gtk"
+	"codeberg.org/puregotk/puregotk/v4/adw"
+	"codeberg.org/puregotk/puregotk/v4/gio"
+	"codeberg.org/puregotk/puregotk/v4/gobject"
+	"codeberg.org/puregotk/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/config"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
@@ -95,7 +95,7 @@ func (m *manager) connectElements() {
 
 	// UI model MUST represent the same values by index.
 	renderer := gutil.GetObject[adw.ComboRow](b, "renderer_row")
-	renderer.SetSelected(uint(slices.Index(config.RendererValues, cfg.Renderer)))
+	renderer.SetSelected(uint32(slices.Index(config.RendererValues, cfg.Renderer)))
 	signalSave(&renderer.Widget, "notify::selected-item", func() {
 		cfg.Renderer = config.RendererValues[renderer.GetSelected()]
 	})
@@ -127,7 +127,7 @@ func (m *manager) connectElements() {
 	values := make(map[string]string, len(sysinfo.Cards))
 	for i, c := range sysinfo.Cards {
 		if c.String() == cfg.ForcedGpu {
-			card.SetSelected(uint(i))
+			card.SetSelected(uint32(i))
 		}
 		shown := fmt.Sprintf("%d: %s", c.Index, c.Product)
 		values[shown] = c.String()

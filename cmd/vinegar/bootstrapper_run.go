@@ -9,7 +9,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/jwijenbergh/puregotk/v4/glib"
+	"codeberg.org/puregotk/puregotk/v4/glib"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )

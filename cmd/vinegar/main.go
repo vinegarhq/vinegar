@@ -26,11 +26,11 @@ func main() {
 	// VK_SUBOPTIMAL_KHR
 	os.Setenv("GDK_DISABLE", "vulkan")
 
-	if err := i18n.InitI18n("vinegar", LocaleDir); err != nil {
+	if err := i18n.InitI18n("vinegar", LocaleDir, slog.Default()); err != nil {
 		slog.Error("Failed to set locale", "err", err)
 	}
 
-	if code := newApp().Run(len(os.Args), os.Args); code > 0 {
-		os.Exit(code)
+	if code := newApp().Run(int32(len(os.Args)), os.Args); code > 0 {
+		os.Exit(int(code))
 	}
 }

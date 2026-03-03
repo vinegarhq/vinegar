@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
+	"github.com/sewnie/wine"
 )
 
 var (
@@ -12,11 +15,16 @@ var (
 	credRegPath    = `HKCU\Software\Wine\Credential Manager`
 )
 
-func (a *app) getSecurity() error {
-	cred, err := a.pfx.RegistryQuery(credRegPath)
-	if err != nil {
-		return fmt.Errorf("query: %w", err)
+func (b *bootstrapper) getSecurity(offline *wine.Registry) error {
+	if offline == nil {
+		// Wineprefix is not initialized
+		return nil
 	}
+
+	defer b.performing()()
+	b.message(L("Acquiring user authentication"))
+
+	cred := offline.Query(credRegPath)
 	if cred == nil {
 		return errors.New("credential manager missing")
 	}
@@ -36,10 +44,10 @@ func (a *app) getSecurity() error {
 
 	sec := cred.Query(authNamePrefix + `.ROBLOSECURITY` + user)
 	if sec == nil {
-	    slog.Warn("ROBLOSECURITY cookie not found", "user", user)
-	    return nil
+		slog.Warn("ROBLOSECURITY cookie not found", "user", user)
+		return nil
 	}
-	a.rbx.Security = keyStream(c, sec.GetValue("Password").Data.([]byte))
+	b.rbx.Security = keyStream(c, sec.GetValue("Password").Data.([]byte))
 	return nil
 }
 

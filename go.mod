@@ -18,7 +18,7 @@ require (
 	github.com/pojntfx/go-gettext v0.4.0
 	github.com/sewnie/rbxbin v0.0.0-20251228183315-8c321727936e
 	github.com/sewnie/rbxweb v0.0.0-20250923154144-a174c75bba5d
-	github.com/sewnie/wine v0.0.0-20251229152920-167ad5e895fe
+	github.com/sewnie/wine v0.0.0-20260303224426-3dec0e3ed661
 	github.com/ulikunitz/xz v0.5.15
 )
 

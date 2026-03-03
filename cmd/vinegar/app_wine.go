@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"codeberg.org/puregotk/puregotk/v4/adw"
 	"github.com/adrg/xdg"
 	"github.com/google/go-github/v80/github"
-	"codeberg.org/puregotk/puregotk/v4/adw"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
@@ -61,8 +61,7 @@ func (a *app) prepareWine() (bool, error) {
 		return true, fmt.Errorf("paths: %w", err)
 	}
 
-	// Required for app data to propagate, and also prepares
-	// the application environment.
+	// Restart wineserver for wineboot to update app data internally.
 	if err := a.pfx.Boot(wine.BootRestart).Run(); err != nil {
 		return true, fmt.Errorf("restart: %w", err)
 	}

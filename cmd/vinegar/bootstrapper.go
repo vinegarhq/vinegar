@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	"codeberg.org/puregotk/puregotk/v4/adw"
 	"codeberg.org/puregotk/puregotk/v4/gio"
@@ -69,20 +70,6 @@ func (a *app) newBootstrapper() *bootstrapper {
 	return &b
 }
 
-func (b *bootstrapper) performing() func() {
-	var tcb glib.SourceFunc = func(uintptr) bool {
-		b.pbar.Pulse()
-		return true
-	}
-	id := glib.TimeoutAdd(128, &tcb, 0)
-	return func() { glib.SourceRemove(id) }
-}
-
-func (b *bootstrapper) message(msg string, args ...any) {
-	slog.Info(msg, args...)
-	gutil.IdleAdd(func() { b.status.SetLabel(msg) })
-}
-
 func (b *bootstrapper) run(args ...string) error {
 	if b.win.GetApplication() != nil && b.win.IsVisible() {
 		slog.Warn("Bootstrapper currently in setup, ignoring run request")
@@ -98,7 +85,7 @@ func (b *bootstrapper) run(args ...string) error {
 		b.win.SetVisible(false) // Incase bailed out
 	})
 
-	if err := b.setup(); err != nil {
+	if err := b.setupExecute(); err != nil {
 		return fmt.Errorf("setup: %w", err)
 	}
 
@@ -244,4 +231,18 @@ func (b *bootstrapper) registerGameMode(target int) error {
 	slog.Info("Registered with GameMode", "response", res)
 
 	return nil
+}
+
+func (b *bootstrapper) performing() func() {
+	var tcb glib.SourceFunc = func(uintptr) bool {
+		b.pbar.Pulse()
+		return true
+	}
+	id := glib.TimeoutAdd(128, &tcb, 0)
+	return sync.OnceFunc(func() { glib.SourceRemove(id) })
+}
+
+func (b *bootstrapper) message(msg string, args ...any) {
+	slog.Info(msg, args...)
+	gutil.IdleAdd(func() { b.status.SetLabel(msg) })
 }

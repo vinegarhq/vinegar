@@ -12,47 +12,81 @@ import (
 
 	cp "github.com/otiai10/copy"
 	"github.com/vinegarhq/vinegar/internal/dirs"
-	"github.com/vinegarhq/vinegar/internal/gutil"
 
 	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
-func (b *bootstrapper) setup() error {
+// Ideally:
+//   - WebView version and ROBLOSECURITY should be checked only
+//     once by using the offline registry
+//   - Download Webview as neccesary
+//   - Install Roblox
+//   - Install DXVK
+//   - Install WebView
+func (b *bootstrapper) setupExecute() error {
 	if b.count > 0 {
 		slog.Info("Skipping setup!", "ver", b.bin.GUID)
 		return nil
 	}
 
-	firstSetup := !b.pfx.Exists()
-	if err := b.prepareWine(); err != nil {
-		return err
+	// If the registry does not exist, the Wineprefix has not been
+	// initialized yet, which makes things such as Webview, DXVK
+	// as uninstalled and the ROBLOSECURITY as missing.
+	offline, err := b.pfx.Registry()
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("registry: %w", err)
 	}
 
-	// Don't bother retrieving the security if the wineprefix
-	// was initialized just now
-	if b.rbx.Security == "" && !firstSetup {
-		stop := b.performing()
-		b.message(L("Acquiring user authentication"))
-		if err := b.app.getSecurity(); err != nil {
-			slog.Warn("Retrieving authenticated user failed", "err", err)
-		}
-		stop()
-	}
+	webview := b.webViewVersion(offline)
 
-	if err := b.setupDxvk(); err != nil {
-		return fmt.Errorf("dxvk: %w", err)
-	}
-
-	if err := b.setupWebView(); err != nil {
-		return fmt.Errorf("webview: %w", err)
+	if err := b.getSecurity(offline); err != nil {
+		slog.Warn("Retrieving authenticated user failed", "err", err)
 	}
 
 	if err := b.updateDeployment(); err != nil {
 		return err
 	}
 
-	if err := b.preRun(); err != nil {
+	// These tasks are so fast, a performing indicator
+	// is not going to be necessary.
+	if err := b.copyOverlay(); err != nil {
+		return fmt.Errorf("overlay: %w", err)
+	}
+
+	if err := b.applyFFlags(); err != nil {
+		return fmt.Errorf("fflags: %w", err)
+	}
+
+	// Does nothing if WebView is disabled, preferred to download
+	// a large installer before Wineprefix initialization.
+	// before Wineprefix initialization.
+	if err := b.downloadWebView(webview); err != nil {
+		return fmt.Errorf("download webview: %w", err)
+	}
+
+	stop := b.performing()
+	defer stop()
+
+	// Initializes the wineprefix and wineserver, along with
+	// setting up Vinegar's registry values as necessary, along
+	// with restoring settings. After the wineserver is ran,
+	// it is safe to install DXVK, WebView, and other modifications.
+	if _, err := b.app.prepareWine(); err != nil {
 		return err
+	}
+
+	stop()
+
+	if err := b.installWebView(webview); err != nil {
+		return fmt.Errorf("install webview: %w", err)
+	}
+
+	// Currently, DXVK does not quite invoke any sort of application,
+	// giving the wineserver the persistent timeout until another program
+	// is executed. Attempt to reduce chances of being killed by installing
+	// DXVK only before running Studio, which leaves the server open.
+	if err := b.setupDXVK(); err != nil {
+		return fmt.Errorf("dxvk: %w", err)
 	}
 
 	return nil
@@ -72,22 +106,6 @@ func (b *bootstrapper) copyOverlay() error {
 	b.message(L("Copying Overlay"))
 
 	return cp.Copy(dir, b.dir)
-}
-
-func (b *bootstrapper) preRun() error {
-	defer b.performing()()
-
-	if err := b.copyOverlay(); err != nil {
-		return fmt.Errorf("overlay: %w", err)
-	}
-
-	if err := b.applyFFlags(); err != nil {
-		return fmt.Errorf("fflags: %w", err)
-	}
-
-	gutil.IdleAdd(func() { b.status.SetLabel(L("Launching Studio")) })
-
-	return nil
 }
 
 func (b *bootstrapper) applyFFlags() error {

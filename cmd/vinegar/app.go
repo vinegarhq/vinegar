@@ -102,10 +102,10 @@ func (a *app) startup(_ gio.Application) {
 		a.bus = conn
 	}
 
-	// Whenever the configuration is edited using the manager, if for
-	// any reason an error occur, it would show up and not save the
-	// configuration. Any error that can occur here however such as
-	// I/O failure or the user edited the file manually, bail out.
+	// Any error that can occur here is I/O failure, which
+	// is unrecoverable, unlike the user editing the configuration
+	// manually, which is user error, as the manager validates the
+	// configuration during editing.
 	a.cfg, err = config.Load()
 	if err != nil {
 		a.showError(fmt.Errorf("config error: %w", err))

@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"codeberg.org/puregotk/puregotk/v4/glib"
+	. "github.com/pojntfx/go-gettext/pkg/i18n"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )
@@ -53,7 +54,7 @@ func (b *bootstrapper) execute(args ...string) error {
 		return err
 	}
 
-	slog.Info("Running Studio!", "cmd", cmd)
+	b.message(L("Launching Studio"), "cmd", cmd)
 
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)

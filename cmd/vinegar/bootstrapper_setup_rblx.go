@@ -102,6 +102,7 @@ func (b *bootstrapper) setDeployment() error {
 
 func (b *bootstrapper) installDeployment() error {
 	stop := b.performing()
+	defer stop()
 
 	b.message(L("Finding Mirror"))
 	m, err := rbxbin.GetMirror()

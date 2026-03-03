@@ -16,8 +16,8 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/wine"
-	"github.com/sewnie/wine/dxvk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/sewnie/wine/dxvk"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )

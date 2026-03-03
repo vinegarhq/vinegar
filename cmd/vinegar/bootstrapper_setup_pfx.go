@@ -1,18 +1,22 @@
 package main
 
 import (
+	"archive/tar"
+	"compress/gzip"
+	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/sewnie/wine"
-	"github.com/sewnie/wine/peutil"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/sewnie/wine/dxvk"
-	"github.com/vinegarhq/vinegar/internal/netutil"
+	"github.com/sewnie/wine/peutil"
 	"github.com/sewnie/wine/webview2"
+	"github.com/vinegarhq/vinegar/internal/dirs"
+	"github.com/vinegarhq/vinegar/internal/netutil"
 
 	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
@@ -28,7 +32,15 @@ func (b *bootstrapper) setupDXVK() error {
 	// DLL overrides to be present.
 	b.message(L("Checking DXVK"), "against", version)
 
-	installed, err := dxvk.Version(b.pfx)
+	installed, err := dxvk.DLLVersion(filepath.Join(b.dir, "d3d11.dll"))
+	var native string
+	if errors.Is(err, os.ErrNotExist) {
+		// DXVK is enabled, but is not currently installed for Studio.
+		// Check if it is present inside the Wineprefix instead.
+		// Either installation solution will work.
+		installed, err = dxvk.Version(b.pfx)
+		native = installed
+	}
 	if err != nil {
 		return fmt.Errorf("get version: %w", err)
 	}
@@ -55,6 +67,22 @@ func (b *bootstrapper) setupDXVK() error {
 install:
 	defer b.performing()()
 
+	if native != "" {
+		// If DXVK is installed in the wineprefix, and it was deemed
+		// out of date, prefer to restore the original DLLs to prefer
+		// the new installation method. but only if installing or
+		// updating DXVK anew.
+		//
+		// Yes, this will show a dialog to the user, but it will be
+		// so very brief, and the only other solution is to restart
+		// the entire wineserver.
+		//
+		// It is also optional, so ignoring the error is preferred,
+		// as Wine will prefer the DLLs in the new installation method.
+		slog.Info("Restoring DirectX DLLs")
+		_ = dxvk.Restore(b.pfx)
+	}
+
 	f, err := os.Open(name)
 	if err != nil {
 		return err
@@ -63,8 +91,49 @@ install:
 
 	b.message(L("Extracting DXVK"), "version", version)
 
-	if err := dxvk.Extract(b.pfx, f); err != nil {
-		return fmt.Errorf("extract: %w", err)
+	zr, err := gzip.NewReader(f)
+	if err != nil {
+		return err
+	}
+	defer zr.Close()
+
+	tr := tar.NewReader(zr)
+
+	for {
+		hdr, err := tr.Next()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
+
+		if hdr.Typeflag != tar.TypeReg {
+			continue
+		}
+
+		if filepath.Ext(hdr.Name) != ".dll" {
+			continue
+		}
+
+		if filepath.Base(filepath.Dir(hdr.Name)) != "x64" {
+			slog.Debug("Ignoring DXVK installation entry", "file", hdr.Name)
+			continue
+		}
+
+		name := filepath.Join(b.dir, filepath.Base(hdr.Name))
+		slog.Debug("Installing DXVK DLL locally", "dest", name)
+
+		f, err := os.Create(name)
+		if err != nil {
+			return err
+		}
+
+		if _, err = io.Copy(f, tr); err != nil {
+			f.Close()
+			return err
+		}
+		f.Close()
 	}
 
 	return nil

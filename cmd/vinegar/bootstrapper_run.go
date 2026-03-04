@@ -15,8 +15,12 @@ import (
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )
 
+func (b *bootstrapper) commandPath() string {
+	return filepath.Join(b.dir, "RobloxStudioBeta.exe")
+}
+
 func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
-	cmd := b.pfx.Wine(filepath.Join(b.dir, "RobloxStudioBeta.exe"), args...)
+	cmd := b.pfx.Wine(b.commandPath(), args...)
 	if cmd.Err != nil {
 		return nil, cmd.Err
 	}

@@ -12,6 +12,7 @@ import (
 
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/rbxweb"
+	"github.com/sewnie/wine/peutil"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/netutil"
@@ -34,12 +35,20 @@ func (b *bootstrapper) updateDeployment() error {
 	slog.Info("Using Deployment",
 		"guid", b.bin.GUID, "channel", b.bin.Channel)
 
-	if _, err := os.Stat(b.dir); err == nil {
+	// commandPath resolves to the current version's executable path,
+	// which may or may not exist.
+	// Rather than checking the directory exists, check if the
+	// final executable exists. Vinegar currently downloads this
+	// package *last*, so if any form of corruptiong occured while
+	// installing Roblox, the executable would be missing or corrupt.
+	_, err := peutil.Open(b.commandPath())
+	if err == nil {
 		b.message(L("Up to date"), "guid", b.bin.GUID)
 		return nil
 	}
 
-	b.message(L("Installing Studio"), "new", b.bin.GUID)
+	b.message(L("Installing Studio"),
+		"new", b.bin.GUID, "reason", errors.Unwrap(err))
 	// Remove all other deployments
 	removeUniqueFiles(dirs.Versions, []string{b.bin.GUID})
 

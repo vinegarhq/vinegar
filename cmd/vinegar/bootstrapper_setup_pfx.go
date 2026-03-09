@@ -177,9 +177,9 @@ func (b *bootstrapper) downloadWebView(installed string) error {
 	// Ensures the installer is a valid executable
 	f, err := peutil.Open(inst)
 	if err == nil {
+		f.Close()
 		return nil
 	}
-	f.Close()
 
 	b.message(L("Fetching WebView"), "upload", b.cfg.Studio.WebView)
 

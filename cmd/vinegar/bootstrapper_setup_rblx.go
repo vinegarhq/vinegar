@@ -41,8 +41,9 @@ func (b *bootstrapper) updateDeployment() error {
 	// final executable exists. Vinegar currently downloads this
 	// package *last*, so if any form of corruptiong occured while
 	// installing Roblox, the executable would be missing or corrupt.
-	_, err := peutil.Open(b.commandPath())
+	f, err := peutil.Open(b.commandPath())
 	if err == nil {
+		f.Close()
 		b.message(L("Up to date"), "guid", b.bin.GUID)
 		return nil
 	}

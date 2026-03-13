@@ -25,7 +25,7 @@ import (
 const (
 	DXVKVersion      = "2.7.1"
 	DXVKSarekVersion = "Sarek-1.11.0-async"
-	WebViewVersion   = "144.0.3719.92"
+	WebViewVersion   = "146.0.3856.59"
 
 	DesktopsResolution = "1814x1024"
 )

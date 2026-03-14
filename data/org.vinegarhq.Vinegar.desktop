@@ -15,6 +15,6 @@ X-Flatpak-RenamedFrom=org.vinegarhq.Vinegar.studio.desktop;
 X-Flatpak=org.vinegarhq.Vinegar
 
 [Desktop Action manage]
-Name=Manage
-Name[pt_BR]=Gerenciar
+Name=Settings
+Name[pt_BR]=Configurar
 Exec=vinegar manage

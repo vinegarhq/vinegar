@@ -30,22 +30,16 @@ func (a *app) newManager() *manager {
 	m.builder.GetObject("window").Cast(&m.win)
 	m.win.SetApplication(&a.Application.Application)
 
-	var view adw.NavigationView
-	m.builder.GetObject("navigation").Cast(&view)
+	view := gutil.GetObject[adw.NavigationView](m.builder, "navigation")
 	if !a.pfx.Exists() {
 		view.PushByTag("welcome")
 	}
 
-	var cmd gtk.Entry
-	m.builder.GetObject("cmd").Cast(&cmd)
+	cmd := gutil.GetObject[gtk.Entry](m.builder, "cmd")
 	cb := m.runWineCmd
 	cmd.ConnectActivate(&cb)
 
-	var page adw.PreferencesPage
-	m.builder.GetObject("main-page").Cast(&page)
-
 	m.connectElements()
-
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
 		"about": m.showAbout,
@@ -68,21 +62,31 @@ func (a *app) newManager() *manager {
 			gobject.SignalEmitByName(&cmd.Object, "activate")
 		},
 	} {
-		m.addAction(name, fn)
+		action := gio.NewSimpleAction(name, nil)
+		activate := func(_ gio.SimpleAction, p uintptr) {
+			switch v := fn.(type) {
+			case func() error:
+				m.app.errThread(func() error {
+					return v()
+				})
+			case func():
+				v()
+			default:
+				panic(fmt.Sprintf("unhandled function type: %T", fn))
+			}
+		}
+		action.ConnectActivate(&activate)
+		m.win.AddAction(action)
+		action.Unref()
 	}
 
-	var tags gtk.StringList
-	m.builder.GetObject("wine_tags").Cast(&tags)
-	var tag gtk.DropDown
-	m.builder.GetObject("wine_tag").Cast(&tag)
-
-	var up gtk.Popover
-	m.builder.GetObject("wine_updater").Cast(&up)
-	upcb := func(_ gtk.Widget) {
+	tags := gutil.GetObject[gtk.StringList](m.builder, "wine_tags")
+	gutil.ConnectBuilderSimple(m.builder, "wine_updater", "show", func() {
 		if tags.GetNItems() > 1 {
 			return
 		}
 		slog.Info("Fetching releases")
+
 		m.app.errThread(func() error {
 			client := github.NewClient(nil)
 			ctx := context.Background()
@@ -101,58 +105,32 @@ func (a *app) newManager() *manager {
 
 			return nil
 		})
-	}
-	up.ConnectShow(&upcb)
+	})
 
-	var row adw.ActionRow
-	m.builder.GetObject("wine_row").Cast(&row)
-
-	var dl gtk.MenuButton
-	m.builder.GetObject("wine_update").Cast(&dl)
-
-	var cnf gtk.Button
-	m.builder.GetObject("wine_confirm").Cast(&cnf)
+	wineRow := gutil.GetObject[adw.ActionRow](m.builder, "wine_row")
+	updateWine := gutil.GetObject[gtk.Button](m.builder, "wine_confirm")
+	selectedTag := gutil.GetObject[gtk.DropDown](m.builder, "wine_tag")
 	cnfcb := func(_ gtk.Button) {
-		row.SetSensitive(false)
+		wineRow.SetSensitive(false)
 		sel := gtk.StringObjectNewFromInternalPtr(
-			tag.GetSelectedItem().Ptr)
+			selectedTag.GetSelectedItem().Ptr)
 		m.app.errThread(func() error {
 			defer gutil.IdleAdd(func() {
-				row.SetSensitive(true)
+				wineRow.SetSensitive(true)
 			})
 			return a.updateWine(sel.GetString())
 		})
 	}
-	cnf.ConnectClicked(&cnfcb)
+	updateWine.ConnectClicked(&cnfcb)
 
 	return &m
-}
-
-func (m *manager) addAction(name string, fn any) {
-	action := gio.NewSimpleAction(name, nil)
-	activate := func(_ gio.SimpleAction, p uintptr) {
-		switch v := fn.(type) {
-		case func() error:
-			m.app.errThread(func() error {
-				return v()
-			})
-		case func():
-			v()
-		default:
-			panic(fmt.Sprintf("unhandled function type: %T", fn))
-		}
-	}
-	action.ConnectActivate(&activate)
-	m.win.AddAction(action)
-	action.Unref()
 }
 
 func (m *manager) showToast(s string) {
 	if m == nil {
 		return
 	}
-	var overlay adw.ToastOverlay
-	m.builder.GetObject("overlay").Cast(&overlay)
+	overlay := gutil.GetObject[adw.ToastOverlay](m.builder, "overlay")
 	slog.Info(s)
 
 	gutil.IdleAdd(func() {

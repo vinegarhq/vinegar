@@ -134,7 +134,9 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int32 {
 		args = []string{"manage"}
 	}
 
-	if len(args) == 1 && args[0] == "manage" {
+	if len(args) == 1 &&
+		(args[0] == "manage" ||
+			args[0] == "config") {
 		// Prevent multiple windows of manager
 		// existing at once
 		if a.mgr == nil {

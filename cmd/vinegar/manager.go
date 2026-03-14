@@ -10,8 +10,6 @@ import (
 	"codeberg.org/puregotk/puregotk/v4/gtk"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
-
-	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
 type manager struct {
@@ -72,15 +70,6 @@ func (a *app) newManager() *manager {
 		m.addAction(name, fn)
 	}
 
-	run := gio.NewSimpleAction("run", nil)
-	activate := func(_ gio.SimpleAction, p uintptr) {
-		m.app.errThread(m.run)
-	}
-	run.ConnectActivate(&activate)
-	m.win.AddAction(run)
-	run.Unref()
-	m.updateRunContent()
-
 	return &m
 }
 
@@ -90,7 +79,6 @@ func (m *manager) addAction(name string, fn any) {
 		switch v := fn.(type) {
 		case func() error:
 			m.app.errThread(func() error {
-				defer m.loading()()
 				return v()
 			})
 		case func():
@@ -102,46 +90,6 @@ func (m *manager) addAction(name string, fn any) {
 	action.ConnectActivate(&activate)
 	m.win.AddAction(action)
 	action.Unref()
-}
-
-func (m *manager) loading() func() {
-	var bar adw.HeaderBar
-	m.builder.GetObject("headerbar").Cast(&bar)
-
-	spinner := adw.NewSpinner()
-	gutil.IdleAdd(func() {
-		bar.PackStart(&spinner.Widget)
-		bar.SetMarginStart(6)
-		bar.SetMarginEnd(6)
-	})
-	return func() {
-		// BUG: this function can be called multiple times, leading
-		// to a Adwaita CRITICAL log entry being printed if so.
-		gutil.IdleAdd(func() {
-			bar.Remove(&spinner.Widget)
-			m.updateRunContent()
-		})
-	}
-}
-
-func (m *manager) updateRunContent() {
-	var wine adw.HeaderBar
-	m.builder.GetObject("components_group").Cast(&wine)
-	wine.SetSensitive(m.pfx.Exists())
-
-	var c adw.ButtonContent
-	m.builder.GetObject("run-content").Cast(&c)
-	c.SetIconName("media-playback-start-symbolic")
-	if m.boot.count > 0 {
-		c.SetIconName("media-playback-stop-symbolic")
-		c.SetLabel(L("Stop"))
-		return
-	}
-	if m.pfx.Exists() {
-		c.SetLabel(L("Run Studio"))
-	} else {
-		c.SetLabel(L("Initialize"))
-	}
 }
 
 func (m *manager) showToast(s string) {

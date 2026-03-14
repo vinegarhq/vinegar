@@ -33,48 +33,6 @@
                     <child>
                       <object class="AdwPreferencesPage" id="main-page">
                         <child>
-                          <object class="AdwPreferencesGroup">
-                            <child>
-                              <object class="GtkBox">
-                                <property name="halign">center</property>
-                                <property name="hexpand">False</property>
-                                <property name="homogeneous">False</property>
-                                <property name="spacing">6</property>
-                                <property name="valign">fill</property>
-                                <property name="vexpand">False</property>
-                                <child>
-                                  <object class="GtkButton">
-                                    <property name="action-name">win.run</property>
-                                    <property name="child">
-                                      <object class="AdwButtonContent" id="run-content">
-                                        <property name="icon-name">mail-mark-junk-symbolic</property>
-                                        <property name="label" translatable="yes">Uninitialized</property>
-                                      </object>
-                                    </property>
-                                    <style>
-                                      <class name="pill"/>
-                                      <class name="suggested-action"/>
-                                    </style>
-                                  </object>
-                                </child>
-                                <child>
-                                  <object class="GtkMenuButton">
-                                    <property name="active">False</property>
-                                    <property name="has-frame">True</property>
-                                    <property name="icon-name">view-more-symbolic</property>
-                                    <property name="menu-model">run-menu</property>
-                                    <property name="primary">False</property>
-                                    <property name="valign">center</property>
-                                    <style>
-                                      <class name="circular"/>
-                                    </style>
-                                  </object>
-                                </child>
-                              </object>
-                            </child>
-                          </object>
-                        </child>
-                        <child>
                           <object class="AdwPreferencesGroup" id="components_group">
                             <property name="header-suffix">
                               <object class="GtkMenuButton">
@@ -376,27 +334,33 @@
       </object>
     </child>
   </object>
-  <menu id="run-menu">
+  <menu id="app-menu">
+    <item>
+      <attribute name="action">win.open-data</attribute>
+      <attribute name="label" translatable="yes">Open Files</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.open-logs</attribute>
+      <attribute name="label" translatable="yes">Open Logs</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.clear-cache</attribute>
+      <attribute name="label" translatable="yes">Clear Cache</attribute>
+    </item>
+    <item>
+      <attribute name="action">win.about</attribute>
+      <attribute name="label" translatable="yes">About Vinegar</attribute>
+    </item>
     <section>
       <item>
         <attribute name="action">win.prefix-kill</attribute>
         <attribute name="icon">process-stop-symbolic</attribute>
         <attribute name="label" translatable="yes">Stop Processes</attribute>
       </item>
-    </section>
-    <section>
-      <item>
-        <attribute name="action">win.open-data</attribute>
-        <attribute name="label" translatable="yes">Open Files</attribute>
-      </item>
-    </section>
-    <section>
       <item>
         <attribute name="action">win.update</attribute>
         <attribute name="label" translatable="yes">Update Wine Installation</attribute>
       </item>
-    </section>
-    <section>
       <item>
         <attribute name="action">win.delete-studio</attribute>
         <attribute name="label" translatable="yes">Uninstall Studio</attribute>
@@ -406,19 +370,5 @@
         <attribute name="label" translatable="yes">Delete Prefix Data</attribute>
       </item>
     </section>
-  </menu>
-  <menu id="app-menu">
-    <item>
-      <attribute name="action">win.about</attribute>
-      <attribute name="label" translatable="yes">About Vinegar</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.clear-cache</attribute>
-      <attribute name="label" translatable="yes">Clear Cache</attribute>
-    </item>
-    <item>
-      <attribute name="action">win.open-logs</attribute>
-      <attribute name="label" translatable="yes">Open Logs</attribute>
-    </item>
   </menu>
 </interface>

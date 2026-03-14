@@ -19,47 +19,12 @@ import (
 	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
-func (m *manager) run() error {
-	stop := m.loading()
-	defer stop()
-
-	// "Run Studio"
-	if m.pfx.Exists() && m.boot.count == 0 {
-		visible := func() {
-			if !m.boot.win.GetVisible() {
-				stop()
-			}
-		}
-		// Bootstrapper automatically hides itself after running Studio,
-		// hook on it to signify to the manager.
-		h := m.app.boot.win.ConnectSignal("notify::visible", &visible)
-		defer func() {
-			m.app.boot.win.DisconnectSignal(h)
-			m.updateRunContent()
-		}()
-		return m.app.boot.run()
-	}
-
-	// "Stop"
-	if m.boot.count > 0 {
-		slog.Info("Killing all Studio instances!")
-		_ = m.pfx.Wine("taskkill", "/im", "RobloxStudioBeta.exe").Run()
-		return nil
-	}
-
-	// "Initialize"
-	_, err := m.prepareWine()
-	return err
-}
-
 func (m *manager) runWineCmd(e gtk.Entry) {
-	stop := m.loading()
 	args := strings.Fields(e.GetText())
 	if len(args) < 1 {
 		return
 	}
 	m.errThread(func() error {
-		defer stop()
 		if _, err := m.prepareWine(); err != nil {
 			return err
 		}

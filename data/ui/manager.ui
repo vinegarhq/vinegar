@@ -65,6 +65,39 @@
                               <object class="AdwActionRow" id="wine_row">
                                 <property name="title">Wine Installation</property>
                                 <child>
+                                  <object class="GtkMenuButton" id="wine_update">
+                                    <property name="icon-name">folder-download-symbolic</property>
+                                    <property name="popover">
+                                      <object class="GtkPopover" id="wine_updater">
+                                        <property name="child">
+                                          <object class="GtkBox">
+                                            <property name="spacing">8</property>
+                                            <child>
+                                              <object class="GtkDropDown" id="wine_tag">
+                                                <property name="model">
+                                                  <object class="GtkStringList" id="wine_tags">
+                                                    <items>
+                                                      <item>Latest</item>
+                                                    </items>
+                                                  </object>
+                                                </property>
+                                                <property name="selected">0</property>
+                                              </object>
+                                            </child>
+                                            <child>
+                                              <object class="GtkButton" id="wine_confirm">
+                                                <property name="icon-name">media-playback-start-symbolic</property>
+                                              </object>
+                                            </child>
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </property>
+                                    <property name="sensitive">True</property>
+                                    <property name="valign">center</property>
+                                  </object>
+                                </child>
+                                <child>
                                   <object class="GtkButton" id="wine_revert">
                                     <property name="icon-name">edit-undo-symbolic</property>
                                     <property name="valign">center</property>
@@ -356,10 +389,6 @@
         <attribute name="action">win.prefix-kill</attribute>
         <attribute name="icon">process-stop-symbolic</attribute>
         <attribute name="label" translatable="yes">Stop Processes</attribute>
-      </item>
-      <item>
-        <attribute name="action">win.update</attribute>
-        <attribute name="label" translatable="yes">Update Wine Installation</attribute>
       </item>
       <item>
         <attribute name="action">win.delete-studio</attribute>

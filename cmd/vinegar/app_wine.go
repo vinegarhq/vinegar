@@ -30,7 +30,7 @@ func (a *app) prepareWine() (bool, error) {
 	_, err := os.Stat(dirs.WinePath)
 	// Check against symlink in case the default is empty (musl)
 	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && err != nil {
-		if err := a.updateWine(); err != nil {
+		if err := a.updateWine("Latest"); err != nil {
 			return false, fmt.Errorf("dl: %w", err)
 		}
 	}
@@ -73,11 +73,17 @@ func (a *app) prepareWine() (bool, error) {
 	return true, nil
 }
 
-func (a *app) updateWine() error {
+func (a *app) updateWine(needle string) error {
 	client := github.NewClient(nil)
 	ctx := context.Background()
 
-	release, _, err := client.Repositories.GetLatestRelease(ctx, "vinegarhq", "kombucha")
+	var release *github.RepositoryRelease
+	var err error
+	if needle == "Latest" {
+		release, _, err = client.Repositories.GetLatestRelease(ctx, "vinegarhq", "kombucha")
+	} else {
+		release, _, err = client.Repositories.GetReleaseByTag(ctx, "vinegarhq", "kombucha", needle)
+	}
 	if err != nil {
 		return fmt.Errorf("release: %w", err)
 	}

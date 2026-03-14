@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 
@@ -8,6 +9,7 @@ import (
 	"codeberg.org/puregotk/puregotk/v4/gio"
 	"codeberg.org/puregotk/puregotk/v4/gobject"
 	"codeberg.org/puregotk/puregotk/v4/gtk"
+	"github.com/google/go-github/v80/github"
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 )
@@ -43,7 +45,6 @@ func (a *app) newManager() *manager {
 	m.builder.GetObject("main-page").Cast(&page)
 
 	m.connectElements()
-	// adwaux.AddStructGroups(&page, a.cfg)
 
 	for name, fn := range map[string]any{
 		"save":  m.saveConfig,
@@ -69,6 +70,60 @@ func (a *app) newManager() *manager {
 	} {
 		m.addAction(name, fn)
 	}
+
+	var tags gtk.StringList
+	m.builder.GetObject("wine_tags").Cast(&tags)
+	var tag gtk.DropDown
+	m.builder.GetObject("wine_tag").Cast(&tag)
+
+	var up gtk.Popover
+	m.builder.GetObject("wine_updater").Cast(&up)
+	upcb := func(_ gtk.Widget) {
+		if tags.GetNItems() > 1 {
+			return
+		}
+		slog.Info("Fetching releases")
+		m.app.errThread(func() error {
+			client := github.NewClient(nil)
+			ctx := context.Background()
+
+			releases, _, err := client.Repositories.ListReleases(
+				ctx, "vinegarhq", "kombucha", nil)
+			if err != nil {
+				return err
+			}
+
+			for _, release := range releases {
+				gutil.IdleAdd(func() {
+					tags.Append(*release.TagName)
+				})
+			}
+
+			return nil
+		})
+	}
+	up.ConnectShow(&upcb)
+
+	var row adw.ActionRow
+	m.builder.GetObject("wine_row").Cast(&row)
+
+	var dl gtk.MenuButton
+	m.builder.GetObject("wine_update").Cast(&dl)
+
+	var cnf gtk.Button
+	m.builder.GetObject("wine_confirm").Cast(&cnf)
+	cnfcb := func(_ gtk.Button) {
+		row.SetSensitive(false)
+		sel := gtk.StringObjectNewFromInternalPtr(
+			tag.GetSelectedItem().Ptr)
+		m.app.errThread(func() error {
+			defer gutil.IdleAdd(func() {
+				row.SetSensitive(true)
+			})
+			return a.updateWine(sel.GetString())
+		})
+	}
+	cnf.ConnectClicked(&cnfcb)
 
 	return &m
 }

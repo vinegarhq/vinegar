@@ -86,7 +86,10 @@
                                             </child>
                                             <child>
                                               <object class="GtkButton" id="wine_confirm">
-                                                <property name="icon-name">media-playback-start-symbolic</property>
+                                                <property name="icon-name">adw-entry-apply-symbolic</property>
+                                                <style>
+                                                  <class name="suggested-action"/>
+                                                </style>
                                               </object>
                                             </child>
                                           </object>

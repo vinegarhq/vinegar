@@ -23,9 +23,11 @@ func init() {
 	if err == nil {
 		for i, c := range Cards {
 			if v, ok := pci.Vendors[c.Vendor]; ok {
+				Cards[i].VID    = Cards[i].Vendor
 				Cards[i].Vendor = v.Name
 			}
 			if p, ok := pci.Products[c.Vendor+c.Product]; ok {
+				Cards[i].PID     = Cards[i].Product
 				Cards[i].Product = p.Name
 			}
 		}

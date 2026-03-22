@@ -11,6 +11,8 @@ type Card struct {
 	Device   string // Path to the PCI device
 	Driver   string // Base driver name
 	Embedded bool   // Integrated display
+	VID      string // Vendor ID
+	PID      string // Product ID
 	Vendor   string
 	Product  string
 

@@ -180,23 +180,25 @@ func (c *Config) Prefix() *wine.Prefix {
 
 	env := maps.Clone(c.Studio.Env)
 
-	if len(sysinfo.Cards) > 1 {
-		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
-	}
-
 	for _, card := range sysinfo.Cards {
 		if string(c.Studio.ForcedGpu) != card.String() {
 			continue
 		}
 
 		slog.Debug("Using GPU", "index", card.Index, "card", card.Product)
-		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
-		env["DRI_PRIME"] = "pci-" + strings.NewReplacer(":", "_", ".", "_").
-			Replace(path.Base(card.Device))
+		env["DRI_PRIME"] = string(card.VID) + ":" + string(card.PID) + "!"
 
+		// Unset problematic env vars that may be set by switcheroo-control
+		os.Unsetenv("__VK_LAYER_NV_optimus")
+		os.Unsetenv("VK_LOADER_DRIVERS_SELECT")
+
+		env["__EGL_VENDOR_LIBRARY_FILENAMES"] = "/usr/lib/x86_64-linux-gnu/GL/glvnd/egl_vendor.d/50_mesa.json:/usr/share/glvnd/egl_vendor.d/50_mesa.json"
 		env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
+		env["__NV_PRIME_RENDER_OFFLOAD"] = "0"
 		if strings.HasPrefix(card.Driver, "nvidia") {
+			env["__EGL_VENDOR_LIBRARY_FILENAMES"] = "/usr/lib/x86_64-linux-gnu/GL/glvnd/egl_vendor.d/10_nvidia.json:/usr/share/glvnd/egl_vendor.d/10_nvidia.json"
 			env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+			env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
 		}
 	}
 

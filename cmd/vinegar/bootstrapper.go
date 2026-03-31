@@ -27,21 +27,45 @@ var (
 	backupExport  = filepath.Join(dirs.Data, "settings.reg")
 )
 
-type bootstrapper struct {
-	*app
-	win adw.Window
+func (b *bootstrapper) run(args ...string) error {
 
-	pbar   gtk.ProgressBar
-	status gtk.Label
-	info   gtk.Label
+	if err := checkRAM(3.0); err != nil {
+		gutil.IdleAdd(func() {
+			dialog := gtk.NewMessageDialog(
+				nil,
+				gtk.DialogFlagsModal,
+				gtk.MessageError,
+				gtk.ButtonsOk,
+				err.Error(),
+			)
 
-	dir string
-	bin *rbxbin.Deployment
+			dialog.Run()
+			dialog.Destroy()
+		})
 
-	// amount of Roblox processes that are open
-	count uint
+		return err
+	}
 
-	rp *studiorpc.StudioRPC
+	if b.win.GetApplication() != nil && b.win.IsVisible() {
+		slog.Warn("Bootstrapper currently in setup, ignoring run request")
+		return nil
+	}
+
+	gutil.IdleAdd(func() {
+		b.app.AddWindow(&b.win.Window)
+		b.win.Present()
+	})
+
+	defer gutil.IdleAdd(func() {
+		b.app.RemoveWindow(&b.win.Window)
+		b.win.SetVisible(false)
+	})
+
+	if err := b.setupExecute(); err != nil {
+		return fmt.Errorf("setup: %w", err)
+	}
+
+	return b.execute(args...)
 }
 
 func (a *app) newBootstrapper() *bootstrapper {
@@ -71,6 +95,11 @@ func (a *app) newBootstrapper() *bootstrapper {
 }
 
 func (b *bootstrapper) run(args ...string) error {
+	
+	if err := checkRAM(3.0); err != nil {
+		return err
+	}
+
 	if b.win.GetApplication() != nil && b.win.IsVisible() {
 		slog.Warn("Bootstrapper currently in setup, ignoring run request")
 		return nil

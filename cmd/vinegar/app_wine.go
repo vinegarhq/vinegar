@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"debug/elf"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -27,7 +28,13 @@ func (a *app) prepareWine() (bool, error) {
 
 	a.boot.message(L("Setting up Wine"), "first-time", firstRun)
 
-	_, err := os.Stat(dirs.WinePath)
+	// Ensure the downloaded Wine binary is functional and was not
+	// corrupt during download. If the download was cancelled, the
+	// Wine executable would be missing or corrupt.
+	f, err := elf.Open(filepath.Join(dirs.WinePath, "wine"))
+	if f != nil {
+		f.Close()
+	}
 	// Check against symlink in case the default is empty (musl)
 	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && err != nil {
 		if err := a.updateWine("Latest"); err != nil {

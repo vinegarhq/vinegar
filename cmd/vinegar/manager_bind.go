@@ -67,7 +67,6 @@ func (m *manager) connectElements() {
 	wine := gutil.GetObject[adw.ActionRow](b, "wine_row")
 	wine.SetSubtitle(cfg.WineRoot)
 	signalSave(&wine.Widget, "notify::subtitle", func() {
-		slog.Info("Wineset")
 		cfg.WineRoot = wine.GetSubtitle()
 	})
 	gutil.ConnectBuilderSimple(b, "wine_revert", "clicked", func() {

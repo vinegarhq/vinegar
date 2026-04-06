@@ -119,7 +119,7 @@ func Default() (cfg *Config) {
 		cfg.Studio.ForcedGpu = sysinfo.Cards[1].String()
 	}
 
-	// Prefer to use the VinegarHQ Kombucha builds to be
+	// Default to use the VinegarHQ Kombucha builds to be
 	// downloaded at runtime, on non musl systems.
 	// Note: Author of this code uses a musl system. (me)
 	if !strings.Contains(sysinfo.LibC, "musl") {

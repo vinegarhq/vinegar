@@ -16,8 +16,8 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/wine"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/sewnie/wine/dxvk"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
@@ -25,7 +25,7 @@ import (
 const (
 	DXVKVersion      = "2.7.1"
 	DXVKSarekVersion = "Sarek-1.11.0-async"
-	WebViewVersion   = "144.0.3719.92"
+	WebViewVersion   = "147.0.3912.72"
 
 	DesktopsResolution = "1814x1024"
 )

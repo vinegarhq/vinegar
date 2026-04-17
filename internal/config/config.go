@@ -16,8 +16,8 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/sewnie/rbxbin"
 	"github.com/sewnie/wine"
-	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/sewnie/wine/dxvk"
+	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/logging"
 	"github.com/vinegarhq/vinegar/internal/sysinfo"
 )
@@ -212,9 +212,13 @@ func (c *Config) Prefix() *wine.Prefix {
 	switch c.Studio.Renderer {
 	case "D3D11", "D3D11FL10", "OpenGL":
 		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=gl"
-	case "DXVK", "DXVK-Sarek", "Vulkan":
+	case "DXVK", "DXVK-Sarek":
 		env["WINE_D3D_CONFIG"] = "renderer=vulkan"
 		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=vulkan"
+	case "Vulkan":
+		env["VK_LOADER_LAYERS_ENABLE"] = "VK_LAYER_VINEGAR_VinegarLayer"
+		env["WINE_D3D_CONFIG"] = "renderer=vulkan"
+		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] += "--use-angle=d3d11"
 	}
 
 	useDXVK := c.Studio.DXVKVersion() != ""

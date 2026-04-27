@@ -96,7 +96,6 @@ func Load() (*Config, error) {
 
 // Default returns a default configuration.
 func Default() (cfg *Config) {
-
 	cfg = &Config{
 		Debug: false,
 
@@ -113,9 +112,9 @@ func Default() (cfg *Config) {
 		},
 	}
 	// No need to select if there is only a single GPU, and to
-	// prefer PRIME discrete behavior by default, incase the first
-	// GPU is not integrated.
-	if len(sysinfo.Cards) >= 2 && !sysinfo.Cards[0].Embedded {
+	// prefer PRIME discrete behavior by default, on systems
+	// where the first GPU is a iGPU.
+	if len(sysinfo.Cards) >= 2 && sysinfo.Cards[0].Embedded {
 		cfg.Studio.ForcedGpu = sysinfo.Cards[1].String()
 	}
 

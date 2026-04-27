@@ -125,15 +125,16 @@ func (m *manager) connectElements() {
 	cards := gutil.GetObject[gtk.StringList](b, "cards")
 	values := make(map[string]string, len(sysinfo.Cards))
 	for i, c := range sysinfo.Cards {
-		if c.String() == cfg.ForcedGpu {
-			card.SetSelected(uint32(i))
-		}
 		shown := fmt.Sprintf("%d: %s", c.Index, c.Product)
 		values[shown] = c.String()
 		cards.Append(shown)
+
+		if c.String() == cfg.ForcedGpu {
+			card.SetSelected(uint32(i + 1))
+		}
 	}
 	signalSave(&card.Widget, "notify::selected-item", func() {
-		cfg.ForcedGpu = values[cards.GetString(card.GetSelected())]
+		slog.Info("Signaled", "v", values, "i", card.GetSelected(), "cfg", cfg.ForcedGpu)
 	})
 
 	simpleEntry("launcher_row", &cfg.Launcher)

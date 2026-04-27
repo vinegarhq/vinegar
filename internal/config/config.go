@@ -180,24 +180,33 @@ func (c *Config) Prefix() *wine.Prefix {
 
 	env := maps.Clone(c.Studio.Env)
 
-	if len(sysinfo.Cards) > 1 {
-		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
-	}
-
 	for _, card := range sysinfo.Cards {
 		if string(c.Studio.ForcedGpu) != card.String() {
 			continue
 		}
 
 		slog.Debug("Using GPU", "index", card.Index, "card", card.Product)
-		env["MESA_VK_DEVICE_SELECT_FORCE_DEFAULT_DEVICE"] = "1"
-		env["DRI_PRIME"] = "pci-" + strings.NewReplacer(":", "_", ".", "_").
-			Replace(path.Base(card.Device))
+		env["DRI_PRIME"] = string(card.VendorID) + ":" + string(card.ProductID) + "!"
 
-		env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
-		if strings.HasPrefix(card.Driver, "nvidia") {
-			env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+		// Unset problematic variables that may be set by switcheroo-control
+		env["__VK_LAYER_NV_optimus"] = ""
+		env["VK_LOADER_DRIVERS_SELECT"] = ""
+
+		vendors := "/usr/lib/x86_64-linux-gnu/GL/glvnd/egl_vendor.d/"
+		if !sysinfo.Flatpak {
+			vendors = "/usr/share/glvnd/egl_vendor.d/"
 		}
+
+		if !strings.HasPrefix(card.Driver, "nvidia") {
+			env["__EGL_VENDOR_LIBRARY_FILENAMES"] = vendors + "50_mesa.json"
+			env["__GLX_VENDOR_LIBRARY_NAME"] = "mesa"
+			env["__NV_PRIME_RENDER_OFFLOAD"] = "0"
+		} else {
+			env["__EGL_VENDOR_LIBRARY_FILENAMES"] = vendors + "10_nvidia.json"
+			env["__GLX_VENDOR_LIBRARY_NAME"] = "nvidia"
+			env["__NV_PRIME_RENDER_OFFLOAD"] = "1"
+		}
+		break
 	}
 
 	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs

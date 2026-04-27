@@ -27,9 +27,28 @@ var (
 )
 
 func (b *bootstrapper) updateDeployment() error {
-	if err := b.setDeployment(); err != nil {
-		return fmt.Errorf("fetch: %w", err)
+	stop := b.performing()
+
+	b.message(L("Checking for updates"))
+	if b.cfg.Studio.ForcedVersion == "" {
+		d, err := rbxbin.GetDeployment(b.rbx, studio, b.cfg.Studio.Channel)
+		if err != nil {
+			stop()
+			return fmt.Errorf("fetch: %w", err)
+		}
+		b.bin = d
+	} else {
+		b.bin = &rbxbin.Deployment{
+			Type:    studio,
+			Channel: b.cfg.Studio.Channel,
+			GUID:    b.cfg.Studio.ForcedVersion,
+		}
 	}
+
+	gutil.IdleAdd(func() {
+		b.info.SetLabel(b.bin.Channel)
+	})
+
 	b.dir = filepath.Join(dirs.Versions, b.bin.GUID)
 
 	slog.Info("Using Deployment",
@@ -57,6 +76,8 @@ func (b *bootstrapper) updateDeployment() error {
 		return err
 	}
 
+	stop()
+
 	if err := b.installDeployment(); err != nil {
 		return err
 	}
@@ -80,33 +101,6 @@ func (b *bootstrapper) updateDeployment() error {
 	}
 
 	slog.Info("Successfully installed!", "guid", b.bin.GUID)
-	return nil
-}
-
-func (b *bootstrapper) setDeployment() error {
-	defer b.performing()()
-
-	if b.cfg.Studio.ForcedVersion != "" {
-		b.bin = &rbxbin.Deployment{
-			Type:    studio,
-			Channel: b.cfg.Studio.Channel,
-			GUID:    b.cfg.Studio.ForcedVersion,
-		}
-		return nil
-	}
-
-	b.message(L("Checking for updates"))
-
-	d, err := rbxbin.GetDeployment(b.rbx, studio, b.cfg.Studio.Channel)
-	if err != nil {
-		return err
-	}
-
-	gutil.IdleAdd(func() {
-		b.info.SetLabel(d.Channel)
-	})
-
-	b.bin = d
 	return nil
 }
 

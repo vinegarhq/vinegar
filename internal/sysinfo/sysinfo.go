@@ -18,14 +18,18 @@ var (
 
 func init() {
 	Cards = getCards()
+	for i := range Cards {
+		Cards[i].Vendor = "unknown"
+		Cards[i].Product = "unknown"
+	}
 
 	pci, err := pcidb.New()
 	if err == nil {
 		for i, c := range Cards {
-			if v, ok := pci.Vendors[c.Vendor]; ok {
+			if v, ok := pci.Vendors[c.VendorID]; ok {
 				Cards[i].Vendor = v.Name
 			}
-			if p, ok := pci.Products[c.Vendor+c.Product]; ok {
+			if p, ok := pci.Products[c.VendorID+c.ProductID]; ok {
 				Cards[i].Product = p.Name
 			}
 		}

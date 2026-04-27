@@ -27,13 +27,13 @@ func getCards() (cs []Card) {
 		product, _ := os.ReadFile(filepath.Join(dev, "device"))
 
 		cs = append(cs, Card{
-			Index:    i,
-			Path:     c,
-			Device:   dev,
-			Driver:   driver,
-			Embedded: embedded(c),
-			Vendor:   strings.TrimPrefix(strings.TrimSpace(string(vendor)), "0x"),
-			Product:  strings.TrimPrefix(strings.TrimSpace(string(product)), "0x"),
+			Index:     i,
+			Path:      c,
+			Device:    dev,
+			Driver:    driver,
+			Embedded:  embedded(c),
+			VendorID:  strings.TrimPrefix(strings.TrimSpace(string(vendor)), "0x"),
+			ProductID: strings.TrimPrefix(strings.TrimSpace(string(product)), "0x"),
 		})
 	}
 

@@ -6,15 +6,17 @@ import (
 
 // Card is a representation of a system GPU
 type Card struct {
-	Index    int    // Internal Kernel index
-	Path     string // Path to the drm card
-	Device   string // Path to the PCI device
-	Driver   string // Base driver name
-	Embedded bool   // Integrated display
-	Vendor   string
-	Product  string
+	Index     int    // Internal Kernel index
+	Path      string // Path to the drm card
+	Device    string // Path to the PCI device
+	Driver    string // Base driver name
+	Embedded  bool   // Integrated display
+	VendorID  string
+	ProductID string
 
 	// Metadata added in top-level implementation
+	Vendor  string
+	Product string
 }
 
 func (c *Card) String() string {

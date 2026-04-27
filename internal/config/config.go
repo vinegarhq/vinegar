@@ -238,13 +238,16 @@ func (c *Config) Prefix() *wine.Prefix {
 		}
 		env["DXVK_LOG_PATH"] = "none"
 		env["DXVK_STATE_CACHE_PATH"] = dirs.Cache
+
 	}
 
 	for k, v := range env {
 		pfx.Env = append(pfx.Env, k+"="+v)
 	}
 
-	dxvk.EnvOverride(pfx, useDXVK)
+	if useDXVK {
+		dxvk.EnvOverride(pfx)
+	}
 
 	slog.Debug("Using Prefix environment", "env", pfx.Env)
 

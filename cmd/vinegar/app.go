@@ -130,19 +130,30 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int32 {
 	}
 
 	// Override arguments to prioritize welcome screen
-	if !a.pfx.Exists() {
-		args = []string{"manage"}
+	_, err := os.Stat(dirs.Data)
+	if err != nil {
+		err := os.MkdirAll(dirs.Data, 0o755)
+		if err != nil {
+			slog.Error("Failed to initialize data directory", "err", err)
+			return 1
+		}
 	}
 
-	if len(args) == 1 &&
-		(args[0] == "manage" ||
-			args[0] == "config") {
+	if err != nil || (len(args) == 1 &&
+		(args[0] == "manage" || args[0] == "config")) {
 		// Prevent multiple windows of manager
 		// existing at once
 		if a.mgr == nil {
 			a.mgr = a.newManager()
 		}
 		a.mgr.win.Present()
+
+		if err != nil {
+			view := gutil.
+				GetObject[adw.NavigationView](a.mgr.builder, "navigation")
+			view.PushByTag("welcome")
+
+		}
 		return 0
 	}
 

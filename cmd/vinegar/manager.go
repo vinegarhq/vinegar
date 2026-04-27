@@ -30,11 +30,6 @@ func (a *app) newManager() *manager {
 	m.builder.GetObject("window").Cast(&m.win)
 	m.win.SetApplication(&a.Application.Application)
 
-	view := gutil.GetObject[adw.NavigationView](m.builder, "navigation")
-	if !a.pfx.Exists() {
-		view.PushByTag("welcome")
-	}
-
 	cmd := gutil.GetObject[gtk.Entry](m.builder, "cmd")
 	cb := m.runWineCmd
 	cmd.ConnectActivate(&cb)

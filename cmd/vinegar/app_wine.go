@@ -176,13 +176,19 @@ install:
 // Implements io.Writer for reading the log from Wine
 func (a *app) Write(b []byte) (int, error) {
 	for line := range strings.SplitSeq(string(b[:len(b)-1]), "\n") {
-		// XXXX:channel:class OutputDebugStringA "[FLog::Foo] Message"
-		if a.boot != nil && len(line) >= 39 && line[19:37] == "OutputDebugStringA" {
-			// Avoid "\n" calls to OutputDebugStringA
-			if len(line) >= 44 {
-				a.boot.handleRobloxLog(line[39 : len(line)-1])
+		// On older versions of Roblox, the channel used to be 'debugstr'.
+		// XXXX:warn:seh:OutputDebugStringA "2026-04-27T14:57:01.636Z ... [FLog::Foo] Message"
+		if a.boot != nil && len(line) >= 14 && line[10:13] == "seh" {
+			// Ignore short messages such as newlines
+			if len(line) < 39 {
+				continue
 			}
-			return len(b), nil
+			from := line[14 : 14+18]
+			if from != "OutputDebugStringA" {
+				continue
+			}
+			a.boot.handleRobloxLog(line[34 : len(line)-1])
+			continue
 		}
 
 		a.handleWineLog(line)

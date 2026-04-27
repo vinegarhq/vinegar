@@ -208,8 +208,8 @@ func (c *Config) Prefix() *wine.Prefix {
 		break
 	}
 
-	env["WINEDEBUG"] += ",warn+debugstr" // required to read Roblox logs
-	env["XR_LOADER_DEBUG"] = "none"      // already shown in Roblox log
+	env["WINEDEBUG"] += ",warn+seh" // required to read Roblox logs
+	env["XR_LOADER_DEBUG"] = "none" // already shown in Roblox log
 	env["WINEDLLOVERRIDES"] += ";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
 	if !c.Debug {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"

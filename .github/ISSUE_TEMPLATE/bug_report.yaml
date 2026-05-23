@@ -2,46 +2,106 @@ name: Bug Report
 labels: "bug"
 description: Report a problem you're having
 body:
-- type: markdown
-  attributes:
-    value: |
-      Before submitting a bug report, please visit [Vinegar's Troubleshooting page](https://vinegarhq.org/Vinegar/Troubleshooting.html), and only
-      create a bug report if it isn't mentioned in the troubleshooting page. Ensure your bug report hasn't already been reported as well.
-- type: input
-  id: distribution
-  attributes:
-    label: Linux distribution
-    placeholder: e.g., Bazzite, Arch Linux, Chimera Linux
-  validations:
-    required: true
-  
-- type: dropdown
-  id: installation
-  attributes:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting a bug report, please check [Vinegar's troubleshooting page](https://vinegarhq.org/Vinegar/Troubleshooting.html) to see if there isn't already a solution to your problem.
+        Ensure that your bug report hasn't already been reported and that your system is fully up to date.
+  - type: input
+    id: distribution
+    attributes:
+      label: Linux distribution
+      description: If you don't know what Linux distribution you're using, add the output of running `. /etc/os-release; echo $PRETTY_NAME` here.
+      placeholder: e.g. Ubuntu 24.04 LTS
+    validations:
+      required: true
+
+  - type: input
+    id: kernel
+    attributes:
+      label: Kernel version
+      description: If you don't know what version of the Linux kernel you're using, add the output of running `uname -r` here.
+      placeholder: e.g. 7.0.9-arch1-1
+    validations:
+      required: true
+
+  - type: input
+    id: desktop
+    attributes:
+      label: Desktop environment
+      description: >
+        If you don't know what desktop environment you're using, add the output of running `echo $XDG_CURRENT_DESKTOP` here.
+        If that command doesn't output anything, add "N/A" here instead.
+      placeholder: e.g. GNOME 50.1
+    validations:
+      required: true
+
+  - type: input
+    id: cpu
+    attributes:
+      label: CPU
+      description: If you don't know what CPU your computer has, add the output of running `sed '/model name/!d;s/model name[[:space:]]*:\ //' /proc/cpuinfo | uniq` here.
+      placeholder: e.g. AMD Ryzen 5 7500F
+    validations:
+      required: true
+
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU(s)
+      description: >
+        If you don't know what GPU(s) your computer has, add the output of running `lspci | grep -iE 'VGA|3D|video' | sed 's/^.*:\ //'` here.
+        Multiple GPUs are to be separated with a plus sign.
+      placeholder: e.g. NVIDIA GeForce MX150 + Intel UHD Graphics 620
+    validations:
+      required: true
+
+  - type: input
+    id: memory
+    attributes:
+      label: Memory
+      description: If you don't know how much physical memory your computer has, add the output of running `sed '/MemTotal:/!d;s/MemTotal:[[:space:]]*//' /proc/meminfo` here.
+      placeholder: e.g. 32 GB
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation
+    attributes:
       label: Installation method
       options:
         - Flatpak
-        - Distribution Package
+        - Distribution-specific package
         - Source
-  validations:
-    required: true
+    validations:
+      required: true
 
-- type: input
-  id: version
-  attributes:
-    label: Vinegar version
-    description: If you're on Flatpak, put the output of `flatpak info -c org.vinegarhq.Vinegar` here.
-  validations:
-    required: true
-    
-- type: textarea
-  id: problem
-  attributes:
-    label: What problem did you encounter?
-    description: >
-      Provide a description of the problem you're facing.
-      Don't forget to attach any log files and screenshots.
-      Logs can be found by clicking 'Open Logs' at the menu in the top-right inside Vinegar's settings page.
-  
-  validations:
-    required: true
+  - type: input
+    id: vinegar
+    attributes:
+      label: Vinegar version
+      description: >
+        If you don't know what version of Vinegar you're using, add the output of running `flatpak info org.vinegarhq.Vinegar | sed '/Subject:/!d;s/^[[:space:]]*Subject:[[:space:]]//'` here.
+        Users of distribution-specific packages may need to consult the manpage of their package manager to get the version.
+        If you built Vinegar from source, add the output of running `git rev-parse HEAD` inside the source directory here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem did you encounter?
+      description: >
+        Provide a detailed description of the problem you're facing.
+        Don't forget to attach any log files and screenshots/videos.
+        Logs can be found by clicking 'Open Logs' in the menu at the top right of Vinegar's settings.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps for reproducing the problem
+      description: Steps are to be given in chronological order.
+    validations:
+      required: true

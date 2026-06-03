@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"debug/elf"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -28,15 +27,8 @@ func (a *app) prepareWine() (bool, error) {
 
 	a.boot.message(L("Setting up Wine"), "first-time", firstRun)
 
-	// Ensure the downloaded Wine binary is functional and was not
-	// corrupt during download. If the download was cancelled, the
-	// Wine executable would be missing or corrupt.
-	f, err := elf.Open(filepath.Join(dirs.WinePath, "wine"))
-	if f != nil {
-		f.Close()
-	}
-	// Check against symlink in case the default is empty (musl)
-	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && err != nil {
+	cmd := a.pfx.Wine("")
+	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && cmd.Err != nil {
 		if err := a.updateWine("Latest"); err != nil {
 			return false, fmt.Errorf("dl: %w", err)
 		}
@@ -63,7 +55,7 @@ func (a *app) prepareWine() (bool, error) {
 	folders.SetValue("My Pictures", dirs.Windows(xdg.UserDirs.Pictures))
 
 	a.boot.message(L("Updating Paths"))
-	err = a.pfx.RegistryImportKey(folders)
+	err := a.pfx.RegistryImportKey(folders)
 	if err != nil {
 		return true, fmt.Errorf("paths: %w", err)
 	}

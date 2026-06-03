@@ -141,6 +141,7 @@ func (m *manager) connectElements() {
 
 	simpleSwitch("discord_row", &cfg.DiscordRPC)
 	simpleSwitch("gamemode_row", &cfg.GameMode)
+	simpleSwitch("debug_row", &m.cfg.Debug)
 
 	env := gutil.GetObject[adw.ExpanderRow](b, "env_row")
 	for key := range cfg.Env {

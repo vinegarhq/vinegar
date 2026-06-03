@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' standalone='no'?>
 <!DOCTYPE cambalache-project SYSTEM "cambalache-project.dtd">
-<!-- Created with Cambalache 0.99.1 -->
-<cambalache-project version="0.96.0" target_tk="gtk-4.0">
-  <ui filename="manager.ui" sha256="8bc9bd3f071b1c934dccfc9437482e70e4c6ec27762cba42509735b9d9d81cf4"/>
+<!-- Created with Cambalache 1.0.2 -->
+<cambalache-project version="1.0.0" target_tk="gtk-4.0" depends="casilda-1.0,libadwaita-1,webkitgtk-6.0">
+  <ui filename="manager.ui" sha256="9b75e79130c0d1b2fcb55e822d0485ae8c77a0d33c022999e1562185307a9dee"/>
   <ui filename="bootstrapper.ui" sha256="9d915ee594327c3ea394cbf7316fd0d789674b9c2f08e254e76f83d83701e253"/>
 </cambalache-project>

@@ -106,12 +106,15 @@ func (a *app) newManager() *manager {
 	updateWine := gutil.GetObject[gtk.Button](m.builder, "wine_confirm")
 	selectedTag := gutil.GetObject[gtk.DropDown](m.builder, "wine_tag")
 	cnfcb := func(_ gtk.Button) {
+		spin := adw.NewSpinner()
 		wineRow.SetSensitive(false)
+		wineRow.AddSuffix(&spin.Widget)
 		sel := gtk.StringObjectNewFromInternalPtr(
 			selectedTag.GetSelectedItem().Ptr)
 		m.app.errThread(func() error {
 			defer gutil.IdleAdd(func() {
 				wineRow.SetSensitive(true)
+				wineRow.Remove(&spin.Widget)
 			})
 			return a.updateWine(sel.GetString())
 		})

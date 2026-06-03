@@ -98,20 +98,20 @@ func (a *app) updateWine(needle string) error {
 	tag := release.GetTagName()
 	dir := filepath.Join(dirs.Data, "kombucha-"+tag)
 
-	slog.Info("Fetched Wine build",
-		"tag", tag, "released", release.PublishedAt.Time)
+	log := slog.With("tag", tag, "released", release.PublishedAt.Time)
 
 	if _, err := os.Stat(dirs.WinePath); err == nil {
-		path, err := os.Readlink(dirs.WinePath)
+		path, err := filepath.EvalSymlinks(dirs.WinePath)
 		if err != nil {
 			return fmt.Errorf("readlink: %w", err)
 		}
-		if filepath.Base(path) == filepath.Base(dir) {
-			a.mgr.showToast(L("Build up to date"))
+		name := filepath.Base(path)
+		if name == filepath.Base(dir) {
+			log.Info("Wine build up to date")
 			return nil
 		}
 
-		slog.Info("Removing old Wine build", "name", path)
+		slog.Info("Removing old Wine build", "name", name)
 		if err := os.RemoveAll(path); err != nil {
 			return fmt.Errorf("remove build: %w", err)
 		}
@@ -122,7 +122,6 @@ func (a *app) updateWine(needle string) error {
 	}
 
 	if _, err := os.Stat(dir); err == nil {
-		slog.Info("Wine build already present!")
 		goto install
 	}
 
@@ -131,17 +130,11 @@ func (a *app) updateWine(needle string) error {
 		return errors.New("expected single .tar.xz release")
 	}
 
-	{
-		url := release.Assets[0].GetBrowserDownloadURL()
-
-		slog.Info("Downloading Wine build", "url", url)
-		if err := netutil.ExtractURL(url, dirs.Data); err != nil {
-			return err
-		}
-	}
-
-	if a.mgr != nil {
-		a.mgr.showToast(L("Updated Wine"))
+	log.Info("Fetching Wine build")
+	if err := netutil.ExtractURL(
+		release.Assets[0].GetBrowserDownloadURL(), dirs.Data,
+	); err != nil {
+		return err
 	}
 
 install:
@@ -149,7 +142,7 @@ install:
 		return fmt.Errorf("create link: %w", err)
 	}
 
-	slog.Info("Set local Wine installation", "tag", tag)
+	log.Info("Updated Wine build configuration")
 
 	// No need to save wineroot is already set
 	if a.cfg.Studio.WineRoot == dirs.WinePath {

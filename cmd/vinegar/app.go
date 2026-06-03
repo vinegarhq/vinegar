@@ -12,6 +12,7 @@ import (
 
 	"codeberg.org/puregotk/puregotk/v4/adw"
 	"codeberg.org/puregotk/puregotk/v4/gio"
+	"codeberg.org/puregotk/puregotk/v4/glib"
 	"codeberg.org/puregotk/puregotk/v4/gtk"
 	"github.com/sewnie/rbxweb"
 	"github.com/sewnie/wine"
@@ -19,6 +20,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
+	"golang.org/x/sys/unix"
 
 	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
@@ -243,6 +245,46 @@ func (a *app) showError(e error) {
 	}
 
 	d.Choose(nil, nil, &ccb, 0)
+}
+
+func (a *app) registerGame(processHandle uintptr) error {
+	if a.bus == nil {
+		return nil
+	}
+
+	req, err := unix.PidfdOpen(os.Getpid(), 0)
+	if err != nil {
+		return err
+	}
+
+	resp, err := a.bus.CallWithUnixFdListSync("org.freedesktop.portal.Desktop",
+		"/org/freedesktop/portal/desktop",
+		"org.freedesktop.portal.GameMode",
+		"RegisterGameByPIDFd",
+		glib.NewVariant("(hh)", processHandle, req),
+		glib.NewVariantType("(i)"),
+		gio.GDbusCallFlagsNoneValue,
+		-1,
+		gio.NewUnixFDListFromArray([]int32{int32(processHandle), int32(req)}, 2),
+		nil,
+		nil,
+	)
+	_ = unix.Close(req)
+	if err != nil {
+		return fmt.Errorf("dbus: %w", err)
+	}
+
+	var res int32
+	resp.Get("(i)", &res)
+	if res < 0 {
+		// The Gamemode is proxied through the XDG portal, so if the gamemode
+		// daemon is not running, the only response returned from the XDG portal
+		// is that the process has been rejected.
+		return errors.New("rejected")
+	}
+	slog.Info("Registered with GameMode", "response", res, "pidfd", processHandle)
+
+	return nil
 }
 
 type debugTransport struct {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,7 +10,6 @@ import (
 	"sync"
 
 	"codeberg.org/puregotk/puregotk/v4/adw"
-	"codeberg.org/puregotk/puregotk/v4/gio"
 	"codeberg.org/puregotk/puregotk/v4/glib"
 	"codeberg.org/puregotk/puregotk/v4/gtk"
 	"github.com/sewnie/rbxbin"
@@ -202,35 +200,6 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 		return
 	}
 	slog.Log(context.Background(), logging.LevelRoblox.Level(), line)
-}
-
-func (b *bootstrapper) registerGameMode(target int) error {
-	if !b.cfg.Studio.GameMode || b.bus == nil {
-		return nil
-	}
-
-	resp, err := b.bus.CallSync("org.freedesktop.portal.Desktop",
-		"/org/freedesktop/portal/desktop",
-		"org.freedesktop.portal.GameMode",
-		"RegisterGame",
-		glib.NewVariant("(i)", target),
-		glib.NewVariantType("(i)"),
-		gio.GDbusCallFlagsNoneValue,
-		-1,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("register: %w", err)
-	}
-	var res int32
-	resp.Get("(i)", &res)
-
-	if res < 0 {
-		return errors.New("rejected by gamemode")
-	}
-	slog.Info("Registered with GameMode", "response", res)
-
-	return nil
 }
 
 func (b *bootstrapper) performing() func() {

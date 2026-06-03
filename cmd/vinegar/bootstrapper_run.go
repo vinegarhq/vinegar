@@ -89,9 +89,11 @@ func (b *bootstrapper) execute(args ...string) error {
 		b.win.SetVisible(false)
 	})
 
-	if err := b.registerGameMode(cmd.Process.Pid); err != nil {
-		slog.Error("Failed to register with GameMode", "err", err)
-	}
+	cmd.Process.WithHandle(func(h uintptr) {
+		if err := b.registerGame(h); err != nil {
+			slog.Error("Failed to register with GameMode", "err", err)
+		}
+	})
 
 	err = cmd.Wait()
 

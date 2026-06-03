@@ -35,6 +35,7 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 	// an entirely new Wineprefix for this feature.
 	if d := string(b.cfg.Studio.Desktop); d != "" {
 		cmd.Args = append([]string{
+			cmd.Args[0],
 			"explorer", "/desktop=" + glib.UuidStringRandom() + "," + d,
 		}, cmd.Args[1:]...)
 	}

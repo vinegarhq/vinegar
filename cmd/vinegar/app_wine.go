@@ -96,7 +96,7 @@ func (a *app) updateWine(needle string) error {
 	}
 
 	tag := release.GetTagName()
-	dir := filepath.Join(dirs.Data, "kombucha-"+tag)
+	dir := filepath.Join(dirs.Data, dirs.TagPrefix+tag)
 
 	log := slog.With("tag", tag, "released", release.PublishedAt.Time)
 

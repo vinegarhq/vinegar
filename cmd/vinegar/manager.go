@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"path/filepath"
+	"strings"
 
 	"codeberg.org/puregotk/puregotk/v4/adw"
 	"codeberg.org/puregotk/puregotk/v4/gio"
@@ -76,11 +78,19 @@ func (a *app) newManager() *manager {
 	}
 
 	tags := gutil.GetObject[gtk.StringList](m.builder, "wine_tags")
+	selectedTag := gutil.GetObject[gtk.DropDown](m.builder, "wine_tag")
 	gutil.ConnectBuilderSimple(m.builder, "wine_updater", "show", func() {
 		if tags.GetNItems() > 1 {
 			return
 		}
 		slog.Info("Fetching releases")
+
+		tag, err := filepath.EvalSymlinks(dirs.WinePath)
+		if err == nil {
+			tag, _ = strings.CutPrefix(filepath.Base(tag), dirs.TagPrefix)
+			tags.Append(tag)
+			selectedTag.SetSelected(1)
+		}
 
 		m.app.errThread(func() error {
 			client := github.NewClient(nil)
@@ -93,6 +103,9 @@ func (a *app) newManager() *manager {
 			}
 
 			for _, release := range releases {
+				if *release.TagName == tag {
+					continue
+				}
 				gutil.IdleAdd(func() {
 					tags.Append(*release.TagName)
 				})
@@ -104,7 +117,7 @@ func (a *app) newManager() *manager {
 
 	wineRow := gutil.GetObject[adw.ActionRow](m.builder, "wine_row")
 	updateWine := gutil.GetObject[gtk.Button](m.builder, "wine_confirm")
-	selectedTag := gutil.GetObject[gtk.DropDown](m.builder, "wine_tag")
+
 	cnfcb := func(_ gtk.Button) {
 		spin := adw.NewSpinner()
 		wineRow.SetSensitive(false)

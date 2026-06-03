@@ -19,6 +19,10 @@ var (
 )
 
 var (
+	TagPrefix = "kombucha-"
+)
+
+var (
 	StatePath   = filepath.Join(Data, "state.json")
 	ConfigPath  = filepath.Join(Config, "config.toml")
 	WinePath    = filepath.Join(Data, "kombucha")

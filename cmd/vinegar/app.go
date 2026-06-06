@@ -35,8 +35,6 @@ type app struct {
 
 	mgr  *manager // nullable
 	boot *bootstrapper
-
-	keepLog bool
 }
 
 func newApp() *app {
@@ -171,10 +169,6 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int32 {
 }
 
 func (a *app) shutdown(_ gio.Application) {
-	if !a.keepLog && !a.cfg.Debug {
-		_ = os.Remove(logging.Path)
-	}
-
 	if err := a.boot.backupSettings(); err != nil {
 		slog.Error("Failed to backup Studio settings", "err", err)
 	}
@@ -221,7 +215,6 @@ func (a *app) errThread(fn func() error) {
 }
 
 func (a *app) showError(e error) {
-	a.keepLog = true
 	slog.Error("Error!", "err", e.Error())
 
 	// In a bootstrapper context, the window is destroyed to show the

@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=Vinegar
 GenericName=Studio Launcher
+GenericName[zh_TW]=Studio 啟動器
 Comment=Run Roblox Studio on Linux
 Comment[pt_BR]=Use o Roblox Studio no Linux
+Comment[zh_TW]=在 Linux 上執行 Roblox Studio
 Exec=vinegar %u
 Icon=org.vinegarhq.Vinegar
 Terminal=false
@@ -11,10 +13,12 @@ MimeType=application/x-roblox-place;application/x-roblox-model;x-scheme-handler/
 Actions=manage;
 Categories=GNOME;GTK;Game;PackageManager;
 Keywords=gaming;launcher;flatpak;
+Keywords[zh_TW]=遊戲;啟動器;flatpak;
 X-Flatpak-RenamedFrom=org.vinegarhq.Vinegar.studio.desktop;
 X-Flatpak=org.vinegarhq.Vinegar
 
 [Desktop Action manage]
 Name=Settings
 Name[pt_BR]=Configurar
+Name[zh_TW]=設定
 Exec=vinegar manage

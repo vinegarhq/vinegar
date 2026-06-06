@@ -1,0 +1,237 @@
+msgid ""
+msgstr ""
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-05-31 03:00+0800\n"
+"PO-Revision-Date: 2026-05-31 09:37+0800\n"
+"Last-Translator: Peter Dave Hello <hsu@peterdavehello.org>\n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: cmd/vinegar/app.go:228
+msgid "Something went wrong"
+msgstr "發生錯誤"
+
+#: cmd/vinegar/app.go:229
+msgid "Ok"
+msgstr "確定"
+
+#: cmd/vinegar/app.go:229
+msgid "Open Log"
+msgstr "開啟記錄檔"
+
+#: cmd/vinegar/app_wine.go:29
+msgid "Setting up Wine"
+msgstr "正在設定 Wine"
+
+#: cmd/vinegar/app_wine.go:65
+msgid "Updating Paths"
+msgstr "正在更新路徑"
+
+#: cmd/vinegar/app_wine.go:110
+msgid "Build up to date"
+msgstr "建置已是最新"
+
+#: cmd/vinegar/app_wine.go:144
+msgid "Updated Wine"
+msgstr "已更新 Wine"
+
+#: cmd/vinegar/bootstrapper_roblosec.go:25
+msgid "Acquiring user authentication"
+msgstr "正在取得使用者驗證"
+
+#: cmd/vinegar/bootstrapper_run.go:61
+msgid "Launching Studio"
+msgstr "正在啟動 Studio"
+
+#: cmd/vinegar/bootstrapper_setup.go:106
+msgid "Copying Overlay"
+msgstr "正在複製覆蓋層"
+
+#: cmd/vinegar/bootstrapper_setup.go:131
+msgid "Applying FFlags"
+msgstr "正在套用 FFlags"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:33
+msgid "Checking DXVK"
+msgstr "正在檢查 DXVK"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:51
+msgid "Downloading DXVK"
+msgstr "正在下載 DXVK"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:92
+msgid "Extracting DXVK"
+msgstr "正在解壓縮 DXVK"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:184
+msgid "Fetching WebView"
+msgstr "正在擷取 WebView"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:193
+msgid "Downloading WebView"
+msgstr "正在下載 WebView"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:203
+msgid "Checking WebView"
+msgstr "正在檢查 WebView"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:206
+msgid "Uninstalling WebView"
+msgstr "正在解除安裝 WebView"
+
+#: cmd/vinegar/bootstrapper_setup_pfx.go:216
+msgid "Installing WebView"
+msgstr "正在安裝 WebView"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:32
+msgid "Checking for updates"
+msgstr "正在檢查更新"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:66
+msgid "Up to date"
+msgstr "已是最新版本"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:70
+msgid "Installing Studio"
+msgstr "正在安裝 Studio"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:87
+msgid "Writing AppSettings"
+msgstr "正在寫入 AppSettings"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:97
+msgid "Writing Registry"
+msgstr "正在寫入登錄檔"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:111
+msgid "Finding Mirror"
+msgstr "正在尋找鏡像站"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:117
+msgid "Fetching Package List"
+msgstr "正在擷取套件清單"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:138
+msgid "Fetching Installation Directives"
+msgstr "正在擷取安裝指示"
+
+#: cmd/vinegar/bootstrapper_setup_rblx.go:158
+msgid "Installing Packages"
+msgstr "正在安裝套件"
+
+#: cmd/vinegar/manager_actions.go:75
+msgid "Stopped all processes"
+msgstr "已停止所有處理程序"
+
+#: cmd/vinegar/manager_actions.go:85
+msgid "Deleted Wine data"
+msgstr "已刪除 Wine 資料"
+
+#: cmd/vinegar/manager_actions.go:94
+msgid "Uninstalled studio"
+msgstr "已解除安裝 Studio"
+
+#: cmd/vinegar/manager_actions.go:117
+msgid "Cleared cache"
+msgstr "已清除快取"
+
+#: data/ui/bootstrapper.ui:27
+msgid "Initializing Vinegar"
+msgstr "正在初始化 Vinegar"
+
+#: data/ui/bootstrapper.ui:53
+msgid "Cancel"
+msgstr "取消"
+
+#: data/ui/manager.ui:45
+msgid "Custom Command"
+msgstr "自訂指令"
+
+#: data/ui/manager.ui:57 data/ui/manager.ui:320
+msgid "Components"
+msgstr "元件"
+
+#: data/ui/manager.ui:123
+msgid "Advanced Wine Settings"
+msgstr "進階 Wine 設定"
+
+#: data/ui/manager.ui:319
+msgid ""
+"Under the hood, Vinegar configures and manages Wine, using <a href='https://"
+"github.com/vinegarhq/kombucha'>a patched version</a> by default to enhance "
+"the Studio experience. However, Wine's instability may vary from system to "
+"system."
+msgstr ""
+"Vinegar 在背後負責設定與管理 Wine，預設使用 <a href='https://"
+"github.com/vinegarhq/kombucha'>修補版本</a> 來提升 "
+"Studio 的使用體驗。然而，Wine 的穩定性"
+"可能因系統而異。"
+
+#: data/ui/manager.ui:326
+msgid ""
+"Vinegar's settings can be configured to fix multiple window or rendering "
+"issues, if any occur. See <a href='https://vinegarhq.org/Vinegar/"
+"Troubleshooting.html'>Common problems and their fixes</a> for further "
+"information."
+msgstr ""
+"如遇到多重視窗或繪圖問題，可調整 Vinegar 的設定"
+"來修正。請參閱 <a href='https://vinegarhq.org/Vinegar/"
+"Troubleshooting.html'>常見問題與解決方法</a> "
+"以取得進一步資訊。"
+
+#: data/ui/manager.ui:327
+msgid "Troubleshooting Wine"
+msgstr "Wine 疑難排解"
+
+#: data/ui/manager.ui:333
+msgid ""
+"You may tweak Vinegar's settings or manage your Wine data from the manager "
+"page, which can be accessed by right clicking on Vinegar's icon on your "
+"desktop or searching for \"Manage\" in your application launcher."
+msgstr ""
+"可在管理頁面調整 Vinegar 的設定或管理 Wine 資料。"
+"若要開啟管理頁面，請在桌面上對 Vinegar 圖示按右鍵，"
+"或在應用程式啟動器中搜尋「Vinegar」，再開啟「設定」。"
+
+#: data/ui/manager.ui:334
+msgid "Configuration"
+msgstr "設定"
+
+#: data/ui/manager.ui:346
+msgid "Configure"
+msgstr "設定"
+
+#: data/ui/manager.ui:355 data/ui/manager.ui:367
+msgid "Welcome to Vinegar"
+msgstr "歡迎使用 Vinegar"
+
+#: data/ui/manager.ui:376
+msgid "Open Files"
+msgstr "開啟檔案"
+
+#: data/ui/manager.ui:380
+msgid "Open Logs"
+msgstr "開啟記錄檔"
+
+#: data/ui/manager.ui:384
+msgid "Clear Cache"
+msgstr "清除快取"
+
+#: data/ui/manager.ui:388
+msgid "About Vinegar"
+msgstr "關於 Vinegar"
+
+#: data/ui/manager.ui:394
+msgid "Stop Processes"
+msgstr "停止處理程序"
+
+#: data/ui/manager.ui:398
+msgid "Uninstall Studio"
+msgstr "解除安裝 Studio"
+
+#: data/ui/manager.ui:402
+msgid "Delete Prefix Data"
+msgstr "刪除 Prefix 資料"

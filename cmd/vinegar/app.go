@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -20,6 +22,7 @@ import (
 	"github.com/vinegarhq/vinegar/internal/dirs"
 	"github.com/vinegarhq/vinegar/internal/gutil"
 	"github.com/vinegarhq/vinegar/internal/logging"
+	"github.com/vinegarhq/vinegar/internal/sysinfo"
 	"golang.org/x/sys/unix"
 
 	. "github.com/pojntfx/go-gettext/pkg/i18n"
@@ -27,6 +30,9 @@ import (
 
 type app struct {
 	*adw.Application
+
+	// Current latest version obtained from metainfo.xml
+	version string
 
 	cfg *config.Config
 	pfx *wine.Prefix
@@ -38,6 +44,22 @@ type app struct {
 }
 
 func newApp() *app {
+	b := gutil.ResourceData(gutil.Resource("metainfo.xml"))
+	data := struct {
+		XMLName  xml.Name `xml:"component"`
+		Releases struct {
+			Release []struct {
+				Text    string `xml:",chardata"`
+				Version string `xml:"version,attr"`
+				Date    string `xml:"date,attr"`
+			} `xml:"release"`
+		} `xml:"releases"`
+	}{}
+
+	if err := xml.Unmarshal(b, &data); err != nil {
+		log.Panicln("expected valid appstream:", err)
+	}
+
 	a := app{
 		Application: adw.NewApplication(
 			"org.vinegarhq.Vinegar",
@@ -46,7 +68,8 @@ func newApp() *app {
 			// an effective wrapper for Studio arguments.
 			gio.GApplicationHandlesCommandLineValue,
 		),
-		rbx: rbxweb.NewClient(),
+		version: data.Releases.Release[0].Version,
+		rbx:     rbxweb.NewClient(),
 	}
 
 	startup := a.startup
@@ -91,6 +114,13 @@ func (a *app) applyConfig() {
 func (a *app) startup(_ gio.Application) {
 	slog.SetDefault(slog.New(
 		logging.NewHandler(os.Stderr, slog.LevelInfo)))
+
+	slog.Info("System information",
+		"cpu", sysinfo.CPU.Name,
+		"distro", sysinfo.Distro,
+		"display", sysinfo.Display)
+	slog.Info("DRM Devices",
+		"cards", sysinfo.Cards)
 
 	a.boot = a.newBootstrapper()
 

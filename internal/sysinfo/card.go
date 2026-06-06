@@ -19,6 +19,10 @@ type Card struct {
 	Product string
 }
 
-func (c *Card) String() string {
+func (c Card) String() string {
+	return c.Vendor + " " + c.Product
+}
+
+func (c *Card) Addr() string {
 	return path.Base(c.Device)
 }

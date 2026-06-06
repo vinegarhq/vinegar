@@ -126,10 +126,10 @@ func (m *manager) connectElements() {
 	values := make(map[string]string, len(sysinfo.Cards))
 	for i, c := range sysinfo.Cards {
 		shown := fmt.Sprintf("%d: %s", c.Index, c.Product)
-		values[shown] = c.String()
+		values[shown] = c.Addr()
 		cards.Append(shown)
 
-		if c.String() == cfg.ForcedGpu {
+		if c.Addr() == cfg.ForcedGpu {
 			card.SetSelected(uint32(i + 1))
 		}
 	}

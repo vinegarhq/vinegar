@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -45,24 +44,7 @@ func (m *manager) saveConfig() {
 }
 
 func (m *manager) showAbout() {
-	b := gutil.ResourceData(gutil.Resource("metainfo.xml"))
-	data := struct {
-		XMLName  xml.Name `xml:"component"`
-		Releases struct {
-			Release []struct {
-				Text    string `xml:",chardata"`
-				Version string `xml:"version,attr"`
-				Date    string `xml:"date,attr"`
-			} `xml:"release"`
-		} `xml:"releases"`
-	}{}
-
-	if err := xml.Unmarshal(b, &data); err != nil {
-		panic("expected valid appstream: " + err.Error())
-	}
-
-	dialog := adw.NewAboutDialogFromAppdata(gutil.Resource("metainfo.xml"),
-		data.Releases.Release[0].Version)
+	dialog := adw.NewAboutDialogFromAppdata(gutil.Resource("metainfo.xml"), m.version)
 	dialog.Present(&m.win.Widget)
 	dialog.Unref()
 }

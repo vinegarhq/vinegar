@@ -3,6 +3,7 @@ package sysinfo
 
 import (
 	"debug/elf"
+	"fmt"
 	"io"
 	"log/slog"
 	"os"
@@ -11,12 +12,20 @@ import (
 )
 
 var (
+	CPU struct {
+		Name string
+	}
 	Cards   []Card
+	Distro  string
+	Display string
+
 	Flatpak bool
 	LibC    string
 )
 
 func init() {
+	CPU.Name = getCPUName()
+
 	Cards = getCards()
 	for i := range Cards {
 		Cards[i].Vendor = "unknown"
@@ -39,6 +48,11 @@ func init() {
 
 	_, err = os.Stat("/.flatpak-info")
 	Flatpak = err == nil
+
+	Distro = getDistro()
+
+	Display = fmt.Sprintf("%s (%s)",
+		os.Getenv("XDG_CURRENT_DESKTOP"), os.Getenv("XDG_SESSION_TYPE"))
 
 	f, _ := elf.Open("/proc/self/exe")
 	for _, prog := range f.Progs {

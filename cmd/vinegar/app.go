@@ -117,10 +117,19 @@ func (a *app) startup(_ gio.Application) {
 
 	slog.Info("System information",
 		"cpu", sysinfo.CPU.Name,
+		"mem", glib.FormatSizeForDisplay(int64(sysinfo.Memory)),
 		"distro", sysinfo.Distro,
 		"display", sysinfo.Display)
 	slog.Info("DRM Devices",
 		"cards", sysinfo.Cards)
+
+	// ChromeOS allocates 4GB [citation needed] for Crostini.
+	if sysinfo.Memory < 4*1024*1024 && !a.cfg.Debug {
+		a.showError(errors.New(L(
+			"This system does not meet the minimum requirements to run Roblox Studio." +
+				"It is recommended to run Vinegar with sufficient memory and graphics.")))
+		return
+	}
 
 	a.boot = a.newBootstrapper()
 

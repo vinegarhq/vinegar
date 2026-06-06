@@ -15,6 +15,7 @@ var (
 	CPU struct {
 		Name string
 	}
+	Memory  uint64 // in KB
 	Cards   []Card
 	Distro  string
 	Display string
@@ -25,6 +26,8 @@ var (
 
 func init() {
 	CPU.Name = getCPUName()
+
+	Memory = getTotalMemory()
 
 	Cards = getCards()
 	for i := range Cards {

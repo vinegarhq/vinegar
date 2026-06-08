@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"math"
 	"slices"
+	"strings"
 
 	"codeberg.org/puregotk/puregotk/v4/adw"
 	"codeberg.org/puregotk/puregotk/v4/gio"
@@ -150,6 +151,12 @@ func (m *manager) connectElements() {
 	envPopover := gutil.GetObject[gtk.Popover](b, "env_popover")
 	gutil.ConnectBuilder[gtk.Entry](b, "env_entry", "activate", func(entry *gtk.Entry) {
 		key := entry.GetText()
+		val := ""
+
+		if keys := strings.SplitN(key, "=", 2); len(keys) == 2 {
+			key = keys[0]
+			val = keys[1]
+		}
 
 		if _, ok := cfg.Env[key]; ok {
 			entry.AddCssClass("error")
@@ -157,9 +164,7 @@ func (m *manager) connectElements() {
 		}
 		entry.RemoveCssClass("error")
 
-		// Ensure a value is present for addKeyRow, user is expected to
-		// provide some sort of value.
-		cfg.Env[key] = ""
+		cfg.Env[key] = val
 		addKeyRow(&env, cfg.Env, key)
 
 		// [1]: Incase user just wanted to add a variable without touching the value

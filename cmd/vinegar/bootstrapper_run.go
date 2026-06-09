@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -53,6 +54,12 @@ func (b *bootstrapper) command(args ...string) (*wine.Cmd, error) {
 	return cmd, nil
 }
 
+func pidfdStartUnsupported(err error) bool {
+	return errors.Is(err, syscall.EINVAL) ||
+		errors.Is(err, syscall.ENOSYS) ||
+		errors.Is(err, syscall.EPERM)
+}
+
 func (b *bootstrapper) execute(args ...string) error {
 	cmd, err := b.command(args...)
 	if err != nil {
@@ -64,6 +71,28 @@ func (b *bootstrapper) execute(args ...string) error {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	defer signal.Stop(c)
+	pidfd := -1
+	if cmd.SysProcAttr == nil {
+		cmd.SysProcAttr = &syscall.SysProcAttr{}
+	}
+	cmd.SysProcAttr.PidFD = &pidfd
+
+	if err := cmd.Start(); err != nil {
+		if !pidfdStartUnsupported(err) {
+			return err
+		}
+
+		slog.Warn("Failed to start with pidfd, retrying without GameMode registration", "err", err)
+		pidfd = -1
+		cmd, err = b.command(args...)
+		if err != nil {
+			return err
+		}
+		if err := cmd.Start(); err != nil {
+			return err
+		}
+	}
+
 	go func() {
 		s := <-c
 		signal.Stop(c)
@@ -77,10 +106,6 @@ func (b *bootstrapper) execute(args ...string) error {
 		}
 	}()
 
-	if err := cmd.Start(); err != nil {
-		return err
-	}
-
 	b.count++
 	defer func() {
 		b.count--
@@ -90,11 +115,12 @@ func (b *bootstrapper) execute(args ...string) error {
 		b.win.SetVisible(false)
 	})
 
-	cmd.Process.WithHandle(func(h uintptr) {
-		if err := b.registerGame(h); err != nil {
+	if pidfd != -1 {
+		if err := b.registerGame(uintptr(pidfd)); err != nil {
 			slog.Error("Failed to register with GameMode", "err", err)
 		}
-	})
+		_ = syscall.Close(pidfd)
+	}
 
 	err = cmd.Wait()
 

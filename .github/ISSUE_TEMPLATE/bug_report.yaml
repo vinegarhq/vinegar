@@ -2,46 +2,62 @@ name: Bug Report
 labels: "bug"
 description: Report a problem you're having
 body:
-- type: markdown
-  attributes:
-    value: |
-      Before submitting a bug report, please visit [Vinegar's Troubleshooting page](https://vinegarhq.org/Vinegar/Troubleshooting.html), and only
-      create a bug report if it isn't mentioned in the troubleshooting page. Ensure your bug report hasn't already been reported as well.
-- type: input
-  id: distribution
-  attributes:
-    label: Linux distribution
-    placeholder: e.g., Bazzite, Arch Linux, Chimera Linux
-  validations:
-    required: true
-  
-- type: dropdown
-  id: installation
-  attributes:
+  - type: markdown
+    attributes:
+      value: |
+        Before submitting a bug report, please check [Vinegar's troubleshooting page](https://vinegarhq.org/Vinegar/Troubleshooting.html) to see if there isn't already a solution to your problem.
+        Ensure that your bug report hasn't already been reported and that your system is fully up to date. Additionally, try reproducing your problem on the latest unstable build of [Kombucha](https://github.com/vinegarhq/kombucha/releases) to
+        see if it hasn't already been fixed.
+  - type: input
+    id: kernel
+    attributes:
+      label: Kernel version
+      description: If you don't know which version of the Linux kernel you're using, add the output of running `uname -r` here.
+      placeholder: e.g. 7.0.9-arch1-1
+    validations:
+      required: true
+
+  - type: dropdown
+    id: installation
+    attributes:
       label: Installation method
       options:
         - Flatpak
-        - Distribution Package
+        - Distribution-specific package
         - Source
-  validations:
-    required: true
+    validations:
+      required: true
 
-- type: input
-  id: version
-  attributes:
-    label: Vinegar version
-    description: If you're on Flatpak, put the output of `flatpak info -c org.vinegarhq.Vinegar` here.
-  validations:
-    required: true
-    
-- type: textarea
-  id: problem
-  attributes:
-    label: What problem did you encounter?
-    description: >
-      Provide a description of the problem you're facing.
-      Don't forget to attach any log files and screenshots.
-      Logs can be found by clicking 'Open Logs' at the menu in the top-right inside Vinegar's settings page.
-  
-  validations:
-    required: true
+  - type: input
+    id: vinegar
+    attributes:
+      label: Vinegar version
+      description: >
+        If you don't know which version of Vinegar you're using, add the output of running `flatpak info org.vinegarhq.Vinegar | sed '/Subject:/!d;s/^[[:space:]]*Subject:[[:space:]]//'` here.
+        Users of distribution-specific packages may need to consult the man page of their package manager to get the version.
+        If you built Vinegar from source, add the output of running `git rev-parse HEAD` inside the source directory here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem did you encounter?
+      description: >
+        Provide a detailed description of the problem you're facing.
+        Don't forget to attach any log files and screenshots/videos.
+        Logs can be found by clicking 'Open Logs' in the menu at the top right of Vinegar's settings.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps for reproducing the problem
+      description: Steps are to be given in chronological order.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true

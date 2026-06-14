@@ -215,7 +215,7 @@ func (c *Config) Prefix() *wine.Prefix {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"
 	}
 
-	env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--disable-gpu-compositing "
+	env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--disable-gpu "
 
 	switch c.Studio.Renderer {
 	case "D3D11", "D3D11FL10", "OpenGL":

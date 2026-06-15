@@ -139,7 +139,7 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_CreateDevice(
         // No loader instance create info
         return VK_ERROR_INITIALIZATION_FAILED;
     }
-    
+
     PFN_vkGetInstanceProcAddr gipa = layerCreateInfo->u.pLayerInfo->pfnNextGetInstanceProcAddr;
     PFN_vkGetDeviceProcAddr gdpa = layerCreateInfo->u.pLayerInfo->pfnNextGetDeviceProcAddr;
     // move chain on for next layer
@@ -148,13 +148,13 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_CreateDevice(
     PFN_vkCreateDevice createFunc = (PFN_vkCreateDevice)gipa(VK_NULL_HANDLE, "vkCreateDevice");
 
     VkResult ret = createFunc(physicalDevice, pCreateInfo, pAllocator, pDevice);
-    
+
     // fetch our own dispatch table for the functions we need, into the next layer
     VkLayerDispatchTable dispatchTable;
     dispatchTable.GetDeviceProcAddr = (PFN_vkGetDeviceProcAddr)gdpa(*pDevice, "vkGetDeviceProcAddr");
     dispatchTable.DestroyDevice = (PFN_vkDestroyDevice)gdpa(*pDevice, "vkDestroyDevice");
     dispatchTable.AcquireNextImageKHR = (PFN_vkAcquireNextImageKHR)gdpa(*pDevice, "vkAcquireNextImageKHR");
-    
+
     // store the table by key
     {
         scoped_lock l(global_lock);
@@ -197,7 +197,6 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_AcquireNextImageKHR(VkDevice de
     // it reports that the surface properties have changed but the swapchain
     // is still usable. roblox cant recognise this, so we have to convert it
     if (result == VK_SUBOPTIMAL_KHR) {
-        hack_swapchain_recreation = true;
         return VK_SUCCESS;
     } else if (result == VK_ERROR_OUT_OF_DATE_KHR)
         hack_swapchain_recreation = true;
@@ -274,7 +273,7 @@ VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL VinegarLayer_GetDeviceProcAddr(VkD
     GETPROCADDR(CreateDevice);
     GETPROCADDR(DestroyDevice);
     GETPROCADDR(AcquireNextImageKHR);
-    
+
     {
         scoped_lock l(global_lock);
         return device_dispatch[GetKey(device)].GetDeviceProcAddr(device, pName);
@@ -290,7 +289,7 @@ VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL VinegarLayer_GetInstanceProcAddr(V
     GETPROCADDR(CreateInstance);
     GETPROCADDR(DestroyInstance);
     GETPROCADDR(GetPhysicalDeviceSurfaceCapabilitiesKHR);
-    
+
     // device chain functions we intercept
     GETPROCADDR(GetDeviceProcAddr);
     GETPROCADDR(EnumerateDeviceLayerProperties);

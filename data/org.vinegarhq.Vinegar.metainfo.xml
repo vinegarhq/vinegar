@@ -24,24 +24,34 @@
 
 	<screenshots>
 		<screenshot type="default">
-			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.0/data/screenshots/studio.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.4/data/screenshots/studio.png</image>
 			<caption>Roblox Studio running under Vinegar</caption>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.0/data/screenshots/studio-edit.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.4/data/screenshots/studio-edit.png</image>
 			<caption>Roblox Studio running under Vinegar, displaying the script editor view</caption>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.0/data/screenshots/manager.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.4/data/screenshots/manager.png</image>
 			<caption>Vinegar's main manager page</caption>
 		</screenshot>
 		<screenshot>
-			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.0/data/screenshots/bootstrapper.png</image>
+			<image>https://github.com/vinegarhq/vinegar/raw/v1.9.4/data/screenshots/bootstrapper.png</image>
 			<caption>Vinegar's Studio bootstrapper in action</caption>
 		</screenshot>
 	</screenshots>
 
 	<releases>
+		<release version="1.9.4" date="2026-06-24">
+			<description>
+				<ul>
+					<li>Added Traditional Chinese and Russian translations</li>
+					<li>Refactor Roblox and Wine installation sanity</li>
+					<li>General bug fixes and improvements</li>
+					<li>Simplify Manager UI</li>
+				</ul>
+			</description>
+		</release>
 		<release version="1.9.3" date="2026-01-09">
 			<description>
 				<ul>

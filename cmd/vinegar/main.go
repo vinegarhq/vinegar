@@ -30,7 +30,16 @@ func main() {
 		slog.Error("Failed to set locale", "err", err)
 	}
 
-	if code := newApp().Run(int32(len(os.Args)), os.Args); code > 0 {
+	// Detect MCP mode before GApplication so that GApplicationNonUniqueValue
+	// can be set, preventing GLib from forwarding the command line to an
+	// existing primary instance (which would have the wrong stdio for MCP).
+	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "run" {
+		args = args[1:]
+	}
+	mcpMode := len(args) == 1 && args[0] == "mcp"
+
+	if code := newApp(mcpMode).Run(int32(len(os.Args)), os.Args); code > 0 {
 		os.Exit(int(code))
 	}
 }

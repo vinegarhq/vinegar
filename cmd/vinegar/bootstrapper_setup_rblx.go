@@ -172,6 +172,7 @@ func (b *bootstrapper) installPackages(
 	}
 
 	if err := group.Wait(); err != nil {
+		os.RemoveAll(b.dir)
 		return err
 	}
 

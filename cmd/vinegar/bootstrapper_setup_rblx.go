@@ -183,6 +183,14 @@ func (b *bootstrapper) installPackage(
 	pdirs rbxbin.PackageDirectories,
 	pkg *rbxbin.Package,
 ) error {
+	slog := slog.With("name", pkg.Name)
+
+	switch pkg.Name {
+	case "RobloxStudioInstaller.exe":
+		slog.Warn("Skipping package!")
+		return nil
+	}
+
 	src := filepath.Join(dirs.Downloads, pkg.Checksum)
 	dst, ok := pdirs[pkg.Name]
 	if !ok {
@@ -191,7 +199,7 @@ func (b *bootstrapper) installPackage(
 
 	if err := pkg.Verify(src); err != nil {
 		url := mirror.PackageURL(b.bin, pkg.Name)
-		slog.Info("Downloading package", "name", pkg.Name, "sum", pkg.Checksum)
+		slog.Info("Downloading package", "sum", pkg.Checksum)
 		if err := netutil.Download(url, src); err != nil {
 			return err
 		}
@@ -200,7 +208,7 @@ func (b *bootstrapper) installPackage(
 		}
 	}
 
-	slog.Info("Extracting package", "name", pkg.Name, "dest", dst)
+	slog.Info("Extracting package", "dest", dst)
 	return pkg.Extract(src, filepath.Join(b.dir, dst))
 }
 

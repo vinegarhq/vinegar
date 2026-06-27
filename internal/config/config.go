@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	DXVKVersion      = "2.7.1"
+	DXVKVersion      = "3.0"
 	DXVKSarekVersion = "Sarek-1.11.0-async"
 	WebViewVersion   = "144.0.3719.92"
 

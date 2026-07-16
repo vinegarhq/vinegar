@@ -177,7 +177,7 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 		entry = entry[3:]
 		if len(entry) != 1 {
 			//panic(entry)
-			slog.Debug("Skipping bad crashpad log: " line)
+			slog.Debug("Skipping bad crashpad log: ", "line", line)
 			return
 		}
 		line = entry[0]

@@ -81,6 +81,10 @@ func (b *bootstrapper) setupExecute() error {
 		return fmt.Errorf("install webview: %w", err)
 	}
 
+	if err := b.setupMimalloc(); err != nil {
+		return fmt.Errorf("mimalloc: %w", err)
+	}
+
 	// Currently, DXVK does not quite invoke any sort of application,
 	// giving the wineserver the persistent timeout until another program
 	// is executed. Attempt to reduce chances of being killed by installing
@@ -90,6 +94,47 @@ func (b *bootstrapper) setupExecute() error {
 	}
 
 	return nil
+}
+
+// setupMimalloc makes Studio's mimalloc-redirect functional under Wine;
+// mimalloc deployments hard-assert at startup without it. The redirect
+// can only patch the real ucrtbase (Wine's builtin lacks the private
+// _expand_base/_recalloc_base/_msize_base exports it resolves), and Wine
+// pins ucrtbase to the KnownDlls copy in system32 — the application
+// directory is never searched — so the deployment's native DLL is copied
+// there and enabled for Studio alone via AppDefaults. A session-wide
+// WINEDLLOVERRIDES would instead break wineboot and every other system
+// process, whose ucrtbase must stay builtin. The env side of this
+// accommodation (MIMALLOC_FORCE_REDIRECT et al.) lives in config.Prefix.
+func (b *bootstrapper) setupMimalloc() error {
+	system32 := filepath.Join(dirs.Prefixes, "studio", "drive_c", "windows", "system32")
+	dst := filepath.Join(system32, "ucrtbase.dll")
+	backup := dst + ".wine-builtin"
+	override := `HKCU\Software\Wine\AppDefaults\RobloxStudioBeta.exe\DllOverrides`
+
+	if _, err := os.Stat(filepath.Join(b.dir, "ucrtbase.dll")); err != nil {
+		// Deployment ships no native CRT: undo a previous setup so the
+		// native-only override cannot point at Wine's builtin file.
+		if _, err := os.Stat(backup); err != nil {
+			return nil
+		}
+		if err := os.Rename(backup, dst); err != nil {
+			return err
+		}
+		return b.pfx.RegistryAdd(override, "ucrtbase", "builtin")
+	}
+
+	b.message(L("Setting up mimalloc"))
+
+	if _, err := os.Stat(backup); errors.Is(err, os.ErrNotExist) {
+		if err := cp.Copy(dst, backup); err != nil {
+			return err
+		}
+	}
+	if err := cp.Copy(filepath.Join(b.dir, "ucrtbase.dll"), dst); err != nil {
+		return err
+	}
+	return b.pfx.RegistryAdd(override, "ucrtbase", "native")
 }
 
 func (b *bootstrapper) copyOverlay() error {

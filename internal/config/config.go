@@ -211,6 +211,37 @@ func (c *Config) Prefix() *wine.Prefix {
 	env["WINEDEBUG"] += ",warn+seh" // required to read Roblox logs
 	env["XR_LOADER_DEBUG"] = "none" // already shown in Roblox log
 	env["WINEDLLOVERRIDES"] += ";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="
+
+	// Studio's mimalloc rollout channels hard-assert at startup unless
+	// mimalloc-redirect.dll successfully redirects the CRT allocator.
+	// Under Wine that needs three accommodations, all no-ops on builds
+	// that don't ship mimalloc (each overridable via [studio.env]):
+	//
+	//   - Wine initializes ucrtbase.dll before mimalloc-redirect.dll
+	//     (Windows guarantees the reverse via exe import order), so the
+	//     redirect's early thunk patching aborts. FORCE_REDIRECT makes
+	//     it proceed and PATCH_IMPORTS applies the redirection by IAT-
+	//     patching the already-initialized modules instead.
+	//   - Wine's builtin ucrtbase lacks the private exports the patcher
+	//     resolves (_expand_base, _recalloc_base, _msize_base); Studio
+	//     ships the real ucrtbase.dll, loaded via the "ucrtbase=n"
+	//     override below. The override must be strictly native: with
+	//     "n,b" Wine still picks the builtin.
+	//   - mimalloc commits its page map sparsely around its own
+	//     allocation ranges. Wine hands out top-down allocations near
+	//     the top of user space that fall outside the committed map,
+	//     and the first free() of such a pointer page-faults (#914).
+	//     PAGEMAP_COMMIT commits the full map upfront (mimalloc's
+	//     default on macOS for the same reason).
+	for k, v := range map[string]string{
+		"MIMALLOC_PAGEMAP_COMMIT": "1",
+		"MIMALLOC_FORCE_REDIRECT": "1",
+		"MIMALLOC_PATCH_IMPORTS":  "1",
+	} {
+		if _, ok := env[k]; !ok {
+			env[k] = v
+		}
+	}
 	if !c.Debug {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"
 	}

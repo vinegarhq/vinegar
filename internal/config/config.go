@@ -215,13 +215,16 @@ func (c *Config) Prefix() *wine.Prefix {
 		env["WINEDEBUG"] += ",fixme-all,err-kerberos,err-ntlm,err-combase"
 	}
 
-	env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--disable-gpu"
-
 	switch c.Studio.Renderer {
+	case "D3D11", "D3D11FL10":
+		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--use-angle=gl"
+		env["WINE_D3D_CONFIG"] = "renderer=gl"
 	case "DXVK", "DXVK-Sarek":
+		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--use-angle=vulkan"
 		env["WINE_D3D_CONFIG"] = "renderer=vulkan"
 	case "Vulkan":
 		env["VK_LOADER_LAYERS_ENABLE"] = "VK_LAYER_VINEGAR_VinegarLayer"
+		env["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = "--use-angle=vulkan"
 		env["WINE_D3D_CONFIG"] = "renderer=vulkan"
 	}
 

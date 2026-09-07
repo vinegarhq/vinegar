@@ -271,7 +271,21 @@ func addKeyRow[V any](
 		})
 		row = &spin.PreferencesRow
 	default:
-		panic(fmt.Sprintf("bind: unhandled type %T", val))
+		// FFlags is a map[string]any, and TOML can decode a value into a
+		// type this switch doesn't otherwise special-case (e.g. a float,
+		// an array, or an inline table). Rather than panicking on a
+		// perfectly valid config file, fall back to a plain text row so
+		// the value stays visible and editable as its string form.
+		slog.Warn("Unhandled fflag value type, editing as text", "key", key, "type", fmt.Sprintf("%T", val))
+		entry := adw.NewEntryRow()
+		entry.AddSuffix(&remove.Widget)
+		entry.SetText(fmt.Sprint(val))
+		entry.AddCssClass("monospace")
+		gutil.ConnectSignal(entry, "notify::text", func() {
+			m[key] = any(entry.GetText()).(V)
+			entry.ActivateActionVariant("win.save", nil)
+		})
+		row = &entry.PreferencesRow
 	}
 
 	row.SetTitle(key)

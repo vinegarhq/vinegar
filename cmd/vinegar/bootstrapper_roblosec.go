@@ -29,8 +29,11 @@ func (b *bootstrapper) getSecurity(offline *wine.Registry) error {
 		return errors.New("credential manager missing")
 	}
 
-	c, err := rc4.NewCipher(
-		cred.GetValue(`EncryptionKey`).Data.([]byte))
+	key, err := registryBytes(cred, `EncryptionKey`)
+	if err != nil {
+		return fmt.Errorf("encryption key: %w", err)
+	}
+	c, err := rc4.NewCipher(key)
 	if err != nil {
 		return fmt.Errorf("cipher: %w", err)
 	}
@@ -39,7 +42,11 @@ func (b *bootstrapper) getSecurity(offline *wine.Registry) error {
 	if uk == nil {
 		return errors.New("no current user")
 	}
-	user := keyStream(c, uk.GetValue("Password").Data.([]byte))
+	uPass, err := registryBytes(uk, "Password")
+	if err != nil {
+		return fmt.Errorf("user id: %w", err)
+	}
+	user := keyStream(c, uPass)
 	slog.Info("Using user for authentication", "user", user)
 
 	sec := cred.Query(authNamePrefix + `.ROBLOSECURITY` + user)
@@ -47,8 +54,28 @@ func (b *bootstrapper) getSecurity(offline *wine.Registry) error {
 		slog.Warn("ROBLOSECURITY cookie not found", "user", user)
 		return nil
 	}
-	b.rbx.Security = keyStream(c, sec.GetValue("Password").Data.([]byte))
+	secPass, err := registryBytes(sec, "Password")
+	if err != nil {
+		return fmt.Errorf("cookie: %w", err)
+	}
+	b.rbx.Security = keyStream(c, secPass)
 	return nil
+}
+
+// registryBytes safely retrieves the named value from key as a byte slice,
+// returning an error instead of panicking if the value is missing or of an
+// unexpected type. The Wine registry is external, untrusted state (it can be
+// missing or corrupt), so callers must not assume a well-formed shape.
+func registryBytes(key *wine.RegistryKey, name string) ([]byte, error) {
+	v := key.GetValue(name)
+	if v == nil {
+		return nil, fmt.Errorf("value %q missing", name)
+	}
+	b, ok := v.Data.([]byte)
+	if !ok {
+		return nil, fmt.Errorf("value %q is not binary data", name)
+	}
+	return b, nil
 }
 
 // workaround rc4.Cipher KSA to keep the original key intact

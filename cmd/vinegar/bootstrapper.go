@@ -170,15 +170,11 @@ func (b *bootstrapper) handleRobloxLog(line string) {
 	// time,runtime,code,code2[,level ] ...
 	{
 		entry := strings.SplitN(line, ",", 4)
-		if len(entry) < 3 {
+		if len(entry) < 4 {
 			slog.Log(context.Background(), slog.LevelInfo, line)
 			return
 		}
-		entry = entry[3:]
-		if len(entry) != 1 {
-			panic(entry)
-		}
-		line = entry[0]
+		line = entry[3]
 	}
 
 	i := strings.Index(line, " [")

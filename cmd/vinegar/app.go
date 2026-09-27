@@ -9,8 +9,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"codeberg.org/puregotk/puregotk/v4/adw"
 	"codeberg.org/puregotk/puregotk/v4/gio"
@@ -33,6 +35,7 @@ type app struct {
 
 	// Current latest version obtained from metainfo.xml
 	version string
+	mcpMode bool
 
 	cfg *config.Config
 	pfx *wine.Prefix
@@ -43,7 +46,7 @@ type app struct {
 	boot *bootstrapper
 }
 
-func newApp() *app {
+func newApp(mcpMode bool) *app {
 	b := gutil.ResourceData(gutil.Resource("metainfo.xml"))
 	data := struct {
 		XMLName  xml.Name `xml:"component"`
@@ -60,16 +63,20 @@ func newApp() *app {
 		log.Panicln("expected valid appstream:", err)
 	}
 
+	// command-line is preferred over open due to open abstracting the real
+	// argument to GFile, which is not an effective wrapper for Studio arguments.
+	// NonUnique is added in MCP mode so this process is never forwarded to an
+	// existing primary instance (which has the wrong stdio for binary MCP piping).
+	flags := gio.GApplicationHandlesCommandLineValue
+	if mcpMode {
+		flags |= gio.GApplicationNonUniqueValue
+	}
+
 	a := app{
-		Application: adw.NewApplication(
-			"org.vinegarhq.Vinegar",
-			// command-line is preferred over open due to open
-			// abstracting real argument to GFile, which is not
-			// an effective wrapper for Studio arguments.
-			gio.GApplicationHandlesCommandLineValue,
-		),
-		version: data.Releases.Release[0].Version,
-		rbx:     rbxweb.NewClient(),
+		Application: adw.NewApplication("org.vinegarhq.Vinegar", flags),
+		version:     data.Releases.Release[0].Version,
+		rbx:         rbxweb.NewClient(),
+		mcpMode:     mcpMode,
 	}
 
 	startup := a.startup
@@ -115,46 +122,56 @@ func (a *app) startup(_ gio.Application) {
 	slog.SetDefault(slog.New(
 		logging.NewHandler(os.Stderr, slog.LevelInfo)))
 
-	slog.Info("System information",
-		"cpu", sysinfo.CPU.Name,
-		"mem", glib.FormatSizeForDisplay(int64(sysinfo.Memory)),
-		"distro", sysinfo.Distro,
-		"display", sysinfo.Display)
-	slog.Info("DRM Devices",
-		"cards", sysinfo.Cards)
+	if !a.mcpMode {
+		slog.Info("System information",
+			"cpu", sysinfo.CPU.Name,
+			"mem", glib.FormatSizeForDisplay(int64(sysinfo.Memory)),
+			"distro", sysinfo.Distro,
+			"display", sysinfo.Display)
+		slog.Info("DRM Devices",
+			"cards", sysinfo.Cards)
 
-	// ChromeOS allocates 4GB [citation needed] for Crostini.
-	if sysinfo.Memory < 4*1024*1024 && !a.cfg.Debug {
-		a.showError(errors.New(L(
-			"This system does not meet the minimum requirements to run Roblox Studio." +
-				"It is recommended to run Vinegar with sufficient memory and graphics.")))
-		return
-	}
+		// ChromeOS allocates 4GB [citation needed] for Crostini.
+		if sysinfo.Memory < 4*1024*1024 && !a.cfg.Debug {
+			a.showError(errors.New(L(
+				"This system does not meet the minimum requirements to run Roblox Studio." +
+					"It is recommended to run Vinegar with sufficient memory and graphics.")))
+			return
+		}
 
-	a.boot = a.newBootstrapper()
+		a.boot = a.newBootstrapper()
 
-	// Required for GameMode
-	conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
-	if err != nil {
-		slog.Error("Failed to retrieve session bus, all DBus operations will be ignored", "err", err)
-	} else {
-		a.bus = conn
+		// Required for GameMode
+		conn, err := gio.BusGetSync(gio.GBusTypeSessionValue, nil)
+		if err != nil {
+			slog.Error("Failed to retrieve session bus, all DBus operations will be ignored", "err", err)
+		} else {
+			a.bus = conn
+		}
 	}
 
 	// Any error that can occur here is I/O failure, which
 	// is unrecoverable, unlike the user editing the configuration
 	// manually, which is user error, as the manager validates the
 	// configuration during editing.
+	var err error
 	a.cfg, err = config.Load()
 	if err != nil {
+		if a.mcpMode {
+			slog.Error("Failed to load config", "err", err)
+			a.Quit()
+			return
+		}
 		a.showError(fmt.Errorf("config error: %w", err))
 		return
 	}
 	a.applyConfig()
 
-	sm := a.GetStyleManager()
-	cb := a.updateWineTheme
-	sm.ConnectSignal("notify::dark", &cb)
+	if !a.mcpMode {
+		sm := a.GetStyleManager()
+		cb := a.updateWineTheme
+		sm.ConnectSignal("notify::dark", &cb)
+	}
 }
 
 func (a *app) commandLine(_ gio.Application, clPtr uintptr) int32 {
@@ -166,6 +183,18 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int32 {
 	args := cl.GetArguments(nil)[1:] // skip argv0
 	if len(args) >= 1 && args[0] == "run" {
 		args = args[1:] // skip 'run' cmd
+	}
+
+	if len(args) == 1 && args[0] == "mcp" {
+		a.Hold()
+		go func() {
+			if err := a.runMCP(); err != nil {
+				slog.Error("MCP server error", "err", err)
+			}
+			a.Release()
+			gutil.IdleAdd(func() { a.Quit() })
+		}()
+		return 0
 	}
 
 	// Override arguments to prioritize welcome screen
@@ -208,16 +237,18 @@ func (a *app) commandLine(_ gio.Application, clPtr uintptr) int32 {
 }
 
 func (a *app) shutdown(_ gio.Application) {
-	if err := a.boot.backupSettings(); err != nil {
-		slog.Error("Failed to backup Studio settings", "err", err)
-	}
+	if a.boot != nil {
+		if err := a.boot.backupSettings(); err != nil {
+			slog.Error("Failed to backup Studio settings", "err", err)
+		}
 
-	// TODO: Wait for studio processes or Wineserver to die
-	if a.boot.count > 1 {
-		slog.Warn("Handing off Wineserver control!")
-	} else {
-		slog.Info("Goodbye!")
+		// TODO: Wait for studio processes or Wineserver to die
+		if a.boot.count > 1 {
+			slog.Warn("Handing off Wineserver control!")
+			return
+		}
 	}
+	slog.Info("Goodbye!")
 }
 
 func (a *app) appInfo() *gio.AppInfoBase {
@@ -317,6 +348,57 @@ func (a *app) registerGame(processHandle uintptr) error {
 	slog.Info("Registered with GameMode", "response", res, "pidfd", processHandle)
 
 	return nil
+}
+
+func (a *app) runMCP() error {
+	if !a.pfx.Exists() {
+		return errors.New("Wine prefix does not exist, please install Studio first")
+	}
+	if !a.pfx.Running() {
+		return errors.New("Studio is not running")
+	}
+
+	entries, err := os.ReadDir(dirs.Versions)
+	if err != nil {
+		return fmt.Errorf("read versions: %w", err)
+	}
+
+	var mcpPath string
+	for _, e := range entries {
+		p := filepath.Join(dirs.Versions, e.Name(), "StudioMCP.exe")
+		if _, err := os.Stat(p); err == nil {
+			mcpPath = p
+		}
+	}
+	if mcpPath == "" {
+		return errors.New("StudioMCP.exe not found, please install Studio first")
+	}
+
+	cmd := a.pfx.Wine(mcpPath)
+	// Use a writer that wraps os.Stdout rather than os.Stdout itself so that
+	// wine.Cmd.Start triggers the StdoutPipe copy goroutine (Wine bug 58707).
+	cmd.Stdout = io.MultiWriter(os.Stdout)
+	cmd.Stdin = os.Stdin
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	// GLib only auto-handles SIGTERM, not SIGINT. Intercept both signals and
+	// kill the Wine process so cmd.Wait() unblocks and GApplication can exit.
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
+	defer func() {
+		signal.Stop(sig)
+		close(sig)
+	}()
+	go func() {
+		if _, ok := <-sig; ok {
+			_ = cmd.Process.Kill()
+		}
+	}()
+
+	return cmd.Wait()
 }
 
 type debugTransport struct {

@@ -14,6 +14,7 @@ require (
 	github.com/altfoxie/drpc v0.0.0-20251029175103-30d5f68745fb
 	github.com/google/go-github/v80 v80.0.0
 	github.com/jaypipes/pcidb v1.1.1
+	github.com/jezek/xgb v1.3.1
 	github.com/lmittmann/tint v1.1.3
 	github.com/pojntfx/go-gettext v0.4.2
 	github.com/sewnie/rbxbin v0.0.0-20260624173958-14ca138004f5

@@ -208,6 +208,19 @@ func (c *Config) Prefix() *wine.Prefix {
 		break
 	}
 
+	// Studio's shaders alone come close to the NVIDIA driver's shader
+	// cache limit, and once reached, evicted shaders are recompiled
+	// in-game as stutters.
+	for _, card := range sysinfo.Cards {
+		if !strings.HasPrefix(card.Driver, "nvidia") {
+			continue
+		}
+		if _, ok := env["__GL_SHADER_DISK_CACHE_SKIP_CLEANUP"]; !ok {
+			env["__GL_SHADER_DISK_CACHE_SKIP_CLEANUP"] = "1"
+		}
+		break
+	}
+
 	env["WINEDEBUG"] += ",warn+seh" // required to read Roblox logs
 	env["XR_LOADER_DEBUG"] = "none" // already shown in Roblox log
 	env["WINEDLLOVERRIDES"] += ";" + "dxdiagn,winemenubuilder.exe,mscoree,mshtml="

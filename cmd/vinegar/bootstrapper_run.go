@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -13,6 +14,7 @@ import (
 	. "github.com/pojntfx/go-gettext/pkg/i18n"
 	"github.com/sewnie/wine"
 	"github.com/vinegarhq/vinegar/internal/gutil"
+	"github.com/vinegarhq/vinegar/internal/xstray"
 )
 
 func (b *bootstrapper) commandPath() string {
@@ -89,6 +91,18 @@ func (b *bootstrapper) execute(args ...string) error {
 	gutil.IdleAdd(func() {
 		b.win.SetVisible(false)
 	})
+
+	// Studio's hidden windows are only placed on-screen by the
+	// host's window manager, not within a virtual desktop.
+	if b.cfg.Studio.Desktop == "" && os.Getenv("DISPLAY") != "" {
+		ctx, cancel := context.WithCancel(context.Background())
+		defer cancel()
+		go func() {
+			if err := xstray.Watch(ctx); err != nil {
+				slog.Error("Failed to watch for stray Studio windows", "err", err)
+			}
+		}()
+	}
 
 	cmd.Process.WithHandle(func(h uintptr) {
 		if err := b.registerGame(h); err != nil {

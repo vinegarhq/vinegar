@@ -37,6 +37,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <string.h>
 
+#include <atomic>
 #include <cstdio>
 #include <mutex>
 #include <map>
@@ -48,7 +49,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define VK_LAYER_EXPORT extern "C"
 #endif
 
-// single global lock, for simplicity
+// single global lock, for simplicity. It only guards the dispatch maps, and
+// must not be held while calling down the chain, as some calls block for
+// up to a frame.
 std::mutex global_lock;
 typedef std::lock_guard<std::mutex> scoped_lock;
 
@@ -64,7 +67,7 @@ std::map<void *, VkLayerInstanceDispatchTable> instance_dispatch;
 std::map<void *, VkLayerDispatchTable> device_dispatch;
 
 // actual data we're recording in this layer
-bool hack_swapchain_recreation = false;
+std::atomic<bool> hack_swapchain_recreation{false};
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // Layer init and shutdown
@@ -96,6 +99,8 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_CreateInstance(
     PFN_vkCreateInstance createFunc = (PFN_vkCreateInstance)gpa(VK_NULL_HANDLE, "vkCreateInstance");
 
     VkResult ret = createFunc(pCreateInfo, pAllocator, pInstance);
+    if(ret != VK_SUCCESS)
+        return ret;
 
     // fetch our own dispatch table for the functions we need, into the next layer
     VkLayerInstanceDispatchTable dispatchTable;
@@ -148,6 +153,8 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_CreateDevice(
     PFN_vkCreateDevice createFunc = (PFN_vkCreateDevice)gipa(VK_NULL_HANDLE, "vkCreateDevice");
 
     VkResult ret = createFunc(physicalDevice, pCreateInfo, pAllocator, pDevice);
+    if(ret != VK_SUCCESS)
+        return ret;
 
     // fetch our own dispatch table for the functions we need, into the next layer
     VkLayerDispatchTable dispatchTable;
@@ -175,23 +182,30 @@ VK_LAYER_EXPORT void VKAPI_CALL VinegarLayer_DestroyDevice(VkDevice device, cons
 
 VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_GetPhysicalDeviceSurfaceCapabilitiesKHR(VkPhysicalDevice physicalDevice, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR *pSurfaceCapabilities)
 {
-    scoped_lock l(global_lock);
-    VkResult result = instance_dispatch[GetKey(physicalDevice)].GetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface, pSurfaceCapabilities);
+    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR next;
+    {
+        scoped_lock l(global_lock);
+        next = instance_dispatch[GetKey(physicalDevice)].GetPhysicalDeviceSurfaceCapabilitiesKHR;
+    }
+    VkResult result = next(physicalDevice, surface, pSurfaceCapabilities);
 
     // this "fixes" VK_ERROR_OUT_OF_DATE_KHR and VK_SUBOPTIMAL_KHR by taking
     // advantage of roblox recreating the swapchain when we return
     // VK_ERROR_SURFACE_LOST_KHR
-    if (hack_swapchain_recreation) {
-        hack_swapchain_recreation = false;
+    if (hack_swapchain_recreation.exchange(false))
         return VK_ERROR_SURFACE_LOST_KHR;
-    }
     return result;
 }
 
 VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_AcquireNextImageKHR(VkDevice device, VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t *pImageIndex)
 {
-    scoped_lock l(global_lock);
-    VkResult result = device_dispatch[GetKey(device)].AcquireNextImageKHR(device, swapchain, timeout, semaphore, fence, pImageIndex);
+    PFN_vkAcquireNextImageKHR next;
+    {
+        scoped_lock l(global_lock);
+        next = device_dispatch[GetKey(device)].AcquireNextImageKHR;
+    }
+    // blocks until an image is available, which is up to a frame with FIFO
+    VkResult result = next(device, swapchain, timeout, semaphore, fence, pImageIndex);
 
     // this error code is basically a non-fatal VK_ERROR_OUT_OF_DATE_KHR,
     // it reports that the surface properties have changed but the swapchain
@@ -250,8 +264,12 @@ VK_LAYER_EXPORT VkResult VKAPI_CALL VinegarLayer_EnumerateDeviceExtensionPropert
         if(physicalDevice == VK_NULL_HANDLE)
             return VK_SUCCESS;
 
-        scoped_lock l(global_lock);
-        return instance_dispatch[GetKey(physicalDevice)].EnumerateDeviceExtensionProperties(physicalDevice, pLayerName, pPropertyCount, pProperties);
+        PFN_vkEnumerateDeviceExtensionProperties next;
+        {
+            scoped_lock l(global_lock);
+            next = instance_dispatch[GetKey(physicalDevice)].EnumerateDeviceExtensionProperties;
+        }
+        return next(physicalDevice, pLayerName, pPropertyCount, pProperties);
     }
 
     // don't expose any extensions
@@ -274,10 +292,12 @@ VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL VinegarLayer_GetDeviceProcAddr(VkD
     GETPROCADDR(DestroyDevice);
     GETPROCADDR(AcquireNextImageKHR);
 
+    PFN_vkGetDeviceProcAddr next;
     {
         scoped_lock l(global_lock);
-        return device_dispatch[GetKey(device)].GetDeviceProcAddr(device, pName);
+        next = device_dispatch[GetKey(device)].GetDeviceProcAddr;
     }
+    return next(device, pName);
 }
 
 VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL VinegarLayer_GetInstanceProcAddr(VkInstance instance, const char *pName)
@@ -298,8 +318,10 @@ VK_LAYER_EXPORT PFN_vkVoidFunction VKAPI_CALL VinegarLayer_GetInstanceProcAddr(V
     GETPROCADDR(DestroyDevice);
     GETPROCADDR(AcquireNextImageKHR);
 
+    PFN_vkGetInstanceProcAddr next;
     {
         scoped_lock l(global_lock);
-        return instance_dispatch[GetKey(instance)].GetInstanceProcAddr(instance, pName);
+        next = instance_dispatch[GetKey(instance)].GetInstanceProcAddr;
     }
+    return next(instance, pName);
 }

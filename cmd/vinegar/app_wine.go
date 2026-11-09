@@ -109,18 +109,17 @@ func (a *app) updateWine(needle string) error {
 	log := slog.With("tag", tag, "released", release.PublishedAt.Time)
 
 	if _, err := os.Stat(dirs.WinePath); err == nil {
-		path, err := os.Readlink(dirs.WinePath)
+		name, err := os.Readlink(dirs.WinePath)
 		if err != nil {
 			return fmt.Errorf("readlink: %w", err)
 		}
-		name := filepath.Base(path)
-		if path == dir {
+		if filepath.Base(dir) == name {
 			log.Info("Wine build up to date")
 			return nil
 		}
 
 		slog.Info("Removing old Wine build", "name", name)
-		if err := os.RemoveAll(path); err != nil {
+		if err := os.RemoveAll(filepath.Join(filepath.Dir(dirs.WinePath), name)); err != nil {
 			return fmt.Errorf("remove build: %w", err)
 		}
 	}

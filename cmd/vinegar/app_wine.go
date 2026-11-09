@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"codeberg.org/puregotk/puregotk/v4/adw"
 	"github.com/adrg/xdg"
@@ -21,18 +22,33 @@ import (
 	. "github.com/pojntfx/go-gettext/pkg/i18n"
 )
 
+var (
+	updateCheck = time.Hour * 24 * 6
+)
+
 // Reports whether a Wine Prefix was initialized.
 func (a *app) prepareWine() (bool, error) {
 	firstRun := !a.pfx.Exists()
 
 	a.boot.message(L("Setting up Wine"), "first-time", firstRun)
 
-	cmd := a.pfx.Wine("")
-	if string(a.cfg.Studio.WineRoot) == dirs.WinePath && cmd.Err != nil {
+	if string(a.cfg.Studio.WineRoot) == dirs.WinePath {
+		stat, err := os.Stat(dirs.WinePath)
+		// Use the modified time of the Kombucha symlink as a "last checked"
+		// marker, and abort if the Wine executable is corrupt.
+		if err == nil && time.Now().Sub(stat.ModTime()) < updateCheck {
+			goto chicken
+		}
+
 		if err := a.updateWine("Latest"); err != nil {
 			return false, fmt.Errorf("dl: %w", err)
 		}
+
+		if err := os.Chtimes(dirs.WinePath, time.Time{}, time.Now()); err != nil {
+			return false, fmt.Errorf("mark: %w", err)
+		}
 	}
+chicken:
 	if a.pfx.Running() {
 		return false, nil
 	}
@@ -93,12 +109,12 @@ func (a *app) updateWine(needle string) error {
 	log := slog.With("tag", tag, "released", release.PublishedAt.Time)
 
 	if _, err := os.Stat(dirs.WinePath); err == nil {
-		path, err := filepath.EvalSymlinks(dirs.WinePath)
+		path, err := os.Readlink(dirs.WinePath)
 		if err != nil {
 			return fmt.Errorf("readlink: %w", err)
 		}
 		name := filepath.Base(path)
-		if name == filepath.Base(dir) {
+		if path == dir {
 			log.Info("Wine build up to date")
 			return nil
 		}
@@ -106,10 +122,6 @@ func (a *app) updateWine(needle string) error {
 		slog.Info("Removing old Wine build", "name", name)
 		if err := os.RemoveAll(path); err != nil {
 			return fmt.Errorf("remove build: %w", err)
-		}
-
-		if err := os.Remove(dirs.WinePath); err != nil {
-			return fmt.Errorf("remove link: %w", err)
 		}
 	}
 
@@ -130,6 +142,9 @@ func (a *app) updateWine(needle string) error {
 	}
 
 install:
+	if err := os.Remove(dirs.WinePath); err != nil {
+		return fmt.Errorf("remove link: %w", err)
+	}
 	if err := os.Symlink("kombucha-"+tag, dirs.WinePath); err != nil {
 		return fmt.Errorf("create link: %w", err)
 	}

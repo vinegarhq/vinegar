@@ -141,7 +141,7 @@ func (a *app) updateWine(needle string) error {
 	}
 
 install:
-	if err := os.Remove(dirs.WinePath); err != nil {
+	if err := os.RemoveAll(dirs.WinePath); err != nil {
 		return fmt.Errorf("remove link: %w", err)
 	}
 	if err := os.Symlink("kombucha-"+tag, dirs.WinePath); err != nil {

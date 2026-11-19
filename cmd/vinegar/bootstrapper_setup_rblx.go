@@ -64,6 +64,7 @@ func (b *bootstrapper) updateDeployment() error {
 	if err == nil {
 		f.Close()
 		b.message(L("Up to date"), "guid", b.bin.GUID)
+		b.linkDeployment()
 		return nil
 	}
 
@@ -101,7 +102,23 @@ func (b *bootstrapper) updateDeployment() error {
 	}
 
 	slog.Info("Successfully installed!", "guid", b.bin.GUID)
+	b.linkDeployment()
 	return nil
+}
+
+func (b *bootstrapper) linkDeployment() {
+	if name, err := os.Readlink(dirs.CurrentVersion); err == nil && name == b.bin.GUID {
+		return
+	}
+
+	if err := os.Remove(dirs.CurrentVersion); err != nil && !errors.Is(err, os.ErrNotExist) {
+		slog.Warn("Failed to remove current deployment link", "err", err)
+		return
+	}
+
+	if err := os.Symlink(b.bin.GUID, dirs.CurrentVersion); err != nil {
+		slog.Warn("Failed to link current deployment", "err", err)
+	}
 }
 
 func (b *bootstrapper) installDeployment() error {

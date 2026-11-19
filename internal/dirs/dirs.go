@@ -27,6 +27,8 @@ var (
 	ConfigPath  = filepath.Join(Config, "config.toml")
 	WinePath    = filepath.Join(Data, "kombucha")
 	AppDataPath = filepath.Join(Data, "appdata")
+
+	CurrentVersion = filepath.Join(Versions, "current")
 )
 
 func Windows(name string) string {
